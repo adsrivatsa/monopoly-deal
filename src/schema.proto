@@ -237,3 +237,14 @@ message PlayRent {
   string player_id = 1;
   CardType card = 2;
 }
+
+message RespondRent {
+  string player_id = 1;
+  repeated CardType cards = 2;
+  bool said_no = 3;
+}
+
+// TODO
+message PlayWildRent {
+  string player_id = 1;
+}
