@@ -1,0 +1,239 @@
+syntax = "proto3";
+
+package monopolydeal.schema;
+
+option go_package = "monopoly-deal/backend/internal/schema;schema";
+
+// generic
+message Ping {
+  int64 client_time_unix_ms = 1;
+}
+
+message Pong {
+  int64 server_time_unix_ms = 1;
+}
+
+message Error {
+  string code = 1;
+  string message = 2;
+}
+
+// lobby
+message Player {
+  string player_id = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  bool is_ready = 4;
+}
+
+message Room {
+  string room_id = 1;
+  repeated Player players = 2;
+  string status = 3;
+  int32 capacity = 4;
+}
+
+message RoomList {
+  repeated Room rooms = 1;
+}
+
+message CreateRoom {
+  string player_id = 1;
+}
+
+message CreateRoomResponse {
+  string player_id = 1;
+  string room_id = 2;
+}
+
+message JoinRoom {
+  string player_id = 1;
+  string room_id = 2;
+}
+
+message JoinRoomResponse {
+  string player_id = 1;
+  string room_id = 2;
+}
+
+message LeaveRoom {
+  string player_id = 1;
+  string room_id = 2;
+}
+
+message LeaveRoomResponse {
+  string player_id = 1;
+  string room_id = 2;
+}
+
+message DeleteRoom {
+  string room_id = 1;
+}
+
+message DeleteRoomResponse {
+  string room_id = 1;
+}
+
+
+// gameplay
+enum CardType {
+    CARD_TYPE_UNSPECIFIED = 0;
+
+    // pure property cards
+    CARD_TYPE_PROPERTY_BROWN = 10;
+    CARD_TYPE_PROPERTY_LIGHT_BLUE = 11;
+    CARD_TYPE_PROPERTY_PINK = 12;
+    CARD_TYPE_PROPERTY_ORANGE = 13;
+    CARD_TYPE_PROPERTY_RED = 14;
+    CARD_TYPE_PROPERTY_YELLOW = 15;
+    CARD_TYPE_PROPERTY_GREEN = 16;
+    CARD_TYPE_PROPERTY_DARK_BLUE = 17;
+    CARD_TYPE_PROPERTY_UTILITY = 18;
+    CARD_TYPE_PROPERTY_RAILROAD = 19;
+
+    // wild property cards
+    CARD_TYPE_PROPERTY_WILD_BROWN_LIGHT_BLUE = 20;
+    CARD_TYPE_PROPERTY_WILD_LIGHT_BLUE_RAILROAD = 21;
+    CARD_TYPE_PROPERTY_WILD_PINK_ORANGE = 22;
+    CARD_TYPE_PROPERTY_WILD_ORANGE_UTILITY = 23;
+    CARD_TYPE_PROPERTY_WILD_GREEN_DARK_BLUE = 24;
+    CARD_TYPE_PROPERTY_WILRD_GREEN_RAILROAD = 25;
+    CARD_TYPE_PROPERTY_WILD_UTILITY_RAILROAD = 26;
+    CARD_TYPE_PROPERTY_WILD = 27;
+
+    // money cards
+    CARD_TYPE_MONEY_1 = 30;
+    CARD_TYPE_MONEY_2 = 31;
+    CARD_TYPE_MONEY_3 = 32;
+    CARD_TYPE_MONEY_4 = 33;
+    CARD_TYPE_MONEY_5 = 34;
+    CARD_TYPE_MONEY_10 = 35;
+
+    // action cards
+    CARD_TYPE_ACTION_PASS_GO = 40;
+    CARD_TYPE_ACTION_DOUBLE_THE_RENT = 41;
+    CARD_TYPE_ACTION_ITS_MY_BIRTHDAY = 42;
+    CARD_TYPE_ACTION_HOUSE = 43;
+    CARD_TYPE_ACTION_SLY_DEAL = 44;
+    CARD_TYPE_ACTION_FORCED_DEAL = 45;
+    CARD_TYPE_ACTION_DEBT_COLLECTOR = 46;
+    CARD_TYPE_ACTION_HOTEL = 47;
+    CARD_TYPE_ACTION_JUST_SAY_NO = 48;
+    CARD_TYPE_ACTION_DEAL_BREAKER = 49;
+
+    // rent cards
+    CARD_TYPE_RENT_BROWN_LIGHT_BLUE = 50;
+    CARD_TYPE_RENT_PINK_ORANGE = 51;
+    CARD_TYPE_RENT_RED_YELLOW = 52;
+    CARD_TYPE_RENT_GREEN_DARK_BLUE = 53;
+    CARD_TYPE_RENT_UTILITY_RAILROAD = 54;
+    CARD_TYPE_RENT_WILD = 55;
+}
+
+message PropertyType {
+  CardType card_type = 1;
+  optional string property_name = 2;
+}
+
+message PropertySetType {
+  repeated PropertyType property_types = 1;
+}
+
+message PlayProperty {
+  string player_id = 1;
+  PropertyType property = 2;
+}
+
+message PlayMoney {
+  string player_id = 1;
+  CardType card = 2;
+}
+
+// pass go loop
+message PlayPassGo {
+  string player_id = 1;
+}
+
+message RespondPassGo {
+  string player_id = 1;
+  repeated CardType cards = 2;
+}
+
+message PlayDoubleTheRent {
+  string player_id = 1;
+}
+
+// its my birthday loop
+message PlayItsMyBirthday {
+  string player_id = 1;
+}
+
+message RespondItsMyBirthday {
+  string player_id = 1;
+  repeated CardType cards = 2;
+  bool said_no = 3;
+}
+
+message PlayHouse {
+  string player_id = 1;
+  PropertySetType property_set = 2;
+}
+
+message PlaySlyDeal {
+  string player_id = 1;
+  string target_player_id = 2;
+  PropertyType property = 3;
+}
+
+message RespondSlyDeal {
+  string player_id = 1;
+  bool said_no = 2;
+}
+
+message PlayForcedDeal {
+  string player_id = 1;
+  string target_player_id = 2;
+  PropertyType source_property = 3;
+  PropertyType target_property = 4;
+}
+
+message RespondForcedDeal {
+  string player_id = 1;
+  bool said_no = 2;
+}
+
+message PlayDebtCollector {
+  string player_id = 1;
+  string target_player_id = 2;
+}
+
+message RespondDebtCollector {
+  string player_id = 1;
+  bool said_no = 2;
+}
+
+message PlayHotel {
+  string player_id = 1;
+  PropertySetType property_set = 2;
+}
+
+message RespondJustSayNo {
+  string player_id = 1;
+  bool said_no = 2;
+}
+
+message PlayDealBreaker {
+  string player_id = 1;
+  string target_player_id = 2;
+  PropertySetType property_set = 3;
+}
+
+message RespondDealBreaker {
+  string player_id = 1;
+  bool said_no = 2;
+}
+
+message PlayRent {
+  string player_id = 1;
+  CardType card = 2;
+}
