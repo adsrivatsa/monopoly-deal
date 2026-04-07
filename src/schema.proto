@@ -74,64 +74,74 @@ message DeleteRoomResponse {
   string room_id = 1;
 }
 
-
 // gameplay
-enum CardType {
-    CARD_TYPE_UNSPECIFIED = 0;
+enum PurePropertyType {
+  PURE_PROPERTY_TYPE_BROWN = 0;
+  PURE_PROPERTY_TYPE_LIGHT_BLUE = 1;
+  PURE_PROPERTY_TYPE_PINK = 2;
+  PURE_PROPERTY_TYPE_ORANGE = 3;
+  PURE_PROPERTY_TYPE_RED = 4;
+  PURE_PROPERTY_TYPE_YELLOW = 5;
+  PURE_PROPERTY_TYPE_GREEN = 6;
+  PURE_PROPERTY_TYPE_DARK_BLUE = 7;
+  PURE_PROPERTY_TYPE_UTILITY = 8;
+  PURE_PROPERTY_TYPE_RAILROAD = 9;
+}
 
-    // pure property cards
-    CARD_TYPE_PROPERTY_BROWN = 10;
-    CARD_TYPE_PROPERTY_LIGHT_BLUE = 11;
-    CARD_TYPE_PROPERTY_PINK = 12;
-    CARD_TYPE_PROPERTY_ORANGE = 13;
-    CARD_TYPE_PROPERTY_RED = 14;
-    CARD_TYPE_PROPERTY_YELLOW = 15;
-    CARD_TYPE_PROPERTY_GREEN = 16;
-    CARD_TYPE_PROPERTY_DARK_BLUE = 17;
-    CARD_TYPE_PROPERTY_UTILITY = 18;
-    CARD_TYPE_PROPERTY_RAILROAD = 19;
+enum WildPropertyType {
+  WILD_PROPERTY_TYPE_WILD_BROWN_LIGHT_BLUE = 0;
+  WILD_PROPERTY_TYPE_WILD_LIGHT_BLUE_RAIROAD = 1;
+  WILD_PROPERTY_TYPE_WILD_PINK_ORANGE = 2;
+  WILD_PROPERTY_TYPE_WILD_ORANGE_UTILITY = 3;
+  WILD_PROPERTY_TYPE_WILD_GREEN_DARK_BLUE = 4;
+  WILD_PROPERTY_TYPE_WILRD_GREEN_RAILROAD = 5;
+  WILD_PROPERTY_TYPE_WILD_UTLITY_RAILROAD = 6;
+  WILD_PROPERTY_TYPE_WILD = 7;
+}
 
-    // wild property cards
-    CARD_TYPE_PROPERTY_WILD_BROWN_LIGHT_BLUE = 20;
-    CARD_TYPE_PROPERTY_WILD_LIGHT_BLUE_RAILROAD = 21;
-    CARD_TYPE_PROPERTY_WILD_PINK_ORANGE = 22;
-    CARD_TYPE_PROPERTY_WILD_ORANGE_UTILITY = 23;
-    CARD_TYPE_PROPERTY_WILD_GREEN_DARK_BLUE = 24;
-    CARD_TYPE_PROPERTY_WILRD_GREEN_RAILROAD = 25;
-    CARD_TYPE_PROPERTY_WILD_UTILITY_RAILROAD = 26;
-    CARD_TYPE_PROPERTY_WILD = 27;
+enum MoneyType {
+  MONEY_TYPE_1 = 0;
+  MONEY_TYPE_2 = 1;
+  MONEY_TYPE_3 = 2;
+  MONEY_TYPE_4 = 3;
+  MONEY_TYPE_5 = 4;
+  MONEY_TYPE_10 = 5;
+}
 
-    // money cards
-    CARD_TYPE_MONEY_1 = 30;
-    CARD_TYPE_MONEY_2 = 31;
-    CARD_TYPE_MONEY_3 = 32;
-    CARD_TYPE_MONEY_4 = 33;
-    CARD_TYPE_MONEY_5 = 34;
-    CARD_TYPE_MONEY_10 = 35;
+enum ActionType {
+  ACTION_TYPE_PASS_GO = 0;
+  ACTION_TYPE_DOUBLE_THE_RENT = 1;
+  ACTION_TYPE_ITS_MY_BIRTHDAY = 2;
+  ACTION_TYPE_HOUSE = 3;
+  ACTION_TYPE_SLY_DEAL = 4;
+  ACTION_TYPE_FORCED_DEAL = 5;
+  ACTION_TYPE_DEBT_COLLECTOR = 6;
+  ACTION_TYPE_HOTEL = 7;
+  ACTION_TYPE_JUST_SAY_NO = 8;
+  ACTION_TYPE_DEAL_BREAKER = 9;
+}
 
-    // action cards
-    CARD_TYPE_ACTION_PASS_GO = 40;
-    CARD_TYPE_ACTION_DOUBLE_THE_RENT = 41;
-    CARD_TYPE_ACTION_ITS_MY_BIRTHDAY = 42;
-    CARD_TYPE_ACTION_HOUSE = 43;
-    CARD_TYPE_ACTION_SLY_DEAL = 44;
-    CARD_TYPE_ACTION_FORCED_DEAL = 45;
-    CARD_TYPE_ACTION_DEBT_COLLECTOR = 46;
-    CARD_TYPE_ACTION_HOTEL = 47;
-    CARD_TYPE_ACTION_JUST_SAY_NO = 48;
-    CARD_TYPE_ACTION_DEAL_BREAKER = 49;
+enum RentType {
+  RENT_TYPE_BROWN_LIGHT_BLUE = 0;
+  RENT_TYPE_PINK_ORANGE = 1;
+  RENT_TYPE_RED_YELLOW = 2;
+  RENT_TYPE_GREEN_DARK_BLUE = 3;
+  RENT_TYPE_UTILITY_RAILROAD = 4;
+  RENT_TYPE_WILD = 5;
+}
 
-    // rent cards
-    CARD_TYPE_RENT_BROWN_LIGHT_BLUE = 50;
-    CARD_TYPE_RENT_PINK_ORANGE = 51;
-    CARD_TYPE_RENT_RED_YELLOW = 52;
-    CARD_TYPE_RENT_GREEN_DARK_BLUE = 53;
-    CARD_TYPE_RENT_UTILITY_RAILROAD = 54;
-    CARD_TYPE_RENT_WILD = 55;
+message Card {
+  oneof card {
+    PurePropertyType pure_property = 1;
+    WildPropertyType wild_property = 2;
+    MoneyType money = 3;
+    ActionType action = 4;
+    RentType rent = 5;
+  }
 }
 
 message PropertyType {
-  CardType card_type = 1;
+  Card card = 1;
   optional string property_name = 2;
 }
 
@@ -146,105 +156,174 @@ message PlayProperty {
 
 message PlayMoney {
   string player_id = 1;
-  CardType card = 2;
+  Card card = 2;
 }
 
 // pass go loop
-message PlayPassGo {
+message PassGo {
   string player_id = 1;
 }
 
-message RespondPassGo {
+message PassGoResponse {
   string player_id = 1;
-  repeated CardType cards = 2;
+  repeated Card cards = 2;
 }
 
-message PlayDoubleTheRent {
+message DoubleTheRent {
   string player_id = 1;
 }
 
 // its my birthday loop
-message PlayItsMyBirthday {
+message ItsMyBirthday {
   string player_id = 1;
 }
 
-message RespondItsMyBirthday {
+message ItsMyBirthdayResponse {
   string player_id = 1;
-  repeated CardType cards = 2;
+  repeated Card cards = 2;
   bool said_no = 3;
 }
 
-message PlayHouse {
+message House {
   string player_id = 1;
   PropertySetType property_set = 2;
 }
 
-message PlaySlyDeal {
+message SlyDeal {
   string player_id = 1;
   string target_player_id = 2;
   PropertyType property = 3;
 }
 
-message RespondSlyDeal {
+message SlyDealResponse {
   string player_id = 1;
   bool said_no = 2;
 }
 
-message PlayForcedDeal {
+message ForcedDeal {
   string player_id = 1;
   string target_player_id = 2;
   PropertyType source_property = 3;
   PropertyType target_property = 4;
 }
 
-message RespondForcedDeal {
+message ForcedDealResponse {
   string player_id = 1;
   bool said_no = 2;
 }
 
-message PlayDebtCollector {
+message DebtCollector {
   string player_id = 1;
   string target_player_id = 2;
 }
 
-message RespondDebtCollector {
+message DebtCollectorResponse {
   string player_id = 1;
-  bool said_no = 2;
+  repeated Card cards = 2;
+  bool said_no = 3;
 }
 
-message PlayHotel {
+message Hotel {
   string player_id = 1;
   PropertySetType property_set = 2;
 }
 
-message RespondJustSayNo {
+message JustSayNoResponse {
   string player_id = 1;
   bool said_no = 2;
 }
 
-message PlayDealBreaker {
+message DealBreaker {
   string player_id = 1;
   string target_player_id = 2;
   PropertySetType property_set = 3;
 }
 
-message RespondDealBreaker {
+message DealBreakerResponse {
   string player_id = 1;
   bool said_no = 2;
 }
 
-message PlayRent {
+message Rent {
   string player_id = 1;
-  CardType card = 2;
+  Card card = 2;
 }
 
-message RespondRent {
+message RentResponse {
   string player_id = 1;
-  repeated CardType cards = 2;
+  repeated Card cards = 2;
   bool said_no = 3;
 }
 
 // TODO
-message PlayWildRent {
+message WildRent {
   string player_id = 1;
+  string target_player_id = 2;
+}
+
+message WildRentResponse {
+  string player_id = 1;
+  repeated Card cards = 2;
+  bool said_no = 3;
+}
+
+message LobbyMessage {
+  oneof payload {
+    Ping ping = 1;
+    Ping pong = 2;
+    Error error = 3;
+
+    RoomList room_list = 10;
+    CreateRoom create_room = 11;
+    CreateRoomResponse create_room_res = 12;
+    JoinRoom join_room = 13;
+    JoinRoomResponse join_room_res = 14;
+    LeaveRoom leave_room = 15;
+    LeaveRoomResponse leave_room_res = 16;
+    DeleteRoom delete_room = 17;
+    DeleteRoomResponse delete_room_res = 18;
+  }
+}
+
+message GameMessage {
+  oneof payload {
+    Ping ping = 1;
+    Ping pong = 2;
+    Error error = 3;
+
+    PlayProperty play_property = 10;
+    PlayMoney play_money = 11;
+
+    PassGo pass_go = 15;
+    PassGoResponse pass_go_res = 16;
+
+    DoubleTheRent double_the_rent = 20;
+
+    ItsMyBirthday its_my_birthday = 25;
+    ItsMyBirthdayResponse its_my_birthday_res = 26;
+
+    House house = 30;
+
+    SlyDeal sly_deal = 35;
+    SlyDealResponse sly_deal_res = 36;
+
+    ForcedDeal forced_deal = 40;
+    ForcedDealResponse forced_deal_res = 41;
+
+    DebtCollector debt_collector = 45;
+    DebtCollectorResponse debt_collector_res = 46;
+
+    Hotel hotel = 50;
+
+    JustSayNoResponse just_say_no_res = 55;
+
+    DealBreaker deal_breaker = 60;
+    DealBreakerResponse deal_breaker_res = 61;
+
+    Rent rent = 65;
+    RentResponse rent_res = 66;
+
+    WildRent wild_rent = 70;
+    WildRentResponse wild_rent_res = 71;
+  }
 }

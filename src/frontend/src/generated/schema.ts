@@ -10,273 +10,346 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 export const protobufPackage = "monopolydeal.schema";
 
 /** gameplay */
-export enum CardType {
-  CARD_TYPE_UNSPECIFIED = 0,
-  /** CARD_TYPE_PROPERTY_BROWN - pure property cards */
-  CARD_TYPE_PROPERTY_BROWN = 10,
-  CARD_TYPE_PROPERTY_LIGHT_BLUE = 11,
-  CARD_TYPE_PROPERTY_PINK = 12,
-  CARD_TYPE_PROPERTY_ORANGE = 13,
-  CARD_TYPE_PROPERTY_RED = 14,
-  CARD_TYPE_PROPERTY_YELLOW = 15,
-  CARD_TYPE_PROPERTY_GREEN = 16,
-  CARD_TYPE_PROPERTY_DARK_BLUE = 17,
-  CARD_TYPE_PROPERTY_UTILITY = 18,
-  CARD_TYPE_PROPERTY_RAILROAD = 19,
-  /** CARD_TYPE_PROPERTY_WILD_BROWN_LIGHT_BLUE - wild property cards */
-  CARD_TYPE_PROPERTY_WILD_BROWN_LIGHT_BLUE = 20,
-  CARD_TYPE_PROPERTY_WILD_LIGHT_BLUE_RAILROAD = 21,
-  CARD_TYPE_PROPERTY_WILD_PINK_ORANGE = 22,
-  CARD_TYPE_PROPERTY_WILD_ORANGE_UTILITY = 23,
-  CARD_TYPE_PROPERTY_WILD_GREEN_DARK_BLUE = 24,
-  CARD_TYPE_PROPERTY_WILRD_GREEN_RAILROAD = 25,
-  CARD_TYPE_PROPERTY_WILD_UTILITY_RAILROAD = 26,
-  CARD_TYPE_PROPERTY_WILD = 27,
-  /** CARD_TYPE_MONEY_1 - money cards */
-  CARD_TYPE_MONEY_1 = 30,
-  CARD_TYPE_MONEY_2 = 31,
-  CARD_TYPE_MONEY_3 = 32,
-  CARD_TYPE_MONEY_4 = 33,
-  CARD_TYPE_MONEY_5 = 34,
-  CARD_TYPE_MONEY_10 = 35,
-  /** CARD_TYPE_ACTION_PASS_GO - action cards */
-  CARD_TYPE_ACTION_PASS_GO = 40,
-  CARD_TYPE_ACTION_DOUBLE_THE_RENT = 41,
-  CARD_TYPE_ACTION_ITS_MY_BIRTHDAY = 42,
-  CARD_TYPE_ACTION_HOUSE = 43,
-  CARD_TYPE_ACTION_SLY_DEAL = 44,
-  CARD_TYPE_ACTION_FORCED_DEAL = 45,
-  CARD_TYPE_ACTION_DEBT_COLLECTOR = 46,
-  CARD_TYPE_ACTION_HOTEL = 47,
-  CARD_TYPE_ACTION_JUST_SAY_NO = 48,
-  CARD_TYPE_ACTION_DEAL_BREAKER = 49,
-  /** CARD_TYPE_RENT_BROWN_LIGHT_BLUE - rent cards */
-  CARD_TYPE_RENT_BROWN_LIGHT_BLUE = 50,
-  CARD_TYPE_RENT_PINK_ORANGE = 51,
-  CARD_TYPE_RENT_RED_YELLOW = 52,
-  CARD_TYPE_RENT_GREEN_DARK_BLUE = 53,
-  CARD_TYPE_RENT_UTILITY_RAILROAD = 54,
-  CARD_TYPE_RENT_WILD = 55,
+export enum PurePropertyType {
+  PURE_PROPERTY_TYPE_BROWN = 0,
+  PURE_PROPERTY_TYPE_LIGHT_BLUE = 1,
+  PURE_PROPERTY_TYPE_PINK = 2,
+  PURE_PROPERTY_TYPE_ORANGE = 3,
+  PURE_PROPERTY_TYPE_RED = 4,
+  PURE_PROPERTY_TYPE_YELLOW = 5,
+  PURE_PROPERTY_TYPE_GREEN = 6,
+  PURE_PROPERTY_TYPE_DARK_BLUE = 7,
+  PURE_PROPERTY_TYPE_UTILITY = 8,
+  PURE_PROPERTY_TYPE_RAILROAD = 9,
   UNRECOGNIZED = -1,
 }
 
-export function cardTypeFromJSON(object: any): CardType {
+export function purePropertyTypeFromJSON(object: any): PurePropertyType {
   switch (object) {
     case 0:
-    case "CARD_TYPE_UNSPECIFIED":
-      return CardType.CARD_TYPE_UNSPECIFIED;
-    case 10:
-    case "CARD_TYPE_PROPERTY_BROWN":
-      return CardType.CARD_TYPE_PROPERTY_BROWN;
-    case 11:
-    case "CARD_TYPE_PROPERTY_LIGHT_BLUE":
-      return CardType.CARD_TYPE_PROPERTY_LIGHT_BLUE;
-    case 12:
-    case "CARD_TYPE_PROPERTY_PINK":
-      return CardType.CARD_TYPE_PROPERTY_PINK;
-    case 13:
-    case "CARD_TYPE_PROPERTY_ORANGE":
-      return CardType.CARD_TYPE_PROPERTY_ORANGE;
-    case 14:
-    case "CARD_TYPE_PROPERTY_RED":
-      return CardType.CARD_TYPE_PROPERTY_RED;
-    case 15:
-    case "CARD_TYPE_PROPERTY_YELLOW":
-      return CardType.CARD_TYPE_PROPERTY_YELLOW;
-    case 16:
-    case "CARD_TYPE_PROPERTY_GREEN":
-      return CardType.CARD_TYPE_PROPERTY_GREEN;
-    case 17:
-    case "CARD_TYPE_PROPERTY_DARK_BLUE":
-      return CardType.CARD_TYPE_PROPERTY_DARK_BLUE;
-    case 18:
-    case "CARD_TYPE_PROPERTY_UTILITY":
-      return CardType.CARD_TYPE_PROPERTY_UTILITY;
-    case 19:
-    case "CARD_TYPE_PROPERTY_RAILROAD":
-      return CardType.CARD_TYPE_PROPERTY_RAILROAD;
-    case 20:
-    case "CARD_TYPE_PROPERTY_WILD_BROWN_LIGHT_BLUE":
-      return CardType.CARD_TYPE_PROPERTY_WILD_BROWN_LIGHT_BLUE;
-    case 21:
-    case "CARD_TYPE_PROPERTY_WILD_LIGHT_BLUE_RAILROAD":
-      return CardType.CARD_TYPE_PROPERTY_WILD_LIGHT_BLUE_RAILROAD;
-    case 22:
-    case "CARD_TYPE_PROPERTY_WILD_PINK_ORANGE":
-      return CardType.CARD_TYPE_PROPERTY_WILD_PINK_ORANGE;
-    case 23:
-    case "CARD_TYPE_PROPERTY_WILD_ORANGE_UTILITY":
-      return CardType.CARD_TYPE_PROPERTY_WILD_ORANGE_UTILITY;
-    case 24:
-    case "CARD_TYPE_PROPERTY_WILD_GREEN_DARK_BLUE":
-      return CardType.CARD_TYPE_PROPERTY_WILD_GREEN_DARK_BLUE;
-    case 25:
-    case "CARD_TYPE_PROPERTY_WILRD_GREEN_RAILROAD":
-      return CardType.CARD_TYPE_PROPERTY_WILRD_GREEN_RAILROAD;
-    case 26:
-    case "CARD_TYPE_PROPERTY_WILD_UTILITY_RAILROAD":
-      return CardType.CARD_TYPE_PROPERTY_WILD_UTILITY_RAILROAD;
-    case 27:
-    case "CARD_TYPE_PROPERTY_WILD":
-      return CardType.CARD_TYPE_PROPERTY_WILD;
-    case 30:
-    case "CARD_TYPE_MONEY_1":
-      return CardType.CARD_TYPE_MONEY_1;
-    case 31:
-    case "CARD_TYPE_MONEY_2":
-      return CardType.CARD_TYPE_MONEY_2;
-    case 32:
-    case "CARD_TYPE_MONEY_3":
-      return CardType.CARD_TYPE_MONEY_3;
-    case 33:
-    case "CARD_TYPE_MONEY_4":
-      return CardType.CARD_TYPE_MONEY_4;
-    case 34:
-    case "CARD_TYPE_MONEY_5":
-      return CardType.CARD_TYPE_MONEY_5;
-    case 35:
-    case "CARD_TYPE_MONEY_10":
-      return CardType.CARD_TYPE_MONEY_10;
-    case 40:
-    case "CARD_TYPE_ACTION_PASS_GO":
-      return CardType.CARD_TYPE_ACTION_PASS_GO;
-    case 41:
-    case "CARD_TYPE_ACTION_DOUBLE_THE_RENT":
-      return CardType.CARD_TYPE_ACTION_DOUBLE_THE_RENT;
-    case 42:
-    case "CARD_TYPE_ACTION_ITS_MY_BIRTHDAY":
-      return CardType.CARD_TYPE_ACTION_ITS_MY_BIRTHDAY;
-    case 43:
-    case "CARD_TYPE_ACTION_HOUSE":
-      return CardType.CARD_TYPE_ACTION_HOUSE;
-    case 44:
-    case "CARD_TYPE_ACTION_SLY_DEAL":
-      return CardType.CARD_TYPE_ACTION_SLY_DEAL;
-    case 45:
-    case "CARD_TYPE_ACTION_FORCED_DEAL":
-      return CardType.CARD_TYPE_ACTION_FORCED_DEAL;
-    case 46:
-    case "CARD_TYPE_ACTION_DEBT_COLLECTOR":
-      return CardType.CARD_TYPE_ACTION_DEBT_COLLECTOR;
-    case 47:
-    case "CARD_TYPE_ACTION_HOTEL":
-      return CardType.CARD_TYPE_ACTION_HOTEL;
-    case 48:
-    case "CARD_TYPE_ACTION_JUST_SAY_NO":
-      return CardType.CARD_TYPE_ACTION_JUST_SAY_NO;
-    case 49:
-    case "CARD_TYPE_ACTION_DEAL_BREAKER":
-      return CardType.CARD_TYPE_ACTION_DEAL_BREAKER;
-    case 50:
-    case "CARD_TYPE_RENT_BROWN_LIGHT_BLUE":
-      return CardType.CARD_TYPE_RENT_BROWN_LIGHT_BLUE;
-    case 51:
-    case "CARD_TYPE_RENT_PINK_ORANGE":
-      return CardType.CARD_TYPE_RENT_PINK_ORANGE;
-    case 52:
-    case "CARD_TYPE_RENT_RED_YELLOW":
-      return CardType.CARD_TYPE_RENT_RED_YELLOW;
-    case 53:
-    case "CARD_TYPE_RENT_GREEN_DARK_BLUE":
-      return CardType.CARD_TYPE_RENT_GREEN_DARK_BLUE;
-    case 54:
-    case "CARD_TYPE_RENT_UTILITY_RAILROAD":
-      return CardType.CARD_TYPE_RENT_UTILITY_RAILROAD;
-    case 55:
-    case "CARD_TYPE_RENT_WILD":
-      return CardType.CARD_TYPE_RENT_WILD;
+    case "PURE_PROPERTY_TYPE_BROWN":
+      return PurePropertyType.PURE_PROPERTY_TYPE_BROWN;
+    case 1:
+    case "PURE_PROPERTY_TYPE_LIGHT_BLUE":
+      return PurePropertyType.PURE_PROPERTY_TYPE_LIGHT_BLUE;
+    case 2:
+    case "PURE_PROPERTY_TYPE_PINK":
+      return PurePropertyType.PURE_PROPERTY_TYPE_PINK;
+    case 3:
+    case "PURE_PROPERTY_TYPE_ORANGE":
+      return PurePropertyType.PURE_PROPERTY_TYPE_ORANGE;
+    case 4:
+    case "PURE_PROPERTY_TYPE_RED":
+      return PurePropertyType.PURE_PROPERTY_TYPE_RED;
+    case 5:
+    case "PURE_PROPERTY_TYPE_YELLOW":
+      return PurePropertyType.PURE_PROPERTY_TYPE_YELLOW;
+    case 6:
+    case "PURE_PROPERTY_TYPE_GREEN":
+      return PurePropertyType.PURE_PROPERTY_TYPE_GREEN;
+    case 7:
+    case "PURE_PROPERTY_TYPE_DARK_BLUE":
+      return PurePropertyType.PURE_PROPERTY_TYPE_DARK_BLUE;
+    case 8:
+    case "PURE_PROPERTY_TYPE_UTILITY":
+      return PurePropertyType.PURE_PROPERTY_TYPE_UTILITY;
+    case 9:
+    case "PURE_PROPERTY_TYPE_RAILROAD":
+      return PurePropertyType.PURE_PROPERTY_TYPE_RAILROAD;
     case -1:
     case "UNRECOGNIZED":
     default:
-      return CardType.UNRECOGNIZED;
+      return PurePropertyType.UNRECOGNIZED;
   }
 }
 
-export function cardTypeToJSON(object: CardType): string {
+export function purePropertyTypeToJSON(object: PurePropertyType): string {
   switch (object) {
-    case CardType.CARD_TYPE_UNSPECIFIED:
-      return "CARD_TYPE_UNSPECIFIED";
-    case CardType.CARD_TYPE_PROPERTY_BROWN:
-      return "CARD_TYPE_PROPERTY_BROWN";
-    case CardType.CARD_TYPE_PROPERTY_LIGHT_BLUE:
-      return "CARD_TYPE_PROPERTY_LIGHT_BLUE";
-    case CardType.CARD_TYPE_PROPERTY_PINK:
-      return "CARD_TYPE_PROPERTY_PINK";
-    case CardType.CARD_TYPE_PROPERTY_ORANGE:
-      return "CARD_TYPE_PROPERTY_ORANGE";
-    case CardType.CARD_TYPE_PROPERTY_RED:
-      return "CARD_TYPE_PROPERTY_RED";
-    case CardType.CARD_TYPE_PROPERTY_YELLOW:
-      return "CARD_TYPE_PROPERTY_YELLOW";
-    case CardType.CARD_TYPE_PROPERTY_GREEN:
-      return "CARD_TYPE_PROPERTY_GREEN";
-    case CardType.CARD_TYPE_PROPERTY_DARK_BLUE:
-      return "CARD_TYPE_PROPERTY_DARK_BLUE";
-    case CardType.CARD_TYPE_PROPERTY_UTILITY:
-      return "CARD_TYPE_PROPERTY_UTILITY";
-    case CardType.CARD_TYPE_PROPERTY_RAILROAD:
-      return "CARD_TYPE_PROPERTY_RAILROAD";
-    case CardType.CARD_TYPE_PROPERTY_WILD_BROWN_LIGHT_BLUE:
-      return "CARD_TYPE_PROPERTY_WILD_BROWN_LIGHT_BLUE";
-    case CardType.CARD_TYPE_PROPERTY_WILD_LIGHT_BLUE_RAILROAD:
-      return "CARD_TYPE_PROPERTY_WILD_LIGHT_BLUE_RAILROAD";
-    case CardType.CARD_TYPE_PROPERTY_WILD_PINK_ORANGE:
-      return "CARD_TYPE_PROPERTY_WILD_PINK_ORANGE";
-    case CardType.CARD_TYPE_PROPERTY_WILD_ORANGE_UTILITY:
-      return "CARD_TYPE_PROPERTY_WILD_ORANGE_UTILITY";
-    case CardType.CARD_TYPE_PROPERTY_WILD_GREEN_DARK_BLUE:
-      return "CARD_TYPE_PROPERTY_WILD_GREEN_DARK_BLUE";
-    case CardType.CARD_TYPE_PROPERTY_WILRD_GREEN_RAILROAD:
-      return "CARD_TYPE_PROPERTY_WILRD_GREEN_RAILROAD";
-    case CardType.CARD_TYPE_PROPERTY_WILD_UTILITY_RAILROAD:
-      return "CARD_TYPE_PROPERTY_WILD_UTILITY_RAILROAD";
-    case CardType.CARD_TYPE_PROPERTY_WILD:
-      return "CARD_TYPE_PROPERTY_WILD";
-    case CardType.CARD_TYPE_MONEY_1:
-      return "CARD_TYPE_MONEY_1";
-    case CardType.CARD_TYPE_MONEY_2:
-      return "CARD_TYPE_MONEY_2";
-    case CardType.CARD_TYPE_MONEY_3:
-      return "CARD_TYPE_MONEY_3";
-    case CardType.CARD_TYPE_MONEY_4:
-      return "CARD_TYPE_MONEY_4";
-    case CardType.CARD_TYPE_MONEY_5:
-      return "CARD_TYPE_MONEY_5";
-    case CardType.CARD_TYPE_MONEY_10:
-      return "CARD_TYPE_MONEY_10";
-    case CardType.CARD_TYPE_ACTION_PASS_GO:
-      return "CARD_TYPE_ACTION_PASS_GO";
-    case CardType.CARD_TYPE_ACTION_DOUBLE_THE_RENT:
-      return "CARD_TYPE_ACTION_DOUBLE_THE_RENT";
-    case CardType.CARD_TYPE_ACTION_ITS_MY_BIRTHDAY:
-      return "CARD_TYPE_ACTION_ITS_MY_BIRTHDAY";
-    case CardType.CARD_TYPE_ACTION_HOUSE:
-      return "CARD_TYPE_ACTION_HOUSE";
-    case CardType.CARD_TYPE_ACTION_SLY_DEAL:
-      return "CARD_TYPE_ACTION_SLY_DEAL";
-    case CardType.CARD_TYPE_ACTION_FORCED_DEAL:
-      return "CARD_TYPE_ACTION_FORCED_DEAL";
-    case CardType.CARD_TYPE_ACTION_DEBT_COLLECTOR:
-      return "CARD_TYPE_ACTION_DEBT_COLLECTOR";
-    case CardType.CARD_TYPE_ACTION_HOTEL:
-      return "CARD_TYPE_ACTION_HOTEL";
-    case CardType.CARD_TYPE_ACTION_JUST_SAY_NO:
-      return "CARD_TYPE_ACTION_JUST_SAY_NO";
-    case CardType.CARD_TYPE_ACTION_DEAL_BREAKER:
-      return "CARD_TYPE_ACTION_DEAL_BREAKER";
-    case CardType.CARD_TYPE_RENT_BROWN_LIGHT_BLUE:
-      return "CARD_TYPE_RENT_BROWN_LIGHT_BLUE";
-    case CardType.CARD_TYPE_RENT_PINK_ORANGE:
-      return "CARD_TYPE_RENT_PINK_ORANGE";
-    case CardType.CARD_TYPE_RENT_RED_YELLOW:
-      return "CARD_TYPE_RENT_RED_YELLOW";
-    case CardType.CARD_TYPE_RENT_GREEN_DARK_BLUE:
-      return "CARD_TYPE_RENT_GREEN_DARK_BLUE";
-    case CardType.CARD_TYPE_RENT_UTILITY_RAILROAD:
-      return "CARD_TYPE_RENT_UTILITY_RAILROAD";
-    case CardType.CARD_TYPE_RENT_WILD:
-      return "CARD_TYPE_RENT_WILD";
-    case CardType.UNRECOGNIZED:
+    case PurePropertyType.PURE_PROPERTY_TYPE_BROWN:
+      return "PURE_PROPERTY_TYPE_BROWN";
+    case PurePropertyType.PURE_PROPERTY_TYPE_LIGHT_BLUE:
+      return "PURE_PROPERTY_TYPE_LIGHT_BLUE";
+    case PurePropertyType.PURE_PROPERTY_TYPE_PINK:
+      return "PURE_PROPERTY_TYPE_PINK";
+    case PurePropertyType.PURE_PROPERTY_TYPE_ORANGE:
+      return "PURE_PROPERTY_TYPE_ORANGE";
+    case PurePropertyType.PURE_PROPERTY_TYPE_RED:
+      return "PURE_PROPERTY_TYPE_RED";
+    case PurePropertyType.PURE_PROPERTY_TYPE_YELLOW:
+      return "PURE_PROPERTY_TYPE_YELLOW";
+    case PurePropertyType.PURE_PROPERTY_TYPE_GREEN:
+      return "PURE_PROPERTY_TYPE_GREEN";
+    case PurePropertyType.PURE_PROPERTY_TYPE_DARK_BLUE:
+      return "PURE_PROPERTY_TYPE_DARK_BLUE";
+    case PurePropertyType.PURE_PROPERTY_TYPE_UTILITY:
+      return "PURE_PROPERTY_TYPE_UTILITY";
+    case PurePropertyType.PURE_PROPERTY_TYPE_RAILROAD:
+      return "PURE_PROPERTY_TYPE_RAILROAD";
+    case PurePropertyType.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum WildPropertyType {
+  WILD_PROPERTY_TYPE_WILD_BROWN_LIGHT_BLUE = 0,
+  WILD_PROPERTY_TYPE_WILD_LIGHT_BLUE_RAIROAD = 1,
+  WILD_PROPERTY_TYPE_WILD_PINK_ORANGE = 2,
+  WILD_PROPERTY_TYPE_WILD_ORANGE_UTILITY = 3,
+  WILD_PROPERTY_TYPE_WILD_GREEN_DARK_BLUE = 4,
+  WILD_PROPERTY_TYPE_WILRD_GREEN_RAILROAD = 5,
+  WILD_PROPERTY_TYPE_WILD_UTLITY_RAILROAD = 6,
+  WILD_PROPERTY_TYPE_WILD = 7,
+  UNRECOGNIZED = -1,
+}
+
+export function wildPropertyTypeFromJSON(object: any): WildPropertyType {
+  switch (object) {
+    case 0:
+    case "WILD_PROPERTY_TYPE_WILD_BROWN_LIGHT_BLUE":
+      return WildPropertyType.WILD_PROPERTY_TYPE_WILD_BROWN_LIGHT_BLUE;
+    case 1:
+    case "WILD_PROPERTY_TYPE_WILD_LIGHT_BLUE_RAIROAD":
+      return WildPropertyType.WILD_PROPERTY_TYPE_WILD_LIGHT_BLUE_RAIROAD;
+    case 2:
+    case "WILD_PROPERTY_TYPE_WILD_PINK_ORANGE":
+      return WildPropertyType.WILD_PROPERTY_TYPE_WILD_PINK_ORANGE;
+    case 3:
+    case "WILD_PROPERTY_TYPE_WILD_ORANGE_UTILITY":
+      return WildPropertyType.WILD_PROPERTY_TYPE_WILD_ORANGE_UTILITY;
+    case 4:
+    case "WILD_PROPERTY_TYPE_WILD_GREEN_DARK_BLUE":
+      return WildPropertyType.WILD_PROPERTY_TYPE_WILD_GREEN_DARK_BLUE;
+    case 5:
+    case "WILD_PROPERTY_TYPE_WILRD_GREEN_RAILROAD":
+      return WildPropertyType.WILD_PROPERTY_TYPE_WILRD_GREEN_RAILROAD;
+    case 6:
+    case "WILD_PROPERTY_TYPE_WILD_UTLITY_RAILROAD":
+      return WildPropertyType.WILD_PROPERTY_TYPE_WILD_UTLITY_RAILROAD;
+    case 7:
+    case "WILD_PROPERTY_TYPE_WILD":
+      return WildPropertyType.WILD_PROPERTY_TYPE_WILD;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return WildPropertyType.UNRECOGNIZED;
+  }
+}
+
+export function wildPropertyTypeToJSON(object: WildPropertyType): string {
+  switch (object) {
+    case WildPropertyType.WILD_PROPERTY_TYPE_WILD_BROWN_LIGHT_BLUE:
+      return "WILD_PROPERTY_TYPE_WILD_BROWN_LIGHT_BLUE";
+    case WildPropertyType.WILD_PROPERTY_TYPE_WILD_LIGHT_BLUE_RAIROAD:
+      return "WILD_PROPERTY_TYPE_WILD_LIGHT_BLUE_RAIROAD";
+    case WildPropertyType.WILD_PROPERTY_TYPE_WILD_PINK_ORANGE:
+      return "WILD_PROPERTY_TYPE_WILD_PINK_ORANGE";
+    case WildPropertyType.WILD_PROPERTY_TYPE_WILD_ORANGE_UTILITY:
+      return "WILD_PROPERTY_TYPE_WILD_ORANGE_UTILITY";
+    case WildPropertyType.WILD_PROPERTY_TYPE_WILD_GREEN_DARK_BLUE:
+      return "WILD_PROPERTY_TYPE_WILD_GREEN_DARK_BLUE";
+    case WildPropertyType.WILD_PROPERTY_TYPE_WILRD_GREEN_RAILROAD:
+      return "WILD_PROPERTY_TYPE_WILRD_GREEN_RAILROAD";
+    case WildPropertyType.WILD_PROPERTY_TYPE_WILD_UTLITY_RAILROAD:
+      return "WILD_PROPERTY_TYPE_WILD_UTLITY_RAILROAD";
+    case WildPropertyType.WILD_PROPERTY_TYPE_WILD:
+      return "WILD_PROPERTY_TYPE_WILD";
+    case WildPropertyType.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum MoneyType {
+  MONEY_TYPE_1 = 0,
+  MONEY_TYPE_2 = 1,
+  MONEY_TYPE_3 = 2,
+  MONEY_TYPE_4 = 3,
+  MONEY_TYPE_5 = 4,
+  MONEY_TYPE_10 = 5,
+  UNRECOGNIZED = -1,
+}
+
+export function moneyTypeFromJSON(object: any): MoneyType {
+  switch (object) {
+    case 0:
+    case "MONEY_TYPE_1":
+      return MoneyType.MONEY_TYPE_1;
+    case 1:
+    case "MONEY_TYPE_2":
+      return MoneyType.MONEY_TYPE_2;
+    case 2:
+    case "MONEY_TYPE_3":
+      return MoneyType.MONEY_TYPE_3;
+    case 3:
+    case "MONEY_TYPE_4":
+      return MoneyType.MONEY_TYPE_4;
+    case 4:
+    case "MONEY_TYPE_5":
+      return MoneyType.MONEY_TYPE_5;
+    case 5:
+    case "MONEY_TYPE_10":
+      return MoneyType.MONEY_TYPE_10;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return MoneyType.UNRECOGNIZED;
+  }
+}
+
+export function moneyTypeToJSON(object: MoneyType): string {
+  switch (object) {
+    case MoneyType.MONEY_TYPE_1:
+      return "MONEY_TYPE_1";
+    case MoneyType.MONEY_TYPE_2:
+      return "MONEY_TYPE_2";
+    case MoneyType.MONEY_TYPE_3:
+      return "MONEY_TYPE_3";
+    case MoneyType.MONEY_TYPE_4:
+      return "MONEY_TYPE_4";
+    case MoneyType.MONEY_TYPE_5:
+      return "MONEY_TYPE_5";
+    case MoneyType.MONEY_TYPE_10:
+      return "MONEY_TYPE_10";
+    case MoneyType.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum ActionType {
+  ACTION_TYPE_PASS_GO = 0,
+  ACTION_TYPE_DOUBLE_THE_RENT = 1,
+  ACTION_TYPE_ITS_MY_BIRTHDAY = 2,
+  ACTION_TYPE_HOUSE = 3,
+  ACTION_TYPE_SLY_DEAL = 4,
+  ACTION_TYPE_FORCED_DEAL = 5,
+  ACTION_TYPE_DEBT_COLLECTOR = 6,
+  ACTION_TYPE_HOTEL = 7,
+  ACTION_TYPE_JUST_SAY_NO = 8,
+  ACTION_TYPE_DEAL_BREAKER = 9,
+  UNRECOGNIZED = -1,
+}
+
+export function actionTypeFromJSON(object: any): ActionType {
+  switch (object) {
+    case 0:
+    case "ACTION_TYPE_PASS_GO":
+      return ActionType.ACTION_TYPE_PASS_GO;
+    case 1:
+    case "ACTION_TYPE_DOUBLE_THE_RENT":
+      return ActionType.ACTION_TYPE_DOUBLE_THE_RENT;
+    case 2:
+    case "ACTION_TYPE_ITS_MY_BIRTHDAY":
+      return ActionType.ACTION_TYPE_ITS_MY_BIRTHDAY;
+    case 3:
+    case "ACTION_TYPE_HOUSE":
+      return ActionType.ACTION_TYPE_HOUSE;
+    case 4:
+    case "ACTION_TYPE_SLY_DEAL":
+      return ActionType.ACTION_TYPE_SLY_DEAL;
+    case 5:
+    case "ACTION_TYPE_FORCED_DEAL":
+      return ActionType.ACTION_TYPE_FORCED_DEAL;
+    case 6:
+    case "ACTION_TYPE_DEBT_COLLECTOR":
+      return ActionType.ACTION_TYPE_DEBT_COLLECTOR;
+    case 7:
+    case "ACTION_TYPE_HOTEL":
+      return ActionType.ACTION_TYPE_HOTEL;
+    case 8:
+    case "ACTION_TYPE_JUST_SAY_NO":
+      return ActionType.ACTION_TYPE_JUST_SAY_NO;
+    case 9:
+    case "ACTION_TYPE_DEAL_BREAKER":
+      return ActionType.ACTION_TYPE_DEAL_BREAKER;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return ActionType.UNRECOGNIZED;
+  }
+}
+
+export function actionTypeToJSON(object: ActionType): string {
+  switch (object) {
+    case ActionType.ACTION_TYPE_PASS_GO:
+      return "ACTION_TYPE_PASS_GO";
+    case ActionType.ACTION_TYPE_DOUBLE_THE_RENT:
+      return "ACTION_TYPE_DOUBLE_THE_RENT";
+    case ActionType.ACTION_TYPE_ITS_MY_BIRTHDAY:
+      return "ACTION_TYPE_ITS_MY_BIRTHDAY";
+    case ActionType.ACTION_TYPE_HOUSE:
+      return "ACTION_TYPE_HOUSE";
+    case ActionType.ACTION_TYPE_SLY_DEAL:
+      return "ACTION_TYPE_SLY_DEAL";
+    case ActionType.ACTION_TYPE_FORCED_DEAL:
+      return "ACTION_TYPE_FORCED_DEAL";
+    case ActionType.ACTION_TYPE_DEBT_COLLECTOR:
+      return "ACTION_TYPE_DEBT_COLLECTOR";
+    case ActionType.ACTION_TYPE_HOTEL:
+      return "ACTION_TYPE_HOTEL";
+    case ActionType.ACTION_TYPE_JUST_SAY_NO:
+      return "ACTION_TYPE_JUST_SAY_NO";
+    case ActionType.ACTION_TYPE_DEAL_BREAKER:
+      return "ACTION_TYPE_DEAL_BREAKER";
+    case ActionType.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum RentType {
+  RENT_TYPE_BROWN_LIGHT_BLUE = 0,
+  RENT_TYPE_PINK_ORANGE = 1,
+  RENT_TYPE_RED_YELLOW = 2,
+  RENT_TYPE_GREEN_DARK_BLUE = 3,
+  RENT_TYPE_UTILITY_RAILROAD = 4,
+  RENT_TYPE_WILD = 5,
+  UNRECOGNIZED = -1,
+}
+
+export function rentTypeFromJSON(object: any): RentType {
+  switch (object) {
+    case 0:
+    case "RENT_TYPE_BROWN_LIGHT_BLUE":
+      return RentType.RENT_TYPE_BROWN_LIGHT_BLUE;
+    case 1:
+    case "RENT_TYPE_PINK_ORANGE":
+      return RentType.RENT_TYPE_PINK_ORANGE;
+    case 2:
+    case "RENT_TYPE_RED_YELLOW":
+      return RentType.RENT_TYPE_RED_YELLOW;
+    case 3:
+    case "RENT_TYPE_GREEN_DARK_BLUE":
+      return RentType.RENT_TYPE_GREEN_DARK_BLUE;
+    case 4:
+    case "RENT_TYPE_UTILITY_RAILROAD":
+      return RentType.RENT_TYPE_UTILITY_RAILROAD;
+    case 5:
+    case "RENT_TYPE_WILD":
+      return RentType.RENT_TYPE_WILD;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return RentType.UNRECOGNIZED;
+  }
+}
+
+export function rentTypeToJSON(object: RentType): string {
+  switch (object) {
+    case RentType.RENT_TYPE_BROWN_LIGHT_BLUE:
+      return "RENT_TYPE_BROWN_LIGHT_BLUE";
+    case RentType.RENT_TYPE_PINK_ORANGE:
+      return "RENT_TYPE_PINK_ORANGE";
+    case RentType.RENT_TYPE_RED_YELLOW:
+      return "RENT_TYPE_RED_YELLOW";
+    case RentType.RENT_TYPE_GREEN_DARK_BLUE:
+      return "RENT_TYPE_GREEN_DARK_BLUE";
+    case RentType.RENT_TYPE_UTILITY_RAILROAD:
+      return "RENT_TYPE_UTILITY_RAILROAD";
+    case RentType.RENT_TYPE_WILD:
+      return "RENT_TYPE_WILD";
+    case RentType.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
   }
@@ -352,8 +425,16 @@ export interface DeleteRoomResponse {
   roomId: string;
 }
 
+export interface Card {
+  pureProperty?: PurePropertyType | undefined;
+  wildProperty?: WildPropertyType | undefined;
+  money?: MoneyType | undefined;
+  action?: ActionType | undefined;
+  rent?: RentType | undefined;
+}
+
 export interface PropertyType {
-  cardType: CardType;
+  card: Card | undefined;
   propertyName?: string | undefined;
 }
 
@@ -368,96 +449,158 @@ export interface PlayProperty {
 
 export interface PlayMoney {
   playerId: string;
-  card: CardType;
+  card: Card | undefined;
 }
 
 /** pass go loop */
-export interface PlayPassGo {
+export interface PassGo {
   playerId: string;
 }
 
-export interface RespondPassGo {
+export interface PassGoResponse {
   playerId: string;
-  cards: CardType[];
+  cards: Card[];
 }
 
-export interface PlayDoubleTheRent {
+export interface DoubleTheRent {
   playerId: string;
 }
 
 /** its my birthday loop */
-export interface PlayItsMyBirthday {
+export interface ItsMyBirthday {
   playerId: string;
 }
 
-export interface RespondItsMyBirthday {
+export interface ItsMyBirthdayResponse {
   playerId: string;
-  cards: CardType[];
+  cards: Card[];
   saidNo: boolean;
 }
 
-export interface PlayHouse {
+export interface House {
   playerId: string;
   propertySet: PropertySetType | undefined;
 }
 
-export interface PlaySlyDeal {
+export interface SlyDeal {
   playerId: string;
   targetPlayerId: string;
   property: PropertyType | undefined;
 }
 
-export interface RespondSlyDeal {
+export interface SlyDealResponse {
   playerId: string;
   saidNo: boolean;
 }
 
-export interface PlayForcedDeal {
+export interface ForcedDeal {
   playerId: string;
   targetPlayerId: string;
   sourceProperty: PropertyType | undefined;
   targetProperty: PropertyType | undefined;
 }
 
-export interface RespondForcedDeal {
+export interface ForcedDealResponse {
   playerId: string;
   saidNo: boolean;
 }
 
-export interface PlayDebtCollector {
+export interface DebtCollector {
   playerId: string;
   targetPlayerId: string;
 }
 
-export interface RespondDebtCollector {
+export interface DebtCollectorResponse {
   playerId: string;
+  cards: Card[];
   saidNo: boolean;
 }
 
-export interface PlayHotel {
+export interface Hotel {
   playerId: string;
   propertySet: PropertySetType | undefined;
 }
 
-export interface RespondJustSayNo {
+export interface JustSayNoResponse {
   playerId: string;
   saidNo: boolean;
 }
 
-export interface PlayDealBreaker {
+export interface DealBreaker {
   playerId: string;
   targetPlayerId: string;
   propertySet: PropertySetType | undefined;
 }
 
-export interface RespondDealBreaker {
+export interface DealBreakerResponse {
   playerId: string;
   saidNo: boolean;
 }
 
-export interface PlayRent {
+export interface Rent {
   playerId: string;
-  card: CardType;
+  card: Card | undefined;
+}
+
+export interface RentResponse {
+  playerId: string;
+  cards: Card[];
+  saidNo: boolean;
+}
+
+/** TODO */
+export interface WildRent {
+  playerId: string;
+  targetPlayerId: string;
+}
+
+export interface WildRentResponse {
+  playerId: string;
+  cards: Card[];
+  saidNo: boolean;
+}
+
+export interface LobbyMessage {
+  ping?: Ping | undefined;
+  pong?: Ping | undefined;
+  error?: Error | undefined;
+  roomList?: RoomList | undefined;
+  createRoom?: CreateRoom | undefined;
+  createRoomRes?: CreateRoomResponse | undefined;
+  joinRoom?: JoinRoom | undefined;
+  joinRoomRes?: JoinRoomResponse | undefined;
+  leaveRoom?: LeaveRoom | undefined;
+  leaveRoomRes?: LeaveRoomResponse | undefined;
+  deleteRoom?: DeleteRoom | undefined;
+  deleteRoomRes?: DeleteRoomResponse | undefined;
+}
+
+export interface GameMessage {
+  ping?: Ping | undefined;
+  pong?: Ping | undefined;
+  error?: Error | undefined;
+  playProperty?: PlayProperty | undefined;
+  playMoney?: PlayMoney | undefined;
+  passGo?: PassGo | undefined;
+  passGoRes?: PassGoResponse | undefined;
+  doubleTheRent?: DoubleTheRent | undefined;
+  itsMyBirthday?: ItsMyBirthday | undefined;
+  itsMyBirthdayRes?: ItsMyBirthdayResponse | undefined;
+  house?: House | undefined;
+  slyDeal?: SlyDeal | undefined;
+  slyDealRes?: SlyDealResponse | undefined;
+  forcedDeal?: ForcedDeal | undefined;
+  forcedDealRes?: ForcedDealResponse | undefined;
+  debtCollector?: DebtCollector | undefined;
+  debtCollectorRes?: DebtCollectorResponse | undefined;
+  hotel?: Hotel | undefined;
+  justSayNoRes?: JustSayNoResponse | undefined;
+  dealBreaker?: DealBreaker | undefined;
+  dealBreakerRes?: DealBreakerResponse | undefined;
+  rent?: Rent | undefined;
+  rentRes?: RentResponse | undefined;
+  wildRent?: WildRent | undefined;
+  wildRentRes?: WildRentResponse | undefined;
 }
 
 function createBasePing(): Ping {
@@ -1570,14 +1713,146 @@ export const DeleteRoomResponse: MessageFns<DeleteRoomResponse> = {
   },
 };
 
+function createBaseCard(): Card {
+  return { pureProperty: undefined, wildProperty: undefined, money: undefined, action: undefined, rent: undefined };
+}
+
+export const Card: MessageFns<Card> = {
+  encode(message: Card, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.pureProperty !== undefined) {
+      writer.uint32(8).int32(message.pureProperty);
+    }
+    if (message.wildProperty !== undefined) {
+      writer.uint32(16).int32(message.wildProperty);
+    }
+    if (message.money !== undefined) {
+      writer.uint32(24).int32(message.money);
+    }
+    if (message.action !== undefined) {
+      writer.uint32(32).int32(message.action);
+    }
+    if (message.rent !== undefined) {
+      writer.uint32(40).int32(message.rent);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Card {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCard();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.pureProperty = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.wildProperty = reader.int32() as any;
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.money = reader.int32() as any;
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.action = reader.int32() as any;
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.rent = reader.int32() as any;
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Card {
+    return {
+      pureProperty: isSet(object.pureProperty)
+        ? purePropertyTypeFromJSON(object.pureProperty)
+        : isSet(object.pure_property)
+        ? purePropertyTypeFromJSON(object.pure_property)
+        : undefined,
+      wildProperty: isSet(object.wildProperty)
+        ? wildPropertyTypeFromJSON(object.wildProperty)
+        : isSet(object.wild_property)
+        ? wildPropertyTypeFromJSON(object.wild_property)
+        : undefined,
+      money: isSet(object.money) ? moneyTypeFromJSON(object.money) : undefined,
+      action: isSet(object.action) ? actionTypeFromJSON(object.action) : undefined,
+      rent: isSet(object.rent) ? rentTypeFromJSON(object.rent) : undefined,
+    };
+  },
+
+  toJSON(message: Card): unknown {
+    const obj: any = {};
+    if (message.pureProperty !== undefined) {
+      obj.pureProperty = purePropertyTypeToJSON(message.pureProperty);
+    }
+    if (message.wildProperty !== undefined) {
+      obj.wildProperty = wildPropertyTypeToJSON(message.wildProperty);
+    }
+    if (message.money !== undefined) {
+      obj.money = moneyTypeToJSON(message.money);
+    }
+    if (message.action !== undefined) {
+      obj.action = actionTypeToJSON(message.action);
+    }
+    if (message.rent !== undefined) {
+      obj.rent = rentTypeToJSON(message.rent);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Card>, I>>(base?: I): Card {
+    return Card.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Card>, I>>(object: I): Card {
+    const message = createBaseCard();
+    message.pureProperty = object.pureProperty ?? undefined;
+    message.wildProperty = object.wildProperty ?? undefined;
+    message.money = object.money ?? undefined;
+    message.action = object.action ?? undefined;
+    message.rent = object.rent ?? undefined;
+    return message;
+  },
+};
+
 function createBasePropertyType(): PropertyType {
-  return { cardType: 0, propertyName: undefined };
+  return { card: undefined, propertyName: undefined };
 }
 
 export const PropertyType: MessageFns<PropertyType> = {
   encode(message: PropertyType, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.cardType !== 0) {
-      writer.uint32(8).int32(message.cardType);
+    if (message.card !== undefined) {
+      Card.encode(message.card, writer.uint32(10).fork()).join();
     }
     if (message.propertyName !== undefined) {
       writer.uint32(18).string(message.propertyName);
@@ -1593,11 +1868,11 @@ export const PropertyType: MessageFns<PropertyType> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.cardType = reader.int32() as any;
+          message.card = Card.decode(reader, reader.uint32());
           continue;
         }
         case 2: {
@@ -1619,11 +1894,7 @@ export const PropertyType: MessageFns<PropertyType> = {
 
   fromJSON(object: any): PropertyType {
     return {
-      cardType: isSet(object.cardType)
-        ? cardTypeFromJSON(object.cardType)
-        : isSet(object.card_type)
-        ? cardTypeFromJSON(object.card_type)
-        : 0,
+      card: isSet(object.card) ? Card.fromJSON(object.card) : undefined,
       propertyName: isSet(object.propertyName)
         ? globalThis.String(object.propertyName)
         : isSet(object.property_name)
@@ -1634,8 +1905,8 @@ export const PropertyType: MessageFns<PropertyType> = {
 
   toJSON(message: PropertyType): unknown {
     const obj: any = {};
-    if (message.cardType !== 0) {
-      obj.cardType = cardTypeToJSON(message.cardType);
+    if (message.card !== undefined) {
+      obj.card = Card.toJSON(message.card);
     }
     if (message.propertyName !== undefined) {
       obj.propertyName = message.propertyName;
@@ -1648,7 +1919,7 @@ export const PropertyType: MessageFns<PropertyType> = {
   },
   fromPartial<I extends Exact<DeepPartial<PropertyType>, I>>(object: I): PropertyType {
     const message = createBasePropertyType();
-    message.cardType = object.cardType ?? 0;
+    message.card = (object.card !== undefined && object.card !== null) ? Card.fromPartial(object.card) : undefined;
     message.propertyName = object.propertyName ?? undefined;
     return message;
   },
@@ -1801,7 +2072,7 @@ export const PlayProperty: MessageFns<PlayProperty> = {
 };
 
 function createBasePlayMoney(): PlayMoney {
-  return { playerId: "", card: 0 };
+  return { playerId: "", card: undefined };
 }
 
 export const PlayMoney: MessageFns<PlayMoney> = {
@@ -1809,8 +2080,8 @@ export const PlayMoney: MessageFns<PlayMoney> = {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
-    if (message.card !== 0) {
-      writer.uint32(16).int32(message.card);
+    if (message.card !== undefined) {
+      Card.encode(message.card, writer.uint32(18).fork()).join();
     }
     return writer;
   },
@@ -1831,11 +2102,11 @@ export const PlayMoney: MessageFns<PlayMoney> = {
           continue;
         }
         case 2: {
-          if (tag !== 16) {
+          if (tag !== 18) {
             break;
           }
 
-          message.card = reader.int32() as any;
+          message.card = Card.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -1854,7 +2125,7 @@ export const PlayMoney: MessageFns<PlayMoney> = {
         : isSet(object.player_id)
         ? globalThis.String(object.player_id)
         : "",
-      card: isSet(object.card) ? cardTypeFromJSON(object.card) : 0,
+      card: isSet(object.card) ? Card.fromJSON(object.card) : undefined,
     };
   },
 
@@ -1863,8 +2134,8 @@ export const PlayMoney: MessageFns<PlayMoney> = {
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
     }
-    if (message.card !== 0) {
-      obj.card = cardTypeToJSON(message.card);
+    if (message.card !== undefined) {
+      obj.card = Card.toJSON(message.card);
     }
     return obj;
   },
@@ -1875,27 +2146,27 @@ export const PlayMoney: MessageFns<PlayMoney> = {
   fromPartial<I extends Exact<DeepPartial<PlayMoney>, I>>(object: I): PlayMoney {
     const message = createBasePlayMoney();
     message.playerId = object.playerId ?? "";
-    message.card = object.card ?? 0;
+    message.card = (object.card !== undefined && object.card !== null) ? Card.fromPartial(object.card) : undefined;
     return message;
   },
 };
 
-function createBasePlayPassGo(): PlayPassGo {
+function createBasePassGo(): PassGo {
   return { playerId: "" };
 }
 
-export const PlayPassGo: MessageFns<PlayPassGo> = {
-  encode(message: PlayPassGo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const PassGo: MessageFns<PassGo> = {
+  encode(message: PassGo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlayPassGo {
+  decode(input: BinaryReader | Uint8Array, length?: number): PassGo {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlayPassGo();
+    const message = createBasePassGo();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1916,7 +2187,7 @@ export const PlayPassGo: MessageFns<PlayPassGo> = {
     return message;
   },
 
-  fromJSON(object: any): PlayPassGo {
+  fromJSON(object: any): PassGo {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -1926,7 +2197,7 @@ export const PlayPassGo: MessageFns<PlayPassGo> = {
     };
   },
 
-  toJSON(message: PlayPassGo): unknown {
+  toJSON(message: PassGo): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -1934,37 +2205,35 @@ export const PlayPassGo: MessageFns<PlayPassGo> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlayPassGo>, I>>(base?: I): PlayPassGo {
-    return PlayPassGo.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<PassGo>, I>>(base?: I): PassGo {
+    return PassGo.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlayPassGo>, I>>(object: I): PlayPassGo {
-    const message = createBasePlayPassGo();
+  fromPartial<I extends Exact<DeepPartial<PassGo>, I>>(object: I): PassGo {
+    const message = createBasePassGo();
     message.playerId = object.playerId ?? "";
     return message;
   },
 };
 
-function createBaseRespondPassGo(): RespondPassGo {
+function createBasePassGoResponse(): PassGoResponse {
   return { playerId: "", cards: [] };
 }
 
-export const RespondPassGo: MessageFns<RespondPassGo> = {
-  encode(message: RespondPassGo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const PassGoResponse: MessageFns<PassGoResponse> = {
+  encode(message: PassGoResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
-    writer.uint32(18).fork();
     for (const v of message.cards) {
-      writer.int32(v);
+      Card.encode(v!, writer.uint32(18).fork()).join();
     }
-    writer.join();
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RespondPassGo {
+  decode(input: BinaryReader | Uint8Array, length?: number): PassGoResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRespondPassGo();
+    const message = createBasePassGoResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1977,22 +2246,12 @@ export const RespondPassGo: MessageFns<RespondPassGo> = {
           continue;
         }
         case 2: {
-          if (tag === 16) {
-            message.cards.push(reader.int32() as any);
-
-            continue;
+          if (tag !== 18) {
+            break;
           }
 
-          if (tag === 18) {
-            const end2 = reader.uint32() + reader.pos;
-            while (reader.pos < end2) {
-              message.cards.push(reader.int32() as any);
-            }
-
-            continue;
-          }
-
-          break;
+          message.cards.push(Card.decode(reader, reader.uint32()));
+          continue;
         }
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -2003,55 +2262,55 @@ export const RespondPassGo: MessageFns<RespondPassGo> = {
     return message;
   },
 
-  fromJSON(object: any): RespondPassGo {
+  fromJSON(object: any): PassGoResponse {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
         : isSet(object.player_id)
         ? globalThis.String(object.player_id)
         : "",
-      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => cardTypeFromJSON(e)) : [],
+      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => Card.fromJSON(e)) : [],
     };
   },
 
-  toJSON(message: RespondPassGo): unknown {
+  toJSON(message: PassGoResponse): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
     }
     if (message.cards?.length) {
-      obj.cards = message.cards.map((e) => cardTypeToJSON(e));
+      obj.cards = message.cards.map((e) => Card.toJSON(e));
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RespondPassGo>, I>>(base?: I): RespondPassGo {
-    return RespondPassGo.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<PassGoResponse>, I>>(base?: I): PassGoResponse {
+    return PassGoResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RespondPassGo>, I>>(object: I): RespondPassGo {
-    const message = createBaseRespondPassGo();
+  fromPartial<I extends Exact<DeepPartial<PassGoResponse>, I>>(object: I): PassGoResponse {
+    const message = createBasePassGoResponse();
     message.playerId = object.playerId ?? "";
-    message.cards = object.cards?.map((e) => e) || [];
+    message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
     return message;
   },
 };
 
-function createBasePlayDoubleTheRent(): PlayDoubleTheRent {
+function createBaseDoubleTheRent(): DoubleTheRent {
   return { playerId: "" };
 }
 
-export const PlayDoubleTheRent: MessageFns<PlayDoubleTheRent> = {
-  encode(message: PlayDoubleTheRent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const DoubleTheRent: MessageFns<DoubleTheRent> = {
+  encode(message: DoubleTheRent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlayDoubleTheRent {
+  decode(input: BinaryReader | Uint8Array, length?: number): DoubleTheRent {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlayDoubleTheRent();
+    const message = createBaseDoubleTheRent();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2072,7 +2331,7 @@ export const PlayDoubleTheRent: MessageFns<PlayDoubleTheRent> = {
     return message;
   },
 
-  fromJSON(object: any): PlayDoubleTheRent {
+  fromJSON(object: any): DoubleTheRent {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -2082,7 +2341,7 @@ export const PlayDoubleTheRent: MessageFns<PlayDoubleTheRent> = {
     };
   },
 
-  toJSON(message: PlayDoubleTheRent): unknown {
+  toJSON(message: DoubleTheRent): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -2090,32 +2349,32 @@ export const PlayDoubleTheRent: MessageFns<PlayDoubleTheRent> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlayDoubleTheRent>, I>>(base?: I): PlayDoubleTheRent {
-    return PlayDoubleTheRent.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<DoubleTheRent>, I>>(base?: I): DoubleTheRent {
+    return DoubleTheRent.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlayDoubleTheRent>, I>>(object: I): PlayDoubleTheRent {
-    const message = createBasePlayDoubleTheRent();
+  fromPartial<I extends Exact<DeepPartial<DoubleTheRent>, I>>(object: I): DoubleTheRent {
+    const message = createBaseDoubleTheRent();
     message.playerId = object.playerId ?? "";
     return message;
   },
 };
 
-function createBasePlayItsMyBirthday(): PlayItsMyBirthday {
+function createBaseItsMyBirthday(): ItsMyBirthday {
   return { playerId: "" };
 }
 
-export const PlayItsMyBirthday: MessageFns<PlayItsMyBirthday> = {
-  encode(message: PlayItsMyBirthday, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const ItsMyBirthday: MessageFns<ItsMyBirthday> = {
+  encode(message: ItsMyBirthday, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlayItsMyBirthday {
+  decode(input: BinaryReader | Uint8Array, length?: number): ItsMyBirthday {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlayItsMyBirthday();
+    const message = createBaseItsMyBirthday();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2136,7 +2395,7 @@ export const PlayItsMyBirthday: MessageFns<PlayItsMyBirthday> = {
     return message;
   },
 
-  fromJSON(object: any): PlayItsMyBirthday {
+  fromJSON(object: any): ItsMyBirthday {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -2146,7 +2405,7 @@ export const PlayItsMyBirthday: MessageFns<PlayItsMyBirthday> = {
     };
   },
 
-  toJSON(message: PlayItsMyBirthday): unknown {
+  toJSON(message: ItsMyBirthday): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -2154,40 +2413,38 @@ export const PlayItsMyBirthday: MessageFns<PlayItsMyBirthday> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlayItsMyBirthday>, I>>(base?: I): PlayItsMyBirthday {
-    return PlayItsMyBirthday.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ItsMyBirthday>, I>>(base?: I): ItsMyBirthday {
+    return ItsMyBirthday.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlayItsMyBirthday>, I>>(object: I): PlayItsMyBirthday {
-    const message = createBasePlayItsMyBirthday();
+  fromPartial<I extends Exact<DeepPartial<ItsMyBirthday>, I>>(object: I): ItsMyBirthday {
+    const message = createBaseItsMyBirthday();
     message.playerId = object.playerId ?? "";
     return message;
   },
 };
 
-function createBaseRespondItsMyBirthday(): RespondItsMyBirthday {
+function createBaseItsMyBirthdayResponse(): ItsMyBirthdayResponse {
   return { playerId: "", cards: [], saidNo: false };
 }
 
-export const RespondItsMyBirthday: MessageFns<RespondItsMyBirthday> = {
-  encode(message: RespondItsMyBirthday, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const ItsMyBirthdayResponse: MessageFns<ItsMyBirthdayResponse> = {
+  encode(message: ItsMyBirthdayResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
-    writer.uint32(18).fork();
     for (const v of message.cards) {
-      writer.int32(v);
+      Card.encode(v!, writer.uint32(18).fork()).join();
     }
-    writer.join();
     if (message.saidNo !== false) {
       writer.uint32(24).bool(message.saidNo);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RespondItsMyBirthday {
+  decode(input: BinaryReader | Uint8Array, length?: number): ItsMyBirthdayResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRespondItsMyBirthday();
+    const message = createBaseItsMyBirthdayResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2200,22 +2457,12 @@ export const RespondItsMyBirthday: MessageFns<RespondItsMyBirthday> = {
           continue;
         }
         case 2: {
-          if (tag === 16) {
-            message.cards.push(reader.int32() as any);
-
-            continue;
+          if (tag !== 18) {
+            break;
           }
 
-          if (tag === 18) {
-            const end2 = reader.uint32() + reader.pos;
-            while (reader.pos < end2) {
-              message.cards.push(reader.int32() as any);
-            }
-
-            continue;
-          }
-
-          break;
+          message.cards.push(Card.decode(reader, reader.uint32()));
+          continue;
         }
         case 3: {
           if (tag !== 24) {
@@ -2234,14 +2481,14 @@ export const RespondItsMyBirthday: MessageFns<RespondItsMyBirthday> = {
     return message;
   },
 
-  fromJSON(object: any): RespondItsMyBirthday {
+  fromJSON(object: any): ItsMyBirthdayResponse {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
         : isSet(object.player_id)
         ? globalThis.String(object.player_id)
         : "",
-      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => cardTypeFromJSON(e)) : [],
+      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => Card.fromJSON(e)) : [],
       saidNo: isSet(object.saidNo)
         ? globalThis.Boolean(object.saidNo)
         : isSet(object.said_no)
@@ -2250,13 +2497,13 @@ export const RespondItsMyBirthday: MessageFns<RespondItsMyBirthday> = {
     };
   },
 
-  toJSON(message: RespondItsMyBirthday): unknown {
+  toJSON(message: ItsMyBirthdayResponse): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
     }
     if (message.cards?.length) {
-      obj.cards = message.cards.map((e) => cardTypeToJSON(e));
+      obj.cards = message.cards.map((e) => Card.toJSON(e));
     }
     if (message.saidNo !== false) {
       obj.saidNo = message.saidNo;
@@ -2264,24 +2511,24 @@ export const RespondItsMyBirthday: MessageFns<RespondItsMyBirthday> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RespondItsMyBirthday>, I>>(base?: I): RespondItsMyBirthday {
-    return RespondItsMyBirthday.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ItsMyBirthdayResponse>, I>>(base?: I): ItsMyBirthdayResponse {
+    return ItsMyBirthdayResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RespondItsMyBirthday>, I>>(object: I): RespondItsMyBirthday {
-    const message = createBaseRespondItsMyBirthday();
+  fromPartial<I extends Exact<DeepPartial<ItsMyBirthdayResponse>, I>>(object: I): ItsMyBirthdayResponse {
+    const message = createBaseItsMyBirthdayResponse();
     message.playerId = object.playerId ?? "";
-    message.cards = object.cards?.map((e) => e) || [];
+    message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
     message.saidNo = object.saidNo ?? false;
     return message;
   },
 };
 
-function createBasePlayHouse(): PlayHouse {
+function createBaseHouse(): House {
   return { playerId: "", propertySet: undefined };
 }
 
-export const PlayHouse: MessageFns<PlayHouse> = {
-  encode(message: PlayHouse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const House: MessageFns<House> = {
+  encode(message: House, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -2291,10 +2538,10 @@ export const PlayHouse: MessageFns<PlayHouse> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlayHouse {
+  decode(input: BinaryReader | Uint8Array, length?: number): House {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlayHouse();
+    const message = createBaseHouse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2323,7 +2570,7 @@ export const PlayHouse: MessageFns<PlayHouse> = {
     return message;
   },
 
-  fromJSON(object: any): PlayHouse {
+  fromJSON(object: any): House {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -2338,7 +2585,7 @@ export const PlayHouse: MessageFns<PlayHouse> = {
     };
   },
 
-  toJSON(message: PlayHouse): unknown {
+  toJSON(message: House): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -2349,11 +2596,11 @@ export const PlayHouse: MessageFns<PlayHouse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlayHouse>, I>>(base?: I): PlayHouse {
-    return PlayHouse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<House>, I>>(base?: I): House {
+    return House.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlayHouse>, I>>(object: I): PlayHouse {
-    const message = createBasePlayHouse();
+  fromPartial<I extends Exact<DeepPartial<House>, I>>(object: I): House {
+    const message = createBaseHouse();
     message.playerId = object.playerId ?? "";
     message.propertySet = (object.propertySet !== undefined && object.propertySet !== null)
       ? PropertySetType.fromPartial(object.propertySet)
@@ -2362,12 +2609,12 @@ export const PlayHouse: MessageFns<PlayHouse> = {
   },
 };
 
-function createBasePlaySlyDeal(): PlaySlyDeal {
+function createBaseSlyDeal(): SlyDeal {
   return { playerId: "", targetPlayerId: "", property: undefined };
 }
 
-export const PlaySlyDeal: MessageFns<PlaySlyDeal> = {
-  encode(message: PlaySlyDeal, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const SlyDeal: MessageFns<SlyDeal> = {
+  encode(message: SlyDeal, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -2380,10 +2627,10 @@ export const PlaySlyDeal: MessageFns<PlaySlyDeal> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlaySlyDeal {
+  decode(input: BinaryReader | Uint8Array, length?: number): SlyDeal {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlaySlyDeal();
+    const message = createBaseSlyDeal();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2420,7 +2667,7 @@ export const PlaySlyDeal: MessageFns<PlaySlyDeal> = {
     return message;
   },
 
-  fromJSON(object: any): PlaySlyDeal {
+  fromJSON(object: any): SlyDeal {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -2436,7 +2683,7 @@ export const PlaySlyDeal: MessageFns<PlaySlyDeal> = {
     };
   },
 
-  toJSON(message: PlaySlyDeal): unknown {
+  toJSON(message: SlyDeal): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -2450,11 +2697,11 @@ export const PlaySlyDeal: MessageFns<PlaySlyDeal> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlaySlyDeal>, I>>(base?: I): PlaySlyDeal {
-    return PlaySlyDeal.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<SlyDeal>, I>>(base?: I): SlyDeal {
+    return SlyDeal.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlaySlyDeal>, I>>(object: I): PlaySlyDeal {
-    const message = createBasePlaySlyDeal();
+  fromPartial<I extends Exact<DeepPartial<SlyDeal>, I>>(object: I): SlyDeal {
+    const message = createBaseSlyDeal();
     message.playerId = object.playerId ?? "";
     message.targetPlayerId = object.targetPlayerId ?? "";
     message.property = (object.property !== undefined && object.property !== null)
@@ -2464,12 +2711,12 @@ export const PlaySlyDeal: MessageFns<PlaySlyDeal> = {
   },
 };
 
-function createBaseRespondSlyDeal(): RespondSlyDeal {
+function createBaseSlyDealResponse(): SlyDealResponse {
   return { playerId: "", saidNo: false };
 }
 
-export const RespondSlyDeal: MessageFns<RespondSlyDeal> = {
-  encode(message: RespondSlyDeal, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const SlyDealResponse: MessageFns<SlyDealResponse> = {
+  encode(message: SlyDealResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -2479,10 +2726,10 @@ export const RespondSlyDeal: MessageFns<RespondSlyDeal> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RespondSlyDeal {
+  decode(input: BinaryReader | Uint8Array, length?: number): SlyDealResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRespondSlyDeal();
+    const message = createBaseSlyDealResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2511,7 +2758,7 @@ export const RespondSlyDeal: MessageFns<RespondSlyDeal> = {
     return message;
   },
 
-  fromJSON(object: any): RespondSlyDeal {
+  fromJSON(object: any): SlyDealResponse {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -2526,7 +2773,7 @@ export const RespondSlyDeal: MessageFns<RespondSlyDeal> = {
     };
   },
 
-  toJSON(message: RespondSlyDeal): unknown {
+  toJSON(message: SlyDealResponse): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -2537,23 +2784,23 @@ export const RespondSlyDeal: MessageFns<RespondSlyDeal> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RespondSlyDeal>, I>>(base?: I): RespondSlyDeal {
-    return RespondSlyDeal.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<SlyDealResponse>, I>>(base?: I): SlyDealResponse {
+    return SlyDealResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RespondSlyDeal>, I>>(object: I): RespondSlyDeal {
-    const message = createBaseRespondSlyDeal();
+  fromPartial<I extends Exact<DeepPartial<SlyDealResponse>, I>>(object: I): SlyDealResponse {
+    const message = createBaseSlyDealResponse();
     message.playerId = object.playerId ?? "";
     message.saidNo = object.saidNo ?? false;
     return message;
   },
 };
 
-function createBasePlayForcedDeal(): PlayForcedDeal {
+function createBaseForcedDeal(): ForcedDeal {
   return { playerId: "", targetPlayerId: "", sourceProperty: undefined, targetProperty: undefined };
 }
 
-export const PlayForcedDeal: MessageFns<PlayForcedDeal> = {
-  encode(message: PlayForcedDeal, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const ForcedDeal: MessageFns<ForcedDeal> = {
+  encode(message: ForcedDeal, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -2569,10 +2816,10 @@ export const PlayForcedDeal: MessageFns<PlayForcedDeal> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlayForcedDeal {
+  decode(input: BinaryReader | Uint8Array, length?: number): ForcedDeal {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlayForcedDeal();
+    const message = createBaseForcedDeal();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2617,7 +2864,7 @@ export const PlayForcedDeal: MessageFns<PlayForcedDeal> = {
     return message;
   },
 
-  fromJSON(object: any): PlayForcedDeal {
+  fromJSON(object: any): ForcedDeal {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -2642,7 +2889,7 @@ export const PlayForcedDeal: MessageFns<PlayForcedDeal> = {
     };
   },
 
-  toJSON(message: PlayForcedDeal): unknown {
+  toJSON(message: ForcedDeal): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -2659,11 +2906,11 @@ export const PlayForcedDeal: MessageFns<PlayForcedDeal> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlayForcedDeal>, I>>(base?: I): PlayForcedDeal {
-    return PlayForcedDeal.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ForcedDeal>, I>>(base?: I): ForcedDeal {
+    return ForcedDeal.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlayForcedDeal>, I>>(object: I): PlayForcedDeal {
-    const message = createBasePlayForcedDeal();
+  fromPartial<I extends Exact<DeepPartial<ForcedDeal>, I>>(object: I): ForcedDeal {
+    const message = createBaseForcedDeal();
     message.playerId = object.playerId ?? "";
     message.targetPlayerId = object.targetPlayerId ?? "";
     message.sourceProperty = (object.sourceProperty !== undefined && object.sourceProperty !== null)
@@ -2676,12 +2923,12 @@ export const PlayForcedDeal: MessageFns<PlayForcedDeal> = {
   },
 };
 
-function createBaseRespondForcedDeal(): RespondForcedDeal {
+function createBaseForcedDealResponse(): ForcedDealResponse {
   return { playerId: "", saidNo: false };
 }
 
-export const RespondForcedDeal: MessageFns<RespondForcedDeal> = {
-  encode(message: RespondForcedDeal, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const ForcedDealResponse: MessageFns<ForcedDealResponse> = {
+  encode(message: ForcedDealResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -2691,10 +2938,10 @@ export const RespondForcedDeal: MessageFns<RespondForcedDeal> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RespondForcedDeal {
+  decode(input: BinaryReader | Uint8Array, length?: number): ForcedDealResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRespondForcedDeal();
+    const message = createBaseForcedDealResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2723,7 +2970,7 @@ export const RespondForcedDeal: MessageFns<RespondForcedDeal> = {
     return message;
   },
 
-  fromJSON(object: any): RespondForcedDeal {
+  fromJSON(object: any): ForcedDealResponse {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -2738,7 +2985,7 @@ export const RespondForcedDeal: MessageFns<RespondForcedDeal> = {
     };
   },
 
-  toJSON(message: RespondForcedDeal): unknown {
+  toJSON(message: ForcedDealResponse): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -2749,23 +2996,23 @@ export const RespondForcedDeal: MessageFns<RespondForcedDeal> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RespondForcedDeal>, I>>(base?: I): RespondForcedDeal {
-    return RespondForcedDeal.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ForcedDealResponse>, I>>(base?: I): ForcedDealResponse {
+    return ForcedDealResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RespondForcedDeal>, I>>(object: I): RespondForcedDeal {
-    const message = createBaseRespondForcedDeal();
+  fromPartial<I extends Exact<DeepPartial<ForcedDealResponse>, I>>(object: I): ForcedDealResponse {
+    const message = createBaseForcedDealResponse();
     message.playerId = object.playerId ?? "";
     message.saidNo = object.saidNo ?? false;
     return message;
   },
 };
 
-function createBasePlayDebtCollector(): PlayDebtCollector {
+function createBaseDebtCollector(): DebtCollector {
   return { playerId: "", targetPlayerId: "" };
 }
 
-export const PlayDebtCollector: MessageFns<PlayDebtCollector> = {
-  encode(message: PlayDebtCollector, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const DebtCollector: MessageFns<DebtCollector> = {
+  encode(message: DebtCollector, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -2775,10 +3022,10 @@ export const PlayDebtCollector: MessageFns<PlayDebtCollector> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlayDebtCollector {
+  decode(input: BinaryReader | Uint8Array, length?: number): DebtCollector {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlayDebtCollector();
+    const message = createBaseDebtCollector();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2807,7 +3054,7 @@ export const PlayDebtCollector: MessageFns<PlayDebtCollector> = {
     return message;
   },
 
-  fromJSON(object: any): PlayDebtCollector {
+  fromJSON(object: any): DebtCollector {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -2822,7 +3069,7 @@ export const PlayDebtCollector: MessageFns<PlayDebtCollector> = {
     };
   },
 
-  toJSON(message: PlayDebtCollector): unknown {
+  toJSON(message: DebtCollector): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -2833,36 +3080,39 @@ export const PlayDebtCollector: MessageFns<PlayDebtCollector> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlayDebtCollector>, I>>(base?: I): PlayDebtCollector {
-    return PlayDebtCollector.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<DebtCollector>, I>>(base?: I): DebtCollector {
+    return DebtCollector.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlayDebtCollector>, I>>(object: I): PlayDebtCollector {
-    const message = createBasePlayDebtCollector();
+  fromPartial<I extends Exact<DeepPartial<DebtCollector>, I>>(object: I): DebtCollector {
+    const message = createBaseDebtCollector();
     message.playerId = object.playerId ?? "";
     message.targetPlayerId = object.targetPlayerId ?? "";
     return message;
   },
 };
 
-function createBaseRespondDebtCollector(): RespondDebtCollector {
-  return { playerId: "", saidNo: false };
+function createBaseDebtCollectorResponse(): DebtCollectorResponse {
+  return { playerId: "", cards: [], saidNo: false };
 }
 
-export const RespondDebtCollector: MessageFns<RespondDebtCollector> = {
-  encode(message: RespondDebtCollector, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const DebtCollectorResponse: MessageFns<DebtCollectorResponse> = {
+  encode(message: DebtCollectorResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
+    for (const v of message.cards) {
+      Card.encode(v!, writer.uint32(18).fork()).join();
+    }
     if (message.saidNo !== false) {
-      writer.uint32(16).bool(message.saidNo);
+      writer.uint32(24).bool(message.saidNo);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RespondDebtCollector {
+  decode(input: BinaryReader | Uint8Array, length?: number): DebtCollectorResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRespondDebtCollector();
+    const message = createBaseDebtCollectorResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2875,7 +3125,15 @@ export const RespondDebtCollector: MessageFns<RespondDebtCollector> = {
           continue;
         }
         case 2: {
-          if (tag !== 16) {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.cards.push(Card.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
             break;
           }
 
@@ -2891,13 +3149,14 @@ export const RespondDebtCollector: MessageFns<RespondDebtCollector> = {
     return message;
   },
 
-  fromJSON(object: any): RespondDebtCollector {
+  fromJSON(object: any): DebtCollectorResponse {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
         : isSet(object.player_id)
         ? globalThis.String(object.player_id)
         : "",
+      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => Card.fromJSON(e)) : [],
       saidNo: isSet(object.saidNo)
         ? globalThis.Boolean(object.saidNo)
         : isSet(object.said_no)
@@ -2906,10 +3165,13 @@ export const RespondDebtCollector: MessageFns<RespondDebtCollector> = {
     };
   },
 
-  toJSON(message: RespondDebtCollector): unknown {
+  toJSON(message: DebtCollectorResponse): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
+    }
+    if (message.cards?.length) {
+      obj.cards = message.cards.map((e) => Card.toJSON(e));
     }
     if (message.saidNo !== false) {
       obj.saidNo = message.saidNo;
@@ -2917,23 +3179,24 @@ export const RespondDebtCollector: MessageFns<RespondDebtCollector> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RespondDebtCollector>, I>>(base?: I): RespondDebtCollector {
-    return RespondDebtCollector.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<DebtCollectorResponse>, I>>(base?: I): DebtCollectorResponse {
+    return DebtCollectorResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RespondDebtCollector>, I>>(object: I): RespondDebtCollector {
-    const message = createBaseRespondDebtCollector();
+  fromPartial<I extends Exact<DeepPartial<DebtCollectorResponse>, I>>(object: I): DebtCollectorResponse {
+    const message = createBaseDebtCollectorResponse();
     message.playerId = object.playerId ?? "";
+    message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
     message.saidNo = object.saidNo ?? false;
     return message;
   },
 };
 
-function createBasePlayHotel(): PlayHotel {
+function createBaseHotel(): Hotel {
   return { playerId: "", propertySet: undefined };
 }
 
-export const PlayHotel: MessageFns<PlayHotel> = {
-  encode(message: PlayHotel, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const Hotel: MessageFns<Hotel> = {
+  encode(message: Hotel, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -2943,10 +3206,10 @@ export const PlayHotel: MessageFns<PlayHotel> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlayHotel {
+  decode(input: BinaryReader | Uint8Array, length?: number): Hotel {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlayHotel();
+    const message = createBaseHotel();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2975,7 +3238,7 @@ export const PlayHotel: MessageFns<PlayHotel> = {
     return message;
   },
 
-  fromJSON(object: any): PlayHotel {
+  fromJSON(object: any): Hotel {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -2990,7 +3253,7 @@ export const PlayHotel: MessageFns<PlayHotel> = {
     };
   },
 
-  toJSON(message: PlayHotel): unknown {
+  toJSON(message: Hotel): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -3001,11 +3264,11 @@ export const PlayHotel: MessageFns<PlayHotel> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlayHotel>, I>>(base?: I): PlayHotel {
-    return PlayHotel.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<Hotel>, I>>(base?: I): Hotel {
+    return Hotel.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlayHotel>, I>>(object: I): PlayHotel {
-    const message = createBasePlayHotel();
+  fromPartial<I extends Exact<DeepPartial<Hotel>, I>>(object: I): Hotel {
+    const message = createBaseHotel();
     message.playerId = object.playerId ?? "";
     message.propertySet = (object.propertySet !== undefined && object.propertySet !== null)
       ? PropertySetType.fromPartial(object.propertySet)
@@ -3014,12 +3277,12 @@ export const PlayHotel: MessageFns<PlayHotel> = {
   },
 };
 
-function createBaseRespondJustSayNo(): RespondJustSayNo {
+function createBaseJustSayNoResponse(): JustSayNoResponse {
   return { playerId: "", saidNo: false };
 }
 
-export const RespondJustSayNo: MessageFns<RespondJustSayNo> = {
-  encode(message: RespondJustSayNo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const JustSayNoResponse: MessageFns<JustSayNoResponse> = {
+  encode(message: JustSayNoResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -3029,10 +3292,10 @@ export const RespondJustSayNo: MessageFns<RespondJustSayNo> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RespondJustSayNo {
+  decode(input: BinaryReader | Uint8Array, length?: number): JustSayNoResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRespondJustSayNo();
+    const message = createBaseJustSayNoResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -3061,7 +3324,7 @@ export const RespondJustSayNo: MessageFns<RespondJustSayNo> = {
     return message;
   },
 
-  fromJSON(object: any): RespondJustSayNo {
+  fromJSON(object: any): JustSayNoResponse {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -3076,7 +3339,7 @@ export const RespondJustSayNo: MessageFns<RespondJustSayNo> = {
     };
   },
 
-  toJSON(message: RespondJustSayNo): unknown {
+  toJSON(message: JustSayNoResponse): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -3087,23 +3350,23 @@ export const RespondJustSayNo: MessageFns<RespondJustSayNo> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RespondJustSayNo>, I>>(base?: I): RespondJustSayNo {
-    return RespondJustSayNo.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<JustSayNoResponse>, I>>(base?: I): JustSayNoResponse {
+    return JustSayNoResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RespondJustSayNo>, I>>(object: I): RespondJustSayNo {
-    const message = createBaseRespondJustSayNo();
+  fromPartial<I extends Exact<DeepPartial<JustSayNoResponse>, I>>(object: I): JustSayNoResponse {
+    const message = createBaseJustSayNoResponse();
     message.playerId = object.playerId ?? "";
     message.saidNo = object.saidNo ?? false;
     return message;
   },
 };
 
-function createBasePlayDealBreaker(): PlayDealBreaker {
+function createBaseDealBreaker(): DealBreaker {
   return { playerId: "", targetPlayerId: "", propertySet: undefined };
 }
 
-export const PlayDealBreaker: MessageFns<PlayDealBreaker> = {
-  encode(message: PlayDealBreaker, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const DealBreaker: MessageFns<DealBreaker> = {
+  encode(message: DealBreaker, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -3116,10 +3379,10 @@ export const PlayDealBreaker: MessageFns<PlayDealBreaker> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlayDealBreaker {
+  decode(input: BinaryReader | Uint8Array, length?: number): DealBreaker {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlayDealBreaker();
+    const message = createBaseDealBreaker();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -3156,7 +3419,7 @@ export const PlayDealBreaker: MessageFns<PlayDealBreaker> = {
     return message;
   },
 
-  fromJSON(object: any): PlayDealBreaker {
+  fromJSON(object: any): DealBreaker {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -3176,7 +3439,7 @@ export const PlayDealBreaker: MessageFns<PlayDealBreaker> = {
     };
   },
 
-  toJSON(message: PlayDealBreaker): unknown {
+  toJSON(message: DealBreaker): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -3190,11 +3453,11 @@ export const PlayDealBreaker: MessageFns<PlayDealBreaker> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlayDealBreaker>, I>>(base?: I): PlayDealBreaker {
-    return PlayDealBreaker.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<DealBreaker>, I>>(base?: I): DealBreaker {
+    return DealBreaker.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlayDealBreaker>, I>>(object: I): PlayDealBreaker {
-    const message = createBasePlayDealBreaker();
+  fromPartial<I extends Exact<DeepPartial<DealBreaker>, I>>(object: I): DealBreaker {
+    const message = createBaseDealBreaker();
     message.playerId = object.playerId ?? "";
     message.targetPlayerId = object.targetPlayerId ?? "";
     message.propertySet = (object.propertySet !== undefined && object.propertySet !== null)
@@ -3204,12 +3467,12 @@ export const PlayDealBreaker: MessageFns<PlayDealBreaker> = {
   },
 };
 
-function createBaseRespondDealBreaker(): RespondDealBreaker {
+function createBaseDealBreakerResponse(): DealBreakerResponse {
   return { playerId: "", saidNo: false };
 }
 
-export const RespondDealBreaker: MessageFns<RespondDealBreaker> = {
-  encode(message: RespondDealBreaker, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const DealBreakerResponse: MessageFns<DealBreakerResponse> = {
+  encode(message: DealBreakerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
@@ -3219,10 +3482,10 @@ export const RespondDealBreaker: MessageFns<RespondDealBreaker> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RespondDealBreaker {
+  decode(input: BinaryReader | Uint8Array, length?: number): DealBreakerResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRespondDealBreaker();
+    const message = createBaseDealBreakerResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -3251,7 +3514,7 @@ export const RespondDealBreaker: MessageFns<RespondDealBreaker> = {
     return message;
   },
 
-  fromJSON(object: any): RespondDealBreaker {
+  fromJSON(object: any): DealBreakerResponse {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
@@ -3266,7 +3529,7 @@ export const RespondDealBreaker: MessageFns<RespondDealBreaker> = {
     };
   },
 
-  toJSON(message: RespondDealBreaker): unknown {
+  toJSON(message: DealBreakerResponse): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
@@ -3277,36 +3540,36 @@ export const RespondDealBreaker: MessageFns<RespondDealBreaker> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RespondDealBreaker>, I>>(base?: I): RespondDealBreaker {
-    return RespondDealBreaker.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<DealBreakerResponse>, I>>(base?: I): DealBreakerResponse {
+    return DealBreakerResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RespondDealBreaker>, I>>(object: I): RespondDealBreaker {
-    const message = createBaseRespondDealBreaker();
+  fromPartial<I extends Exact<DeepPartial<DealBreakerResponse>, I>>(object: I): DealBreakerResponse {
+    const message = createBaseDealBreakerResponse();
     message.playerId = object.playerId ?? "";
     message.saidNo = object.saidNo ?? false;
     return message;
   },
 };
 
-function createBasePlayRent(): PlayRent {
-  return { playerId: "", card: 0 };
+function createBaseRent(): Rent {
+  return { playerId: "", card: undefined };
 }
 
-export const PlayRent: MessageFns<PlayRent> = {
-  encode(message: PlayRent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const Rent: MessageFns<Rent> = {
+  encode(message: Rent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
     }
-    if (message.card !== 0) {
-      writer.uint32(16).int32(message.card);
+    if (message.card !== undefined) {
+      Card.encode(message.card, writer.uint32(18).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PlayRent {
+  decode(input: BinaryReader | Uint8Array, length?: number): Rent {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePlayRent();
+    const message = createBaseRent();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -3319,11 +3582,11 @@ export const PlayRent: MessageFns<PlayRent> = {
           continue;
         }
         case 2: {
-          if (tag !== 16) {
+          if (tag !== 18) {
             break;
           }
 
-          message.card = reader.int32() as any;
+          message.card = Card.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -3335,35 +3598,1206 @@ export const PlayRent: MessageFns<PlayRent> = {
     return message;
   },
 
-  fromJSON(object: any): PlayRent {
+  fromJSON(object: any): Rent {
     return {
       playerId: isSet(object.playerId)
         ? globalThis.String(object.playerId)
         : isSet(object.player_id)
         ? globalThis.String(object.player_id)
         : "",
-      card: isSet(object.card) ? cardTypeFromJSON(object.card) : 0,
+      card: isSet(object.card) ? Card.fromJSON(object.card) : undefined,
     };
   },
 
-  toJSON(message: PlayRent): unknown {
+  toJSON(message: Rent): unknown {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
     }
-    if (message.card !== 0) {
-      obj.card = cardTypeToJSON(message.card);
+    if (message.card !== undefined) {
+      obj.card = Card.toJSON(message.card);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PlayRent>, I>>(base?: I): PlayRent {
-    return PlayRent.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<Rent>, I>>(base?: I): Rent {
+    return Rent.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PlayRent>, I>>(object: I): PlayRent {
-    const message = createBasePlayRent();
+  fromPartial<I extends Exact<DeepPartial<Rent>, I>>(object: I): Rent {
+    const message = createBaseRent();
     message.playerId = object.playerId ?? "";
-    message.card = object.card ?? 0;
+    message.card = (object.card !== undefined && object.card !== null) ? Card.fromPartial(object.card) : undefined;
+    return message;
+  },
+};
+
+function createBaseRentResponse(): RentResponse {
+  return { playerId: "", cards: [], saidNo: false };
+}
+
+export const RentResponse: MessageFns<RentResponse> = {
+  encode(message: RentResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.playerId !== "") {
+      writer.uint32(10).string(message.playerId);
+    }
+    for (const v of message.cards) {
+      Card.encode(v!, writer.uint32(18).fork()).join();
+    }
+    if (message.saidNo !== false) {
+      writer.uint32(24).bool(message.saidNo);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RentResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRentResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.cards.push(Card.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.saidNo = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RentResponse {
+    return {
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => Card.fromJSON(e)) : [],
+      saidNo: isSet(object.saidNo)
+        ? globalThis.Boolean(object.saidNo)
+        : isSet(object.said_no)
+        ? globalThis.Boolean(object.said_no)
+        : false,
+    };
+  },
+
+  toJSON(message: RentResponse): unknown {
+    const obj: any = {};
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.cards?.length) {
+      obj.cards = message.cards.map((e) => Card.toJSON(e));
+    }
+    if (message.saidNo !== false) {
+      obj.saidNo = message.saidNo;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RentResponse>, I>>(base?: I): RentResponse {
+    return RentResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RentResponse>, I>>(object: I): RentResponse {
+    const message = createBaseRentResponse();
+    message.playerId = object.playerId ?? "";
+    message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
+    message.saidNo = object.saidNo ?? false;
+    return message;
+  },
+};
+
+function createBaseWildRent(): WildRent {
+  return { playerId: "", targetPlayerId: "" };
+}
+
+export const WildRent: MessageFns<WildRent> = {
+  encode(message: WildRent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.playerId !== "") {
+      writer.uint32(10).string(message.playerId);
+    }
+    if (message.targetPlayerId !== "") {
+      writer.uint32(18).string(message.targetPlayerId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WildRent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWildRent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.targetPlayerId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WildRent {
+    return {
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      targetPlayerId: isSet(object.targetPlayerId)
+        ? globalThis.String(object.targetPlayerId)
+        : isSet(object.target_player_id)
+        ? globalThis.String(object.target_player_id)
+        : "",
+    };
+  },
+
+  toJSON(message: WildRent): unknown {
+    const obj: any = {};
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.targetPlayerId !== "") {
+      obj.targetPlayerId = message.targetPlayerId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<WildRent>, I>>(base?: I): WildRent {
+    return WildRent.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<WildRent>, I>>(object: I): WildRent {
+    const message = createBaseWildRent();
+    message.playerId = object.playerId ?? "";
+    message.targetPlayerId = object.targetPlayerId ?? "";
+    return message;
+  },
+};
+
+function createBaseWildRentResponse(): WildRentResponse {
+  return { playerId: "", cards: [], saidNo: false };
+}
+
+export const WildRentResponse: MessageFns<WildRentResponse> = {
+  encode(message: WildRentResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.playerId !== "") {
+      writer.uint32(10).string(message.playerId);
+    }
+    for (const v of message.cards) {
+      Card.encode(v!, writer.uint32(18).fork()).join();
+    }
+    if (message.saidNo !== false) {
+      writer.uint32(24).bool(message.saidNo);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WildRentResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWildRentResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.cards.push(Card.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.saidNo = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WildRentResponse {
+    return {
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => Card.fromJSON(e)) : [],
+      saidNo: isSet(object.saidNo)
+        ? globalThis.Boolean(object.saidNo)
+        : isSet(object.said_no)
+        ? globalThis.Boolean(object.said_no)
+        : false,
+    };
+  },
+
+  toJSON(message: WildRentResponse): unknown {
+    const obj: any = {};
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.cards?.length) {
+      obj.cards = message.cards.map((e) => Card.toJSON(e));
+    }
+    if (message.saidNo !== false) {
+      obj.saidNo = message.saidNo;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<WildRentResponse>, I>>(base?: I): WildRentResponse {
+    return WildRentResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<WildRentResponse>, I>>(object: I): WildRentResponse {
+    const message = createBaseWildRentResponse();
+    message.playerId = object.playerId ?? "";
+    message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
+    message.saidNo = object.saidNo ?? false;
+    return message;
+  },
+};
+
+function createBaseLobbyMessage(): LobbyMessage {
+  return {
+    ping: undefined,
+    pong: undefined,
+    error: undefined,
+    roomList: undefined,
+    createRoom: undefined,
+    createRoomRes: undefined,
+    joinRoom: undefined,
+    joinRoomRes: undefined,
+    leaveRoom: undefined,
+    leaveRoomRes: undefined,
+    deleteRoom: undefined,
+    deleteRoomRes: undefined,
+  };
+}
+
+export const LobbyMessage: MessageFns<LobbyMessage> = {
+  encode(message: LobbyMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.ping !== undefined) {
+      Ping.encode(message.ping, writer.uint32(10).fork()).join();
+    }
+    if (message.pong !== undefined) {
+      Ping.encode(message.pong, writer.uint32(18).fork()).join();
+    }
+    if (message.error !== undefined) {
+      Error.encode(message.error, writer.uint32(26).fork()).join();
+    }
+    if (message.roomList !== undefined) {
+      RoomList.encode(message.roomList, writer.uint32(82).fork()).join();
+    }
+    if (message.createRoom !== undefined) {
+      CreateRoom.encode(message.createRoom, writer.uint32(90).fork()).join();
+    }
+    if (message.createRoomRes !== undefined) {
+      CreateRoomResponse.encode(message.createRoomRes, writer.uint32(98).fork()).join();
+    }
+    if (message.joinRoom !== undefined) {
+      JoinRoom.encode(message.joinRoom, writer.uint32(106).fork()).join();
+    }
+    if (message.joinRoomRes !== undefined) {
+      JoinRoomResponse.encode(message.joinRoomRes, writer.uint32(114).fork()).join();
+    }
+    if (message.leaveRoom !== undefined) {
+      LeaveRoom.encode(message.leaveRoom, writer.uint32(122).fork()).join();
+    }
+    if (message.leaveRoomRes !== undefined) {
+      LeaveRoomResponse.encode(message.leaveRoomRes, writer.uint32(130).fork()).join();
+    }
+    if (message.deleteRoom !== undefined) {
+      DeleteRoom.encode(message.deleteRoom, writer.uint32(138).fork()).join();
+    }
+    if (message.deleteRoomRes !== undefined) {
+      DeleteRoomResponse.encode(message.deleteRoomRes, writer.uint32(146).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LobbyMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLobbyMessage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.ping = Ping.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.pong = Ping.decode(reader, reader.uint32());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.error = Error.decode(reader, reader.uint32());
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.roomList = RoomList.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.createRoom = CreateRoom.decode(reader, reader.uint32());
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.createRoomRes = CreateRoomResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.joinRoom = JoinRoom.decode(reader, reader.uint32());
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.joinRoomRes = JoinRoomResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.leaveRoom = LeaveRoom.decode(reader, reader.uint32());
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.leaveRoomRes = LeaveRoomResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.deleteRoom = DeleteRoom.decode(reader, reader.uint32());
+          continue;
+        }
+        case 18: {
+          if (tag !== 146) {
+            break;
+          }
+
+          message.deleteRoomRes = DeleteRoomResponse.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): LobbyMessage {
+    return {
+      ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
+      pong: isSet(object.pong) ? Ping.fromJSON(object.pong) : undefined,
+      error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
+      roomList: isSet(object.roomList)
+        ? RoomList.fromJSON(object.roomList)
+        : isSet(object.room_list)
+        ? RoomList.fromJSON(object.room_list)
+        : undefined,
+      createRoom: isSet(object.createRoom)
+        ? CreateRoom.fromJSON(object.createRoom)
+        : isSet(object.create_room)
+        ? CreateRoom.fromJSON(object.create_room)
+        : undefined,
+      createRoomRes: isSet(object.createRoomRes)
+        ? CreateRoomResponse.fromJSON(object.createRoomRes)
+        : isSet(object.create_room_res)
+        ? CreateRoomResponse.fromJSON(object.create_room_res)
+        : undefined,
+      joinRoom: isSet(object.joinRoom)
+        ? JoinRoom.fromJSON(object.joinRoom)
+        : isSet(object.join_room)
+        ? JoinRoom.fromJSON(object.join_room)
+        : undefined,
+      joinRoomRes: isSet(object.joinRoomRes)
+        ? JoinRoomResponse.fromJSON(object.joinRoomRes)
+        : isSet(object.join_room_res)
+        ? JoinRoomResponse.fromJSON(object.join_room_res)
+        : undefined,
+      leaveRoom: isSet(object.leaveRoom)
+        ? LeaveRoom.fromJSON(object.leaveRoom)
+        : isSet(object.leave_room)
+        ? LeaveRoom.fromJSON(object.leave_room)
+        : undefined,
+      leaveRoomRes: isSet(object.leaveRoomRes)
+        ? LeaveRoomResponse.fromJSON(object.leaveRoomRes)
+        : isSet(object.leave_room_res)
+        ? LeaveRoomResponse.fromJSON(object.leave_room_res)
+        : undefined,
+      deleteRoom: isSet(object.deleteRoom)
+        ? DeleteRoom.fromJSON(object.deleteRoom)
+        : isSet(object.delete_room)
+        ? DeleteRoom.fromJSON(object.delete_room)
+        : undefined,
+      deleteRoomRes: isSet(object.deleteRoomRes)
+        ? DeleteRoomResponse.fromJSON(object.deleteRoomRes)
+        : isSet(object.delete_room_res)
+        ? DeleteRoomResponse.fromJSON(object.delete_room_res)
+        : undefined,
+    };
+  },
+
+  toJSON(message: LobbyMessage): unknown {
+    const obj: any = {};
+    if (message.ping !== undefined) {
+      obj.ping = Ping.toJSON(message.ping);
+    }
+    if (message.pong !== undefined) {
+      obj.pong = Ping.toJSON(message.pong);
+    }
+    if (message.error !== undefined) {
+      obj.error = Error.toJSON(message.error);
+    }
+    if (message.roomList !== undefined) {
+      obj.roomList = RoomList.toJSON(message.roomList);
+    }
+    if (message.createRoom !== undefined) {
+      obj.createRoom = CreateRoom.toJSON(message.createRoom);
+    }
+    if (message.createRoomRes !== undefined) {
+      obj.createRoomRes = CreateRoomResponse.toJSON(message.createRoomRes);
+    }
+    if (message.joinRoom !== undefined) {
+      obj.joinRoom = JoinRoom.toJSON(message.joinRoom);
+    }
+    if (message.joinRoomRes !== undefined) {
+      obj.joinRoomRes = JoinRoomResponse.toJSON(message.joinRoomRes);
+    }
+    if (message.leaveRoom !== undefined) {
+      obj.leaveRoom = LeaveRoom.toJSON(message.leaveRoom);
+    }
+    if (message.leaveRoomRes !== undefined) {
+      obj.leaveRoomRes = LeaveRoomResponse.toJSON(message.leaveRoomRes);
+    }
+    if (message.deleteRoom !== undefined) {
+      obj.deleteRoom = DeleteRoom.toJSON(message.deleteRoom);
+    }
+    if (message.deleteRoomRes !== undefined) {
+      obj.deleteRoomRes = DeleteRoomResponse.toJSON(message.deleteRoomRes);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<LobbyMessage>, I>>(base?: I): LobbyMessage {
+    return LobbyMessage.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<LobbyMessage>, I>>(object: I): LobbyMessage {
+    const message = createBaseLobbyMessage();
+    message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
+    message.pong = (object.pong !== undefined && object.pong !== null) ? Ping.fromPartial(object.pong) : undefined;
+    message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
+    message.roomList = (object.roomList !== undefined && object.roomList !== null)
+      ? RoomList.fromPartial(object.roomList)
+      : undefined;
+    message.createRoom = (object.createRoom !== undefined && object.createRoom !== null)
+      ? CreateRoom.fromPartial(object.createRoom)
+      : undefined;
+    message.createRoomRes = (object.createRoomRes !== undefined && object.createRoomRes !== null)
+      ? CreateRoomResponse.fromPartial(object.createRoomRes)
+      : undefined;
+    message.joinRoom = (object.joinRoom !== undefined && object.joinRoom !== null)
+      ? JoinRoom.fromPartial(object.joinRoom)
+      : undefined;
+    message.joinRoomRes = (object.joinRoomRes !== undefined && object.joinRoomRes !== null)
+      ? JoinRoomResponse.fromPartial(object.joinRoomRes)
+      : undefined;
+    message.leaveRoom = (object.leaveRoom !== undefined && object.leaveRoom !== null)
+      ? LeaveRoom.fromPartial(object.leaveRoom)
+      : undefined;
+    message.leaveRoomRes = (object.leaveRoomRes !== undefined && object.leaveRoomRes !== null)
+      ? LeaveRoomResponse.fromPartial(object.leaveRoomRes)
+      : undefined;
+    message.deleteRoom = (object.deleteRoom !== undefined && object.deleteRoom !== null)
+      ? DeleteRoom.fromPartial(object.deleteRoom)
+      : undefined;
+    message.deleteRoomRes = (object.deleteRoomRes !== undefined && object.deleteRoomRes !== null)
+      ? DeleteRoomResponse.fromPartial(object.deleteRoomRes)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseGameMessage(): GameMessage {
+  return {
+    ping: undefined,
+    pong: undefined,
+    error: undefined,
+    playProperty: undefined,
+    playMoney: undefined,
+    passGo: undefined,
+    passGoRes: undefined,
+    doubleTheRent: undefined,
+    itsMyBirthday: undefined,
+    itsMyBirthdayRes: undefined,
+    house: undefined,
+    slyDeal: undefined,
+    slyDealRes: undefined,
+    forcedDeal: undefined,
+    forcedDealRes: undefined,
+    debtCollector: undefined,
+    debtCollectorRes: undefined,
+    hotel: undefined,
+    justSayNoRes: undefined,
+    dealBreaker: undefined,
+    dealBreakerRes: undefined,
+    rent: undefined,
+    rentRes: undefined,
+    wildRent: undefined,
+    wildRentRes: undefined,
+  };
+}
+
+export const GameMessage: MessageFns<GameMessage> = {
+  encode(message: GameMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.ping !== undefined) {
+      Ping.encode(message.ping, writer.uint32(10).fork()).join();
+    }
+    if (message.pong !== undefined) {
+      Ping.encode(message.pong, writer.uint32(18).fork()).join();
+    }
+    if (message.error !== undefined) {
+      Error.encode(message.error, writer.uint32(26).fork()).join();
+    }
+    if (message.playProperty !== undefined) {
+      PlayProperty.encode(message.playProperty, writer.uint32(82).fork()).join();
+    }
+    if (message.playMoney !== undefined) {
+      PlayMoney.encode(message.playMoney, writer.uint32(90).fork()).join();
+    }
+    if (message.passGo !== undefined) {
+      PassGo.encode(message.passGo, writer.uint32(122).fork()).join();
+    }
+    if (message.passGoRes !== undefined) {
+      PassGoResponse.encode(message.passGoRes, writer.uint32(130).fork()).join();
+    }
+    if (message.doubleTheRent !== undefined) {
+      DoubleTheRent.encode(message.doubleTheRent, writer.uint32(162).fork()).join();
+    }
+    if (message.itsMyBirthday !== undefined) {
+      ItsMyBirthday.encode(message.itsMyBirthday, writer.uint32(202).fork()).join();
+    }
+    if (message.itsMyBirthdayRes !== undefined) {
+      ItsMyBirthdayResponse.encode(message.itsMyBirthdayRes, writer.uint32(210).fork()).join();
+    }
+    if (message.house !== undefined) {
+      House.encode(message.house, writer.uint32(242).fork()).join();
+    }
+    if (message.slyDeal !== undefined) {
+      SlyDeal.encode(message.slyDeal, writer.uint32(282).fork()).join();
+    }
+    if (message.slyDealRes !== undefined) {
+      SlyDealResponse.encode(message.slyDealRes, writer.uint32(290).fork()).join();
+    }
+    if (message.forcedDeal !== undefined) {
+      ForcedDeal.encode(message.forcedDeal, writer.uint32(322).fork()).join();
+    }
+    if (message.forcedDealRes !== undefined) {
+      ForcedDealResponse.encode(message.forcedDealRes, writer.uint32(330).fork()).join();
+    }
+    if (message.debtCollector !== undefined) {
+      DebtCollector.encode(message.debtCollector, writer.uint32(362).fork()).join();
+    }
+    if (message.debtCollectorRes !== undefined) {
+      DebtCollectorResponse.encode(message.debtCollectorRes, writer.uint32(370).fork()).join();
+    }
+    if (message.hotel !== undefined) {
+      Hotel.encode(message.hotel, writer.uint32(402).fork()).join();
+    }
+    if (message.justSayNoRes !== undefined) {
+      JustSayNoResponse.encode(message.justSayNoRes, writer.uint32(442).fork()).join();
+    }
+    if (message.dealBreaker !== undefined) {
+      DealBreaker.encode(message.dealBreaker, writer.uint32(482).fork()).join();
+    }
+    if (message.dealBreakerRes !== undefined) {
+      DealBreakerResponse.encode(message.dealBreakerRes, writer.uint32(490).fork()).join();
+    }
+    if (message.rent !== undefined) {
+      Rent.encode(message.rent, writer.uint32(522).fork()).join();
+    }
+    if (message.rentRes !== undefined) {
+      RentResponse.encode(message.rentRes, writer.uint32(530).fork()).join();
+    }
+    if (message.wildRent !== undefined) {
+      WildRent.encode(message.wildRent, writer.uint32(562).fork()).join();
+    }
+    if (message.wildRentRes !== undefined) {
+      WildRentResponse.encode(message.wildRentRes, writer.uint32(570).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GameMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGameMessage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.ping = Ping.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.pong = Ping.decode(reader, reader.uint32());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.error = Error.decode(reader, reader.uint32());
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.playProperty = PlayProperty.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.playMoney = PlayMoney.decode(reader, reader.uint32());
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.passGo = PassGo.decode(reader, reader.uint32());
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.passGoRes = PassGoResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 20: {
+          if (tag !== 162) {
+            break;
+          }
+
+          message.doubleTheRent = DoubleTheRent.decode(reader, reader.uint32());
+          continue;
+        }
+        case 25: {
+          if (tag !== 202) {
+            break;
+          }
+
+          message.itsMyBirthday = ItsMyBirthday.decode(reader, reader.uint32());
+          continue;
+        }
+        case 26: {
+          if (tag !== 210) {
+            break;
+          }
+
+          message.itsMyBirthdayRes = ItsMyBirthdayResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 30: {
+          if (tag !== 242) {
+            break;
+          }
+
+          message.house = House.decode(reader, reader.uint32());
+          continue;
+        }
+        case 35: {
+          if (tag !== 282) {
+            break;
+          }
+
+          message.slyDeal = SlyDeal.decode(reader, reader.uint32());
+          continue;
+        }
+        case 36: {
+          if (tag !== 290) {
+            break;
+          }
+
+          message.slyDealRes = SlyDealResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 40: {
+          if (tag !== 322) {
+            break;
+          }
+
+          message.forcedDeal = ForcedDeal.decode(reader, reader.uint32());
+          continue;
+        }
+        case 41: {
+          if (tag !== 330) {
+            break;
+          }
+
+          message.forcedDealRes = ForcedDealResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 45: {
+          if (tag !== 362) {
+            break;
+          }
+
+          message.debtCollector = DebtCollector.decode(reader, reader.uint32());
+          continue;
+        }
+        case 46: {
+          if (tag !== 370) {
+            break;
+          }
+
+          message.debtCollectorRes = DebtCollectorResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 50: {
+          if (tag !== 402) {
+            break;
+          }
+
+          message.hotel = Hotel.decode(reader, reader.uint32());
+          continue;
+        }
+        case 55: {
+          if (tag !== 442) {
+            break;
+          }
+
+          message.justSayNoRes = JustSayNoResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 60: {
+          if (tag !== 482) {
+            break;
+          }
+
+          message.dealBreaker = DealBreaker.decode(reader, reader.uint32());
+          continue;
+        }
+        case 61: {
+          if (tag !== 490) {
+            break;
+          }
+
+          message.dealBreakerRes = DealBreakerResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 65: {
+          if (tag !== 522) {
+            break;
+          }
+
+          message.rent = Rent.decode(reader, reader.uint32());
+          continue;
+        }
+        case 66: {
+          if (tag !== 530) {
+            break;
+          }
+
+          message.rentRes = RentResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 70: {
+          if (tag !== 562) {
+            break;
+          }
+
+          message.wildRent = WildRent.decode(reader, reader.uint32());
+          continue;
+        }
+        case 71: {
+          if (tag !== 570) {
+            break;
+          }
+
+          message.wildRentRes = WildRentResponse.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GameMessage {
+    return {
+      ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
+      pong: isSet(object.pong) ? Ping.fromJSON(object.pong) : undefined,
+      error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
+      playProperty: isSet(object.playProperty)
+        ? PlayProperty.fromJSON(object.playProperty)
+        : isSet(object.play_property)
+        ? PlayProperty.fromJSON(object.play_property)
+        : undefined,
+      playMoney: isSet(object.playMoney)
+        ? PlayMoney.fromJSON(object.playMoney)
+        : isSet(object.play_money)
+        ? PlayMoney.fromJSON(object.play_money)
+        : undefined,
+      passGo: isSet(object.passGo)
+        ? PassGo.fromJSON(object.passGo)
+        : isSet(object.pass_go)
+        ? PassGo.fromJSON(object.pass_go)
+        : undefined,
+      passGoRes: isSet(object.passGoRes)
+        ? PassGoResponse.fromJSON(object.passGoRes)
+        : isSet(object.pass_go_res)
+        ? PassGoResponse.fromJSON(object.pass_go_res)
+        : undefined,
+      doubleTheRent: isSet(object.doubleTheRent)
+        ? DoubleTheRent.fromJSON(object.doubleTheRent)
+        : isSet(object.double_the_rent)
+        ? DoubleTheRent.fromJSON(object.double_the_rent)
+        : undefined,
+      itsMyBirthday: isSet(object.itsMyBirthday)
+        ? ItsMyBirthday.fromJSON(object.itsMyBirthday)
+        : isSet(object.its_my_birthday)
+        ? ItsMyBirthday.fromJSON(object.its_my_birthday)
+        : undefined,
+      itsMyBirthdayRes: isSet(object.itsMyBirthdayRes)
+        ? ItsMyBirthdayResponse.fromJSON(object.itsMyBirthdayRes)
+        : isSet(object.its_my_birthday_res)
+        ? ItsMyBirthdayResponse.fromJSON(object.its_my_birthday_res)
+        : undefined,
+      house: isSet(object.house) ? House.fromJSON(object.house) : undefined,
+      slyDeal: isSet(object.slyDeal)
+        ? SlyDeal.fromJSON(object.slyDeal)
+        : isSet(object.sly_deal)
+        ? SlyDeal.fromJSON(object.sly_deal)
+        : undefined,
+      slyDealRes: isSet(object.slyDealRes)
+        ? SlyDealResponse.fromJSON(object.slyDealRes)
+        : isSet(object.sly_deal_res)
+        ? SlyDealResponse.fromJSON(object.sly_deal_res)
+        : undefined,
+      forcedDeal: isSet(object.forcedDeal)
+        ? ForcedDeal.fromJSON(object.forcedDeal)
+        : isSet(object.forced_deal)
+        ? ForcedDeal.fromJSON(object.forced_deal)
+        : undefined,
+      forcedDealRes: isSet(object.forcedDealRes)
+        ? ForcedDealResponse.fromJSON(object.forcedDealRes)
+        : isSet(object.forced_deal_res)
+        ? ForcedDealResponse.fromJSON(object.forced_deal_res)
+        : undefined,
+      debtCollector: isSet(object.debtCollector)
+        ? DebtCollector.fromJSON(object.debtCollector)
+        : isSet(object.debt_collector)
+        ? DebtCollector.fromJSON(object.debt_collector)
+        : undefined,
+      debtCollectorRes: isSet(object.debtCollectorRes)
+        ? DebtCollectorResponse.fromJSON(object.debtCollectorRes)
+        : isSet(object.debt_collector_res)
+        ? DebtCollectorResponse.fromJSON(object.debt_collector_res)
+        : undefined,
+      hotel: isSet(object.hotel) ? Hotel.fromJSON(object.hotel) : undefined,
+      justSayNoRes: isSet(object.justSayNoRes)
+        ? JustSayNoResponse.fromJSON(object.justSayNoRes)
+        : isSet(object.just_say_no_res)
+        ? JustSayNoResponse.fromJSON(object.just_say_no_res)
+        : undefined,
+      dealBreaker: isSet(object.dealBreaker)
+        ? DealBreaker.fromJSON(object.dealBreaker)
+        : isSet(object.deal_breaker)
+        ? DealBreaker.fromJSON(object.deal_breaker)
+        : undefined,
+      dealBreakerRes: isSet(object.dealBreakerRes)
+        ? DealBreakerResponse.fromJSON(object.dealBreakerRes)
+        : isSet(object.deal_breaker_res)
+        ? DealBreakerResponse.fromJSON(object.deal_breaker_res)
+        : undefined,
+      rent: isSet(object.rent) ? Rent.fromJSON(object.rent) : undefined,
+      rentRes: isSet(object.rentRes)
+        ? RentResponse.fromJSON(object.rentRes)
+        : isSet(object.rent_res)
+        ? RentResponse.fromJSON(object.rent_res)
+        : undefined,
+      wildRent: isSet(object.wildRent)
+        ? WildRent.fromJSON(object.wildRent)
+        : isSet(object.wild_rent)
+        ? WildRent.fromJSON(object.wild_rent)
+        : undefined,
+      wildRentRes: isSet(object.wildRentRes)
+        ? WildRentResponse.fromJSON(object.wildRentRes)
+        : isSet(object.wild_rent_res)
+        ? WildRentResponse.fromJSON(object.wild_rent_res)
+        : undefined,
+    };
+  },
+
+  toJSON(message: GameMessage): unknown {
+    const obj: any = {};
+    if (message.ping !== undefined) {
+      obj.ping = Ping.toJSON(message.ping);
+    }
+    if (message.pong !== undefined) {
+      obj.pong = Ping.toJSON(message.pong);
+    }
+    if (message.error !== undefined) {
+      obj.error = Error.toJSON(message.error);
+    }
+    if (message.playProperty !== undefined) {
+      obj.playProperty = PlayProperty.toJSON(message.playProperty);
+    }
+    if (message.playMoney !== undefined) {
+      obj.playMoney = PlayMoney.toJSON(message.playMoney);
+    }
+    if (message.passGo !== undefined) {
+      obj.passGo = PassGo.toJSON(message.passGo);
+    }
+    if (message.passGoRes !== undefined) {
+      obj.passGoRes = PassGoResponse.toJSON(message.passGoRes);
+    }
+    if (message.doubleTheRent !== undefined) {
+      obj.doubleTheRent = DoubleTheRent.toJSON(message.doubleTheRent);
+    }
+    if (message.itsMyBirthday !== undefined) {
+      obj.itsMyBirthday = ItsMyBirthday.toJSON(message.itsMyBirthday);
+    }
+    if (message.itsMyBirthdayRes !== undefined) {
+      obj.itsMyBirthdayRes = ItsMyBirthdayResponse.toJSON(message.itsMyBirthdayRes);
+    }
+    if (message.house !== undefined) {
+      obj.house = House.toJSON(message.house);
+    }
+    if (message.slyDeal !== undefined) {
+      obj.slyDeal = SlyDeal.toJSON(message.slyDeal);
+    }
+    if (message.slyDealRes !== undefined) {
+      obj.slyDealRes = SlyDealResponse.toJSON(message.slyDealRes);
+    }
+    if (message.forcedDeal !== undefined) {
+      obj.forcedDeal = ForcedDeal.toJSON(message.forcedDeal);
+    }
+    if (message.forcedDealRes !== undefined) {
+      obj.forcedDealRes = ForcedDealResponse.toJSON(message.forcedDealRes);
+    }
+    if (message.debtCollector !== undefined) {
+      obj.debtCollector = DebtCollector.toJSON(message.debtCollector);
+    }
+    if (message.debtCollectorRes !== undefined) {
+      obj.debtCollectorRes = DebtCollectorResponse.toJSON(message.debtCollectorRes);
+    }
+    if (message.hotel !== undefined) {
+      obj.hotel = Hotel.toJSON(message.hotel);
+    }
+    if (message.justSayNoRes !== undefined) {
+      obj.justSayNoRes = JustSayNoResponse.toJSON(message.justSayNoRes);
+    }
+    if (message.dealBreaker !== undefined) {
+      obj.dealBreaker = DealBreaker.toJSON(message.dealBreaker);
+    }
+    if (message.dealBreakerRes !== undefined) {
+      obj.dealBreakerRes = DealBreakerResponse.toJSON(message.dealBreakerRes);
+    }
+    if (message.rent !== undefined) {
+      obj.rent = Rent.toJSON(message.rent);
+    }
+    if (message.rentRes !== undefined) {
+      obj.rentRes = RentResponse.toJSON(message.rentRes);
+    }
+    if (message.wildRent !== undefined) {
+      obj.wildRent = WildRent.toJSON(message.wildRent);
+    }
+    if (message.wildRentRes !== undefined) {
+      obj.wildRentRes = WildRentResponse.toJSON(message.wildRentRes);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GameMessage>, I>>(base?: I): GameMessage {
+    return GameMessage.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GameMessage>, I>>(object: I): GameMessage {
+    const message = createBaseGameMessage();
+    message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
+    message.pong = (object.pong !== undefined && object.pong !== null) ? Ping.fromPartial(object.pong) : undefined;
+    message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
+    message.playProperty = (object.playProperty !== undefined && object.playProperty !== null)
+      ? PlayProperty.fromPartial(object.playProperty)
+      : undefined;
+    message.playMoney = (object.playMoney !== undefined && object.playMoney !== null)
+      ? PlayMoney.fromPartial(object.playMoney)
+      : undefined;
+    message.passGo = (object.passGo !== undefined && object.passGo !== null)
+      ? PassGo.fromPartial(object.passGo)
+      : undefined;
+    message.passGoRes = (object.passGoRes !== undefined && object.passGoRes !== null)
+      ? PassGoResponse.fromPartial(object.passGoRes)
+      : undefined;
+    message.doubleTheRent = (object.doubleTheRent !== undefined && object.doubleTheRent !== null)
+      ? DoubleTheRent.fromPartial(object.doubleTheRent)
+      : undefined;
+    message.itsMyBirthday = (object.itsMyBirthday !== undefined && object.itsMyBirthday !== null)
+      ? ItsMyBirthday.fromPartial(object.itsMyBirthday)
+      : undefined;
+    message.itsMyBirthdayRes = (object.itsMyBirthdayRes !== undefined && object.itsMyBirthdayRes !== null)
+      ? ItsMyBirthdayResponse.fromPartial(object.itsMyBirthdayRes)
+      : undefined;
+    message.house = (object.house !== undefined && object.house !== null) ? House.fromPartial(object.house) : undefined;
+    message.slyDeal = (object.slyDeal !== undefined && object.slyDeal !== null)
+      ? SlyDeal.fromPartial(object.slyDeal)
+      : undefined;
+    message.slyDealRes = (object.slyDealRes !== undefined && object.slyDealRes !== null)
+      ? SlyDealResponse.fromPartial(object.slyDealRes)
+      : undefined;
+    message.forcedDeal = (object.forcedDeal !== undefined && object.forcedDeal !== null)
+      ? ForcedDeal.fromPartial(object.forcedDeal)
+      : undefined;
+    message.forcedDealRes = (object.forcedDealRes !== undefined && object.forcedDealRes !== null)
+      ? ForcedDealResponse.fromPartial(object.forcedDealRes)
+      : undefined;
+    message.debtCollector = (object.debtCollector !== undefined && object.debtCollector !== null)
+      ? DebtCollector.fromPartial(object.debtCollector)
+      : undefined;
+    message.debtCollectorRes = (object.debtCollectorRes !== undefined && object.debtCollectorRes !== null)
+      ? DebtCollectorResponse.fromPartial(object.debtCollectorRes)
+      : undefined;
+    message.hotel = (object.hotel !== undefined && object.hotel !== null) ? Hotel.fromPartial(object.hotel) : undefined;
+    message.justSayNoRes = (object.justSayNoRes !== undefined && object.justSayNoRes !== null)
+      ? JustSayNoResponse.fromPartial(object.justSayNoRes)
+      : undefined;
+    message.dealBreaker = (object.dealBreaker !== undefined && object.dealBreaker !== null)
+      ? DealBreaker.fromPartial(object.dealBreaker)
+      : undefined;
+    message.dealBreakerRes = (object.dealBreakerRes !== undefined && object.dealBreakerRes !== null)
+      ? DealBreakerResponse.fromPartial(object.dealBreakerRes)
+      : undefined;
+    message.rent = (object.rent !== undefined && object.rent !== null) ? Rent.fromPartial(object.rent) : undefined;
+    message.rentRes = (object.rentRes !== undefined && object.rentRes !== null)
+      ? RentResponse.fromPartial(object.rentRes)
+      : undefined;
+    message.wildRent = (object.wildRent !== undefined && object.wildRent !== null)
+      ? WildRent.fromPartial(object.wildRent)
+      : undefined;
+    message.wildRentRes = (object.wildRentRes !== undefined && object.wildRentRes !== null)
+      ? WildRentResponse.fromPartial(object.wildRentRes)
+      : undefined;
     return message;
   },
 };
