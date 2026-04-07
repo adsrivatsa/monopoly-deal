@@ -4,29 +4,77 @@ import (
 	"fmt"
 	"monopoly-deal/internal/config"
 	"monopoly-deal/internal/service"
+	"monopoly-deal/internal/token"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
+	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/google"
+)
+
+const (
+	PROVIDER = "provider"
 )
 
 type Server struct {
-	cfg        config.Config
-	controller *service.Controller
-	router     *chi.Mux
+	cfg         config.Config
+	controller  *service.Controller
+	router      *chi.Mux
+	tokenMaker  token.Maker
+	cookieStore *sessions.CookieStore
+	sessionName string
 }
 
-func NewServer(cfg config.Config) *Server {
+func NewServer(cfg config.Config, pool *pgxpool.Pool) *Server {
+	initialiseGoth(cfg)
+
+	sessionName := "session"
+
+	cookieStore := sessions.NewCookieStore([]byte(cfg.CookieSecret))
+	cookieStore.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   100 * 365 * 24 * 60 * 60,
+		HttpOnly: true,
+		Secure:   cfg.IsProduction,
+	}
+
+	durations := map[token.TokenType]time.Duration{
+		token.AccessToken:  cfg.AccessTokenDuration,
+		token.RefreshToken: cfg.RefreshTokenDuration,
+	}
+	tokenMaker := token.NewMaker(durations, cfg.CookieSecret)
+
 	s := &Server{
-		cfg:        cfg,
-		controller: service.NewController(cfg),
+		cfg:         cfg,
+		controller:  service.NewController(cfg, pool),
+		tokenMaker:  tokenMaker,
+		cookieStore: cookieStore,
+		sessionName: sessionName,
 	}
 
 	s.addRoutes()
 
 	return s
+}
+
+func initialiseGoth(cfg config.Config) {
+	store := sessions.NewCookieStore([]byte(cfg.CookieSecret))
+	store.Options = &sessions.Options{
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   cfg.IsProduction,
+	}
+	gothic.Store = store
+	goth.UseProviders(
+		google.New(cfg.GoogleClientID, cfg.GoogleClientSecret, cfg.GoogleClientRedirect, "profile", "email"),
+	)
 }
 
 func (s *Server) addRoutes() {
@@ -51,6 +99,8 @@ func (s *Server) addRoutes() {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		Write(w, http.StatusOK, "success")
 	})
+
+	router.Mount("/auth", s.authRoutes())
 
 	s.router = router
 }

@@ -16,7 +16,7 @@ func main() {
 	pool := store.NewPostgresPool(cfg, time.Second*5)
 	defer pool.Close()
 
-	srv := NewServer(cfg)
+	srv := NewServer(cfg, pool)
 	err = srv.Start()
 	if err != nil {
 		panic(err)

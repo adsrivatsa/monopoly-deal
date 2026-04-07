@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	stderrors "errors"
 	"io"
+	"monopoly-deal/internal/errors"
 	"net/http"
 )
 
@@ -44,4 +46,12 @@ func Write(w http.ResponseWriter, status int, data any, headers ...http.Header) 
 	w.WriteHeader(status)
 	_, err = w.Write(out)
 	return err
+}
+
+func Error(w http.ResponseWriter, err error) {
+	var intErr errors.Error
+	if !stderrors.As(err, &intErr) {
+		stderrors.As(errors.Internal(err), &intErr)
+	}
+	Write(w, intErr.Status, intErr.Render())
 }

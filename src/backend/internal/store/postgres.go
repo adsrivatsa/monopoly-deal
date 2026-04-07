@@ -10,7 +10,6 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -39,22 +38,6 @@ func newPostgresPool(opts config.Config) (*pgxpool.Pool, error) {
 	cfg, err := pgxpool.ParseConfig(opts.DatabaseURL)
 	if err != nil {
 		return nil, err
-	}
-
-	cfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		t, err := conn.LoadType(ctx, "notification_link_type")
-		if err != nil {
-			return err
-		}
-		conn.TypeMap().RegisterType(t)
-
-		t, err = conn.LoadType(ctx, "_notification_link_type")
-		if err != nil {
-			return err
-		}
-		conn.TypeMap().RegisterType(t)
-
-		return nil
 	}
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), cfg)
