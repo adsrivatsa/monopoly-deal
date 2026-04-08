@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"monopoly-deal/internal/errors"
 	"monopoly-deal/internal/schema"
+	"monopoly-deal/internal/token"
 	"net/http"
 	"time"
 
@@ -21,8 +22,8 @@ func (s *Server) socketRoutes() *chi.Mux {
 	return router
 }
 
-func foreverPing(ctx context.Context, conn *websocket.Conn, interval time.Duration) {
-	ticker := time.NewTicker(interval)
+func (s *Server) foreverPing(ctx context.Context, conn *websocket.Conn) {
+	ticker := time.NewTicker(s.cfg.WebsocketPingInterval)
 	defer ticker.Stop()
 
 	for {
@@ -47,13 +48,19 @@ func foreverPing(ctx context.Context, conn *websocket.Conn, interval time.Durati
 }
 
 func (s *Server) foreverListRooms(ctx context.Context, conn *websocket.Conn) {
-	// TODO
+
 }
 
 var upgrader = websocket.Upgrader{}
 
 func (s *Server) LobbySocket(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	tp, err := tokenFromRequest(r, token.AccessToken)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -64,7 +71,7 @@ func (s *Server) LobbySocket(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	go foreverPing(ctx, conn, s.cfg.WebsocketPingInterval)
+	go s.foreverPing(ctx, conn)
 
 	go s.foreverListRooms(ctx, conn)
 
@@ -84,28 +91,16 @@ func (s *Server) LobbySocket(w http.ResponseWriter, r *http.Request) {
 
 		switch p := message.Payload.(type) {
 		case *schema.LobbyMessage_CreateRoom:
-			s.CreateRoom(ctx, conn, p.CreateRoom)
-
-		case *schema.LobbyMessage_CreateRoomRes:
-
-		case *schema.LobbyMessage_DeleteRoom:
-
-		case *schema.LobbyMessage_DeleteRoomRes:
-
-		case *schema.LobbyMessage_Error:
+			err = s.controller.CreateRoom(ctx, tp, p.CreateRoom)
 
 		case *schema.LobbyMessage_JoinRoom:
-
-		case *schema.LobbyMessage_JoinRoomRes:
+			err = s.controller.JoinRoom(ctx, tp, p.JoinRoom)
 
 		case *schema.LobbyMessage_LeaveRoom:
 
-		case *schema.LobbyMessage_LeaveRoomRes:
-
-		case *schema.LobbyMessage_Ping:
-
-		case *schema.LobbyMessage_RoomList:
-
+		}
+		if err != nil {
+			LobbyError(conn, err)
 		}
 	}
 

@@ -5,73 +5,8 @@
 package store
 
 import (
-	"database/sql/driver"
-	"fmt"
-	"time"
-
 	"github.com/google/uuid"
 )
-
-type RoomStatus string
-
-const (
-	RoomStatusLobby     RoomStatus = "lobby"
-	RoomStatusGame      RoomStatus = "game"
-	RoomStatusCompleted RoomStatus = "completed"
-)
-
-func (e *RoomStatus) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = RoomStatus(s)
-	case string:
-		*e = RoomStatus(s)
-	default:
-		return fmt.Errorf("unsupported scan type for RoomStatus: %T", src)
-	}
-	return nil
-}
-
-type NullRoomStatus struct {
-	RoomStatus RoomStatus `json:"room_status"`
-	Valid      bool       `json:"valid"` // Valid is true if RoomStatus is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullRoomStatus) Scan(value interface{}) error {
-	if value == nil {
-		ns.RoomStatus, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.RoomStatus.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullRoomStatus) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.RoomStatus), nil
-}
-
-func (e RoomStatus) Valid() bool {
-	switch e {
-	case RoomStatusLobby,
-		RoomStatusGame,
-		RoomStatusCompleted:
-		return true
-	}
-	return false
-}
-
-func AllRoomStatusValues() []RoomStatus {
-	return []RoomStatus{
-		RoomStatusLobby,
-		RoomStatusGame,
-		RoomStatusCompleted,
-	}
-}
 
 type Player struct {
 	PlayerID       uuid.UUID `json:"player_id"`
@@ -79,19 +14,4 @@ type Player struct {
 	Email          string    `json:"email"`
 	ImageUrl       string    `json:"image_url"`
 	RefreshTokenID uuid.UUID `json:"refresh_token_id"`
-}
-
-type Room struct {
-	RoomID      uuid.UUID  `json:"room_id"`
-	DisplayName string     `json:"display_name"`
-	Capacity    int32      `json:"capacity"`
-	RoomStatus  RoomStatus `json:"room_status"`
-	GameState   *string    `json:"game_state"`
-}
-
-type RoomPlayer struct {
-	RoomID   uuid.UUID `json:"room_id"`
-	PlayerID uuid.UUID `json:"player_id"`
-	JoinedAt time.Time `json:"joined_at"`
-	IsHost   bool      `json:"is_host"`
 }

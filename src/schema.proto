@@ -21,12 +21,18 @@ message Player {
   string display_name = 2;
   string avatar_url = 3;
   bool is_ready = 4;
+  bool is_host = 5;
 }
 
 enum RoomStatus {
   LOBBY = 0;
   GAME = 1;
   COMPLETED = 2;
+}
+
+message CreateRoom {
+  string display_name = 1;
+  int32 capacity = 2;
 }
 
 message Room {
@@ -37,49 +43,30 @@ message Room {
   int32 capacity = 5;
 }
 
-message RoomList {
-  repeated Room rooms = 1;
-}
-
-message CreateRoom {
-  string player_id = 1;
-  string display_name = 2;
-  int32 capacity = 3;
-}
-
-message CreateRoomResponse {
-  string player_id = 1;
-  string room_id = 2;
-  string display_name = 3;
-  RoomStatus status = 4;
-  int32 capacity = 5;
+message RoomCreated {
+  Room room = 1;
 }
 
 message JoinRoom {
-  string player_id = 1;
-  string room_id = 2;
-}
-
-message JoinRoomResponse {
-  string player_id = 1;
-  string room_id = 2;
-}
-
-message LeaveRoom {
-  string player_id = 1;
-  string room_id = 2;
-}
-
-message LeaveRoomResponse {
-  string player_id = 1;
-  string room_id = 2;
-}
-
-message DeleteRoom {
   string room_id = 1;
 }
 
-message DeleteRoomResponse {
+message PlayerJoinedRoom {
+  string room_id = 1;
+  Player player = 2;
+}
+
+message LeaveRoom {
+  string room_id = 1;
+}
+
+message PlayerLeftRoom {
+  string room_id = 1;
+  string played_id = 2;
+  string new_host_player_id = 3;
+}
+
+message RoomDeleted {
   string room_id = 1;
 }
 
@@ -281,15 +268,13 @@ message LobbyMessage {
     Ping ping = 1;
     Error error = 2;
 
-    RoomList room_list = 10;
-    CreateRoom create_room = 11;
-    CreateRoomResponse create_room_res = 12;
-    JoinRoom join_room = 13;
-    JoinRoomResponse join_room_res = 14;
-    LeaveRoom leave_room = 15;
-    LeaveRoomResponse leave_room_res = 16;
-    DeleteRoom delete_room = 17;
-    DeleteRoomResponse delete_room_res = 18;
+    CreateRoom create_room = 10;
+    RoomCreated room_created = 11;
+    JoinRoom join_room = 12;
+    PlayerJoinedRoom player_joined_room = 13;
+    LeaveRoom leave_room = 14;
+    PlayerLeftRoom player_left_room = 15;
+    RoomDeleted room_deleted = 16;
   }
 }
 

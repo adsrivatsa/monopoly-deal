@@ -411,6 +411,12 @@ export interface Player {
   displayName: string;
   avatarUrl: string;
   isReady: boolean;
+  isHost: boolean;
+}
+
+export interface CreateRoom {
+  displayName: string;
+  capacity: number;
 }
 
 export interface Room {
@@ -421,49 +427,30 @@ export interface Room {
   capacity: number;
 }
 
-export interface RoomList {
-  rooms: Room[];
-}
-
-export interface CreateRoom {
-  playerId: string;
-  displayName: string;
-  capacity: number;
-}
-
-export interface CreateRoomResponse {
-  playerId: string;
-  roomId: string;
-  displayName: string;
-  status: RoomStatus;
-  capacity: number;
+export interface RoomCreated {
+  room: Room | undefined;
 }
 
 export interface JoinRoom {
-  playerId: string;
   roomId: string;
 }
 
-export interface JoinRoomResponse {
-  playerId: string;
+export interface PlayerJoinedRoom {
   roomId: string;
+  player: Player | undefined;
 }
 
 export interface LeaveRoom {
-  playerId: string;
   roomId: string;
 }
 
-export interface LeaveRoomResponse {
-  playerId: string;
+export interface PlayerLeftRoom {
   roomId: string;
+  playedId: string;
+  newHostPlayerId: string;
 }
 
-export interface DeleteRoom {
-  roomId: string;
-}
-
-export interface DeleteRoomResponse {
+export interface RoomDeleted {
   roomId: string;
 }
 
@@ -605,15 +592,13 @@ export interface WildRentResponse {
 export interface LobbyMessage {
   ping?: Ping | undefined;
   error?: Error | undefined;
-  roomList?: RoomList | undefined;
   createRoom?: CreateRoom | undefined;
-  createRoomRes?: CreateRoomResponse | undefined;
+  roomCreated?: RoomCreated | undefined;
   joinRoom?: JoinRoom | undefined;
-  joinRoomRes?: JoinRoomResponse | undefined;
+  playerJoinedRoom?: PlayerJoinedRoom | undefined;
   leaveRoom?: LeaveRoom | undefined;
-  leaveRoomRes?: LeaveRoomResponse | undefined;
-  deleteRoom?: DeleteRoom | undefined;
-  deleteRoomRes?: DeleteRoomResponse | undefined;
+  playerLeftRoom?: PlayerLeftRoom | undefined;
+  roomDeleted?: RoomDeleted | undefined;
 }
 
 export interface GameMessage {
@@ -800,7 +785,7 @@ export const Error: MessageFns<Error> = {
 };
 
 function createBasePlayer(): Player {
-  return { playerId: "", displayName: "", avatarUrl: "", isReady: false };
+  return { playerId: "", displayName: "", avatarUrl: "", isReady: false, isHost: false };
 }
 
 export const Player: MessageFns<Player> = {
@@ -816,6 +801,9 @@ export const Player: MessageFns<Player> = {
     }
     if (message.isReady !== false) {
       writer.uint32(32).bool(message.isReady);
+    }
+    if (message.isHost !== false) {
+      writer.uint32(40).bool(message.isHost);
     }
     return writer;
   },
@@ -859,6 +847,14 @@ export const Player: MessageFns<Player> = {
           message.isReady = reader.bool();
           continue;
         }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.isHost = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -890,6 +886,11 @@ export const Player: MessageFns<Player> = {
         : isSet(object.is_ready)
         ? globalThis.Boolean(object.is_ready)
         : false,
+      isHost: isSet(object.isHost)
+        ? globalThis.Boolean(object.isHost)
+        : isSet(object.is_host)
+        ? globalThis.Boolean(object.is_host)
+        : false,
     };
   },
 
@@ -907,6 +908,9 @@ export const Player: MessageFns<Player> = {
     if (message.isReady !== false) {
       obj.isReady = message.isReady;
     }
+    if (message.isHost !== false) {
+      obj.isHost = message.isHost;
+    }
     return obj;
   },
 
@@ -919,6 +923,87 @@ export const Player: MessageFns<Player> = {
     message.displayName = object.displayName ?? "";
     message.avatarUrl = object.avatarUrl ?? "";
     message.isReady = object.isReady ?? false;
+    message.isHost = object.isHost ?? false;
+    return message;
+  },
+};
+
+function createBaseCreateRoom(): CreateRoom {
+  return { displayName: "", capacity: 0 };
+}
+
+export const CreateRoom: MessageFns<CreateRoom> = {
+  encode(message: CreateRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.displayName !== "") {
+      writer.uint32(10).string(message.displayName);
+    }
+    if (message.capacity !== 0) {
+      writer.uint32(16).int32(message.capacity);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateRoom {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCreateRoom();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.capacity = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CreateRoom {
+    return {
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : "",
+      capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
+    };
+  },
+
+  toJSON(message: CreateRoom): unknown {
+    const obj: any = {};
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.capacity !== 0) {
+      obj.capacity = Math.round(message.capacity);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CreateRoom>, I>>(base?: I): CreateRoom {
+    return CreateRoom.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CreateRoom>, I>>(object: I): CreateRoom {
+    const message = createBaseCreateRoom();
+    message.displayName = object.displayName ?? "";
+    message.capacity = object.capacity ?? 0;
     return message;
   },
 };
@@ -1055,22 +1140,22 @@ export const Room: MessageFns<Room> = {
   },
 };
 
-function createBaseRoomList(): RoomList {
-  return { rooms: [] };
+function createBaseRoomCreated(): RoomCreated {
+  return { room: undefined };
 }
 
-export const RoomList: MessageFns<RoomList> = {
-  encode(message: RoomList, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    for (const v of message.rooms) {
-      Room.encode(v!, writer.uint32(10).fork()).join();
+export const RoomCreated: MessageFns<RoomCreated> = {
+  encode(message: RoomCreated, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.room !== undefined) {
+      Room.encode(message.room, writer.uint32(10).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RoomList {
+  decode(input: BinaryReader | Uint8Array, length?: number): RoomCreated {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRoomList();
+    const message = createBaseRoomCreated();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1079,7 +1164,7 @@ export const RoomList: MessageFns<RoomList> = {
             break;
           }
 
-          message.rooms.push(Room.decode(reader, reader.uint32()));
+          message.room = Room.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -1091,275 +1176,36 @@ export const RoomList: MessageFns<RoomList> = {
     return message;
   },
 
-  fromJSON(object: any): RoomList {
-    return { rooms: globalThis.Array.isArray(object?.rooms) ? object.rooms.map((e: any) => Room.fromJSON(e)) : [] };
+  fromJSON(object: any): RoomCreated {
+    return { room: isSet(object.room) ? Room.fromJSON(object.room) : undefined };
   },
 
-  toJSON(message: RoomList): unknown {
+  toJSON(message: RoomCreated): unknown {
     const obj: any = {};
-    if (message.rooms?.length) {
-      obj.rooms = message.rooms.map((e) => Room.toJSON(e));
+    if (message.room !== undefined) {
+      obj.room = Room.toJSON(message.room);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RoomList>, I>>(base?: I): RoomList {
-    return RoomList.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<RoomCreated>, I>>(base?: I): RoomCreated {
+    return RoomCreated.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RoomList>, I>>(object: I): RoomList {
-    const message = createBaseRoomList();
-    message.rooms = object.rooms?.map((e) => Room.fromPartial(e)) || [];
-    return message;
-  },
-};
-
-function createBaseCreateRoom(): CreateRoom {
-  return { playerId: "", displayName: "", capacity: 0 };
-}
-
-export const CreateRoom: MessageFns<CreateRoom> = {
-  encode(message: CreateRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.playerId !== "") {
-      writer.uint32(10).string(message.playerId);
-    }
-    if (message.displayName !== "") {
-      writer.uint32(18).string(message.displayName);
-    }
-    if (message.capacity !== 0) {
-      writer.uint32(24).int32(message.capacity);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): CreateRoom {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseCreateRoom();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.playerId = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.displayName = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 24) {
-            break;
-          }
-
-          message.capacity = reader.int32();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): CreateRoom {
-    return {
-      playerId: isSet(object.playerId)
-        ? globalThis.String(object.playerId)
-        : isSet(object.player_id)
-        ? globalThis.String(object.player_id)
-        : "",
-      displayName: isSet(object.displayName)
-        ? globalThis.String(object.displayName)
-        : isSet(object.display_name)
-        ? globalThis.String(object.display_name)
-        : "",
-      capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
-    };
-  },
-
-  toJSON(message: CreateRoom): unknown {
-    const obj: any = {};
-    if (message.playerId !== "") {
-      obj.playerId = message.playerId;
-    }
-    if (message.displayName !== "") {
-      obj.displayName = message.displayName;
-    }
-    if (message.capacity !== 0) {
-      obj.capacity = Math.round(message.capacity);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CreateRoom>, I>>(base?: I): CreateRoom {
-    return CreateRoom.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CreateRoom>, I>>(object: I): CreateRoom {
-    const message = createBaseCreateRoom();
-    message.playerId = object.playerId ?? "";
-    message.displayName = object.displayName ?? "";
-    message.capacity = object.capacity ?? 0;
-    return message;
-  },
-};
-
-function createBaseCreateRoomResponse(): CreateRoomResponse {
-  return { playerId: "", roomId: "", displayName: "", status: 0, capacity: 0 };
-}
-
-export const CreateRoomResponse: MessageFns<CreateRoomResponse> = {
-  encode(message: CreateRoomResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.playerId !== "") {
-      writer.uint32(10).string(message.playerId);
-    }
-    if (message.roomId !== "") {
-      writer.uint32(18).string(message.roomId);
-    }
-    if (message.displayName !== "") {
-      writer.uint32(26).string(message.displayName);
-    }
-    if (message.status !== 0) {
-      writer.uint32(32).int32(message.status);
-    }
-    if (message.capacity !== 0) {
-      writer.uint32(40).int32(message.capacity);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): CreateRoomResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseCreateRoomResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.playerId = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.roomId = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.displayName = reader.string();
-          continue;
-        }
-        case 4: {
-          if (tag !== 32) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 5: {
-          if (tag !== 40) {
-            break;
-          }
-
-          message.capacity = reader.int32();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): CreateRoomResponse {
-    return {
-      playerId: isSet(object.playerId)
-        ? globalThis.String(object.playerId)
-        : isSet(object.player_id)
-        ? globalThis.String(object.player_id)
-        : "",
-      roomId: isSet(object.roomId)
-        ? globalThis.String(object.roomId)
-        : isSet(object.room_id)
-        ? globalThis.String(object.room_id)
-        : "",
-      displayName: isSet(object.displayName)
-        ? globalThis.String(object.displayName)
-        : isSet(object.display_name)
-        ? globalThis.String(object.display_name)
-        : "",
-      status: isSet(object.status) ? roomStatusFromJSON(object.status) : 0,
-      capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
-    };
-  },
-
-  toJSON(message: CreateRoomResponse): unknown {
-    const obj: any = {};
-    if (message.playerId !== "") {
-      obj.playerId = message.playerId;
-    }
-    if (message.roomId !== "") {
-      obj.roomId = message.roomId;
-    }
-    if (message.displayName !== "") {
-      obj.displayName = message.displayName;
-    }
-    if (message.status !== 0) {
-      obj.status = roomStatusToJSON(message.status);
-    }
-    if (message.capacity !== 0) {
-      obj.capacity = Math.round(message.capacity);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CreateRoomResponse>, I>>(base?: I): CreateRoomResponse {
-    return CreateRoomResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CreateRoomResponse>, I>>(object: I): CreateRoomResponse {
-    const message = createBaseCreateRoomResponse();
-    message.playerId = object.playerId ?? "";
-    message.roomId = object.roomId ?? "";
-    message.displayName = object.displayName ?? "";
-    message.status = object.status ?? 0;
-    message.capacity = object.capacity ?? 0;
+  fromPartial<I extends Exact<DeepPartial<RoomCreated>, I>>(object: I): RoomCreated {
+    const message = createBaseRoomCreated();
+    message.room = (object.room !== undefined && object.room !== null) ? Room.fromPartial(object.room) : undefined;
     return message;
   },
 };
 
 function createBaseJoinRoom(): JoinRoom {
-  return { playerId: "", roomId: "" };
+  return { roomId: "" };
 }
 
 export const JoinRoom: MessageFns<JoinRoom> = {
   encode(message: JoinRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.playerId !== "") {
-      writer.uint32(10).string(message.playerId);
-    }
     if (message.roomId !== "") {
-      writer.uint32(18).string(message.roomId);
+      writer.uint32(10).string(message.roomId);
     }
     return writer;
   },
@@ -1373,14 +1219,6 @@ export const JoinRoom: MessageFns<JoinRoom> = {
       switch (tag >>> 3) {
         case 1: {
           if (tag !== 10) {
-            break;
-          }
-
-          message.playerId = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
             break;
           }
 
@@ -1398,11 +1236,6 @@ export const JoinRoom: MessageFns<JoinRoom> = {
 
   fromJSON(object: any): JoinRoom {
     return {
-      playerId: isSet(object.playerId)
-        ? globalThis.String(object.playerId)
-        : isSet(object.player_id)
-        ? globalThis.String(object.player_id)
-        : "",
       roomId: isSet(object.roomId)
         ? globalThis.String(object.roomId)
         : isSet(object.room_id)
@@ -1413,9 +1246,6 @@ export const JoinRoom: MessageFns<JoinRoom> = {
 
   toJSON(message: JoinRoom): unknown {
     const obj: any = {};
-    if (message.playerId !== "") {
-      obj.playerId = message.playerId;
-    }
     if (message.roomId !== "") {
       obj.roomId = message.roomId;
     }
@@ -1427,31 +1257,30 @@ export const JoinRoom: MessageFns<JoinRoom> = {
   },
   fromPartial<I extends Exact<DeepPartial<JoinRoom>, I>>(object: I): JoinRoom {
     const message = createBaseJoinRoom();
-    message.playerId = object.playerId ?? "";
     message.roomId = object.roomId ?? "";
     return message;
   },
 };
 
-function createBaseJoinRoomResponse(): JoinRoomResponse {
-  return { playerId: "", roomId: "" };
+function createBasePlayerJoinedRoom(): PlayerJoinedRoom {
+  return { roomId: "", player: undefined };
 }
 
-export const JoinRoomResponse: MessageFns<JoinRoomResponse> = {
-  encode(message: JoinRoomResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.playerId !== "") {
-      writer.uint32(10).string(message.playerId);
-    }
+export const PlayerJoinedRoom: MessageFns<PlayerJoinedRoom> = {
+  encode(message: PlayerJoinedRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.roomId !== "") {
-      writer.uint32(18).string(message.roomId);
+      writer.uint32(10).string(message.roomId);
+    }
+    if (message.player !== undefined) {
+      Player.encode(message.player, writer.uint32(18).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): JoinRoomResponse {
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayerJoinedRoom {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseJoinRoomResponse();
+    const message = createBasePlayerJoinedRoom();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1460,7 +1289,7 @@ export const JoinRoomResponse: MessageFns<JoinRoomResponse> = {
             break;
           }
 
-          message.playerId = reader.string();
+          message.roomId = reader.string();
           continue;
         }
         case 2: {
@@ -1468,7 +1297,7 @@ export const JoinRoomResponse: MessageFns<JoinRoomResponse> = {
             break;
           }
 
-          message.roomId = reader.string();
+          message.player = Player.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -1480,54 +1309,49 @@ export const JoinRoomResponse: MessageFns<JoinRoomResponse> = {
     return message;
   },
 
-  fromJSON(object: any): JoinRoomResponse {
+  fromJSON(object: any): PlayerJoinedRoom {
     return {
-      playerId: isSet(object.playerId)
-        ? globalThis.String(object.playerId)
-        : isSet(object.player_id)
-        ? globalThis.String(object.player_id)
-        : "",
       roomId: isSet(object.roomId)
         ? globalThis.String(object.roomId)
         : isSet(object.room_id)
         ? globalThis.String(object.room_id)
         : "",
+      player: isSet(object.player) ? Player.fromJSON(object.player) : undefined,
     };
   },
 
-  toJSON(message: JoinRoomResponse): unknown {
+  toJSON(message: PlayerJoinedRoom): unknown {
     const obj: any = {};
-    if (message.playerId !== "") {
-      obj.playerId = message.playerId;
-    }
     if (message.roomId !== "") {
       obj.roomId = message.roomId;
+    }
+    if (message.player !== undefined) {
+      obj.player = Player.toJSON(message.player);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<JoinRoomResponse>, I>>(base?: I): JoinRoomResponse {
-    return JoinRoomResponse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<PlayerJoinedRoom>, I>>(base?: I): PlayerJoinedRoom {
+    return PlayerJoinedRoom.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<JoinRoomResponse>, I>>(object: I): JoinRoomResponse {
-    const message = createBaseJoinRoomResponse();
-    message.playerId = object.playerId ?? "";
+  fromPartial<I extends Exact<DeepPartial<PlayerJoinedRoom>, I>>(object: I): PlayerJoinedRoom {
+    const message = createBasePlayerJoinedRoom();
     message.roomId = object.roomId ?? "";
+    message.player = (object.player !== undefined && object.player !== null)
+      ? Player.fromPartial(object.player)
+      : undefined;
     return message;
   },
 };
 
 function createBaseLeaveRoom(): LeaveRoom {
-  return { playerId: "", roomId: "" };
+  return { roomId: "" };
 }
 
 export const LeaveRoom: MessageFns<LeaveRoom> = {
   encode(message: LeaveRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.playerId !== "") {
-      writer.uint32(10).string(message.playerId);
-    }
     if (message.roomId !== "") {
-      writer.uint32(18).string(message.roomId);
+      writer.uint32(10).string(message.roomId);
     }
     return writer;
   },
@@ -1541,14 +1365,6 @@ export const LeaveRoom: MessageFns<LeaveRoom> = {
       switch (tag >>> 3) {
         case 1: {
           if (tag !== 10) {
-            break;
-          }
-
-          message.playerId = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
             break;
           }
 
@@ -1566,11 +1382,6 @@ export const LeaveRoom: MessageFns<LeaveRoom> = {
 
   fromJSON(object: any): LeaveRoom {
     return {
-      playerId: isSet(object.playerId)
-        ? globalThis.String(object.playerId)
-        : isSet(object.player_id)
-        ? globalThis.String(object.player_id)
-        : "",
       roomId: isSet(object.roomId)
         ? globalThis.String(object.roomId)
         : isSet(object.room_id)
@@ -1581,9 +1392,6 @@ export const LeaveRoom: MessageFns<LeaveRoom> = {
 
   toJSON(message: LeaveRoom): unknown {
     const obj: any = {};
-    if (message.playerId !== "") {
-      obj.playerId = message.playerId;
-    }
     if (message.roomId !== "") {
       obj.roomId = message.roomId;
     }
@@ -1595,31 +1403,33 @@ export const LeaveRoom: MessageFns<LeaveRoom> = {
   },
   fromPartial<I extends Exact<DeepPartial<LeaveRoom>, I>>(object: I): LeaveRoom {
     const message = createBaseLeaveRoom();
-    message.playerId = object.playerId ?? "";
     message.roomId = object.roomId ?? "";
     return message;
   },
 };
 
-function createBaseLeaveRoomResponse(): LeaveRoomResponse {
-  return { playerId: "", roomId: "" };
+function createBasePlayerLeftRoom(): PlayerLeftRoom {
+  return { roomId: "", playedId: "", newHostPlayerId: "" };
 }
 
-export const LeaveRoomResponse: MessageFns<LeaveRoomResponse> = {
-  encode(message: LeaveRoomResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.playerId !== "") {
-      writer.uint32(10).string(message.playerId);
-    }
+export const PlayerLeftRoom: MessageFns<PlayerLeftRoom> = {
+  encode(message: PlayerLeftRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.roomId !== "") {
-      writer.uint32(18).string(message.roomId);
+      writer.uint32(10).string(message.roomId);
+    }
+    if (message.playedId !== "") {
+      writer.uint32(18).string(message.playedId);
+    }
+    if (message.newHostPlayerId !== "") {
+      writer.uint32(26).string(message.newHostPlayerId);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): LeaveRoomResponse {
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayerLeftRoom {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseLeaveRoomResponse();
+    const message = createBasePlayerLeftRoom();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1628,7 +1438,7 @@ export const LeaveRoomResponse: MessageFns<LeaveRoomResponse> = {
             break;
           }
 
-          message.playerId = reader.string();
+          message.roomId = reader.string();
           continue;
         }
         case 2: {
@@ -1636,7 +1446,15 @@ export const LeaveRoomResponse: MessageFns<LeaveRoomResponse> = {
             break;
           }
 
-          message.roomId = reader.string();
+          message.playedId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.newHostPlayerId = reader.string();
           continue;
         }
       }
@@ -1648,59 +1466,68 @@ export const LeaveRoomResponse: MessageFns<LeaveRoomResponse> = {
     return message;
   },
 
-  fromJSON(object: any): LeaveRoomResponse {
+  fromJSON(object: any): PlayerLeftRoom {
     return {
-      playerId: isSet(object.playerId)
-        ? globalThis.String(object.playerId)
-        : isSet(object.player_id)
-        ? globalThis.String(object.player_id)
-        : "",
       roomId: isSet(object.roomId)
         ? globalThis.String(object.roomId)
         : isSet(object.room_id)
         ? globalThis.String(object.room_id)
         : "",
+      playedId: isSet(object.playedId)
+        ? globalThis.String(object.playedId)
+        : isSet(object.played_id)
+        ? globalThis.String(object.played_id)
+        : "",
+      newHostPlayerId: isSet(object.newHostPlayerId)
+        ? globalThis.String(object.newHostPlayerId)
+        : isSet(object.new_host_player_id)
+        ? globalThis.String(object.new_host_player_id)
+        : "",
     };
   },
 
-  toJSON(message: LeaveRoomResponse): unknown {
+  toJSON(message: PlayerLeftRoom): unknown {
     const obj: any = {};
-    if (message.playerId !== "") {
-      obj.playerId = message.playerId;
-    }
     if (message.roomId !== "") {
       obj.roomId = message.roomId;
+    }
+    if (message.playedId !== "") {
+      obj.playedId = message.playedId;
+    }
+    if (message.newHostPlayerId !== "") {
+      obj.newHostPlayerId = message.newHostPlayerId;
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<LeaveRoomResponse>, I>>(base?: I): LeaveRoomResponse {
-    return LeaveRoomResponse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<PlayerLeftRoom>, I>>(base?: I): PlayerLeftRoom {
+    return PlayerLeftRoom.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<LeaveRoomResponse>, I>>(object: I): LeaveRoomResponse {
-    const message = createBaseLeaveRoomResponse();
-    message.playerId = object.playerId ?? "";
+  fromPartial<I extends Exact<DeepPartial<PlayerLeftRoom>, I>>(object: I): PlayerLeftRoom {
+    const message = createBasePlayerLeftRoom();
     message.roomId = object.roomId ?? "";
+    message.playedId = object.playedId ?? "";
+    message.newHostPlayerId = object.newHostPlayerId ?? "";
     return message;
   },
 };
 
-function createBaseDeleteRoom(): DeleteRoom {
+function createBaseRoomDeleted(): RoomDeleted {
   return { roomId: "" };
 }
 
-export const DeleteRoom: MessageFns<DeleteRoom> = {
-  encode(message: DeleteRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const RoomDeleted: MessageFns<RoomDeleted> = {
+  encode(message: RoomDeleted, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.roomId !== "") {
       writer.uint32(10).string(message.roomId);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): DeleteRoom {
+  decode(input: BinaryReader | Uint8Array, length?: number): RoomDeleted {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseDeleteRoom();
+    const message = createBaseRoomDeleted();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1721,7 +1548,7 @@ export const DeleteRoom: MessageFns<DeleteRoom> = {
     return message;
   },
 
-  fromJSON(object: any): DeleteRoom {
+  fromJSON(object: any): RoomDeleted {
     return {
       roomId: isSet(object.roomId)
         ? globalThis.String(object.roomId)
@@ -1731,7 +1558,7 @@ export const DeleteRoom: MessageFns<DeleteRoom> = {
     };
   },
 
-  toJSON(message: DeleteRoom): unknown {
+  toJSON(message: RoomDeleted): unknown {
     const obj: any = {};
     if (message.roomId !== "") {
       obj.roomId = message.roomId;
@@ -1739,75 +1566,11 @@ export const DeleteRoom: MessageFns<DeleteRoom> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<DeleteRoom>, I>>(base?: I): DeleteRoom {
-    return DeleteRoom.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<RoomDeleted>, I>>(base?: I): RoomDeleted {
+    return RoomDeleted.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<DeleteRoom>, I>>(object: I): DeleteRoom {
-    const message = createBaseDeleteRoom();
-    message.roomId = object.roomId ?? "";
-    return message;
-  },
-};
-
-function createBaseDeleteRoomResponse(): DeleteRoomResponse {
-  return { roomId: "" };
-}
-
-export const DeleteRoomResponse: MessageFns<DeleteRoomResponse> = {
-  encode(message: DeleteRoomResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.roomId !== "") {
-      writer.uint32(10).string(message.roomId);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): DeleteRoomResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseDeleteRoomResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.roomId = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): DeleteRoomResponse {
-    return {
-      roomId: isSet(object.roomId)
-        ? globalThis.String(object.roomId)
-        : isSet(object.room_id)
-        ? globalThis.String(object.room_id)
-        : "",
-    };
-  },
-
-  toJSON(message: DeleteRoomResponse): unknown {
-    const obj: any = {};
-    if (message.roomId !== "") {
-      obj.roomId = message.roomId;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<DeleteRoomResponse>, I>>(base?: I): DeleteRoomResponse {
-    return DeleteRoomResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<DeleteRoomResponse>, I>>(object: I): DeleteRoomResponse {
-    const message = createBaseDeleteRoomResponse();
+  fromPartial<I extends Exact<DeepPartial<RoomDeleted>, I>>(object: I): RoomDeleted {
+    const message = createBaseRoomDeleted();
     message.roomId = object.roomId ?? "";
     return message;
   },
@@ -4019,15 +3782,13 @@ function createBaseLobbyMessage(): LobbyMessage {
   return {
     ping: undefined,
     error: undefined,
-    roomList: undefined,
     createRoom: undefined,
-    createRoomRes: undefined,
+    roomCreated: undefined,
     joinRoom: undefined,
-    joinRoomRes: undefined,
+    playerJoinedRoom: undefined,
     leaveRoom: undefined,
-    leaveRoomRes: undefined,
-    deleteRoom: undefined,
-    deleteRoomRes: undefined,
+    playerLeftRoom: undefined,
+    roomDeleted: undefined,
   };
 }
 
@@ -4039,32 +3800,26 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
     if (message.error !== undefined) {
       Error.encode(message.error, writer.uint32(18).fork()).join();
     }
-    if (message.roomList !== undefined) {
-      RoomList.encode(message.roomList, writer.uint32(82).fork()).join();
-    }
     if (message.createRoom !== undefined) {
-      CreateRoom.encode(message.createRoom, writer.uint32(90).fork()).join();
+      CreateRoom.encode(message.createRoom, writer.uint32(82).fork()).join();
     }
-    if (message.createRoomRes !== undefined) {
-      CreateRoomResponse.encode(message.createRoomRes, writer.uint32(98).fork()).join();
+    if (message.roomCreated !== undefined) {
+      RoomCreated.encode(message.roomCreated, writer.uint32(90).fork()).join();
     }
     if (message.joinRoom !== undefined) {
-      JoinRoom.encode(message.joinRoom, writer.uint32(106).fork()).join();
+      JoinRoom.encode(message.joinRoom, writer.uint32(98).fork()).join();
     }
-    if (message.joinRoomRes !== undefined) {
-      JoinRoomResponse.encode(message.joinRoomRes, writer.uint32(114).fork()).join();
+    if (message.playerJoinedRoom !== undefined) {
+      PlayerJoinedRoom.encode(message.playerJoinedRoom, writer.uint32(106).fork()).join();
     }
     if (message.leaveRoom !== undefined) {
-      LeaveRoom.encode(message.leaveRoom, writer.uint32(122).fork()).join();
+      LeaveRoom.encode(message.leaveRoom, writer.uint32(114).fork()).join();
     }
-    if (message.leaveRoomRes !== undefined) {
-      LeaveRoomResponse.encode(message.leaveRoomRes, writer.uint32(130).fork()).join();
+    if (message.playerLeftRoom !== undefined) {
+      PlayerLeftRoom.encode(message.playerLeftRoom, writer.uint32(122).fork()).join();
     }
-    if (message.deleteRoom !== undefined) {
-      DeleteRoom.encode(message.deleteRoom, writer.uint32(138).fork()).join();
-    }
-    if (message.deleteRoomRes !== undefined) {
-      DeleteRoomResponse.encode(message.deleteRoomRes, writer.uint32(146).fork()).join();
+    if (message.roomDeleted !== undefined) {
+      RoomDeleted.encode(message.roomDeleted, writer.uint32(130).fork()).join();
     }
     return writer;
   },
@@ -4097,7 +3852,7 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
             break;
           }
 
-          message.roomList = RoomList.decode(reader, reader.uint32());
+          message.createRoom = CreateRoom.decode(reader, reader.uint32());
           continue;
         }
         case 11: {
@@ -4105,7 +3860,7 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
             break;
           }
 
-          message.createRoom = CreateRoom.decode(reader, reader.uint32());
+          message.roomCreated = RoomCreated.decode(reader, reader.uint32());
           continue;
         }
         case 12: {
@@ -4113,7 +3868,7 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
             break;
           }
 
-          message.createRoomRes = CreateRoomResponse.decode(reader, reader.uint32());
+          message.joinRoom = JoinRoom.decode(reader, reader.uint32());
           continue;
         }
         case 13: {
@@ -4121,7 +3876,7 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
             break;
           }
 
-          message.joinRoom = JoinRoom.decode(reader, reader.uint32());
+          message.playerJoinedRoom = PlayerJoinedRoom.decode(reader, reader.uint32());
           continue;
         }
         case 14: {
@@ -4129,7 +3884,7 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
             break;
           }
 
-          message.joinRoomRes = JoinRoomResponse.decode(reader, reader.uint32());
+          message.leaveRoom = LeaveRoom.decode(reader, reader.uint32());
           continue;
         }
         case 15: {
@@ -4137,7 +3892,7 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
             break;
           }
 
-          message.leaveRoom = LeaveRoom.decode(reader, reader.uint32());
+          message.playerLeftRoom = PlayerLeftRoom.decode(reader, reader.uint32());
           continue;
         }
         case 16: {
@@ -4145,23 +3900,7 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
             break;
           }
 
-          message.leaveRoomRes = LeaveRoomResponse.decode(reader, reader.uint32());
-          continue;
-        }
-        case 17: {
-          if (tag !== 138) {
-            break;
-          }
-
-          message.deleteRoom = DeleteRoom.decode(reader, reader.uint32());
-          continue;
-        }
-        case 18: {
-          if (tag !== 146) {
-            break;
-          }
-
-          message.deleteRoomRes = DeleteRoomResponse.decode(reader, reader.uint32());
+          message.roomDeleted = RoomDeleted.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -4177,50 +3916,40 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
     return {
       ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
       error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
-      roomList: isSet(object.roomList)
-        ? RoomList.fromJSON(object.roomList)
-        : isSet(object.room_list)
-        ? RoomList.fromJSON(object.room_list)
-        : undefined,
       createRoom: isSet(object.createRoom)
         ? CreateRoom.fromJSON(object.createRoom)
         : isSet(object.create_room)
         ? CreateRoom.fromJSON(object.create_room)
         : undefined,
-      createRoomRes: isSet(object.createRoomRes)
-        ? CreateRoomResponse.fromJSON(object.createRoomRes)
-        : isSet(object.create_room_res)
-        ? CreateRoomResponse.fromJSON(object.create_room_res)
+      roomCreated: isSet(object.roomCreated)
+        ? RoomCreated.fromJSON(object.roomCreated)
+        : isSet(object.room_created)
+        ? RoomCreated.fromJSON(object.room_created)
         : undefined,
       joinRoom: isSet(object.joinRoom)
         ? JoinRoom.fromJSON(object.joinRoom)
         : isSet(object.join_room)
         ? JoinRoom.fromJSON(object.join_room)
         : undefined,
-      joinRoomRes: isSet(object.joinRoomRes)
-        ? JoinRoomResponse.fromJSON(object.joinRoomRes)
-        : isSet(object.join_room_res)
-        ? JoinRoomResponse.fromJSON(object.join_room_res)
+      playerJoinedRoom: isSet(object.playerJoinedRoom)
+        ? PlayerJoinedRoom.fromJSON(object.playerJoinedRoom)
+        : isSet(object.player_joined_room)
+        ? PlayerJoinedRoom.fromJSON(object.player_joined_room)
         : undefined,
       leaveRoom: isSet(object.leaveRoom)
         ? LeaveRoom.fromJSON(object.leaveRoom)
         : isSet(object.leave_room)
         ? LeaveRoom.fromJSON(object.leave_room)
         : undefined,
-      leaveRoomRes: isSet(object.leaveRoomRes)
-        ? LeaveRoomResponse.fromJSON(object.leaveRoomRes)
-        : isSet(object.leave_room_res)
-        ? LeaveRoomResponse.fromJSON(object.leave_room_res)
+      playerLeftRoom: isSet(object.playerLeftRoom)
+        ? PlayerLeftRoom.fromJSON(object.playerLeftRoom)
+        : isSet(object.player_left_room)
+        ? PlayerLeftRoom.fromJSON(object.player_left_room)
         : undefined,
-      deleteRoom: isSet(object.deleteRoom)
-        ? DeleteRoom.fromJSON(object.deleteRoom)
-        : isSet(object.delete_room)
-        ? DeleteRoom.fromJSON(object.delete_room)
-        : undefined,
-      deleteRoomRes: isSet(object.deleteRoomRes)
-        ? DeleteRoomResponse.fromJSON(object.deleteRoomRes)
-        : isSet(object.delete_room_res)
-        ? DeleteRoomResponse.fromJSON(object.delete_room_res)
+      roomDeleted: isSet(object.roomDeleted)
+        ? RoomDeleted.fromJSON(object.roomDeleted)
+        : isSet(object.room_deleted)
+        ? RoomDeleted.fromJSON(object.room_deleted)
         : undefined,
     };
   },
@@ -4233,32 +3962,26 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
     if (message.error !== undefined) {
       obj.error = Error.toJSON(message.error);
     }
-    if (message.roomList !== undefined) {
-      obj.roomList = RoomList.toJSON(message.roomList);
-    }
     if (message.createRoom !== undefined) {
       obj.createRoom = CreateRoom.toJSON(message.createRoom);
     }
-    if (message.createRoomRes !== undefined) {
-      obj.createRoomRes = CreateRoomResponse.toJSON(message.createRoomRes);
+    if (message.roomCreated !== undefined) {
+      obj.roomCreated = RoomCreated.toJSON(message.roomCreated);
     }
     if (message.joinRoom !== undefined) {
       obj.joinRoom = JoinRoom.toJSON(message.joinRoom);
     }
-    if (message.joinRoomRes !== undefined) {
-      obj.joinRoomRes = JoinRoomResponse.toJSON(message.joinRoomRes);
+    if (message.playerJoinedRoom !== undefined) {
+      obj.playerJoinedRoom = PlayerJoinedRoom.toJSON(message.playerJoinedRoom);
     }
     if (message.leaveRoom !== undefined) {
       obj.leaveRoom = LeaveRoom.toJSON(message.leaveRoom);
     }
-    if (message.leaveRoomRes !== undefined) {
-      obj.leaveRoomRes = LeaveRoomResponse.toJSON(message.leaveRoomRes);
+    if (message.playerLeftRoom !== undefined) {
+      obj.playerLeftRoom = PlayerLeftRoom.toJSON(message.playerLeftRoom);
     }
-    if (message.deleteRoom !== undefined) {
-      obj.deleteRoom = DeleteRoom.toJSON(message.deleteRoom);
-    }
-    if (message.deleteRoomRes !== undefined) {
-      obj.deleteRoomRes = DeleteRoomResponse.toJSON(message.deleteRoomRes);
+    if (message.roomDeleted !== undefined) {
+      obj.roomDeleted = RoomDeleted.toJSON(message.roomDeleted);
     }
     return obj;
   },
@@ -4270,32 +3993,26 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
     const message = createBaseLobbyMessage();
     message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
     message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
-    message.roomList = (object.roomList !== undefined && object.roomList !== null)
-      ? RoomList.fromPartial(object.roomList)
-      : undefined;
     message.createRoom = (object.createRoom !== undefined && object.createRoom !== null)
       ? CreateRoom.fromPartial(object.createRoom)
       : undefined;
-    message.createRoomRes = (object.createRoomRes !== undefined && object.createRoomRes !== null)
-      ? CreateRoomResponse.fromPartial(object.createRoomRes)
+    message.roomCreated = (object.roomCreated !== undefined && object.roomCreated !== null)
+      ? RoomCreated.fromPartial(object.roomCreated)
       : undefined;
     message.joinRoom = (object.joinRoom !== undefined && object.joinRoom !== null)
       ? JoinRoom.fromPartial(object.joinRoom)
       : undefined;
-    message.joinRoomRes = (object.joinRoomRes !== undefined && object.joinRoomRes !== null)
-      ? JoinRoomResponse.fromPartial(object.joinRoomRes)
+    message.playerJoinedRoom = (object.playerJoinedRoom !== undefined && object.playerJoinedRoom !== null)
+      ? PlayerJoinedRoom.fromPartial(object.playerJoinedRoom)
       : undefined;
     message.leaveRoom = (object.leaveRoom !== undefined && object.leaveRoom !== null)
       ? LeaveRoom.fromPartial(object.leaveRoom)
       : undefined;
-    message.leaveRoomRes = (object.leaveRoomRes !== undefined && object.leaveRoomRes !== null)
-      ? LeaveRoomResponse.fromPartial(object.leaveRoomRes)
+    message.playerLeftRoom = (object.playerLeftRoom !== undefined && object.playerLeftRoom !== null)
+      ? PlayerLeftRoom.fromPartial(object.playerLeftRoom)
       : undefined;
-    message.deleteRoom = (object.deleteRoom !== undefined && object.deleteRoom !== null)
-      ? DeleteRoom.fromPartial(object.deleteRoom)
-      : undefined;
-    message.deleteRoomRes = (object.deleteRoomRes !== undefined && object.deleteRoomRes !== null)
-      ? DeleteRoomResponse.fromPartial(object.deleteRoomRes)
+    message.roomDeleted = (object.roomDeleted !== undefined && object.roomDeleted !== null)
+      ? RoomDeleted.fromPartial(object.roomDeleted)
       : undefined;
     return message;
   },

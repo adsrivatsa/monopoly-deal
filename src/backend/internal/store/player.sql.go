@@ -13,9 +13,8 @@ import (
 
 const createPlayer = `-- name: CreatePlayer :one
 INSERT INTO player(display_name, email, image_url)
-    VALUES ($1, $2, $3)
-RETURNING
-    player_id, display_name, email, image_url, refresh_token_id
+VALUES ($1, $2, $3)
+RETURNING player_id, display_name, email, image_url, refresh_token_id
 `
 
 type CreatePlayerParams struct {
@@ -38,16 +37,11 @@ func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Pla
 }
 
 const getPlayer = `-- name: GetPlayer :one
-SELECT
-    player_id, display_name, email, image_url, refresh_token_id
-FROM
-    player
-WHERE (player_id = $1
-    OR $1 IS NULL)
-AND (email = $2
-    OR $2 IS NULL)
-AND NOT ($1 IS NULL
-    AND $2 IS NULL)
+SELECT player_id, display_name, email, image_url, refresh_token_id
+FROM player
+WHERE (player_id = $1 OR $1 IS NULL)
+  AND (email = $2 OR $2 IS NULL)
+  AND NOT ($1 IS NULL AND $2 IS NULL)
 `
 
 type GetPlayerParams struct {
@@ -69,14 +63,10 @@ func (q *Queries) GetPlayer(ctx context.Context, arg GetPlayerParams) (Player, e
 }
 
 const updatePlayer = `-- name: UpdatePlayer :one
-UPDATE
-    player
-SET
-    display_name = $1
-WHERE
-    player_id = $2
-RETURNING
-    player_id, display_name, email, image_url, refresh_token_id
+UPDATE player
+SET display_name = $1
+WHERE player_id = $2
+RETURNING player_id, display_name, email, image_url, refresh_token_id
 `
 
 type UpdatePlayerParams struct {

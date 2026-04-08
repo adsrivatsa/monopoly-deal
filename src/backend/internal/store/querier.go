@@ -6,20 +6,11 @@ package store
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 type Querier interface {
 	CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error)
-	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
-	CreateRoomPlayer(ctx context.Context, arg CreateRoomPlayerParams) (RoomPlayer, error)
-	DeleteRoomPlayer(ctx context.Context, arg DeleteRoomPlayerParams) error
 	GetPlayer(ctx context.Context, arg GetPlayerParams) (Player, error)
-	GetRoomPlayerByPlayer(ctx context.Context, playerID uuid.UUID) (RoomPlayer, error)
-	GetRoomPlayers(ctx context.Context, roomID uuid.UUID) ([]GetRoomPlayersRow, error)
-	ListRooms(ctx context.Context, searchTerm *uuid.UUID) ([]Room, error)
-	SetRoomHost(ctx context.Context) (RoomPlayer, error)
 	UpdatePlayer(ctx context.Context, arg UpdatePlayerParams) (Player, error)
 }
 

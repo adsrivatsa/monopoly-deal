@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/markbates/goth"
@@ -33,7 +34,7 @@ type Server struct {
 	sessionName string
 }
 
-func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool) *Server {
+func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool, client *redis.Client) *Server {
 	initialiseGoth(cfg)
 
 	sessionName := "session"
@@ -55,7 +56,7 @@ func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool) *Serv
 	s := &Server{
 		cfg:         cfg,
 		logger:      logger,
-		controller:  service.NewController(cfg, pool),
+		controller:  service.NewController(cfg, pool, client),
 		tokenMaker:  tokenMaker,
 		cookieStore: cookieStore,
 		sessionName: sessionName,

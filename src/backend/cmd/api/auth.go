@@ -42,14 +42,14 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenPayload, err1 := s.tokenMaker.VerifyToken(accessToken, token.AccessToken)
+	tp, err1 := s.tokenMaker.VerifyToken(accessToken, token.AccessToken)
 	_, err2 := s.tokenMaker.VerifyToken(refreshToken, token.RefreshToken)
 	if err1 != nil && err2 != nil {
 		gothic.BeginAuthHandler(w, r)
 		return
 	}
 
-	_, err := s.controller.GetPlayer(ctx, tokenPayload, service.GetPlayerParams{})
+	_, err := s.controller.GetPlayer(ctx, tp, service.GetPlayerParams{})
 	if err == nil {
 		fullURL, err := url.JoinPath(s.cfg.FrontendDomain, s.cfg.FrontendLobbyRoute)
 		if err != nil {

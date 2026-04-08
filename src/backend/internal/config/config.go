@@ -21,6 +21,8 @@ type Config struct {
 	FrontendLoginRoute    string        `mapstructure:"FRONTEND_LOGIN_ROUTE"`
 	FrontendLobbyRoute    string        `mapstructure:"FRONTEND_LOBBY_ROUTE"`
 	WebsocketPingInterval time.Duration `mapstructure:"WEBSOCKET_PING_INTERVAL"`
+	RedisHost             string        `mapstructure:"REDIS_HOST"`
+	RedisPassword         string        `mapstructure:"REDIS_PASSWORD"`
 }
 
 func Load(envPath string) (Config, error) {
