@@ -9,6 +9,45 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 
 export const protobufPackage = "monopolydeal.schema";
 
+export enum RoomStatus {
+  LOBBY = 0,
+  GAME = 1,
+  COMPLETED = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function roomStatusFromJSON(object: any): RoomStatus {
+  switch (object) {
+    case 0:
+    case "LOBBY":
+      return RoomStatus.LOBBY;
+    case 1:
+    case "GAME":
+      return RoomStatus.GAME;
+    case 2:
+    case "COMPLETED":
+      return RoomStatus.COMPLETED;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return RoomStatus.UNRECOGNIZED;
+  }
+}
+
+export function roomStatusToJSON(object: RoomStatus): string {
+  switch (object) {
+    case RoomStatus.LOBBY:
+      return "LOBBY";
+    case RoomStatus.GAME:
+      return "GAME";
+    case RoomStatus.COMPLETED:
+      return "COMPLETED";
+    case RoomStatus.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 /** gameplay */
 export enum PurePropertyType {
   PURE_PROPERTY_TYPE_BROWN = 0,
@@ -357,16 +396,13 @@ export function rentTypeToJSON(object: RentType): string {
 
 /** generic */
 export interface Ping {
-  clientTimeUnixMs: number;
-}
-
-export interface Pong {
-  serverTimeUnixMs: number;
+  timeUnixMs: number;
 }
 
 export interface Error {
   code: string;
   message: string;
+  status: number;
 }
 
 /** lobby */
@@ -379,8 +415,9 @@ export interface Player {
 
 export interface Room {
   roomId: string;
+  displayName: string;
   players: Player[];
-  status: string;
+  status: RoomStatus;
   capacity: number;
 }
 
@@ -390,11 +427,16 @@ export interface RoomList {
 
 export interface CreateRoom {
   playerId: string;
+  displayName: string;
+  capacity: number;
 }
 
 export interface CreateRoomResponse {
   playerId: string;
   roomId: string;
+  displayName: string;
+  status: RoomStatus;
+  capacity: number;
 }
 
 export interface JoinRoom {
@@ -562,7 +604,6 @@ export interface WildRentResponse {
 
 export interface LobbyMessage {
   ping?: Ping | undefined;
-  pong?: Ping | undefined;
   error?: Error | undefined;
   roomList?: RoomList | undefined;
   createRoom?: CreateRoom | undefined;
@@ -577,7 +618,6 @@ export interface LobbyMessage {
 
 export interface GameMessage {
   ping?: Ping | undefined;
-  pong?: Ping | undefined;
   error?: Error | undefined;
   playProperty?: PlayProperty | undefined;
   playMoney?: PlayMoney | undefined;
@@ -604,13 +644,13 @@ export interface GameMessage {
 }
 
 function createBasePing(): Ping {
-  return { clientTimeUnixMs: 0 };
+  return { timeUnixMs: 0 };
 }
 
 export const Ping: MessageFns<Ping> = {
   encode(message: Ping, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.clientTimeUnixMs !== 0) {
-      writer.uint32(8).int64(message.clientTimeUnixMs);
+    if (message.timeUnixMs !== 0) {
+      writer.uint32(8).int64(message.timeUnixMs);
     }
     return writer;
   },
@@ -627,7 +667,7 @@ export const Ping: MessageFns<Ping> = {
             break;
           }
 
-          message.clientTimeUnixMs = longToNumber(reader.int64());
+          message.timeUnixMs = longToNumber(reader.int64());
           continue;
         }
       }
@@ -641,18 +681,18 @@ export const Ping: MessageFns<Ping> = {
 
   fromJSON(object: any): Ping {
     return {
-      clientTimeUnixMs: isSet(object.clientTimeUnixMs)
-        ? globalThis.Number(object.clientTimeUnixMs)
-        : isSet(object.client_time_unix_ms)
-        ? globalThis.Number(object.client_time_unix_ms)
+      timeUnixMs: isSet(object.timeUnixMs)
+        ? globalThis.Number(object.timeUnixMs)
+        : isSet(object.time_unix_ms)
+        ? globalThis.Number(object.time_unix_ms)
         : 0,
     };
   },
 
   toJSON(message: Ping): unknown {
     const obj: any = {};
-    if (message.clientTimeUnixMs !== 0) {
-      obj.clientTimeUnixMs = Math.round(message.clientTimeUnixMs);
+    if (message.timeUnixMs !== 0) {
+      obj.timeUnixMs = Math.round(message.timeUnixMs);
     }
     return obj;
   },
@@ -662,77 +702,13 @@ export const Ping: MessageFns<Ping> = {
   },
   fromPartial<I extends Exact<DeepPartial<Ping>, I>>(object: I): Ping {
     const message = createBasePing();
-    message.clientTimeUnixMs = object.clientTimeUnixMs ?? 0;
-    return message;
-  },
-};
-
-function createBasePong(): Pong {
-  return { serverTimeUnixMs: 0 };
-}
-
-export const Pong: MessageFns<Pong> = {
-  encode(message: Pong, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.serverTimeUnixMs !== 0) {
-      writer.uint32(8).int64(message.serverTimeUnixMs);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): Pong {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePong();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.serverTimeUnixMs = longToNumber(reader.int64());
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): Pong {
-    return {
-      serverTimeUnixMs: isSet(object.serverTimeUnixMs)
-        ? globalThis.Number(object.serverTimeUnixMs)
-        : isSet(object.server_time_unix_ms)
-        ? globalThis.Number(object.server_time_unix_ms)
-        : 0,
-    };
-  },
-
-  toJSON(message: Pong): unknown {
-    const obj: any = {};
-    if (message.serverTimeUnixMs !== 0) {
-      obj.serverTimeUnixMs = Math.round(message.serverTimeUnixMs);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Pong>, I>>(base?: I): Pong {
-    return Pong.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Pong>, I>>(object: I): Pong {
-    const message = createBasePong();
-    message.serverTimeUnixMs = object.serverTimeUnixMs ?? 0;
+    message.timeUnixMs = object.timeUnixMs ?? 0;
     return message;
   },
 };
 
 function createBaseError(): Error {
-  return { code: "", message: "" };
+  return { code: "", message: "", status: 0 };
 }
 
 export const Error: MessageFns<Error> = {
@@ -742,6 +718,9 @@ export const Error: MessageFns<Error> = {
     }
     if (message.message !== "") {
       writer.uint32(18).string(message.message);
+    }
+    if (message.status !== 0) {
+      writer.uint32(24).int32(message.status);
     }
     return writer;
   },
@@ -769,6 +748,14 @@ export const Error: MessageFns<Error> = {
           message.message = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.status = reader.int32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -782,6 +769,7 @@ export const Error: MessageFns<Error> = {
     return {
       code: isSet(object.code) ? globalThis.String(object.code) : "",
       message: isSet(object.message) ? globalThis.String(object.message) : "",
+      status: isSet(object.status) ? globalThis.Number(object.status) : 0,
     };
   },
 
@@ -793,6 +781,9 @@ export const Error: MessageFns<Error> = {
     if (message.message !== "") {
       obj.message = message.message;
     }
+    if (message.status !== 0) {
+      obj.status = Math.round(message.status);
+    }
     return obj;
   },
 
@@ -803,6 +794,7 @@ export const Error: MessageFns<Error> = {
     const message = createBaseError();
     message.code = object.code ?? "";
     message.message = object.message ?? "";
+    message.status = object.status ?? 0;
     return message;
   },
 };
@@ -932,7 +924,7 @@ export const Player: MessageFns<Player> = {
 };
 
 function createBaseRoom(): Room {
-  return { roomId: "", players: [], status: "", capacity: 0 };
+  return { roomId: "", displayName: "", players: [], status: 0, capacity: 0 };
 }
 
 export const Room: MessageFns<Room> = {
@@ -940,14 +932,17 @@ export const Room: MessageFns<Room> = {
     if (message.roomId !== "") {
       writer.uint32(10).string(message.roomId);
     }
-    for (const v of message.players) {
-      Player.encode(v!, writer.uint32(18).fork()).join();
+    if (message.displayName !== "") {
+      writer.uint32(18).string(message.displayName);
     }
-    if (message.status !== "") {
-      writer.uint32(26).string(message.status);
+    for (const v of message.players) {
+      Player.encode(v!, writer.uint32(26).fork()).join();
+    }
+    if (message.status !== 0) {
+      writer.uint32(32).int32(message.status);
     }
     if (message.capacity !== 0) {
-      writer.uint32(32).int32(message.capacity);
+      writer.uint32(40).int32(message.capacity);
     }
     return writer;
   },
@@ -972,7 +967,7 @@ export const Room: MessageFns<Room> = {
             break;
           }
 
-          message.players.push(Player.decode(reader, reader.uint32()));
+          message.displayName = reader.string();
           continue;
         }
         case 3: {
@@ -980,11 +975,19 @@ export const Room: MessageFns<Room> = {
             break;
           }
 
-          message.status = reader.string();
+          message.players.push(Player.decode(reader, reader.uint32()));
           continue;
         }
         case 4: {
           if (tag !== 32) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
             break;
           }
 
@@ -1007,8 +1010,13 @@ export const Room: MessageFns<Room> = {
         : isSet(object.room_id)
         ? globalThis.String(object.room_id)
         : "",
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : "",
       players: globalThis.Array.isArray(object?.players) ? object.players.map((e: any) => Player.fromJSON(e)) : [],
-      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      status: isSet(object.status) ? roomStatusFromJSON(object.status) : 0,
       capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
     };
   },
@@ -1018,11 +1026,14 @@ export const Room: MessageFns<Room> = {
     if (message.roomId !== "") {
       obj.roomId = message.roomId;
     }
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
     if (message.players?.length) {
       obj.players = message.players.map((e) => Player.toJSON(e));
     }
-    if (message.status !== "") {
-      obj.status = message.status;
+    if (message.status !== 0) {
+      obj.status = roomStatusToJSON(message.status);
     }
     if (message.capacity !== 0) {
       obj.capacity = Math.round(message.capacity);
@@ -1036,8 +1047,9 @@ export const Room: MessageFns<Room> = {
   fromPartial<I extends Exact<DeepPartial<Room>, I>>(object: I): Room {
     const message = createBaseRoom();
     message.roomId = object.roomId ?? "";
+    message.displayName = object.displayName ?? "";
     message.players = object.players?.map((e) => Player.fromPartial(e)) || [];
-    message.status = object.status ?? "";
+    message.status = object.status ?? 0;
     message.capacity = object.capacity ?? 0;
     return message;
   },
@@ -1102,13 +1114,19 @@ export const RoomList: MessageFns<RoomList> = {
 };
 
 function createBaseCreateRoom(): CreateRoom {
-  return { playerId: "" };
+  return { playerId: "", displayName: "", capacity: 0 };
 }
 
 export const CreateRoom: MessageFns<CreateRoom> = {
   encode(message: CreateRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
+    }
+    if (message.displayName !== "") {
+      writer.uint32(18).string(message.displayName);
+    }
+    if (message.capacity !== 0) {
+      writer.uint32(24).int32(message.capacity);
     }
     return writer;
   },
@@ -1128,6 +1146,22 @@ export const CreateRoom: MessageFns<CreateRoom> = {
           message.playerId = reader.string();
           continue;
         }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.capacity = reader.int32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1144,6 +1178,12 @@ export const CreateRoom: MessageFns<CreateRoom> = {
         : isSet(object.player_id)
         ? globalThis.String(object.player_id)
         : "",
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : "",
+      capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
     };
   },
 
@@ -1151,6 +1191,12 @@ export const CreateRoom: MessageFns<CreateRoom> = {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
+    }
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.capacity !== 0) {
+      obj.capacity = Math.round(message.capacity);
     }
     return obj;
   },
@@ -1161,12 +1207,14 @@ export const CreateRoom: MessageFns<CreateRoom> = {
   fromPartial<I extends Exact<DeepPartial<CreateRoom>, I>>(object: I): CreateRoom {
     const message = createBaseCreateRoom();
     message.playerId = object.playerId ?? "";
+    message.displayName = object.displayName ?? "";
+    message.capacity = object.capacity ?? 0;
     return message;
   },
 };
 
 function createBaseCreateRoomResponse(): CreateRoomResponse {
-  return { playerId: "", roomId: "" };
+  return { playerId: "", roomId: "", displayName: "", status: 0, capacity: 0 };
 }
 
 export const CreateRoomResponse: MessageFns<CreateRoomResponse> = {
@@ -1176,6 +1224,15 @@ export const CreateRoomResponse: MessageFns<CreateRoomResponse> = {
     }
     if (message.roomId !== "") {
       writer.uint32(18).string(message.roomId);
+    }
+    if (message.displayName !== "") {
+      writer.uint32(26).string(message.displayName);
+    }
+    if (message.status !== 0) {
+      writer.uint32(32).int32(message.status);
+    }
+    if (message.capacity !== 0) {
+      writer.uint32(40).int32(message.capacity);
     }
     return writer;
   },
@@ -1203,6 +1260,30 @@ export const CreateRoomResponse: MessageFns<CreateRoomResponse> = {
           message.roomId = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.capacity = reader.int32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1224,6 +1305,13 @@ export const CreateRoomResponse: MessageFns<CreateRoomResponse> = {
         : isSet(object.room_id)
         ? globalThis.String(object.room_id)
         : "",
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : "",
+      status: isSet(object.status) ? roomStatusFromJSON(object.status) : 0,
+      capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
     };
   },
 
@@ -1235,6 +1323,15 @@ export const CreateRoomResponse: MessageFns<CreateRoomResponse> = {
     if (message.roomId !== "") {
       obj.roomId = message.roomId;
     }
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.status !== 0) {
+      obj.status = roomStatusToJSON(message.status);
+    }
+    if (message.capacity !== 0) {
+      obj.capacity = Math.round(message.capacity);
+    }
     return obj;
   },
 
@@ -1245,6 +1342,9 @@ export const CreateRoomResponse: MessageFns<CreateRoomResponse> = {
     const message = createBaseCreateRoomResponse();
     message.playerId = object.playerId ?? "";
     message.roomId = object.roomId ?? "";
+    message.displayName = object.displayName ?? "";
+    message.status = object.status ?? 0;
+    message.capacity = object.capacity ?? 0;
     return message;
   },
 };
@@ -3918,7 +4018,6 @@ export const WildRentResponse: MessageFns<WildRentResponse> = {
 function createBaseLobbyMessage(): LobbyMessage {
   return {
     ping: undefined,
-    pong: undefined,
     error: undefined,
     roomList: undefined,
     createRoom: undefined,
@@ -3937,11 +4036,8 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
     if (message.ping !== undefined) {
       Ping.encode(message.ping, writer.uint32(10).fork()).join();
     }
-    if (message.pong !== undefined) {
-      Ping.encode(message.pong, writer.uint32(18).fork()).join();
-    }
     if (message.error !== undefined) {
-      Error.encode(message.error, writer.uint32(26).fork()).join();
+      Error.encode(message.error, writer.uint32(18).fork()).join();
     }
     if (message.roomList !== undefined) {
       RoomList.encode(message.roomList, writer.uint32(82).fork()).join();
@@ -3990,14 +4086,6 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
         }
         case 2: {
           if (tag !== 18) {
-            break;
-          }
-
-          message.pong = Ping.decode(reader, reader.uint32());
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
             break;
           }
 
@@ -4088,7 +4176,6 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
   fromJSON(object: any): LobbyMessage {
     return {
       ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
-      pong: isSet(object.pong) ? Ping.fromJSON(object.pong) : undefined,
       error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
       roomList: isSet(object.roomList)
         ? RoomList.fromJSON(object.roomList)
@@ -4143,9 +4230,6 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
     if (message.ping !== undefined) {
       obj.ping = Ping.toJSON(message.ping);
     }
-    if (message.pong !== undefined) {
-      obj.pong = Ping.toJSON(message.pong);
-    }
     if (message.error !== undefined) {
       obj.error = Error.toJSON(message.error);
     }
@@ -4185,7 +4269,6 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
   fromPartial<I extends Exact<DeepPartial<LobbyMessage>, I>>(object: I): LobbyMessage {
     const message = createBaseLobbyMessage();
     message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
-    message.pong = (object.pong !== undefined && object.pong !== null) ? Ping.fromPartial(object.pong) : undefined;
     message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
     message.roomList = (object.roomList !== undefined && object.roomList !== null)
       ? RoomList.fromPartial(object.roomList)
@@ -4221,7 +4304,6 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
 function createBaseGameMessage(): GameMessage {
   return {
     ping: undefined,
-    pong: undefined,
     error: undefined,
     playProperty: undefined,
     playMoney: undefined,
@@ -4253,11 +4335,8 @@ export const GameMessage: MessageFns<GameMessage> = {
     if (message.ping !== undefined) {
       Ping.encode(message.ping, writer.uint32(10).fork()).join();
     }
-    if (message.pong !== undefined) {
-      Ping.encode(message.pong, writer.uint32(18).fork()).join();
-    }
     if (message.error !== undefined) {
-      Error.encode(message.error, writer.uint32(26).fork()).join();
+      Error.encode(message.error, writer.uint32(18).fork()).join();
     }
     if (message.playProperty !== undefined) {
       PlayProperty.encode(message.playProperty, writer.uint32(82).fork()).join();
@@ -4345,14 +4424,6 @@ export const GameMessage: MessageFns<GameMessage> = {
         }
         case 2: {
           if (tag !== 18) {
-            break;
-          }
-
-          message.pong = Ping.decode(reader, reader.uint32());
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
             break;
           }
 
@@ -4547,7 +4618,6 @@ export const GameMessage: MessageFns<GameMessage> = {
   fromJSON(object: any): GameMessage {
     return {
       ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
-      pong: isSet(object.pong) ? Ping.fromJSON(object.pong) : undefined,
       error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
       playProperty: isSet(object.playProperty)
         ? PlayProperty.fromJSON(object.playProperty)
@@ -4655,9 +4725,6 @@ export const GameMessage: MessageFns<GameMessage> = {
     if (message.ping !== undefined) {
       obj.ping = Ping.toJSON(message.ping);
     }
-    if (message.pong !== undefined) {
-      obj.pong = Ping.toJSON(message.pong);
-    }
     if (message.error !== undefined) {
       obj.error = Error.toJSON(message.error);
     }
@@ -4736,7 +4803,6 @@ export const GameMessage: MessageFns<GameMessage> = {
   fromPartial<I extends Exact<DeepPartial<GameMessage>, I>>(object: I): GameMessage {
     const message = createBaseGameMessage();
     message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
-    message.pong = (object.pong !== undefined && object.pong !== null) ? Ping.fromPartial(object.pong) : undefined;
     message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
     message.playProperty = (object.playProperty !== undefined && object.playProperty !== null)
       ? PlayProperty.fromPartial(object.playProperty)

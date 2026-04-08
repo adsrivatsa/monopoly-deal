@@ -27,13 +27,13 @@ func tokenMiddleware(tokenMaker token.Maker, cookieStore *sessions.CookieStore, 
 			sess, _ := cookieStore.Get(r, sessionName)
 			t, ok := sess.Values[tokenType].(string)
 			if !ok || t == "" {
-				Error(w, errors.InvalidToken)
+				ErrorHTTP(w, errors.InvalidToken)
 				return
 			}
 
 			payload, err := tokenMaker.VerifyToken(t, tokenType)
 			if err != nil {
-				Error(w, err)
+				ErrorHTTP(w, err)
 				return
 			}
 

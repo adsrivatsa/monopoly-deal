@@ -6,16 +6,13 @@ option go_package = "monopoly-deal/backend/internal/schema;schema";
 
 // generic
 message Ping {
-  int64 client_time_unix_ms = 1;
-}
-
-message Pong {
-  int64 server_time_unix_ms = 1;
+  int64 time_unix_ms = 1;
 }
 
 message Error {
   string code = 1;
   string message = 2;
+  int32 status = 3;
 }
 
 // lobby
@@ -26,11 +23,18 @@ message Player {
   bool is_ready = 4;
 }
 
+enum RoomStatus {
+  LOBBY = 0;
+  GAME = 1;
+  COMPLETED = 2;
+}
+
 message Room {
   string room_id = 1;
-  repeated Player players = 2;
-  string status = 3;
-  int32 capacity = 4;
+  string display_name = 2;
+  repeated Player players = 3;
+  RoomStatus status = 4;
+  int32 capacity = 5;
 }
 
 message RoomList {
@@ -39,11 +43,16 @@ message RoomList {
 
 message CreateRoom {
   string player_id = 1;
+  string display_name = 2;
+  int32 capacity = 3;
 }
 
 message CreateRoomResponse {
   string player_id = 1;
   string room_id = 2;
+  string display_name = 3;
+  RoomStatus status = 4;
+  int32 capacity = 5;
 }
 
 message JoinRoom {
@@ -270,8 +279,7 @@ message WildRentResponse {
 message LobbyMessage {
   oneof payload {
     Ping ping = 1;
-    Ping pong = 2;
-    Error error = 3;
+    Error error = 2;
 
     RoomList room_list = 10;
     CreateRoom create_room = 11;
@@ -288,8 +296,7 @@ message LobbyMessage {
 message GameMessage {
   oneof payload {
     Ping ping = 1;
-    Ping pong = 2;
-    Error error = 3;
+    Error error = 2;
 
     PlayProperty play_property = 10;
     PlayMoney play_money = 11;

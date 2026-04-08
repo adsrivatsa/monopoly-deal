@@ -4,18 +4,19 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"monopoly-deal/internal/schema"
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"google.golang.org/protobuf/proto"
 )
 
 type Error struct {
-	Message  string `json:"-"`
-	Status   int    `json:"status"`
-	Code     string `json:"code"`
-	Inner    error  `json:"-"`
-	Rendered string `json:"message"`
+	Message string `json:"-"`
+	Status  int    `json:"status"`
+	Code    string `json:"code"`
+	Inner   error  `json:"-"`
 }
 
 func NewError(message string, status int, code string, inner ...error) Error {
@@ -43,9 +44,30 @@ func (e Error) Unwrap() error {
 	return e.Inner
 }
 
-func (e Error) Render() Error {
-	e.Rendered = e.Error()
-	return e
+func (e Error) Lobby() proto.Message {
+	res := &schema.LobbyMessage{
+		Payload: &schema.LobbyMessage_Error{
+			Error: &schema.Error{
+				Code:    e.Code,
+				Message: e.Error(),
+				Status:  int32(e.Status),
+			},
+		},
+	}
+	return res
+}
+
+func (e Error) Game() proto.Message {
+	res := &schema.GameMessage{
+		Payload: &schema.GameMessage_Error{
+			Error: &schema.Error{
+				Code:    e.Code,
+				Message: e.Error(),
+				Status:  int32(e.Status),
+			},
+		},
+	}
+	return res
 }
 
 var (
@@ -54,6 +76,10 @@ var (
 	InvalidTokenContent = NewError("invalid token", http.StatusBadRequest, "TOK003")
 	InvalidTokenType    = NewError("invalid token", http.StatusBadRequest, "TOK004")
 )
+
+func InvalidUUID(err error) Error {
+	return NewError("invalid UUID", http.StatusBadRequest, "VAL001", err)
+}
 
 func Unauthenticated(err error) Error {
 	return NewError("unauthenticated", http.StatusBadRequest, "AUTH001", err)
@@ -67,6 +93,7 @@ type Entity string
 
 const (
 	EntityPlayer Entity = "player"
+	EntityRoom   Entity = "room"
 )
 
 type DBViolation string
@@ -83,42 +110,26 @@ func InvalidDBViolation(code DBViolation, err error) Error {
 	return NewError(f, http.StatusInternalServerError, "INT002", err)
 }
 
-func DBError(cases map[DBViolation]func(err error) Error, err error) error {
-	if err == nil {
-		return nil
-	}
-
+func DBErrorCode(err error) DBViolation {
 	if errors.Is(err, pgx.ErrNoRows) || errors.Is(err, sql.ErrNoRows) {
-		fn, ok := cases[NoDataFound]
-		if !ok {
-			return InvalidDBViolation(NoDataFound, err)
-		}
-		return fn(err)
+		return NoDataFound
 	}
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		code := DBViolation(pgErr.Code)
-		fn, ok := cases[code]
-		if !ok {
-			return InvalidDBViolation(code, err)
-		}
-		return fn(err)
+		return code
 	}
 
-	return Internal(err)
+	return ""
 }
 
-func EntityNotFound(ent Entity) func(err error) Error {
+func EntityNotFound(ent Entity, err error) Error {
 	f := fmt.Sprintf("%s not found", ent)
-	return func(err error) Error {
-		return NewError(f, http.StatusNotFound, "SER001", err)
-	}
+	return NewError(f, http.StatusNotFound, "SER001", err)
 }
 
-func EntityAlreadyExists(ent Entity) func(err error) Error {
+func EntityAlreadyExists(ent Entity, err error) Error {
 	f := fmt.Sprintf("%s already exists", ent)
-	return func(err error) Error {
-		return NewError(f, http.StatusBadRequest, "SER002", err)
-	}
+	return NewError(f, http.StatusBadRequest, "SER002", err)
 }

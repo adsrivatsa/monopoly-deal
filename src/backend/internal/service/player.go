@@ -7,42 +7,45 @@ import (
 	"monopoly-deal/internal/token"
 )
 
-type Player = store.Player
-
-type CreatePlayerParams = store.CreatePlayerParams
-
-var createPlayerErrMap = map[errors.DBViolation]func(err error) errors.Error{
-	errors.UniqueViolation: errors.EntityAlreadyExists(errors.EntityPlayer),
-}
-
 func (c *Controller) CreatePlayer(ctx context.Context, args CreatePlayerParams) (Player, error) {
 	p, err := c.store.CreatePlayer(ctx, args)
-	return p, errors.DBError(createPlayerErrMap, err)
-}
+	if err != nil {
+		if errors.DBErrorCode(err) == errors.NoDataFound {
+			return p, errors.EntityNotFound(errors.EntityPlayer, err)
+		}
+		return p, errors.Internal(err)
+	}
 
-type GetPlayerParams = store.GetPlayerParams
-
-var getPlayerErrMap = map[errors.DBViolation]func(err error) errors.Error{
-	errors.NoDataFound: errors.EntityNotFound(errors.EntityPlayer),
+	return p, nil
 }
 
 func (c *Controller) GetPlayer(ctx context.Context, tp token.Payload, args GetPlayerParams) (Player, error) {
 	if args.PlayerID == nil && args.Email == nil {
 		args.PlayerID = &tp.PlayerID
 	}
-	p, err := c.store.GetPlayer(ctx, args)
-	return p, errors.DBError(getPlayerErrMap, err)
-}
 
-var updatePlayerErrMap = map[errors.DBViolation]func(err error) errors.Error{
-	errors.NoDataFound: errors.EntityNotFound(errors.EntityPlayer),
+	p, err := c.store.GetPlayer(ctx, args)
+	if err != nil {
+		if errors.DBErrorCode(err) == errors.NoDataFound {
+			return p, errors.EntityNotFound(errors.EntityPlayer, err)
+		}
+		return p, errors.Internal(err)
+	}
+
+	return p, nil
 }
 
 func (c *Controller) UpdatePlayer(ctx context.Context, tp token.Payload, name string) (Player, error) {
-	args := store.UpdatePlayerParams{
+	p, err := c.store.UpdatePlayer(ctx, store.UpdatePlayerParams{
 		DisplayName: name,
 		PlayerID:    tp.PlayerID,
+	})
+	if err != nil {
+		if errors.DBErrorCode(err) == errors.NoDataFound {
+			return p, errors.EntityNotFound(errors.EntityPlayer, err)
+		}
+		return p, errors.Internal(err)
 	}
-	p, err := c.store.UpdatePlayer(ctx, args)
-	return p, errors.DBError(updatePlayerErrMap, err)
+
+	return p, nil
 }

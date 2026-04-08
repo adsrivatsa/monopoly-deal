@@ -3,9 +3,13 @@ package main
 import (
 	"encoding/json"
 	stderrors "errors"
+	"fmt"
 	"io"
 	"monopoly-deal/internal/errors"
 	"net/http"
+
+	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/proto"
 )
 
 var maxBytes = 10 << 20
@@ -30,10 +34,10 @@ func Read[I any](w http.ResponseWriter, r *http.Request) (I, error) {
 	return out, nil
 }
 
-func Write(w http.ResponseWriter, status int, data any, headers ...http.Header) error {
+func WriteHTTP(w http.ResponseWriter, status int, data any, headers ...http.Header) {
 	out, err := json.Marshal(data)
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
 
 	if len(headers) > 0 {
@@ -45,13 +49,43 @@ func Write(w http.ResponseWriter, status int, data any, headers ...http.Header) 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_, err = w.Write(out)
-	return err
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
-func Error(w http.ResponseWriter, err error) {
+func ErrorHTTP(w http.ResponseWriter, err error) {
 	var intErr errors.Error
 	if !stderrors.As(err, &intErr) {
 		stderrors.As(errors.Internal(err), &intErr)
 	}
-	Write(w, intErr.Status, intErr.Render())
+	WriteHTTP(w, intErr.Status, intErr)
+}
+
+func WriteWS(conn *websocket.Conn, message proto.Message) {
+	data, err := proto.Marshal(message)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = conn.WriteMessage(websocket.BinaryMessage, data)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func LobbyError(conn *websocket.Conn, err error) {
+	var intErr errors.Error
+	if !stderrors.As(err, &intErr) {
+		stderrors.As(errors.Internal(err), &intErr)
+	}
+	WriteWS(conn, intErr.Lobby())
+}
+
+func GameError(conn *websocket.Conn, err error) {
+	var intErr errors.Error
+	if !stderrors.As(err, &intErr) {
+		stderrors.As(errors.Internal(err), &intErr)
+	}
+	WriteWS(conn, intErr.Game())
 }

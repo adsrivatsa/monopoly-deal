@@ -53,8 +53,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		fullURL, err := url.JoinPath(s.cfg.FrontendDomain, s.cfg.FrontendLobbyRoute)
 		if err != nil {
-			Error(w, errors.Internal(err))
-
+			ErrorHTTP(w, errors.Internal(err))
 		}
 
 		http.Redirect(w, r, fullURL, http.StatusFound)
@@ -73,7 +72,7 @@ func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
 
 	err := gothic.Logout(w, r)
 	if err != nil {
-		Error(w, errors.Internal(err))
+		ErrorHTTP(w, errors.Internal(err))
 		return
 	}
 
@@ -82,13 +81,13 @@ func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
 	sess.Values[token.RefreshToken] = ""
 	err = sess.Save(r, w)
 	if err != nil {
-		Error(w, errors.Internal(err))
+		ErrorHTTP(w, errors.Internal(err))
 		return
 	}
 
 	fullURL, err := url.JoinPath(s.cfg.FrontendDomain, s.cfg.FrontendLoginRoute)
 	if err != nil {
-		Error(w, errors.Internal(err))
+		ErrorHTTP(w, errors.Internal(err))
 		return
 	}
 	http.Redirect(w, r, fullURL, http.StatusFound)
@@ -101,7 +100,7 @@ func (s *Server) LoginCallback(w http.ResponseWriter, r *http.Request) {
 	r = r.WithContext(context.WithValue(r.Context(), PROVIDER, provider))
 	oauthUser, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
-		Error(w, errors.Unauthenticated(err))
+		ErrorHTTP(w, errors.Unauthenticated(err))
 		return
 	}
 
@@ -116,7 +115,7 @@ func (s *Server) LoginCallback(w http.ResponseWriter, r *http.Request) {
 		}
 		p, err = s.controller.CreatePlayer(ctx, args)
 		if err != nil {
-			Error(w, err)
+			ErrorHTTP(w, err)
 			return
 		}
 	}
@@ -126,14 +125,14 @@ func (s *Server) LoginCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	accessToken, _, err := s.tokenMaker.CreateToken(tp, token.AccessToken)
 	if err != nil {
-		Error(w, err)
+		ErrorHTTP(w, err)
 		return
 	}
 
 	tp.TokenID = p.RefreshTokenID
 	refreshToken, _, err := s.tokenMaker.CreateToken(tp, token.RefreshToken)
 	if err != nil {
-		Error(w, err)
+		ErrorHTTP(w, err)
 		return
 	}
 
@@ -142,13 +141,13 @@ func (s *Server) LoginCallback(w http.ResponseWriter, r *http.Request) {
 	sess.Values[token.RefreshToken] = refreshToken
 	err = sess.Save(r, w)
 	if err != nil {
-		Error(w, errors.Internal(err))
+		ErrorHTTP(w, errors.Internal(err))
 		return
 	}
 
 	fullUrl, err := url.JoinPath(s.cfg.FrontendDomain, s.cfg.FrontendLobbyRoute)
 	if err != nil {
-		Error(w, errors.Internal(err))
+		ErrorHTTP(w, errors.Internal(err))
 		return
 	}
 
@@ -160,25 +159,25 @@ func (s *Server) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	tp, err := tokenFromRequest(r, token.RefreshToken)
 	if err != nil {
-		Error(w, err)
+		ErrorHTTP(w, err)
 		return
 	}
 
 	p, err := s.controller.GetPlayer(ctx, tp, service.GetPlayerParams{})
 	if err != nil {
-		Error(w, err)
+		ErrorHTTP(w, err)
 		return
 	}
 
 	if p.RefreshTokenID != tp.TokenID {
-		Error(w, errors.InvalidToken)
+		ErrorHTTP(w, errors.InvalidToken)
 		return
 	}
 
 	tp.TokenID = uuid.Nil
 	accessToken, _, err := s.tokenMaker.CreateToken(tp, token.AccessToken)
 	if err != nil {
-		Error(w, err)
+		ErrorHTTP(w, err)
 		return
 	}
 
@@ -186,9 +185,9 @@ func (s *Server) Refresh(w http.ResponseWriter, r *http.Request) {
 	sess.Values[token.AccessToken] = accessToken
 	err = sess.Save(r, w)
 	if err != nil {
-		Error(w, errors.Internal(err))
+		ErrorHTTP(w, errors.Internal(err))
 		return
 	}
 
-	Write(w, http.StatusOK, nil)
+	WriteHTTP(w, http.StatusOK, nil)
 }

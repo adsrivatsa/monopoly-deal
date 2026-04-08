@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log/slog"
 	"monopoly-deal/internal/config"
 	"monopoly-deal/internal/service"
 	"monopoly-deal/internal/token"
@@ -25,6 +25,7 @@ const (
 
 type Server struct {
 	cfg         config.Config
+	logger      *slog.Logger
 	controller  *service.Controller
 	router      *chi.Mux
 	tokenMaker  token.Maker
@@ -32,7 +33,7 @@ type Server struct {
 	sessionName string
 }
 
-func NewServer(cfg config.Config, pool *pgxpool.Pool) *Server {
+func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool) *Server {
 	initialiseGoth(cfg)
 
 	sessionName := "session"
@@ -53,6 +54,7 @@ func NewServer(cfg config.Config, pool *pgxpool.Pool) *Server {
 
 	s := &Server{
 		cfg:         cfg,
+		logger:      logger,
 		controller:  service.NewController(cfg, pool),
 		tokenMaker:  tokenMaker,
 		cookieStore: cookieStore,
@@ -97,18 +99,23 @@ func (s *Server) addRoutes() {
 	)
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		Write(w, http.StatusOK, "success")
+		WriteHTTP(w, http.StatusOK, "success")
 	})
 
 	router.Mount("/auth", s.authRoutes())
+
+	router.Route("/", func(r chi.Router) {
+		r.Use(tokenMiddleware(s.tokenMaker, s.cookieStore, s.sessionName, token.AccessToken))
+
+		r.Mount("/socket", s.socketRoutes())
+	})
 
 	s.router = router
 }
 
 func (s *Server) Start() error {
-	addr := fmt.Sprintf(":%s", s.cfg.BackendPort)
 	srv := &http.Server{
-		Addr:    addr,
+		Addr:    s.cfg.BackendDomain,
 		Handler: s.router,
 	}
 	return srv.ListenAndServe()
