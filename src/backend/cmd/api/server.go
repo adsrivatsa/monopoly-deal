@@ -6,6 +6,7 @@ import (
 	"monopoly-deal/internal/service"
 	"monopoly-deal/internal/token"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -13,7 +14,9 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
+	"github.com/gorilla/websocket"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
@@ -24,6 +27,8 @@ const (
 	PROVIDER = "provider"
 )
 
+var upgrader = websocket.Upgrader{}
+
 type Server struct {
 	cfg         config.Config
 	logger      *slog.Logger
@@ -32,6 +37,9 @@ type Server struct {
 	tokenMaker  token.Maker
 	cookieStore *sessions.CookieStore
 	sessionName string
+
+	lobbyMu      sync.Mutex
+	lobbySockets map[uuid.UUID]*socket
 }
 
 func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool, client *redis.Client) *Server {
@@ -60,6 +68,8 @@ func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool, clien
 		tokenMaker:  tokenMaker,
 		cookieStore: cookieStore,
 		sessionName: sessionName,
+
+		lobbySockets: make(map[uuid.UUID]*socket),
 	}
 
 	s.addRoutes()
@@ -108,7 +118,7 @@ func (s *Server) addRoutes() {
 	router.Route("/", func(r chi.Router) {
 		r.Use(tokenMiddleware(s.tokenMaker, s.cookieStore, s.sessionName, token.AccessToken))
 
-		r.Mount("/socket", s.socketRoutes())
+		r.Mount("/lobby", s.lobbyRoutes())
 	})
 
 	s.router = router

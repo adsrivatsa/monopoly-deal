@@ -7,9 +7,6 @@ import (
 	"io"
 	"monopoly-deal/internal/errors"
 	"net/http"
-
-	"github.com/gorilla/websocket"
-	"google.golang.org/protobuf/proto"
 )
 
 var maxBytes = 10 << 20
@@ -60,32 +57,4 @@ func ErrorHTTP(w http.ResponseWriter, err error) {
 		stderrors.As(errors.Internal(err), &intErr)
 	}
 	WriteHTTP(w, intErr.Status, intErr)
-}
-
-func WriteWS(conn *websocket.Conn, message proto.Message) {
-	data, err := proto.Marshal(message)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = conn.WriteMessage(websocket.BinaryMessage, data)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
-func LobbyError(conn *websocket.Conn, err error) {
-	var intErr errors.Error
-	if !stderrors.As(err, &intErr) {
-		stderrors.As(errors.Internal(err), &intErr)
-	}
-	WriteWS(conn, intErr.Lobby())
-}
-
-func GameError(conn *websocket.Conn, err error) {
-	var intErr errors.Error
-	if !stderrors.As(err, &intErr) {
-		stderrors.As(errors.Internal(err), &intErr)
-	}
-	WriteWS(conn, intErr.Game())
 }

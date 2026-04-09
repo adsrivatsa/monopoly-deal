@@ -9,7 +9,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"google.golang.org/protobuf/proto"
 )
 
 type Error struct {
@@ -44,22 +43,9 @@ func (e Error) Unwrap() error {
 	return e.Inner
 }
 
-func (e Error) Lobby() proto.Message {
-	res := &schema.LobbyMessage{
-		Payload: &schema.LobbyMessage_Error{
-			Error: &schema.Error{
-				Code:    e.Code,
-				Message: e.Error(),
-				Status:  int32(e.Status),
-			},
-		},
-	}
-	return res
-}
-
-func (e Error) Game() proto.Message {
-	res := &schema.GameMessage{
-		Payload: &schema.GameMessage_Error{
+func (e Error) Proto() *schema.ServerMessage {
+	res := &schema.ServerMessage{
+		Payload: &schema.ServerMessage_Error{
 			Error: &schema.Error{
 				Code:    e.Code,
 				Message: e.Error(),
@@ -75,14 +61,21 @@ var (
 	ExpiredToken        = NewError("expired token", http.StatusUnauthorized, "TOK002")
 	InvalidTokenContent = NewError("invalid token", http.StatusBadRequest, "TOK003")
 	InvalidTokenType    = NewError("invalid token", http.StatusBadRequest, "TOK004")
+	DuplicateSocket     = NewError("duplicate socket created", http.StatusConflict, "API002")
 )
 
 func InvalidUUID(err error) Error {
 	return NewError("invalid UUID", http.StatusBadRequest, "VAL001", err)
 }
 
+func InvalidMessageType[T any]() Error {
+	var expectedType T
+	msg := fmt.Sprintf("invalid message type, expected type %t", expectedType)
+	return NewError(msg, http.StatusBadRequest, "API003")
+}
+
 func Unauthenticated(err error) Error {
-	return NewError("unauthenticated", http.StatusBadRequest, "AUTH001", err)
+	return NewError("unauthenticated", http.StatusBadRequest, "API001", err)
 }
 
 func Internal(err error) Error {
@@ -105,11 +98,6 @@ const (
 	NoDataFound         DBViolation = "P0002"
 )
 
-func InvalidDBViolation(code DBViolation, err error) Error {
-	f := fmt.Sprintf("db violation function not set for %s", code)
-	return NewError(f, http.StatusInternalServerError, "INT002", err)
-}
-
 func DBErrorCode(err error) DBViolation {
 	if errors.Is(err, pgx.ErrNoRows) || errors.Is(err, sql.ErrNoRows) {
 		return NoDataFound
@@ -124,12 +112,12 @@ func DBErrorCode(err error) DBViolation {
 	return ""
 }
 
-func EntityNotFound(ent Entity, err error) Error {
+func EntityNotFound(ent Entity, err ...error) Error {
 	f := fmt.Sprintf("%s not found", ent)
-	return NewError(f, http.StatusNotFound, "SER001", err)
+	return NewError(f, http.StatusNotFound, "SER001", err...)
 }
 
-func EntityAlreadyExists(ent Entity, err error) Error {
+func EntityAlreadyExists(ent Entity, err ...error) Error {
 	f := fmt.Sprintf("%s already exists", ent)
-	return NewError(f, http.StatusBadRequest, "SER002", err)
+	return NewError(f, http.StatusBadRequest, "SER002", err...)
 }

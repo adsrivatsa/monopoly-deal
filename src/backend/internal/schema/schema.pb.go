@@ -2402,38 +2402,31 @@ func (x *WildRentResponse) GetSaidNo() bool {
 	return false
 }
 
-type LobbyMessage struct {
+type ClientLobbyMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Payload:
 	//
-	//	*LobbyMessage_Ping
-	//	*LobbyMessage_Error
-	//	*LobbyMessage_CreateRoom
-	//	*LobbyMessage_RoomCreated
-	//	*LobbyMessage_JoinRoom
-	//	*LobbyMessage_PlayerJoinedRoom
-	//	*LobbyMessage_LeaveRoom
-	//	*LobbyMessage_PlayerLeftRoom
-	//	*LobbyMessage_RoomDeleted
-	Payload       isLobbyMessage_Payload `protobuf_oneof:"payload"`
+	//	*ClientLobbyMessage_CreateRoom
+	//	*ClientLobbyMessage_JoinRoom
+	Payload       isClientLobbyMessage_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *LobbyMessage) Reset() {
-	*x = LobbyMessage{}
+func (x *ClientLobbyMessage) Reset() {
+	*x = ClientLobbyMessage{}
 	mi := &file_schema_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *LobbyMessage) String() string {
+func (x *ClientLobbyMessage) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LobbyMessage) ProtoMessage() {}
+func (*ClientLobbyMessage) ProtoMessage() {}
 
-func (x *LobbyMessage) ProtoReflect() protoreflect.Message {
+func (x *ClientLobbyMessage) ProtoReflect() protoreflect.Message {
 	mi := &file_schema_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2445,204 +2438,76 @@ func (x *LobbyMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LobbyMessage.ProtoReflect.Descriptor instead.
-func (*LobbyMessage) Descriptor() ([]byte, []int) {
+// Deprecated: Use ClientLobbyMessage.ProtoReflect.Descriptor instead.
+func (*ClientLobbyMessage) Descriptor() ([]byte, []int) {
 	return file_schema_proto_rawDescGZIP(), []int{36}
 }
 
-func (x *LobbyMessage) GetPayload() isLobbyMessage_Payload {
+func (x *ClientLobbyMessage) GetPayload() isClientLobbyMessage_Payload {
 	if x != nil {
 		return x.Payload
 	}
 	return nil
 }
 
-func (x *LobbyMessage) GetPing() *Ping {
+func (x *ClientLobbyMessage) GetCreateRoom() *CreateRoom {
 	if x != nil {
-		if x, ok := x.Payload.(*LobbyMessage_Ping); ok {
-			return x.Ping
-		}
-	}
-	return nil
-}
-
-func (x *LobbyMessage) GetError() *Error {
-	if x != nil {
-		if x, ok := x.Payload.(*LobbyMessage_Error); ok {
-			return x.Error
-		}
-	}
-	return nil
-}
-
-func (x *LobbyMessage) GetCreateRoom() *CreateRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*LobbyMessage_CreateRoom); ok {
+		if x, ok := x.Payload.(*ClientLobbyMessage_CreateRoom); ok {
 			return x.CreateRoom
 		}
 	}
 	return nil
 }
 
-func (x *LobbyMessage) GetRoomCreated() *RoomCreated {
+func (x *ClientLobbyMessage) GetJoinRoom() *JoinRoom {
 	if x != nil {
-		if x, ok := x.Payload.(*LobbyMessage_RoomCreated); ok {
-			return x.RoomCreated
-		}
-	}
-	return nil
-}
-
-func (x *LobbyMessage) GetJoinRoom() *JoinRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*LobbyMessage_JoinRoom); ok {
+		if x, ok := x.Payload.(*ClientLobbyMessage_JoinRoom); ok {
 			return x.JoinRoom
 		}
 	}
 	return nil
 }
 
-func (x *LobbyMessage) GetPlayerJoinedRoom() *PlayerJoinedRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*LobbyMessage_PlayerJoinedRoom); ok {
-			return x.PlayerJoinedRoom
-		}
-	}
-	return nil
+type isClientLobbyMessage_Payload interface {
+	isClientLobbyMessage_Payload()
 }
 
-func (x *LobbyMessage) GetLeaveRoom() *LeaveRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*LobbyMessage_LeaveRoom); ok {
-			return x.LeaveRoom
-		}
-	}
-	return nil
+type ClientLobbyMessage_CreateRoom struct {
+	CreateRoom *CreateRoom `protobuf:"bytes,1,opt,name=create_room,json=createRoom,proto3,oneof"`
 }
 
-func (x *LobbyMessage) GetPlayerLeftRoom() *PlayerLeftRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*LobbyMessage_PlayerLeftRoom); ok {
-			return x.PlayerLeftRoom
-		}
-	}
-	return nil
+type ClientLobbyMessage_JoinRoom struct {
+	JoinRoom *JoinRoom `protobuf:"bytes,2,opt,name=join_room,json=joinRoom,proto3,oneof"`
 }
 
-func (x *LobbyMessage) GetRoomDeleted() *RoomDeleted {
-	if x != nil {
-		if x, ok := x.Payload.(*LobbyMessage_RoomDeleted); ok {
-			return x.RoomDeleted
-		}
-	}
-	return nil
-}
+func (*ClientLobbyMessage_CreateRoom) isClientLobbyMessage_Payload() {}
 
-type isLobbyMessage_Payload interface {
-	isLobbyMessage_Payload()
-}
+func (*ClientLobbyMessage_JoinRoom) isClientLobbyMessage_Payload() {}
 
-type LobbyMessage_Ping struct {
-	Ping *Ping `protobuf:"bytes,1,opt,name=ping,proto3,oneof"`
-}
-
-type LobbyMessage_Error struct {
-	Error *Error `protobuf:"bytes,2,opt,name=error,proto3,oneof"`
-}
-
-type LobbyMessage_CreateRoom struct {
-	CreateRoom *CreateRoom `protobuf:"bytes,10,opt,name=create_room,json=createRoom,proto3,oneof"`
-}
-
-type LobbyMessage_RoomCreated struct {
-	RoomCreated *RoomCreated `protobuf:"bytes,11,opt,name=room_created,json=roomCreated,proto3,oneof"`
-}
-
-type LobbyMessage_JoinRoom struct {
-	JoinRoom *JoinRoom `protobuf:"bytes,12,opt,name=join_room,json=joinRoom,proto3,oneof"`
-}
-
-type LobbyMessage_PlayerJoinedRoom struct {
-	PlayerJoinedRoom *PlayerJoinedRoom `protobuf:"bytes,13,opt,name=player_joined_room,json=playerJoinedRoom,proto3,oneof"`
-}
-
-type LobbyMessage_LeaveRoom struct {
-	LeaveRoom *LeaveRoom `protobuf:"bytes,14,opt,name=leave_room,json=leaveRoom,proto3,oneof"`
-}
-
-type LobbyMessage_PlayerLeftRoom struct {
-	PlayerLeftRoom *PlayerLeftRoom `protobuf:"bytes,15,opt,name=player_left_room,json=playerLeftRoom,proto3,oneof"`
-}
-
-type LobbyMessage_RoomDeleted struct {
-	RoomDeleted *RoomDeleted `protobuf:"bytes,16,opt,name=room_deleted,json=roomDeleted,proto3,oneof"`
-}
-
-func (*LobbyMessage_Ping) isLobbyMessage_Payload() {}
-
-func (*LobbyMessage_Error) isLobbyMessage_Payload() {}
-
-func (*LobbyMessage_CreateRoom) isLobbyMessage_Payload() {}
-
-func (*LobbyMessage_RoomCreated) isLobbyMessage_Payload() {}
-
-func (*LobbyMessage_JoinRoom) isLobbyMessage_Payload() {}
-
-func (*LobbyMessage_PlayerJoinedRoom) isLobbyMessage_Payload() {}
-
-func (*LobbyMessage_LeaveRoom) isLobbyMessage_Payload() {}
-
-func (*LobbyMessage_PlayerLeftRoom) isLobbyMessage_Payload() {}
-
-func (*LobbyMessage_RoomDeleted) isLobbyMessage_Payload() {}
-
-type GameMessage struct {
+type ClientRoomMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Payload:
 	//
-	//	*GameMessage_Ping
-	//	*GameMessage_Error
-	//	*GameMessage_PlayProperty
-	//	*GameMessage_PlayMoney
-	//	*GameMessage_PassGo
-	//	*GameMessage_PassGoRes
-	//	*GameMessage_DoubleTheRent
-	//	*GameMessage_ItsMyBirthday
-	//	*GameMessage_ItsMyBirthdayRes
-	//	*GameMessage_House
-	//	*GameMessage_SlyDeal
-	//	*GameMessage_SlyDealRes
-	//	*GameMessage_ForcedDeal
-	//	*GameMessage_ForcedDealRes
-	//	*GameMessage_DebtCollector
-	//	*GameMessage_DebtCollectorRes
-	//	*GameMessage_Hotel
-	//	*GameMessage_JustSayNoRes
-	//	*GameMessage_DealBreaker
-	//	*GameMessage_DealBreakerRes
-	//	*GameMessage_Rent
-	//	*GameMessage_RentRes
-	//	*GameMessage_WildRent
-	//	*GameMessage_WildRentRes
-	Payload       isGameMessage_Payload `protobuf_oneof:"payload"`
+	//	*ClientRoomMessage_LeaveRoom
+	Payload       isClientRoomMessage_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GameMessage) Reset() {
-	*x = GameMessage{}
+func (x *ClientRoomMessage) Reset() {
+	*x = ClientRoomMessage{}
 	mi := &file_schema_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GameMessage) String() string {
+func (x *ClientRoomMessage) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GameMessage) ProtoMessage() {}
+func (*ClientRoomMessage) ProtoMessage() {}
 
-func (x *GameMessage) ProtoReflect() protoreflect.Message {
+func (x *ClientRoomMessage) ProtoReflect() protoreflect.Message {
 	mi := &file_schema_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2654,381 +2519,532 @@ func (x *GameMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GameMessage.ProtoReflect.Descriptor instead.
-func (*GameMessage) Descriptor() ([]byte, []int) {
+// Deprecated: Use ClientRoomMessage.ProtoReflect.Descriptor instead.
+func (*ClientRoomMessage) Descriptor() ([]byte, []int) {
 	return file_schema_proto_rawDescGZIP(), []int{37}
 }
 
-func (x *GameMessage) GetPayload() isGameMessage_Payload {
+func (x *ClientRoomMessage) GetPayload() isClientRoomMessage_Payload {
 	if x != nil {
 		return x.Payload
 	}
 	return nil
 }
 
-func (x *GameMessage) GetPing() *Ping {
+func (x *ClientRoomMessage) GetLeaveRoom() *LeaveRoom {
 	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_Ping); ok {
+		if x, ok := x.Payload.(*ClientRoomMessage_LeaveRoom); ok {
+			return x.LeaveRoom
+		}
+	}
+	return nil
+}
+
+type isClientRoomMessage_Payload interface {
+	isClientRoomMessage_Payload()
+}
+
+type ClientRoomMessage_LeaveRoom struct {
+	LeaveRoom *LeaveRoom `protobuf:"bytes,1,opt,name=leave_room,json=leaveRoom,proto3,oneof"`
+}
+
+func (*ClientRoomMessage_LeaveRoom) isClientRoomMessage_Payload() {}
+
+type ClientGameMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClientGameMessage) Reset() {
+	*x = ClientGameMessage{}
+	mi := &file_schema_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClientGameMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClientGameMessage) ProtoMessage() {}
+
+func (x *ClientGameMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_schema_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClientGameMessage.ProtoReflect.Descriptor instead.
+func (*ClientGameMessage) Descriptor() ([]byte, []int) {
+	return file_schema_proto_rawDescGZIP(), []int{38}
+}
+
+type ClientMessage struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Payload:
+	//
+	//	*ClientMessage_Ping
+	//	*ClientMessage_LobbyMessage
+	//	*ClientMessage_RoomMessage
+	//	*ClientMessage_GameMessage
+	Payload       isClientMessage_Payload `protobuf_oneof:"payload"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClientMessage) Reset() {
+	*x = ClientMessage{}
+	mi := &file_schema_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClientMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClientMessage) ProtoMessage() {}
+
+func (x *ClientMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_schema_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClientMessage.ProtoReflect.Descriptor instead.
+func (*ClientMessage) Descriptor() ([]byte, []int) {
+	return file_schema_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *ClientMessage) GetPayload() isClientMessage_Payload {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
+}
+
+func (x *ClientMessage) GetPing() *Ping {
+	if x != nil {
+		if x, ok := x.Payload.(*ClientMessage_Ping); ok {
 			return x.Ping
 		}
 	}
 	return nil
 }
 
-func (x *GameMessage) GetError() *Error {
+func (x *ClientMessage) GetLobbyMessage() *ClientLobbyMessage {
 	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_Error); ok {
+		if x, ok := x.Payload.(*ClientMessage_LobbyMessage); ok {
+			return x.LobbyMessage
+		}
+	}
+	return nil
+}
+
+func (x *ClientMessage) GetRoomMessage() *ClientRoomMessage {
+	if x != nil {
+		if x, ok := x.Payload.(*ClientMessage_RoomMessage); ok {
+			return x.RoomMessage
+		}
+	}
+	return nil
+}
+
+func (x *ClientMessage) GetGameMessage() *ClientGameMessage {
+	if x != nil {
+		if x, ok := x.Payload.(*ClientMessage_GameMessage); ok {
+			return x.GameMessage
+		}
+	}
+	return nil
+}
+
+type isClientMessage_Payload interface {
+	isClientMessage_Payload()
+}
+
+type ClientMessage_Ping struct {
+	Ping *Ping `protobuf:"bytes,1,opt,name=ping,proto3,oneof"`
+}
+
+type ClientMessage_LobbyMessage struct {
+	LobbyMessage *ClientLobbyMessage `protobuf:"bytes,10,opt,name=lobby_message,json=lobbyMessage,proto3,oneof"`
+}
+
+type ClientMessage_RoomMessage struct {
+	RoomMessage *ClientRoomMessage `protobuf:"bytes,11,opt,name=room_message,json=roomMessage,proto3,oneof"`
+}
+
+type ClientMessage_GameMessage struct {
+	GameMessage *ClientGameMessage `protobuf:"bytes,12,opt,name=game_message,json=gameMessage,proto3,oneof"`
+}
+
+func (*ClientMessage_Ping) isClientMessage_Payload() {}
+
+func (*ClientMessage_LobbyMessage) isClientMessage_Payload() {}
+
+func (*ClientMessage_RoomMessage) isClientMessage_Payload() {}
+
+func (*ClientMessage_GameMessage) isClientMessage_Payload() {}
+
+type ServerLobbyMessage struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Payload:
+	//
+	//	*ServerLobbyMessage_RoomCreated
+	//	*ServerLobbyMessage_RoomDeleted
+	Payload       isServerLobbyMessage_Payload `protobuf_oneof:"payload"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ServerLobbyMessage) Reset() {
+	*x = ServerLobbyMessage{}
+	mi := &file_schema_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ServerLobbyMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerLobbyMessage) ProtoMessage() {}
+
+func (x *ServerLobbyMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_schema_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerLobbyMessage.ProtoReflect.Descriptor instead.
+func (*ServerLobbyMessage) Descriptor() ([]byte, []int) {
+	return file_schema_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *ServerLobbyMessage) GetPayload() isServerLobbyMessage_Payload {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
+}
+
+func (x *ServerLobbyMessage) GetRoomCreated() *RoomCreated {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerLobbyMessage_RoomCreated); ok {
+			return x.RoomCreated
+		}
+	}
+	return nil
+}
+
+func (x *ServerLobbyMessage) GetRoomDeleted() *RoomDeleted {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerLobbyMessage_RoomDeleted); ok {
+			return x.RoomDeleted
+		}
+	}
+	return nil
+}
+
+type isServerLobbyMessage_Payload interface {
+	isServerLobbyMessage_Payload()
+}
+
+type ServerLobbyMessage_RoomCreated struct {
+	RoomCreated *RoomCreated `protobuf:"bytes,1,opt,name=room_created,json=roomCreated,proto3,oneof"`
+}
+
+type ServerLobbyMessage_RoomDeleted struct {
+	RoomDeleted *RoomDeleted `protobuf:"bytes,2,opt,name=room_deleted,json=roomDeleted,proto3,oneof"`
+}
+
+func (*ServerLobbyMessage_RoomCreated) isServerLobbyMessage_Payload() {}
+
+func (*ServerLobbyMessage_RoomDeleted) isServerLobbyMessage_Payload() {}
+
+type ServerRoomMessage struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Payload:
+	//
+	//	*ServerRoomMessage_RoomCreated
+	//	*ServerRoomMessage_PlayerJoinedRoom
+	//	*ServerRoomMessage_PlayerLeftRoom
+	Payload       isServerRoomMessage_Payload `protobuf_oneof:"payload"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ServerRoomMessage) Reset() {
+	*x = ServerRoomMessage{}
+	mi := &file_schema_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ServerRoomMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerRoomMessage) ProtoMessage() {}
+
+func (x *ServerRoomMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_schema_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerRoomMessage.ProtoReflect.Descriptor instead.
+func (*ServerRoomMessage) Descriptor() ([]byte, []int) {
+	return file_schema_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *ServerRoomMessage) GetPayload() isServerRoomMessage_Payload {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
+}
+
+func (x *ServerRoomMessage) GetRoomCreated() *RoomCreated {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerRoomMessage_RoomCreated); ok {
+			return x.RoomCreated
+		}
+	}
+	return nil
+}
+
+func (x *ServerRoomMessage) GetPlayerJoinedRoom() *PlayerJoinedRoom {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerRoomMessage_PlayerJoinedRoom); ok {
+			return x.PlayerJoinedRoom
+		}
+	}
+	return nil
+}
+
+func (x *ServerRoomMessage) GetPlayerLeftRoom() *PlayerLeftRoom {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerRoomMessage_PlayerLeftRoom); ok {
+			return x.PlayerLeftRoom
+		}
+	}
+	return nil
+}
+
+type isServerRoomMessage_Payload interface {
+	isServerRoomMessage_Payload()
+}
+
+type ServerRoomMessage_RoomCreated struct {
+	RoomCreated *RoomCreated `protobuf:"bytes,1,opt,name=room_created,json=roomCreated,proto3,oneof"`
+}
+
+type ServerRoomMessage_PlayerJoinedRoom struct {
+	PlayerJoinedRoom *PlayerJoinedRoom `protobuf:"bytes,2,opt,name=player_joined_room,json=playerJoinedRoom,proto3,oneof"`
+}
+
+type ServerRoomMessage_PlayerLeftRoom struct {
+	PlayerLeftRoom *PlayerLeftRoom `protobuf:"bytes,3,opt,name=player_left_room,json=playerLeftRoom,proto3,oneof"`
+}
+
+func (*ServerRoomMessage_RoomCreated) isServerRoomMessage_Payload() {}
+
+func (*ServerRoomMessage_PlayerJoinedRoom) isServerRoomMessage_Payload() {}
+
+func (*ServerRoomMessage_PlayerLeftRoom) isServerRoomMessage_Payload() {}
+
+type ServerGameMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ServerGameMessage) Reset() {
+	*x = ServerGameMessage{}
+	mi := &file_schema_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ServerGameMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerGameMessage) ProtoMessage() {}
+
+func (x *ServerGameMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_schema_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerGameMessage.ProtoReflect.Descriptor instead.
+func (*ServerGameMessage) Descriptor() ([]byte, []int) {
+	return file_schema_proto_rawDescGZIP(), []int{42}
+}
+
+type ServerMessage struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Payload:
+	//
+	//	*ServerMessage_Ping
+	//	*ServerMessage_Error
+	//	*ServerMessage_LobbyMessage
+	//	*ServerMessage_RoomMessage
+	//	*ServerMessage_GameMessage
+	Payload       isServerMessage_Payload `protobuf_oneof:"payload"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ServerMessage) Reset() {
+	*x = ServerMessage{}
+	mi := &file_schema_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ServerMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerMessage) ProtoMessage() {}
+
+func (x *ServerMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_schema_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerMessage.ProtoReflect.Descriptor instead.
+func (*ServerMessage) Descriptor() ([]byte, []int) {
+	return file_schema_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *ServerMessage) GetPayload() isServerMessage_Payload {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
+}
+
+func (x *ServerMessage) GetPing() *Ping {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerMessage_Ping); ok {
+			return x.Ping
+		}
+	}
+	return nil
+}
+
+func (x *ServerMessage) GetError() *Error {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerMessage_Error); ok {
 			return x.Error
 		}
 	}
 	return nil
 }
 
-func (x *GameMessage) GetPlayProperty() *PlayProperty {
+func (x *ServerMessage) GetLobbyMessage() *ServerLobbyMessage {
 	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_PlayProperty); ok {
-			return x.PlayProperty
+		if x, ok := x.Payload.(*ServerMessage_LobbyMessage); ok {
+			return x.LobbyMessage
 		}
 	}
 	return nil
 }
 
-func (x *GameMessage) GetPlayMoney() *PlayMoney {
+func (x *ServerMessage) GetRoomMessage() *ServerRoomMessage {
 	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_PlayMoney); ok {
-			return x.PlayMoney
+		if x, ok := x.Payload.(*ServerMessage_RoomMessage); ok {
+			return x.RoomMessage
 		}
 	}
 	return nil
 }
 
-func (x *GameMessage) GetPassGo() *PassGo {
+func (x *ServerMessage) GetGameMessage() *ServerGameMessage {
 	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_PassGo); ok {
-			return x.PassGo
+		if x, ok := x.Payload.(*ServerMessage_GameMessage); ok {
+			return x.GameMessage
 		}
 	}
 	return nil
 }
 
-func (x *GameMessage) GetPassGoRes() *PassGoResponse {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_PassGoRes); ok {
-			return x.PassGoRes
-		}
-	}
-	return nil
+type isServerMessage_Payload interface {
+	isServerMessage_Payload()
 }
 
-func (x *GameMessage) GetDoubleTheRent() *DoubleTheRent {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_DoubleTheRent); ok {
-			return x.DoubleTheRent
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetItsMyBirthday() *ItsMyBirthday {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_ItsMyBirthday); ok {
-			return x.ItsMyBirthday
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetItsMyBirthdayRes() *ItsMyBirthdayResponse {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_ItsMyBirthdayRes); ok {
-			return x.ItsMyBirthdayRes
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetHouse() *House {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_House); ok {
-			return x.House
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetSlyDeal() *SlyDeal {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_SlyDeal); ok {
-			return x.SlyDeal
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetSlyDealRes() *SlyDealResponse {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_SlyDealRes); ok {
-			return x.SlyDealRes
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetForcedDeal() *ForcedDeal {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_ForcedDeal); ok {
-			return x.ForcedDeal
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetForcedDealRes() *ForcedDealResponse {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_ForcedDealRes); ok {
-			return x.ForcedDealRes
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetDebtCollector() *DebtCollector {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_DebtCollector); ok {
-			return x.DebtCollector
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetDebtCollectorRes() *DebtCollectorResponse {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_DebtCollectorRes); ok {
-			return x.DebtCollectorRes
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetHotel() *Hotel {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_Hotel); ok {
-			return x.Hotel
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetJustSayNoRes() *JustSayNoResponse {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_JustSayNoRes); ok {
-			return x.JustSayNoRes
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetDealBreaker() *DealBreaker {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_DealBreaker); ok {
-			return x.DealBreaker
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetDealBreakerRes() *DealBreakerResponse {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_DealBreakerRes); ok {
-			return x.DealBreakerRes
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetRent() *Rent {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_Rent); ok {
-			return x.Rent
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetRentRes() *RentResponse {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_RentRes); ok {
-			return x.RentRes
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetWildRent() *WildRent {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_WildRent); ok {
-			return x.WildRent
-		}
-	}
-	return nil
-}
-
-func (x *GameMessage) GetWildRentRes() *WildRentResponse {
-	if x != nil {
-		if x, ok := x.Payload.(*GameMessage_WildRentRes); ok {
-			return x.WildRentRes
-		}
-	}
-	return nil
-}
-
-type isGameMessage_Payload interface {
-	isGameMessage_Payload()
-}
-
-type GameMessage_Ping struct {
+type ServerMessage_Ping struct {
 	Ping *Ping `protobuf:"bytes,1,opt,name=ping,proto3,oneof"`
 }
 
-type GameMessage_Error struct {
+type ServerMessage_Error struct {
 	Error *Error `protobuf:"bytes,2,opt,name=error,proto3,oneof"`
 }
 
-type GameMessage_PlayProperty struct {
-	PlayProperty *PlayProperty `protobuf:"bytes,10,opt,name=play_property,json=playProperty,proto3,oneof"`
+type ServerMessage_LobbyMessage struct {
+	LobbyMessage *ServerLobbyMessage `protobuf:"bytes,10,opt,name=lobby_message,json=lobbyMessage,proto3,oneof"`
 }
 
-type GameMessage_PlayMoney struct {
-	PlayMoney *PlayMoney `protobuf:"bytes,11,opt,name=play_money,json=playMoney,proto3,oneof"`
+type ServerMessage_RoomMessage struct {
+	RoomMessage *ServerRoomMessage `protobuf:"bytes,11,opt,name=room_message,json=roomMessage,proto3,oneof"`
 }
 
-type GameMessage_PassGo struct {
-	PassGo *PassGo `protobuf:"bytes,15,opt,name=pass_go,json=passGo,proto3,oneof"`
+type ServerMessage_GameMessage struct {
+	GameMessage *ServerGameMessage `protobuf:"bytes,12,opt,name=game_message,json=gameMessage,proto3,oneof"`
 }
 
-type GameMessage_PassGoRes struct {
-	PassGoRes *PassGoResponse `protobuf:"bytes,16,opt,name=pass_go_res,json=passGoRes,proto3,oneof"`
-}
+func (*ServerMessage_Ping) isServerMessage_Payload() {}
 
-type GameMessage_DoubleTheRent struct {
-	DoubleTheRent *DoubleTheRent `protobuf:"bytes,20,opt,name=double_the_rent,json=doubleTheRent,proto3,oneof"`
-}
+func (*ServerMessage_Error) isServerMessage_Payload() {}
 
-type GameMessage_ItsMyBirthday struct {
-	ItsMyBirthday *ItsMyBirthday `protobuf:"bytes,25,opt,name=its_my_birthday,json=itsMyBirthday,proto3,oneof"`
-}
+func (*ServerMessage_LobbyMessage) isServerMessage_Payload() {}
 
-type GameMessage_ItsMyBirthdayRes struct {
-	ItsMyBirthdayRes *ItsMyBirthdayResponse `protobuf:"bytes,26,opt,name=its_my_birthday_res,json=itsMyBirthdayRes,proto3,oneof"`
-}
+func (*ServerMessage_RoomMessage) isServerMessage_Payload() {}
 
-type GameMessage_House struct {
-	House *House `protobuf:"bytes,30,opt,name=house,proto3,oneof"`
-}
-
-type GameMessage_SlyDeal struct {
-	SlyDeal *SlyDeal `protobuf:"bytes,35,opt,name=sly_deal,json=slyDeal,proto3,oneof"`
-}
-
-type GameMessage_SlyDealRes struct {
-	SlyDealRes *SlyDealResponse `protobuf:"bytes,36,opt,name=sly_deal_res,json=slyDealRes,proto3,oneof"`
-}
-
-type GameMessage_ForcedDeal struct {
-	ForcedDeal *ForcedDeal `protobuf:"bytes,40,opt,name=forced_deal,json=forcedDeal,proto3,oneof"`
-}
-
-type GameMessage_ForcedDealRes struct {
-	ForcedDealRes *ForcedDealResponse `protobuf:"bytes,41,opt,name=forced_deal_res,json=forcedDealRes,proto3,oneof"`
-}
-
-type GameMessage_DebtCollector struct {
-	DebtCollector *DebtCollector `protobuf:"bytes,45,opt,name=debt_collector,json=debtCollector,proto3,oneof"`
-}
-
-type GameMessage_DebtCollectorRes struct {
-	DebtCollectorRes *DebtCollectorResponse `protobuf:"bytes,46,opt,name=debt_collector_res,json=debtCollectorRes,proto3,oneof"`
-}
-
-type GameMessage_Hotel struct {
-	Hotel *Hotel `protobuf:"bytes,50,opt,name=hotel,proto3,oneof"`
-}
-
-type GameMessage_JustSayNoRes struct {
-	JustSayNoRes *JustSayNoResponse `protobuf:"bytes,55,opt,name=just_say_no_res,json=justSayNoRes,proto3,oneof"`
-}
-
-type GameMessage_DealBreaker struct {
-	DealBreaker *DealBreaker `protobuf:"bytes,60,opt,name=deal_breaker,json=dealBreaker,proto3,oneof"`
-}
-
-type GameMessage_DealBreakerRes struct {
-	DealBreakerRes *DealBreakerResponse `protobuf:"bytes,61,opt,name=deal_breaker_res,json=dealBreakerRes,proto3,oneof"`
-}
-
-type GameMessage_Rent struct {
-	Rent *Rent `protobuf:"bytes,65,opt,name=rent,proto3,oneof"`
-}
-
-type GameMessage_RentRes struct {
-	RentRes *RentResponse `protobuf:"bytes,66,opt,name=rent_res,json=rentRes,proto3,oneof"`
-}
-
-type GameMessage_WildRent struct {
-	WildRent *WildRent `protobuf:"bytes,70,opt,name=wild_rent,json=wildRent,proto3,oneof"`
-}
-
-type GameMessage_WildRentRes struct {
-	WildRentRes *WildRentResponse `protobuf:"bytes,71,opt,name=wild_rent_res,json=wildRentRes,proto3,oneof"`
-}
-
-func (*GameMessage_Ping) isGameMessage_Payload() {}
-
-func (*GameMessage_Error) isGameMessage_Payload() {}
-
-func (*GameMessage_PlayProperty) isGameMessage_Payload() {}
-
-func (*GameMessage_PlayMoney) isGameMessage_Payload() {}
-
-func (*GameMessage_PassGo) isGameMessage_Payload() {}
-
-func (*GameMessage_PassGoRes) isGameMessage_Payload() {}
-
-func (*GameMessage_DoubleTheRent) isGameMessage_Payload() {}
-
-func (*GameMessage_ItsMyBirthday) isGameMessage_Payload() {}
-
-func (*GameMessage_ItsMyBirthdayRes) isGameMessage_Payload() {}
-
-func (*GameMessage_House) isGameMessage_Payload() {}
-
-func (*GameMessage_SlyDeal) isGameMessage_Payload() {}
-
-func (*GameMessage_SlyDealRes) isGameMessage_Payload() {}
-
-func (*GameMessage_ForcedDeal) isGameMessage_Payload() {}
-
-func (*GameMessage_ForcedDealRes) isGameMessage_Payload() {}
-
-func (*GameMessage_DebtCollector) isGameMessage_Payload() {}
-
-func (*GameMessage_DebtCollectorRes) isGameMessage_Payload() {}
-
-func (*GameMessage_Hotel) isGameMessage_Payload() {}
-
-func (*GameMessage_JustSayNoRes) isGameMessage_Payload() {}
-
-func (*GameMessage_DealBreaker) isGameMessage_Payload() {}
-
-func (*GameMessage_DealBreakerRes) isGameMessage_Payload() {}
-
-func (*GameMessage_Rent) isGameMessage_Payload() {}
-
-func (*GameMessage_RentRes) isGameMessage_Payload() {}
-
-func (*GameMessage_WildRent) isGameMessage_Payload() {}
-
-func (*GameMessage_WildRentRes) isGameMessage_Payload() {}
+func (*ServerMessage_GameMessage) isServerMessage_Payload() {}
 
 var File_schema_proto protoreflect.FileDescriptor
 
@@ -3158,50 +3174,41 @@ const file_schema_proto_rawDesc = "" +
 	"\x10WildRentResponse\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12/\n" +
 	"\x05cards\x18\x02 \x03(\v2\x19.monopolydeal.schema.CardR\x05cards\x12\x17\n" +
-	"\asaid_no\x18\x03 \x01(\bR\x06saidNo\"\xf7\x04\n" +
-	"\fLobbyMessage\x12/\n" +
-	"\x04ping\x18\x01 \x01(\v2\x19.monopolydeal.schema.PingH\x00R\x04ping\x122\n" +
-	"\x05error\x18\x02 \x01(\v2\x1a.monopolydeal.schema.ErrorH\x00R\x05error\x12B\n" +
-	"\vcreate_room\x18\n" +
-	" \x01(\v2\x1f.monopolydeal.schema.CreateRoomH\x00R\n" +
-	"createRoom\x12E\n" +
-	"\froom_created\x18\v \x01(\v2 .monopolydeal.schema.RoomCreatedH\x00R\vroomCreated\x12<\n" +
-	"\tjoin_room\x18\f \x01(\v2\x1d.monopolydeal.schema.JoinRoomH\x00R\bjoinRoom\x12U\n" +
-	"\x12player_joined_room\x18\r \x01(\v2%.monopolydeal.schema.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12?\n" +
+	"\asaid_no\x18\x03 \x01(\bR\x06saidNo\"\xa1\x01\n" +
+	"\x12ClientLobbyMessage\x12B\n" +
+	"\vcreate_room\x18\x01 \x01(\v2\x1f.monopolydeal.schema.CreateRoomH\x00R\n" +
+	"createRoom\x12<\n" +
+	"\tjoin_room\x18\x02 \x01(\v2\x1d.monopolydeal.schema.JoinRoomH\x00R\bjoinRoomB\t\n" +
+	"\apayload\"_\n" +
+	"\x11ClientRoomMessage\x12?\n" +
 	"\n" +
-	"leave_room\x18\x0e \x01(\v2\x1e.monopolydeal.schema.LeaveRoomH\x00R\tleaveRoom\x12O\n" +
-	"\x10player_left_room\x18\x0f \x01(\v2#.monopolydeal.schema.PlayerLeftRoomH\x00R\x0eplayerLeftRoom\x12E\n" +
-	"\froom_deleted\x18\x10 \x01(\v2 .monopolydeal.schema.RoomDeletedH\x00R\vroomDeletedB\t\n" +
-	"\apayload\"\x97\r\n" +
-	"\vGameMessage\x12/\n" +
+	"leave_room\x18\x01 \x01(\v2\x1e.monopolydeal.schema.LeaveRoomH\x00R\tleaveRoomB\t\n" +
+	"\apayload\"\x13\n" +
+	"\x11ClientGameMessage\"\xb5\x02\n" +
+	"\rClientMessage\x12/\n" +
+	"\x04ping\x18\x01 \x01(\v2\x19.monopolydeal.schema.PingH\x00R\x04ping\x12N\n" +
+	"\rlobby_message\x18\n" +
+	" \x01(\v2'.monopolydeal.schema.ClientLobbyMessageH\x00R\flobbyMessage\x12K\n" +
+	"\froom_message\x18\v \x01(\v2&.monopolydeal.schema.ClientRoomMessageH\x00R\vroomMessage\x12K\n" +
+	"\fgame_message\x18\f \x01(\v2&.monopolydeal.schema.ClientGameMessageH\x00R\vgameMessageB\t\n" +
+	"\apayload\"\xad\x01\n" +
+	"\x12ServerLobbyMessage\x12E\n" +
+	"\froom_created\x18\x01 \x01(\v2 .monopolydeal.schema.RoomCreatedH\x00R\vroomCreated\x12E\n" +
+	"\froom_deleted\x18\x02 \x01(\v2 .monopolydeal.schema.RoomDeletedH\x00R\vroomDeletedB\t\n" +
+	"\apayload\"\x8d\x02\n" +
+	"\x11ServerRoomMessage\x12E\n" +
+	"\froom_created\x18\x01 \x01(\v2 .monopolydeal.schema.RoomCreatedH\x00R\vroomCreated\x12U\n" +
+	"\x12player_joined_room\x18\x02 \x01(\v2%.monopolydeal.schema.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12O\n" +
+	"\x10player_left_room\x18\x03 \x01(\v2#.monopolydeal.schema.PlayerLeftRoomH\x00R\x0eplayerLeftRoomB\t\n" +
+	"\apayload\"\x13\n" +
+	"\x11ServerGameMessage\"\xe9\x02\n" +
+	"\rServerMessage\x12/\n" +
 	"\x04ping\x18\x01 \x01(\v2\x19.monopolydeal.schema.PingH\x00R\x04ping\x122\n" +
-	"\x05error\x18\x02 \x01(\v2\x1a.monopolydeal.schema.ErrorH\x00R\x05error\x12H\n" +
-	"\rplay_property\x18\n" +
-	" \x01(\v2!.monopolydeal.schema.PlayPropertyH\x00R\fplayProperty\x12?\n" +
-	"\n" +
-	"play_money\x18\v \x01(\v2\x1e.monopolydeal.schema.PlayMoneyH\x00R\tplayMoney\x126\n" +
-	"\apass_go\x18\x0f \x01(\v2\x1b.monopolydeal.schema.PassGoH\x00R\x06passGo\x12E\n" +
-	"\vpass_go_res\x18\x10 \x01(\v2#.monopolydeal.schema.PassGoResponseH\x00R\tpassGoRes\x12L\n" +
-	"\x0fdouble_the_rent\x18\x14 \x01(\v2\".monopolydeal.schema.DoubleTheRentH\x00R\rdoubleTheRent\x12L\n" +
-	"\x0fits_my_birthday\x18\x19 \x01(\v2\".monopolydeal.schema.ItsMyBirthdayH\x00R\ritsMyBirthday\x12[\n" +
-	"\x13its_my_birthday_res\x18\x1a \x01(\v2*.monopolydeal.schema.ItsMyBirthdayResponseH\x00R\x10itsMyBirthdayRes\x122\n" +
-	"\x05house\x18\x1e \x01(\v2\x1a.monopolydeal.schema.HouseH\x00R\x05house\x129\n" +
-	"\bsly_deal\x18# \x01(\v2\x1c.monopolydeal.schema.SlyDealH\x00R\aslyDeal\x12H\n" +
-	"\fsly_deal_res\x18$ \x01(\v2$.monopolydeal.schema.SlyDealResponseH\x00R\n" +
-	"slyDealRes\x12B\n" +
-	"\vforced_deal\x18( \x01(\v2\x1f.monopolydeal.schema.ForcedDealH\x00R\n" +
-	"forcedDeal\x12Q\n" +
-	"\x0fforced_deal_res\x18) \x01(\v2'.monopolydeal.schema.ForcedDealResponseH\x00R\rforcedDealRes\x12K\n" +
-	"\x0edebt_collector\x18- \x01(\v2\".monopolydeal.schema.DebtCollectorH\x00R\rdebtCollector\x12Z\n" +
-	"\x12debt_collector_res\x18. \x01(\v2*.monopolydeal.schema.DebtCollectorResponseH\x00R\x10debtCollectorRes\x122\n" +
-	"\x05hotel\x182 \x01(\v2\x1a.monopolydeal.schema.HotelH\x00R\x05hotel\x12O\n" +
-	"\x0fjust_say_no_res\x187 \x01(\v2&.monopolydeal.schema.JustSayNoResponseH\x00R\fjustSayNoRes\x12E\n" +
-	"\fdeal_breaker\x18< \x01(\v2 .monopolydeal.schema.DealBreakerH\x00R\vdealBreaker\x12T\n" +
-	"\x10deal_breaker_res\x18= \x01(\v2(.monopolydeal.schema.DealBreakerResponseH\x00R\x0edealBreakerRes\x12/\n" +
-	"\x04rent\x18A \x01(\v2\x19.monopolydeal.schema.RentH\x00R\x04rent\x12>\n" +
-	"\brent_res\x18B \x01(\v2!.monopolydeal.schema.RentResponseH\x00R\arentRes\x12<\n" +
-	"\twild_rent\x18F \x01(\v2\x1d.monopolydeal.schema.WildRentH\x00R\bwildRent\x12K\n" +
-	"\rwild_rent_res\x18G \x01(\v2%.monopolydeal.schema.WildRentResponseH\x00R\vwildRentResB\t\n" +
+	"\x05error\x18\x02 \x01(\v2\x1a.monopolydeal.schema.ErrorH\x00R\x05error\x12N\n" +
+	"\rlobby_message\x18\n" +
+	" \x01(\v2'.monopolydeal.schema.ServerLobbyMessageH\x00R\flobbyMessage\x12K\n" +
+	"\froom_message\x18\v \x01(\v2&.monopolydeal.schema.ServerRoomMessageH\x00R\vroomMessage\x12K\n" +
+	"\fgame_message\x18\f \x01(\v2&.monopolydeal.schema.ServerGameMessageH\x00R\vgameMessageB\t\n" +
 	"\apayload*0\n" +
 	"\n" +
 	"RoomStatus\x12\t\n" +
@@ -3268,7 +3275,7 @@ func file_schema_proto_rawDescGZIP() []byte {
 }
 
 var file_schema_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_schema_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
+var file_schema_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
 var file_schema_proto_goTypes = []any{
 	(RoomStatus)(0),               // 0: monopolydeal.schema.RoomStatus
 	(PurePropertyType)(0),         // 1: monopolydeal.schema.PurePropertyType
@@ -3312,8 +3319,14 @@ var file_schema_proto_goTypes = []any{
 	(*RentResponse)(nil),          // 39: monopolydeal.schema.RentResponse
 	(*WildRent)(nil),              // 40: monopolydeal.schema.WildRent
 	(*WildRentResponse)(nil),      // 41: monopolydeal.schema.WildRentResponse
-	(*LobbyMessage)(nil),          // 42: monopolydeal.schema.LobbyMessage
-	(*GameMessage)(nil),           // 43: monopolydeal.schema.GameMessage
+	(*ClientLobbyMessage)(nil),    // 42: monopolydeal.schema.ClientLobbyMessage
+	(*ClientRoomMessage)(nil),     // 43: monopolydeal.schema.ClientRoomMessage
+	(*ClientGameMessage)(nil),     // 44: monopolydeal.schema.ClientGameMessage
+	(*ClientMessage)(nil),         // 45: monopolydeal.schema.ClientMessage
+	(*ServerLobbyMessage)(nil),    // 46: monopolydeal.schema.ServerLobbyMessage
+	(*ServerRoomMessage)(nil),     // 47: monopolydeal.schema.ServerRoomMessage
+	(*ServerGameMessage)(nil),     // 48: monopolydeal.schema.ServerGameMessage
+	(*ServerMessage)(nil),         // 49: monopolydeal.schema.ServerMessage
 }
 var file_schema_proto_depIdxs = []int32{
 	8,  // 0: monopolydeal.schema.Room.players:type_name -> monopolydeal.schema.Player
@@ -3341,44 +3354,28 @@ var file_schema_proto_depIdxs = []int32{
 	17, // 22: monopolydeal.schema.Rent.card:type_name -> monopolydeal.schema.Card
 	17, // 23: monopolydeal.schema.RentResponse.cards:type_name -> monopolydeal.schema.Card
 	17, // 24: monopolydeal.schema.WildRentResponse.cards:type_name -> monopolydeal.schema.Card
-	6,  // 25: monopolydeal.schema.LobbyMessage.ping:type_name -> monopolydeal.schema.Ping
-	7,  // 26: monopolydeal.schema.LobbyMessage.error:type_name -> monopolydeal.schema.Error
-	9,  // 27: monopolydeal.schema.LobbyMessage.create_room:type_name -> monopolydeal.schema.CreateRoom
-	11, // 28: monopolydeal.schema.LobbyMessage.room_created:type_name -> monopolydeal.schema.RoomCreated
-	12, // 29: monopolydeal.schema.LobbyMessage.join_room:type_name -> monopolydeal.schema.JoinRoom
-	13, // 30: monopolydeal.schema.LobbyMessage.player_joined_room:type_name -> monopolydeal.schema.PlayerJoinedRoom
-	14, // 31: monopolydeal.schema.LobbyMessage.leave_room:type_name -> monopolydeal.schema.LeaveRoom
-	15, // 32: monopolydeal.schema.LobbyMessage.player_left_room:type_name -> monopolydeal.schema.PlayerLeftRoom
-	16, // 33: monopolydeal.schema.LobbyMessage.room_deleted:type_name -> monopolydeal.schema.RoomDeleted
-	6,  // 34: monopolydeal.schema.GameMessage.ping:type_name -> monopolydeal.schema.Ping
-	7,  // 35: monopolydeal.schema.GameMessage.error:type_name -> monopolydeal.schema.Error
-	20, // 36: monopolydeal.schema.GameMessage.play_property:type_name -> monopolydeal.schema.PlayProperty
-	21, // 37: monopolydeal.schema.GameMessage.play_money:type_name -> monopolydeal.schema.PlayMoney
-	22, // 38: monopolydeal.schema.GameMessage.pass_go:type_name -> monopolydeal.schema.PassGo
-	23, // 39: monopolydeal.schema.GameMessage.pass_go_res:type_name -> monopolydeal.schema.PassGoResponse
-	24, // 40: monopolydeal.schema.GameMessage.double_the_rent:type_name -> monopolydeal.schema.DoubleTheRent
-	25, // 41: monopolydeal.schema.GameMessage.its_my_birthday:type_name -> monopolydeal.schema.ItsMyBirthday
-	26, // 42: monopolydeal.schema.GameMessage.its_my_birthday_res:type_name -> monopolydeal.schema.ItsMyBirthdayResponse
-	27, // 43: monopolydeal.schema.GameMessage.house:type_name -> monopolydeal.schema.House
-	28, // 44: monopolydeal.schema.GameMessage.sly_deal:type_name -> monopolydeal.schema.SlyDeal
-	29, // 45: monopolydeal.schema.GameMessage.sly_deal_res:type_name -> monopolydeal.schema.SlyDealResponse
-	30, // 46: monopolydeal.schema.GameMessage.forced_deal:type_name -> monopolydeal.schema.ForcedDeal
-	31, // 47: monopolydeal.schema.GameMessage.forced_deal_res:type_name -> monopolydeal.schema.ForcedDealResponse
-	32, // 48: monopolydeal.schema.GameMessage.debt_collector:type_name -> monopolydeal.schema.DebtCollector
-	33, // 49: monopolydeal.schema.GameMessage.debt_collector_res:type_name -> monopolydeal.schema.DebtCollectorResponse
-	34, // 50: monopolydeal.schema.GameMessage.hotel:type_name -> monopolydeal.schema.Hotel
-	35, // 51: monopolydeal.schema.GameMessage.just_say_no_res:type_name -> monopolydeal.schema.JustSayNoResponse
-	36, // 52: monopolydeal.schema.GameMessage.deal_breaker:type_name -> monopolydeal.schema.DealBreaker
-	37, // 53: monopolydeal.schema.GameMessage.deal_breaker_res:type_name -> monopolydeal.schema.DealBreakerResponse
-	38, // 54: monopolydeal.schema.GameMessage.rent:type_name -> monopolydeal.schema.Rent
-	39, // 55: monopolydeal.schema.GameMessage.rent_res:type_name -> monopolydeal.schema.RentResponse
-	40, // 56: monopolydeal.schema.GameMessage.wild_rent:type_name -> monopolydeal.schema.WildRent
-	41, // 57: monopolydeal.schema.GameMessage.wild_rent_res:type_name -> monopolydeal.schema.WildRentResponse
-	58, // [58:58] is the sub-list for method output_type
-	58, // [58:58] is the sub-list for method input_type
-	58, // [58:58] is the sub-list for extension type_name
-	58, // [58:58] is the sub-list for extension extendee
-	0,  // [0:58] is the sub-list for field type_name
+	9,  // 25: monopolydeal.schema.ClientLobbyMessage.create_room:type_name -> monopolydeal.schema.CreateRoom
+	12, // 26: monopolydeal.schema.ClientLobbyMessage.join_room:type_name -> monopolydeal.schema.JoinRoom
+	14, // 27: monopolydeal.schema.ClientRoomMessage.leave_room:type_name -> monopolydeal.schema.LeaveRoom
+	6,  // 28: monopolydeal.schema.ClientMessage.ping:type_name -> monopolydeal.schema.Ping
+	42, // 29: monopolydeal.schema.ClientMessage.lobby_message:type_name -> monopolydeal.schema.ClientLobbyMessage
+	43, // 30: monopolydeal.schema.ClientMessage.room_message:type_name -> monopolydeal.schema.ClientRoomMessage
+	44, // 31: monopolydeal.schema.ClientMessage.game_message:type_name -> monopolydeal.schema.ClientGameMessage
+	11, // 32: monopolydeal.schema.ServerLobbyMessage.room_created:type_name -> monopolydeal.schema.RoomCreated
+	16, // 33: monopolydeal.schema.ServerLobbyMessage.room_deleted:type_name -> monopolydeal.schema.RoomDeleted
+	11, // 34: monopolydeal.schema.ServerRoomMessage.room_created:type_name -> monopolydeal.schema.RoomCreated
+	13, // 35: monopolydeal.schema.ServerRoomMessage.player_joined_room:type_name -> monopolydeal.schema.PlayerJoinedRoom
+	15, // 36: monopolydeal.schema.ServerRoomMessage.player_left_room:type_name -> monopolydeal.schema.PlayerLeftRoom
+	6,  // 37: monopolydeal.schema.ServerMessage.ping:type_name -> monopolydeal.schema.Ping
+	7,  // 38: monopolydeal.schema.ServerMessage.error:type_name -> monopolydeal.schema.Error
+	46, // 39: monopolydeal.schema.ServerMessage.lobby_message:type_name -> monopolydeal.schema.ServerLobbyMessage
+	47, // 40: monopolydeal.schema.ServerMessage.room_message:type_name -> monopolydeal.schema.ServerRoomMessage
+	48, // 41: monopolydeal.schema.ServerMessage.game_message:type_name -> monopolydeal.schema.ServerGameMessage
+	42, // [42:42] is the sub-list for method output_type
+	42, // [42:42] is the sub-list for method input_type
+	42, // [42:42] is the sub-list for extension type_name
+	42, // [42:42] is the sub-list for extension extendee
+	0,  // [0:42] is the sub-list for field type_name
 }
 
 func init() { file_schema_proto_init() }
@@ -3395,41 +3392,33 @@ func file_schema_proto_init() {
 	}
 	file_schema_proto_msgTypes[12].OneofWrappers = []any{}
 	file_schema_proto_msgTypes[36].OneofWrappers = []any{
-		(*LobbyMessage_Ping)(nil),
-		(*LobbyMessage_Error)(nil),
-		(*LobbyMessage_CreateRoom)(nil),
-		(*LobbyMessage_RoomCreated)(nil),
-		(*LobbyMessage_JoinRoom)(nil),
-		(*LobbyMessage_PlayerJoinedRoom)(nil),
-		(*LobbyMessage_LeaveRoom)(nil),
-		(*LobbyMessage_PlayerLeftRoom)(nil),
-		(*LobbyMessage_RoomDeleted)(nil),
+		(*ClientLobbyMessage_CreateRoom)(nil),
+		(*ClientLobbyMessage_JoinRoom)(nil),
 	}
 	file_schema_proto_msgTypes[37].OneofWrappers = []any{
-		(*GameMessage_Ping)(nil),
-		(*GameMessage_Error)(nil),
-		(*GameMessage_PlayProperty)(nil),
-		(*GameMessage_PlayMoney)(nil),
-		(*GameMessage_PassGo)(nil),
-		(*GameMessage_PassGoRes)(nil),
-		(*GameMessage_DoubleTheRent)(nil),
-		(*GameMessage_ItsMyBirthday)(nil),
-		(*GameMessage_ItsMyBirthdayRes)(nil),
-		(*GameMessage_House)(nil),
-		(*GameMessage_SlyDeal)(nil),
-		(*GameMessage_SlyDealRes)(nil),
-		(*GameMessage_ForcedDeal)(nil),
-		(*GameMessage_ForcedDealRes)(nil),
-		(*GameMessage_DebtCollector)(nil),
-		(*GameMessage_DebtCollectorRes)(nil),
-		(*GameMessage_Hotel)(nil),
-		(*GameMessage_JustSayNoRes)(nil),
-		(*GameMessage_DealBreaker)(nil),
-		(*GameMessage_DealBreakerRes)(nil),
-		(*GameMessage_Rent)(nil),
-		(*GameMessage_RentRes)(nil),
-		(*GameMessage_WildRent)(nil),
-		(*GameMessage_WildRentRes)(nil),
+		(*ClientRoomMessage_LeaveRoom)(nil),
+	}
+	file_schema_proto_msgTypes[39].OneofWrappers = []any{
+		(*ClientMessage_Ping)(nil),
+		(*ClientMessage_LobbyMessage)(nil),
+		(*ClientMessage_RoomMessage)(nil),
+		(*ClientMessage_GameMessage)(nil),
+	}
+	file_schema_proto_msgTypes[40].OneofWrappers = []any{
+		(*ServerLobbyMessage_RoomCreated)(nil),
+		(*ServerLobbyMessage_RoomDeleted)(nil),
+	}
+	file_schema_proto_msgTypes[41].OneofWrappers = []any{
+		(*ServerRoomMessage_RoomCreated)(nil),
+		(*ServerRoomMessage_PlayerJoinedRoom)(nil),
+		(*ServerRoomMessage_PlayerLeftRoom)(nil),
+	}
+	file_schema_proto_msgTypes[43].OneofWrappers = []any{
+		(*ServerMessage_Ping)(nil),
+		(*ServerMessage_Error)(nil),
+		(*ServerMessage_LobbyMessage)(nil),
+		(*ServerMessage_RoomMessage)(nil),
+		(*ServerMessage_GameMessage)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -3437,7 +3426,7 @@ func file_schema_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_schema_proto_rawDesc), len(file_schema_proto_rawDesc)),
 			NumEnums:      6,
-			NumMessages:   38,
+			NumMessages:   44,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

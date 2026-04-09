@@ -589,43 +589,45 @@ export interface WildRentResponse {
   saidNo: boolean;
 }
 
-export interface LobbyMessage {
-  ping?: Ping | undefined;
-  error?: Error | undefined;
+export interface ClientLobbyMessage {
   createRoom?: CreateRoom | undefined;
-  roomCreated?: RoomCreated | undefined;
   joinRoom?: JoinRoom | undefined;
-  playerJoinedRoom?: PlayerJoinedRoom | undefined;
+}
+
+export interface ClientRoomMessage {
   leaveRoom?: LeaveRoom | undefined;
-  playerLeftRoom?: PlayerLeftRoom | undefined;
+}
+
+export interface ClientGameMessage {
+}
+
+export interface ClientMessage {
+  ping?: Ping | undefined;
+  lobbyMessage?: ClientLobbyMessage | undefined;
+  roomMessage?: ClientRoomMessage | undefined;
+  gameMessage?: ClientGameMessage | undefined;
+}
+
+export interface ServerLobbyMessage {
+  roomCreated?: RoomCreated | undefined;
   roomDeleted?: RoomDeleted | undefined;
 }
 
-export interface GameMessage {
+export interface ServerRoomMessage {
+  roomCreated?: RoomCreated | undefined;
+  playerJoinedRoom?: PlayerJoinedRoom | undefined;
+  playerLeftRoom?: PlayerLeftRoom | undefined;
+}
+
+export interface ServerGameMessage {
+}
+
+export interface ServerMessage {
   ping?: Ping | undefined;
   error?: Error | undefined;
-  playProperty?: PlayProperty | undefined;
-  playMoney?: PlayMoney | undefined;
-  passGo?: PassGo | undefined;
-  passGoRes?: PassGoResponse | undefined;
-  doubleTheRent?: DoubleTheRent | undefined;
-  itsMyBirthday?: ItsMyBirthday | undefined;
-  itsMyBirthdayRes?: ItsMyBirthdayResponse | undefined;
-  house?: House | undefined;
-  slyDeal?: SlyDeal | undefined;
-  slyDealRes?: SlyDealResponse | undefined;
-  forcedDeal?: ForcedDeal | undefined;
-  forcedDealRes?: ForcedDealResponse | undefined;
-  debtCollector?: DebtCollector | undefined;
-  debtCollectorRes?: DebtCollectorResponse | undefined;
-  hotel?: Hotel | undefined;
-  justSayNoRes?: JustSayNoResponse | undefined;
-  dealBreaker?: DealBreaker | undefined;
-  dealBreakerRes?: DealBreakerResponse | undefined;
-  rent?: Rent | undefined;
-  rentRes?: RentResponse | undefined;
-  wildRent?: WildRent | undefined;
-  wildRentRes?: WildRentResponse | undefined;
+  lobbyMessage?: ServerLobbyMessage | undefined;
+  roomMessage?: ServerRoomMessage | undefined;
+  gameMessage?: ServerGameMessage | undefined;
 }
 
 function createBasePing(): Ping {
@@ -3778,56 +3780,228 @@ export const WildRentResponse: MessageFns<WildRentResponse> = {
   },
 };
 
-function createBaseLobbyMessage(): LobbyMessage {
-  return {
-    ping: undefined,
-    error: undefined,
-    createRoom: undefined,
-    roomCreated: undefined,
-    joinRoom: undefined,
-    playerJoinedRoom: undefined,
-    leaveRoom: undefined,
-    playerLeftRoom: undefined,
-    roomDeleted: undefined,
-  };
+function createBaseClientLobbyMessage(): ClientLobbyMessage {
+  return { createRoom: undefined, joinRoom: undefined };
 }
 
-export const LobbyMessage: MessageFns<LobbyMessage> = {
-  encode(message: LobbyMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.ping !== undefined) {
-      Ping.encode(message.ping, writer.uint32(10).fork()).join();
-    }
-    if (message.error !== undefined) {
-      Error.encode(message.error, writer.uint32(18).fork()).join();
-    }
+export const ClientLobbyMessage: MessageFns<ClientLobbyMessage> = {
+  encode(message: ClientLobbyMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.createRoom !== undefined) {
-      CreateRoom.encode(message.createRoom, writer.uint32(82).fork()).join();
-    }
-    if (message.roomCreated !== undefined) {
-      RoomCreated.encode(message.roomCreated, writer.uint32(90).fork()).join();
+      CreateRoom.encode(message.createRoom, writer.uint32(10).fork()).join();
     }
     if (message.joinRoom !== undefined) {
-      JoinRoom.encode(message.joinRoom, writer.uint32(98).fork()).join();
-    }
-    if (message.playerJoinedRoom !== undefined) {
-      PlayerJoinedRoom.encode(message.playerJoinedRoom, writer.uint32(106).fork()).join();
-    }
-    if (message.leaveRoom !== undefined) {
-      LeaveRoom.encode(message.leaveRoom, writer.uint32(114).fork()).join();
-    }
-    if (message.playerLeftRoom !== undefined) {
-      PlayerLeftRoom.encode(message.playerLeftRoom, writer.uint32(122).fork()).join();
-    }
-    if (message.roomDeleted !== undefined) {
-      RoomDeleted.encode(message.roomDeleted, writer.uint32(130).fork()).join();
+      JoinRoom.encode(message.joinRoom, writer.uint32(18).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): LobbyMessage {
+  decode(input: BinaryReader | Uint8Array, length?: number): ClientLobbyMessage {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseLobbyMessage();
+    const message = createBaseClientLobbyMessage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.createRoom = CreateRoom.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.joinRoom = JoinRoom.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ClientLobbyMessage {
+    return {
+      createRoom: isSet(object.createRoom)
+        ? CreateRoom.fromJSON(object.createRoom)
+        : isSet(object.create_room)
+        ? CreateRoom.fromJSON(object.create_room)
+        : undefined,
+      joinRoom: isSet(object.joinRoom)
+        ? JoinRoom.fromJSON(object.joinRoom)
+        : isSet(object.join_room)
+        ? JoinRoom.fromJSON(object.join_room)
+        : undefined,
+    };
+  },
+
+  toJSON(message: ClientLobbyMessage): unknown {
+    const obj: any = {};
+    if (message.createRoom !== undefined) {
+      obj.createRoom = CreateRoom.toJSON(message.createRoom);
+    }
+    if (message.joinRoom !== undefined) {
+      obj.joinRoom = JoinRoom.toJSON(message.joinRoom);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ClientLobbyMessage>, I>>(base?: I): ClientLobbyMessage {
+    return ClientLobbyMessage.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ClientLobbyMessage>, I>>(object: I): ClientLobbyMessage {
+    const message = createBaseClientLobbyMessage();
+    message.createRoom = (object.createRoom !== undefined && object.createRoom !== null)
+      ? CreateRoom.fromPartial(object.createRoom)
+      : undefined;
+    message.joinRoom = (object.joinRoom !== undefined && object.joinRoom !== null)
+      ? JoinRoom.fromPartial(object.joinRoom)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseClientRoomMessage(): ClientRoomMessage {
+  return { leaveRoom: undefined };
+}
+
+export const ClientRoomMessage: MessageFns<ClientRoomMessage> = {
+  encode(message: ClientRoomMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.leaveRoom !== undefined) {
+      LeaveRoom.encode(message.leaveRoom, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ClientRoomMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseClientRoomMessage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.leaveRoom = LeaveRoom.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ClientRoomMessage {
+    return {
+      leaveRoom: isSet(object.leaveRoom)
+        ? LeaveRoom.fromJSON(object.leaveRoom)
+        : isSet(object.leave_room)
+        ? LeaveRoom.fromJSON(object.leave_room)
+        : undefined,
+    };
+  },
+
+  toJSON(message: ClientRoomMessage): unknown {
+    const obj: any = {};
+    if (message.leaveRoom !== undefined) {
+      obj.leaveRoom = LeaveRoom.toJSON(message.leaveRoom);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ClientRoomMessage>, I>>(base?: I): ClientRoomMessage {
+    return ClientRoomMessage.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ClientRoomMessage>, I>>(object: I): ClientRoomMessage {
+    const message = createBaseClientRoomMessage();
+    message.leaveRoom = (object.leaveRoom !== undefined && object.leaveRoom !== null)
+      ? LeaveRoom.fromPartial(object.leaveRoom)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseClientGameMessage(): ClientGameMessage {
+  return {};
+}
+
+export const ClientGameMessage: MessageFns<ClientGameMessage> = {
+  encode(_: ClientGameMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ClientGameMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseClientGameMessage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): ClientGameMessage {
+    return {};
+  },
+
+  toJSON(_: ClientGameMessage): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ClientGameMessage>, I>>(base?: I): ClientGameMessage {
+    return ClientGameMessage.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ClientGameMessage>, I>>(_: I): ClientGameMessage {
+    const message = createBaseClientGameMessage();
+    return message;
+  },
+};
+
+function createBaseClientMessage(): ClientMessage {
+  return { ping: undefined, lobbyMessage: undefined, roomMessage: undefined, gameMessage: undefined };
+}
+
+export const ClientMessage: MessageFns<ClientMessage> = {
+  encode(message: ClientMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.ping !== undefined) {
+      Ping.encode(message.ping, writer.uint32(10).fork()).join();
+    }
+    if (message.lobbyMessage !== undefined) {
+      ClientLobbyMessage.encode(message.lobbyMessage, writer.uint32(82).fork()).join();
+    }
+    if (message.roomMessage !== undefined) {
+      ClientRoomMessage.encode(message.roomMessage, writer.uint32(90).fork()).join();
+    }
+    if (message.gameMessage !== undefined) {
+      ClientGameMessage.encode(message.gameMessage, writer.uint32(98).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ClientMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseClientMessage();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -3839,20 +4013,12 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
           message.ping = Ping.decode(reader, reader.uint32());
           continue;
         }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.error = Error.decode(reader, reader.uint32());
-          continue;
-        }
         case 10: {
           if (tag !== 82) {
             break;
           }
 
-          message.createRoom = CreateRoom.decode(reader, reader.uint32());
+          message.lobbyMessage = ClientLobbyMessage.decode(reader, reader.uint32());
           continue;
         }
         case 11: {
@@ -3860,7 +4026,7 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
             break;
           }
 
-          message.roomCreated = RoomCreated.decode(reader, reader.uint32());
+          message.roomMessage = ClientRoomMessage.decode(reader, reader.uint32());
           continue;
         }
         case 12: {
@@ -3868,35 +4034,107 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
             break;
           }
 
-          message.joinRoom = JoinRoom.decode(reader, reader.uint32());
+          message.gameMessage = ClientGameMessage.decode(reader, reader.uint32());
           continue;
         }
-        case 13: {
-          if (tag !== 106) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ClientMessage {
+    return {
+      ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
+      lobbyMessage: isSet(object.lobbyMessage)
+        ? ClientLobbyMessage.fromJSON(object.lobbyMessage)
+        : isSet(object.lobby_message)
+        ? ClientLobbyMessage.fromJSON(object.lobby_message)
+        : undefined,
+      roomMessage: isSet(object.roomMessage)
+        ? ClientRoomMessage.fromJSON(object.roomMessage)
+        : isSet(object.room_message)
+        ? ClientRoomMessage.fromJSON(object.room_message)
+        : undefined,
+      gameMessage: isSet(object.gameMessage)
+        ? ClientGameMessage.fromJSON(object.gameMessage)
+        : isSet(object.game_message)
+        ? ClientGameMessage.fromJSON(object.game_message)
+        : undefined,
+    };
+  },
+
+  toJSON(message: ClientMessage): unknown {
+    const obj: any = {};
+    if (message.ping !== undefined) {
+      obj.ping = Ping.toJSON(message.ping);
+    }
+    if (message.lobbyMessage !== undefined) {
+      obj.lobbyMessage = ClientLobbyMessage.toJSON(message.lobbyMessage);
+    }
+    if (message.roomMessage !== undefined) {
+      obj.roomMessage = ClientRoomMessage.toJSON(message.roomMessage);
+    }
+    if (message.gameMessage !== undefined) {
+      obj.gameMessage = ClientGameMessage.toJSON(message.gameMessage);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ClientMessage>, I>>(base?: I): ClientMessage {
+    return ClientMessage.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ClientMessage>, I>>(object: I): ClientMessage {
+    const message = createBaseClientMessage();
+    message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
+    message.lobbyMessage = (object.lobbyMessage !== undefined && object.lobbyMessage !== null)
+      ? ClientLobbyMessage.fromPartial(object.lobbyMessage)
+      : undefined;
+    message.roomMessage = (object.roomMessage !== undefined && object.roomMessage !== null)
+      ? ClientRoomMessage.fromPartial(object.roomMessage)
+      : undefined;
+    message.gameMessage = (object.gameMessage !== undefined && object.gameMessage !== null)
+      ? ClientGameMessage.fromPartial(object.gameMessage)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseServerLobbyMessage(): ServerLobbyMessage {
+  return { roomCreated: undefined, roomDeleted: undefined };
+}
+
+export const ServerLobbyMessage: MessageFns<ServerLobbyMessage> = {
+  encode(message: ServerLobbyMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.roomCreated !== undefined) {
+      RoomCreated.encode(message.roomCreated, writer.uint32(10).fork()).join();
+    }
+    if (message.roomDeleted !== undefined) {
+      RoomDeleted.encode(message.roomDeleted, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ServerLobbyMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseServerLobbyMessage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
             break;
           }
 
-          message.playerJoinedRoom = PlayerJoinedRoom.decode(reader, reader.uint32());
+          message.roomCreated = RoomCreated.decode(reader, reader.uint32());
           continue;
         }
-        case 14: {
-          if (tag !== 114) {
-            break;
-          }
-
-          message.leaveRoom = LeaveRoom.decode(reader, reader.uint32());
-          continue;
-        }
-        case 15: {
-          if (tag !== 122) {
-            break;
-          }
-
-          message.playerLeftRoom = PlayerLeftRoom.decode(reader, reader.uint32());
-          continue;
-        }
-        case 16: {
-          if (tag !== 130) {
+        case 2: {
+          if (tag !== 18) {
             break;
           }
 
@@ -3912,39 +4150,12 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
     return message;
   },
 
-  fromJSON(object: any): LobbyMessage {
+  fromJSON(object: any): ServerLobbyMessage {
     return {
-      ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
-      error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
-      createRoom: isSet(object.createRoom)
-        ? CreateRoom.fromJSON(object.createRoom)
-        : isSet(object.create_room)
-        ? CreateRoom.fromJSON(object.create_room)
-        : undefined,
       roomCreated: isSet(object.roomCreated)
         ? RoomCreated.fromJSON(object.roomCreated)
         : isSet(object.room_created)
         ? RoomCreated.fromJSON(object.room_created)
-        : undefined,
-      joinRoom: isSet(object.joinRoom)
-        ? JoinRoom.fromJSON(object.joinRoom)
-        : isSet(object.join_room)
-        ? JoinRoom.fromJSON(object.join_room)
-        : undefined,
-      playerJoinedRoom: isSet(object.playerJoinedRoom)
-        ? PlayerJoinedRoom.fromJSON(object.playerJoinedRoom)
-        : isSet(object.player_joined_room)
-        ? PlayerJoinedRoom.fromJSON(object.player_joined_room)
-        : undefined,
-      leaveRoom: isSet(object.leaveRoom)
-        ? LeaveRoom.fromJSON(object.leaveRoom)
-        : isSet(object.leave_room)
-        ? LeaveRoom.fromJSON(object.leave_room)
-        : undefined,
-      playerLeftRoom: isSet(object.playerLeftRoom)
-        ? PlayerLeftRoom.fromJSON(object.playerLeftRoom)
-        : isSet(object.player_left_room)
-        ? PlayerLeftRoom.fromJSON(object.player_left_room)
         : undefined,
       roomDeleted: isSet(object.roomDeleted)
         ? RoomDeleted.fromJSON(object.roomDeleted)
@@ -3954,31 +4165,10 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
     };
   },
 
-  toJSON(message: LobbyMessage): unknown {
+  toJSON(message: ServerLobbyMessage): unknown {
     const obj: any = {};
-    if (message.ping !== undefined) {
-      obj.ping = Ping.toJSON(message.ping);
-    }
-    if (message.error !== undefined) {
-      obj.error = Error.toJSON(message.error);
-    }
-    if (message.createRoom !== undefined) {
-      obj.createRoom = CreateRoom.toJSON(message.createRoom);
-    }
     if (message.roomCreated !== undefined) {
       obj.roomCreated = RoomCreated.toJSON(message.roomCreated);
-    }
-    if (message.joinRoom !== undefined) {
-      obj.joinRoom = JoinRoom.toJSON(message.joinRoom);
-    }
-    if (message.playerJoinedRoom !== undefined) {
-      obj.playerJoinedRoom = PlayerJoinedRoom.toJSON(message.playerJoinedRoom);
-    }
-    if (message.leaveRoom !== undefined) {
-      obj.leaveRoom = LeaveRoom.toJSON(message.leaveRoom);
-    }
-    if (message.playerLeftRoom !== undefined) {
-      obj.playerLeftRoom = PlayerLeftRoom.toJSON(message.playerLeftRoom);
     }
     if (message.roomDeleted !== undefined) {
       obj.roomDeleted = RoomDeleted.toJSON(message.roomDeleted);
@@ -3986,30 +4176,13 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<LobbyMessage>, I>>(base?: I): LobbyMessage {
-    return LobbyMessage.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ServerLobbyMessage>, I>>(base?: I): ServerLobbyMessage {
+    return ServerLobbyMessage.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<LobbyMessage>, I>>(object: I): LobbyMessage {
-    const message = createBaseLobbyMessage();
-    message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
-    message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
-    message.createRoom = (object.createRoom !== undefined && object.createRoom !== null)
-      ? CreateRoom.fromPartial(object.createRoom)
-      : undefined;
+  fromPartial<I extends Exact<DeepPartial<ServerLobbyMessage>, I>>(object: I): ServerLobbyMessage {
+    const message = createBaseServerLobbyMessage();
     message.roomCreated = (object.roomCreated !== undefined && object.roomCreated !== null)
       ? RoomCreated.fromPartial(object.roomCreated)
-      : undefined;
-    message.joinRoom = (object.joinRoom !== undefined && object.joinRoom !== null)
-      ? JoinRoom.fromPartial(object.joinRoom)
-      : undefined;
-    message.playerJoinedRoom = (object.playerJoinedRoom !== undefined && object.playerJoinedRoom !== null)
-      ? PlayerJoinedRoom.fromPartial(object.playerJoinedRoom)
-      : undefined;
-    message.leaveRoom = (object.leaveRoom !== undefined && object.leaveRoom !== null)
-      ? LeaveRoom.fromPartial(object.leaveRoom)
-      : undefined;
-    message.playerLeftRoom = (object.playerLeftRoom !== undefined && object.playerLeftRoom !== null)
-      ? PlayerLeftRoom.fromPartial(object.playerLeftRoom)
       : undefined;
     message.roomDeleted = (object.roomDeleted !== undefined && object.roomDeleted !== null)
       ? RoomDeleted.fromPartial(object.roomDeleted)
@@ -4018,116 +4191,187 @@ export const LobbyMessage: MessageFns<LobbyMessage> = {
   },
 };
 
-function createBaseGameMessage(): GameMessage {
-  return {
-    ping: undefined,
-    error: undefined,
-    playProperty: undefined,
-    playMoney: undefined,
-    passGo: undefined,
-    passGoRes: undefined,
-    doubleTheRent: undefined,
-    itsMyBirthday: undefined,
-    itsMyBirthdayRes: undefined,
-    house: undefined,
-    slyDeal: undefined,
-    slyDealRes: undefined,
-    forcedDeal: undefined,
-    forcedDealRes: undefined,
-    debtCollector: undefined,
-    debtCollectorRes: undefined,
-    hotel: undefined,
-    justSayNoRes: undefined,
-    dealBreaker: undefined,
-    dealBreakerRes: undefined,
-    rent: undefined,
-    rentRes: undefined,
-    wildRent: undefined,
-    wildRentRes: undefined,
-  };
+function createBaseServerRoomMessage(): ServerRoomMessage {
+  return { roomCreated: undefined, playerJoinedRoom: undefined, playerLeftRoom: undefined };
 }
 
-export const GameMessage: MessageFns<GameMessage> = {
-  encode(message: GameMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
+  encode(message: ServerRoomMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.roomCreated !== undefined) {
+      RoomCreated.encode(message.roomCreated, writer.uint32(10).fork()).join();
+    }
+    if (message.playerJoinedRoom !== undefined) {
+      PlayerJoinedRoom.encode(message.playerJoinedRoom, writer.uint32(18).fork()).join();
+    }
+    if (message.playerLeftRoom !== undefined) {
+      PlayerLeftRoom.encode(message.playerLeftRoom, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ServerRoomMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseServerRoomMessage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.roomCreated = RoomCreated.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerJoinedRoom = PlayerJoinedRoom.decode(reader, reader.uint32());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.playerLeftRoom = PlayerLeftRoom.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ServerRoomMessage {
+    return {
+      roomCreated: isSet(object.roomCreated)
+        ? RoomCreated.fromJSON(object.roomCreated)
+        : isSet(object.room_created)
+        ? RoomCreated.fromJSON(object.room_created)
+        : undefined,
+      playerJoinedRoom: isSet(object.playerJoinedRoom)
+        ? PlayerJoinedRoom.fromJSON(object.playerJoinedRoom)
+        : isSet(object.player_joined_room)
+        ? PlayerJoinedRoom.fromJSON(object.player_joined_room)
+        : undefined,
+      playerLeftRoom: isSet(object.playerLeftRoom)
+        ? PlayerLeftRoom.fromJSON(object.playerLeftRoom)
+        : isSet(object.player_left_room)
+        ? PlayerLeftRoom.fromJSON(object.player_left_room)
+        : undefined,
+    };
+  },
+
+  toJSON(message: ServerRoomMessage): unknown {
+    const obj: any = {};
+    if (message.roomCreated !== undefined) {
+      obj.roomCreated = RoomCreated.toJSON(message.roomCreated);
+    }
+    if (message.playerJoinedRoom !== undefined) {
+      obj.playerJoinedRoom = PlayerJoinedRoom.toJSON(message.playerJoinedRoom);
+    }
+    if (message.playerLeftRoom !== undefined) {
+      obj.playerLeftRoom = PlayerLeftRoom.toJSON(message.playerLeftRoom);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ServerRoomMessage>, I>>(base?: I): ServerRoomMessage {
+    return ServerRoomMessage.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ServerRoomMessage>, I>>(object: I): ServerRoomMessage {
+    const message = createBaseServerRoomMessage();
+    message.roomCreated = (object.roomCreated !== undefined && object.roomCreated !== null)
+      ? RoomCreated.fromPartial(object.roomCreated)
+      : undefined;
+    message.playerJoinedRoom = (object.playerJoinedRoom !== undefined && object.playerJoinedRoom !== null)
+      ? PlayerJoinedRoom.fromPartial(object.playerJoinedRoom)
+      : undefined;
+    message.playerLeftRoom = (object.playerLeftRoom !== undefined && object.playerLeftRoom !== null)
+      ? PlayerLeftRoom.fromPartial(object.playerLeftRoom)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseServerGameMessage(): ServerGameMessage {
+  return {};
+}
+
+export const ServerGameMessage: MessageFns<ServerGameMessage> = {
+  encode(_: ServerGameMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ServerGameMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseServerGameMessage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): ServerGameMessage {
+    return {};
+  },
+
+  toJSON(_: ServerGameMessage): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ServerGameMessage>, I>>(base?: I): ServerGameMessage {
+    return ServerGameMessage.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ServerGameMessage>, I>>(_: I): ServerGameMessage {
+    const message = createBaseServerGameMessage();
+    return message;
+  },
+};
+
+function createBaseServerMessage(): ServerMessage {
+  return { ping: undefined, error: undefined, lobbyMessage: undefined, roomMessage: undefined, gameMessage: undefined };
+}
+
+export const ServerMessage: MessageFns<ServerMessage> = {
+  encode(message: ServerMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.ping !== undefined) {
       Ping.encode(message.ping, writer.uint32(10).fork()).join();
     }
     if (message.error !== undefined) {
       Error.encode(message.error, writer.uint32(18).fork()).join();
     }
-    if (message.playProperty !== undefined) {
-      PlayProperty.encode(message.playProperty, writer.uint32(82).fork()).join();
+    if (message.lobbyMessage !== undefined) {
+      ServerLobbyMessage.encode(message.lobbyMessage, writer.uint32(82).fork()).join();
     }
-    if (message.playMoney !== undefined) {
-      PlayMoney.encode(message.playMoney, writer.uint32(90).fork()).join();
+    if (message.roomMessage !== undefined) {
+      ServerRoomMessage.encode(message.roomMessage, writer.uint32(90).fork()).join();
     }
-    if (message.passGo !== undefined) {
-      PassGo.encode(message.passGo, writer.uint32(122).fork()).join();
-    }
-    if (message.passGoRes !== undefined) {
-      PassGoResponse.encode(message.passGoRes, writer.uint32(130).fork()).join();
-    }
-    if (message.doubleTheRent !== undefined) {
-      DoubleTheRent.encode(message.doubleTheRent, writer.uint32(162).fork()).join();
-    }
-    if (message.itsMyBirthday !== undefined) {
-      ItsMyBirthday.encode(message.itsMyBirthday, writer.uint32(202).fork()).join();
-    }
-    if (message.itsMyBirthdayRes !== undefined) {
-      ItsMyBirthdayResponse.encode(message.itsMyBirthdayRes, writer.uint32(210).fork()).join();
-    }
-    if (message.house !== undefined) {
-      House.encode(message.house, writer.uint32(242).fork()).join();
-    }
-    if (message.slyDeal !== undefined) {
-      SlyDeal.encode(message.slyDeal, writer.uint32(282).fork()).join();
-    }
-    if (message.slyDealRes !== undefined) {
-      SlyDealResponse.encode(message.slyDealRes, writer.uint32(290).fork()).join();
-    }
-    if (message.forcedDeal !== undefined) {
-      ForcedDeal.encode(message.forcedDeal, writer.uint32(322).fork()).join();
-    }
-    if (message.forcedDealRes !== undefined) {
-      ForcedDealResponse.encode(message.forcedDealRes, writer.uint32(330).fork()).join();
-    }
-    if (message.debtCollector !== undefined) {
-      DebtCollector.encode(message.debtCollector, writer.uint32(362).fork()).join();
-    }
-    if (message.debtCollectorRes !== undefined) {
-      DebtCollectorResponse.encode(message.debtCollectorRes, writer.uint32(370).fork()).join();
-    }
-    if (message.hotel !== undefined) {
-      Hotel.encode(message.hotel, writer.uint32(402).fork()).join();
-    }
-    if (message.justSayNoRes !== undefined) {
-      JustSayNoResponse.encode(message.justSayNoRes, writer.uint32(442).fork()).join();
-    }
-    if (message.dealBreaker !== undefined) {
-      DealBreaker.encode(message.dealBreaker, writer.uint32(482).fork()).join();
-    }
-    if (message.dealBreakerRes !== undefined) {
-      DealBreakerResponse.encode(message.dealBreakerRes, writer.uint32(490).fork()).join();
-    }
-    if (message.rent !== undefined) {
-      Rent.encode(message.rent, writer.uint32(522).fork()).join();
-    }
-    if (message.rentRes !== undefined) {
-      RentResponse.encode(message.rentRes, writer.uint32(530).fork()).join();
-    }
-    if (message.wildRent !== undefined) {
-      WildRent.encode(message.wildRent, writer.uint32(562).fork()).join();
-    }
-    if (message.wildRentRes !== undefined) {
-      WildRentResponse.encode(message.wildRentRes, writer.uint32(570).fork()).join();
+    if (message.gameMessage !== undefined) {
+      ServerGameMessage.encode(message.gameMessage, writer.uint32(98).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): GameMessage {
+  decode(input: BinaryReader | Uint8Array, length?: number): ServerMessage {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseGameMessage();
+    const message = createBaseServerMessage();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -4152,7 +4396,7 @@ export const GameMessage: MessageFns<GameMessage> = {
             break;
           }
 
-          message.playProperty = PlayProperty.decode(reader, reader.uint32());
+          message.lobbyMessage = ServerLobbyMessage.decode(reader, reader.uint32());
           continue;
         }
         case 11: {
@@ -4160,167 +4404,15 @@ export const GameMessage: MessageFns<GameMessage> = {
             break;
           }
 
-          message.playMoney = PlayMoney.decode(reader, reader.uint32());
+          message.roomMessage = ServerRoomMessage.decode(reader, reader.uint32());
           continue;
         }
-        case 15: {
-          if (tag !== 122) {
+        case 12: {
+          if (tag !== 98) {
             break;
           }
 
-          message.passGo = PassGo.decode(reader, reader.uint32());
-          continue;
-        }
-        case 16: {
-          if (tag !== 130) {
-            break;
-          }
-
-          message.passGoRes = PassGoResponse.decode(reader, reader.uint32());
-          continue;
-        }
-        case 20: {
-          if (tag !== 162) {
-            break;
-          }
-
-          message.doubleTheRent = DoubleTheRent.decode(reader, reader.uint32());
-          continue;
-        }
-        case 25: {
-          if (tag !== 202) {
-            break;
-          }
-
-          message.itsMyBirthday = ItsMyBirthday.decode(reader, reader.uint32());
-          continue;
-        }
-        case 26: {
-          if (tag !== 210) {
-            break;
-          }
-
-          message.itsMyBirthdayRes = ItsMyBirthdayResponse.decode(reader, reader.uint32());
-          continue;
-        }
-        case 30: {
-          if (tag !== 242) {
-            break;
-          }
-
-          message.house = House.decode(reader, reader.uint32());
-          continue;
-        }
-        case 35: {
-          if (tag !== 282) {
-            break;
-          }
-
-          message.slyDeal = SlyDeal.decode(reader, reader.uint32());
-          continue;
-        }
-        case 36: {
-          if (tag !== 290) {
-            break;
-          }
-
-          message.slyDealRes = SlyDealResponse.decode(reader, reader.uint32());
-          continue;
-        }
-        case 40: {
-          if (tag !== 322) {
-            break;
-          }
-
-          message.forcedDeal = ForcedDeal.decode(reader, reader.uint32());
-          continue;
-        }
-        case 41: {
-          if (tag !== 330) {
-            break;
-          }
-
-          message.forcedDealRes = ForcedDealResponse.decode(reader, reader.uint32());
-          continue;
-        }
-        case 45: {
-          if (tag !== 362) {
-            break;
-          }
-
-          message.debtCollector = DebtCollector.decode(reader, reader.uint32());
-          continue;
-        }
-        case 46: {
-          if (tag !== 370) {
-            break;
-          }
-
-          message.debtCollectorRes = DebtCollectorResponse.decode(reader, reader.uint32());
-          continue;
-        }
-        case 50: {
-          if (tag !== 402) {
-            break;
-          }
-
-          message.hotel = Hotel.decode(reader, reader.uint32());
-          continue;
-        }
-        case 55: {
-          if (tag !== 442) {
-            break;
-          }
-
-          message.justSayNoRes = JustSayNoResponse.decode(reader, reader.uint32());
-          continue;
-        }
-        case 60: {
-          if (tag !== 482) {
-            break;
-          }
-
-          message.dealBreaker = DealBreaker.decode(reader, reader.uint32());
-          continue;
-        }
-        case 61: {
-          if (tag !== 490) {
-            break;
-          }
-
-          message.dealBreakerRes = DealBreakerResponse.decode(reader, reader.uint32());
-          continue;
-        }
-        case 65: {
-          if (tag !== 522) {
-            break;
-          }
-
-          message.rent = Rent.decode(reader, reader.uint32());
-          continue;
-        }
-        case 66: {
-          if (tag !== 530) {
-            break;
-          }
-
-          message.rentRes = RentResponse.decode(reader, reader.uint32());
-          continue;
-        }
-        case 70: {
-          if (tag !== 562) {
-            break;
-          }
-
-          message.wildRent = WildRent.decode(reader, reader.uint32());
-          continue;
-        }
-        case 71: {
-          if (tag !== 570) {
-            break;
-          }
-
-          message.wildRentRes = WildRentResponse.decode(reader, reader.uint32());
+          message.gameMessage = ServerGameMessage.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -4332,112 +4424,29 @@ export const GameMessage: MessageFns<GameMessage> = {
     return message;
   },
 
-  fromJSON(object: any): GameMessage {
+  fromJSON(object: any): ServerMessage {
     return {
       ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
       error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
-      playProperty: isSet(object.playProperty)
-        ? PlayProperty.fromJSON(object.playProperty)
-        : isSet(object.play_property)
-        ? PlayProperty.fromJSON(object.play_property)
+      lobbyMessage: isSet(object.lobbyMessage)
+        ? ServerLobbyMessage.fromJSON(object.lobbyMessage)
+        : isSet(object.lobby_message)
+        ? ServerLobbyMessage.fromJSON(object.lobby_message)
         : undefined,
-      playMoney: isSet(object.playMoney)
-        ? PlayMoney.fromJSON(object.playMoney)
-        : isSet(object.play_money)
-        ? PlayMoney.fromJSON(object.play_money)
+      roomMessage: isSet(object.roomMessage)
+        ? ServerRoomMessage.fromJSON(object.roomMessage)
+        : isSet(object.room_message)
+        ? ServerRoomMessage.fromJSON(object.room_message)
         : undefined,
-      passGo: isSet(object.passGo)
-        ? PassGo.fromJSON(object.passGo)
-        : isSet(object.pass_go)
-        ? PassGo.fromJSON(object.pass_go)
-        : undefined,
-      passGoRes: isSet(object.passGoRes)
-        ? PassGoResponse.fromJSON(object.passGoRes)
-        : isSet(object.pass_go_res)
-        ? PassGoResponse.fromJSON(object.pass_go_res)
-        : undefined,
-      doubleTheRent: isSet(object.doubleTheRent)
-        ? DoubleTheRent.fromJSON(object.doubleTheRent)
-        : isSet(object.double_the_rent)
-        ? DoubleTheRent.fromJSON(object.double_the_rent)
-        : undefined,
-      itsMyBirthday: isSet(object.itsMyBirthday)
-        ? ItsMyBirthday.fromJSON(object.itsMyBirthday)
-        : isSet(object.its_my_birthday)
-        ? ItsMyBirthday.fromJSON(object.its_my_birthday)
-        : undefined,
-      itsMyBirthdayRes: isSet(object.itsMyBirthdayRes)
-        ? ItsMyBirthdayResponse.fromJSON(object.itsMyBirthdayRes)
-        : isSet(object.its_my_birthday_res)
-        ? ItsMyBirthdayResponse.fromJSON(object.its_my_birthday_res)
-        : undefined,
-      house: isSet(object.house) ? House.fromJSON(object.house) : undefined,
-      slyDeal: isSet(object.slyDeal)
-        ? SlyDeal.fromJSON(object.slyDeal)
-        : isSet(object.sly_deal)
-        ? SlyDeal.fromJSON(object.sly_deal)
-        : undefined,
-      slyDealRes: isSet(object.slyDealRes)
-        ? SlyDealResponse.fromJSON(object.slyDealRes)
-        : isSet(object.sly_deal_res)
-        ? SlyDealResponse.fromJSON(object.sly_deal_res)
-        : undefined,
-      forcedDeal: isSet(object.forcedDeal)
-        ? ForcedDeal.fromJSON(object.forcedDeal)
-        : isSet(object.forced_deal)
-        ? ForcedDeal.fromJSON(object.forced_deal)
-        : undefined,
-      forcedDealRes: isSet(object.forcedDealRes)
-        ? ForcedDealResponse.fromJSON(object.forcedDealRes)
-        : isSet(object.forced_deal_res)
-        ? ForcedDealResponse.fromJSON(object.forced_deal_res)
-        : undefined,
-      debtCollector: isSet(object.debtCollector)
-        ? DebtCollector.fromJSON(object.debtCollector)
-        : isSet(object.debt_collector)
-        ? DebtCollector.fromJSON(object.debt_collector)
-        : undefined,
-      debtCollectorRes: isSet(object.debtCollectorRes)
-        ? DebtCollectorResponse.fromJSON(object.debtCollectorRes)
-        : isSet(object.debt_collector_res)
-        ? DebtCollectorResponse.fromJSON(object.debt_collector_res)
-        : undefined,
-      hotel: isSet(object.hotel) ? Hotel.fromJSON(object.hotel) : undefined,
-      justSayNoRes: isSet(object.justSayNoRes)
-        ? JustSayNoResponse.fromJSON(object.justSayNoRes)
-        : isSet(object.just_say_no_res)
-        ? JustSayNoResponse.fromJSON(object.just_say_no_res)
-        : undefined,
-      dealBreaker: isSet(object.dealBreaker)
-        ? DealBreaker.fromJSON(object.dealBreaker)
-        : isSet(object.deal_breaker)
-        ? DealBreaker.fromJSON(object.deal_breaker)
-        : undefined,
-      dealBreakerRes: isSet(object.dealBreakerRes)
-        ? DealBreakerResponse.fromJSON(object.dealBreakerRes)
-        : isSet(object.deal_breaker_res)
-        ? DealBreakerResponse.fromJSON(object.deal_breaker_res)
-        : undefined,
-      rent: isSet(object.rent) ? Rent.fromJSON(object.rent) : undefined,
-      rentRes: isSet(object.rentRes)
-        ? RentResponse.fromJSON(object.rentRes)
-        : isSet(object.rent_res)
-        ? RentResponse.fromJSON(object.rent_res)
-        : undefined,
-      wildRent: isSet(object.wildRent)
-        ? WildRent.fromJSON(object.wildRent)
-        : isSet(object.wild_rent)
-        ? WildRent.fromJSON(object.wild_rent)
-        : undefined,
-      wildRentRes: isSet(object.wildRentRes)
-        ? WildRentResponse.fromJSON(object.wildRentRes)
-        : isSet(object.wild_rent_res)
-        ? WildRentResponse.fromJSON(object.wild_rent_res)
+      gameMessage: isSet(object.gameMessage)
+        ? ServerGameMessage.fromJSON(object.gameMessage)
+        : isSet(object.game_message)
+        ? ServerGameMessage.fromJSON(object.game_message)
         : undefined,
     };
   },
 
-  toJSON(message: GameMessage): unknown {
+  toJSON(message: ServerMessage): unknown {
     const obj: any = {};
     if (message.ping !== undefined) {
       obj.ping = Ping.toJSON(message.ping);
@@ -4445,141 +4454,33 @@ export const GameMessage: MessageFns<GameMessage> = {
     if (message.error !== undefined) {
       obj.error = Error.toJSON(message.error);
     }
-    if (message.playProperty !== undefined) {
-      obj.playProperty = PlayProperty.toJSON(message.playProperty);
+    if (message.lobbyMessage !== undefined) {
+      obj.lobbyMessage = ServerLobbyMessage.toJSON(message.lobbyMessage);
     }
-    if (message.playMoney !== undefined) {
-      obj.playMoney = PlayMoney.toJSON(message.playMoney);
+    if (message.roomMessage !== undefined) {
+      obj.roomMessage = ServerRoomMessage.toJSON(message.roomMessage);
     }
-    if (message.passGo !== undefined) {
-      obj.passGo = PassGo.toJSON(message.passGo);
-    }
-    if (message.passGoRes !== undefined) {
-      obj.passGoRes = PassGoResponse.toJSON(message.passGoRes);
-    }
-    if (message.doubleTheRent !== undefined) {
-      obj.doubleTheRent = DoubleTheRent.toJSON(message.doubleTheRent);
-    }
-    if (message.itsMyBirthday !== undefined) {
-      obj.itsMyBirthday = ItsMyBirthday.toJSON(message.itsMyBirthday);
-    }
-    if (message.itsMyBirthdayRes !== undefined) {
-      obj.itsMyBirthdayRes = ItsMyBirthdayResponse.toJSON(message.itsMyBirthdayRes);
-    }
-    if (message.house !== undefined) {
-      obj.house = House.toJSON(message.house);
-    }
-    if (message.slyDeal !== undefined) {
-      obj.slyDeal = SlyDeal.toJSON(message.slyDeal);
-    }
-    if (message.slyDealRes !== undefined) {
-      obj.slyDealRes = SlyDealResponse.toJSON(message.slyDealRes);
-    }
-    if (message.forcedDeal !== undefined) {
-      obj.forcedDeal = ForcedDeal.toJSON(message.forcedDeal);
-    }
-    if (message.forcedDealRes !== undefined) {
-      obj.forcedDealRes = ForcedDealResponse.toJSON(message.forcedDealRes);
-    }
-    if (message.debtCollector !== undefined) {
-      obj.debtCollector = DebtCollector.toJSON(message.debtCollector);
-    }
-    if (message.debtCollectorRes !== undefined) {
-      obj.debtCollectorRes = DebtCollectorResponse.toJSON(message.debtCollectorRes);
-    }
-    if (message.hotel !== undefined) {
-      obj.hotel = Hotel.toJSON(message.hotel);
-    }
-    if (message.justSayNoRes !== undefined) {
-      obj.justSayNoRes = JustSayNoResponse.toJSON(message.justSayNoRes);
-    }
-    if (message.dealBreaker !== undefined) {
-      obj.dealBreaker = DealBreaker.toJSON(message.dealBreaker);
-    }
-    if (message.dealBreakerRes !== undefined) {
-      obj.dealBreakerRes = DealBreakerResponse.toJSON(message.dealBreakerRes);
-    }
-    if (message.rent !== undefined) {
-      obj.rent = Rent.toJSON(message.rent);
-    }
-    if (message.rentRes !== undefined) {
-      obj.rentRes = RentResponse.toJSON(message.rentRes);
-    }
-    if (message.wildRent !== undefined) {
-      obj.wildRent = WildRent.toJSON(message.wildRent);
-    }
-    if (message.wildRentRes !== undefined) {
-      obj.wildRentRes = WildRentResponse.toJSON(message.wildRentRes);
+    if (message.gameMessage !== undefined) {
+      obj.gameMessage = ServerGameMessage.toJSON(message.gameMessage);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<GameMessage>, I>>(base?: I): GameMessage {
-    return GameMessage.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ServerMessage>, I>>(base?: I): ServerMessage {
+    return ServerMessage.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<GameMessage>, I>>(object: I): GameMessage {
-    const message = createBaseGameMessage();
+  fromPartial<I extends Exact<DeepPartial<ServerMessage>, I>>(object: I): ServerMessage {
+    const message = createBaseServerMessage();
     message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
     message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
-    message.playProperty = (object.playProperty !== undefined && object.playProperty !== null)
-      ? PlayProperty.fromPartial(object.playProperty)
+    message.lobbyMessage = (object.lobbyMessage !== undefined && object.lobbyMessage !== null)
+      ? ServerLobbyMessage.fromPartial(object.lobbyMessage)
       : undefined;
-    message.playMoney = (object.playMoney !== undefined && object.playMoney !== null)
-      ? PlayMoney.fromPartial(object.playMoney)
+    message.roomMessage = (object.roomMessage !== undefined && object.roomMessage !== null)
+      ? ServerRoomMessage.fromPartial(object.roomMessage)
       : undefined;
-    message.passGo = (object.passGo !== undefined && object.passGo !== null)
-      ? PassGo.fromPartial(object.passGo)
-      : undefined;
-    message.passGoRes = (object.passGoRes !== undefined && object.passGoRes !== null)
-      ? PassGoResponse.fromPartial(object.passGoRes)
-      : undefined;
-    message.doubleTheRent = (object.doubleTheRent !== undefined && object.doubleTheRent !== null)
-      ? DoubleTheRent.fromPartial(object.doubleTheRent)
-      : undefined;
-    message.itsMyBirthday = (object.itsMyBirthday !== undefined && object.itsMyBirthday !== null)
-      ? ItsMyBirthday.fromPartial(object.itsMyBirthday)
-      : undefined;
-    message.itsMyBirthdayRes = (object.itsMyBirthdayRes !== undefined && object.itsMyBirthdayRes !== null)
-      ? ItsMyBirthdayResponse.fromPartial(object.itsMyBirthdayRes)
-      : undefined;
-    message.house = (object.house !== undefined && object.house !== null) ? House.fromPartial(object.house) : undefined;
-    message.slyDeal = (object.slyDeal !== undefined && object.slyDeal !== null)
-      ? SlyDeal.fromPartial(object.slyDeal)
-      : undefined;
-    message.slyDealRes = (object.slyDealRes !== undefined && object.slyDealRes !== null)
-      ? SlyDealResponse.fromPartial(object.slyDealRes)
-      : undefined;
-    message.forcedDeal = (object.forcedDeal !== undefined && object.forcedDeal !== null)
-      ? ForcedDeal.fromPartial(object.forcedDeal)
-      : undefined;
-    message.forcedDealRes = (object.forcedDealRes !== undefined && object.forcedDealRes !== null)
-      ? ForcedDealResponse.fromPartial(object.forcedDealRes)
-      : undefined;
-    message.debtCollector = (object.debtCollector !== undefined && object.debtCollector !== null)
-      ? DebtCollector.fromPartial(object.debtCollector)
-      : undefined;
-    message.debtCollectorRes = (object.debtCollectorRes !== undefined && object.debtCollectorRes !== null)
-      ? DebtCollectorResponse.fromPartial(object.debtCollectorRes)
-      : undefined;
-    message.hotel = (object.hotel !== undefined && object.hotel !== null) ? Hotel.fromPartial(object.hotel) : undefined;
-    message.justSayNoRes = (object.justSayNoRes !== undefined && object.justSayNoRes !== null)
-      ? JustSayNoResponse.fromPartial(object.justSayNoRes)
-      : undefined;
-    message.dealBreaker = (object.dealBreaker !== undefined && object.dealBreaker !== null)
-      ? DealBreaker.fromPartial(object.dealBreaker)
-      : undefined;
-    message.dealBreakerRes = (object.dealBreakerRes !== undefined && object.dealBreakerRes !== null)
-      ? DealBreakerResponse.fromPartial(object.dealBreakerRes)
-      : undefined;
-    message.rent = (object.rent !== undefined && object.rent !== null) ? Rent.fromPartial(object.rent) : undefined;
-    message.rentRes = (object.rentRes !== undefined && object.rentRes !== null)
-      ? RentResponse.fromPartial(object.rentRes)
-      : undefined;
-    message.wildRent = (object.wildRent !== undefined && object.wildRent !== null)
-      ? WildRent.fromPartial(object.wildRent)
-      : undefined;
-    message.wildRentRes = (object.wildRentRes !== undefined && object.wildRentRes !== null)
-      ? WildRentResponse.fromPartial(object.wildRentRes)
+    message.gameMessage = (object.gameMessage !== undefined && object.gameMessage !== null)
+      ? ServerGameMessage.fromPartial(object.gameMessage)
       : undefined;
     return message;
   },
