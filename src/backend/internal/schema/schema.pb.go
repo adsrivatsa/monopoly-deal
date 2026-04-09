@@ -2706,6 +2706,8 @@ type ServerLobbyMessage struct {
 	//
 	//	*ServerLobbyMessage_RoomCreated
 	//	*ServerLobbyMessage_RoomDeleted
+	//	*ServerLobbyMessage_PlayerJoinedRoom
+	//	*ServerLobbyMessage_PlayerLeftRoom
 	Payload       isServerLobbyMessage_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2766,6 +2768,24 @@ func (x *ServerLobbyMessage) GetRoomDeleted() *RoomDeleted {
 	return nil
 }
 
+func (x *ServerLobbyMessage) GetPlayerJoinedRoom() *PlayerJoinedRoom {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerLobbyMessage_PlayerJoinedRoom); ok {
+			return x.PlayerJoinedRoom
+		}
+	}
+	return nil
+}
+
+func (x *ServerLobbyMessage) GetPlayerLeftRoom() *PlayerLeftRoom {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerLobbyMessage_PlayerLeftRoom); ok {
+			return x.PlayerLeftRoom
+		}
+	}
+	return nil
+}
+
 type isServerLobbyMessage_Payload interface {
 	isServerLobbyMessage_Payload()
 }
@@ -2778,9 +2798,21 @@ type ServerLobbyMessage_RoomDeleted struct {
 	RoomDeleted *RoomDeleted `protobuf:"bytes,2,opt,name=room_deleted,json=roomDeleted,proto3,oneof"`
 }
 
+type ServerLobbyMessage_PlayerJoinedRoom struct {
+	PlayerJoinedRoom *PlayerJoinedRoom `protobuf:"bytes,3,opt,name=player_joined_room,json=playerJoinedRoom,proto3,oneof"`
+}
+
+type ServerLobbyMessage_PlayerLeftRoom struct {
+	PlayerLeftRoom *PlayerLeftRoom `protobuf:"bytes,4,opt,name=player_left_room,json=playerLeftRoom,proto3,oneof"`
+}
+
 func (*ServerLobbyMessage_RoomCreated) isServerLobbyMessage_Payload() {}
 
 func (*ServerLobbyMessage_RoomDeleted) isServerLobbyMessage_Payload() {}
+
+func (*ServerLobbyMessage_PlayerJoinedRoom) isServerLobbyMessage_Payload() {}
+
+func (*ServerLobbyMessage_PlayerLeftRoom) isServerLobbyMessage_Payload() {}
 
 type ServerRoomMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -3191,10 +3223,12 @@ const file_schema_proto_rawDesc = "" +
 	" \x01(\v2'.monopolydeal.schema.ClientLobbyMessageH\x00R\flobbyMessage\x12K\n" +
 	"\froom_message\x18\v \x01(\v2&.monopolydeal.schema.ClientRoomMessageH\x00R\vroomMessage\x12K\n" +
 	"\fgame_message\x18\f \x01(\v2&.monopolydeal.schema.ClientGameMessageH\x00R\vgameMessageB\t\n" +
-	"\apayload\"\xad\x01\n" +
+	"\apayload\"\xd5\x02\n" +
 	"\x12ServerLobbyMessage\x12E\n" +
 	"\froom_created\x18\x01 \x01(\v2 .monopolydeal.schema.RoomCreatedH\x00R\vroomCreated\x12E\n" +
-	"\froom_deleted\x18\x02 \x01(\v2 .monopolydeal.schema.RoomDeletedH\x00R\vroomDeletedB\t\n" +
+	"\froom_deleted\x18\x02 \x01(\v2 .monopolydeal.schema.RoomDeletedH\x00R\vroomDeleted\x12U\n" +
+	"\x12player_joined_room\x18\x03 \x01(\v2%.monopolydeal.schema.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12O\n" +
+	"\x10player_left_room\x18\x04 \x01(\v2#.monopolydeal.schema.PlayerLeftRoomH\x00R\x0eplayerLeftRoomB\t\n" +
 	"\apayload\"\x8d\x02\n" +
 	"\x11ServerRoomMessage\x12E\n" +
 	"\froom_created\x18\x01 \x01(\v2 .monopolydeal.schema.RoomCreatedH\x00R\vroomCreated\x12U\n" +
@@ -3363,19 +3397,21 @@ var file_schema_proto_depIdxs = []int32{
 	44, // 31: monopolydeal.schema.ClientMessage.game_message:type_name -> monopolydeal.schema.ClientGameMessage
 	11, // 32: monopolydeal.schema.ServerLobbyMessage.room_created:type_name -> monopolydeal.schema.RoomCreated
 	16, // 33: monopolydeal.schema.ServerLobbyMessage.room_deleted:type_name -> monopolydeal.schema.RoomDeleted
-	11, // 34: monopolydeal.schema.ServerRoomMessage.room_created:type_name -> monopolydeal.schema.RoomCreated
-	13, // 35: monopolydeal.schema.ServerRoomMessage.player_joined_room:type_name -> monopolydeal.schema.PlayerJoinedRoom
-	15, // 36: monopolydeal.schema.ServerRoomMessage.player_left_room:type_name -> monopolydeal.schema.PlayerLeftRoom
-	6,  // 37: monopolydeal.schema.ServerMessage.ping:type_name -> monopolydeal.schema.Ping
-	7,  // 38: monopolydeal.schema.ServerMessage.error:type_name -> monopolydeal.schema.Error
-	46, // 39: monopolydeal.schema.ServerMessage.lobby_message:type_name -> monopolydeal.schema.ServerLobbyMessage
-	47, // 40: monopolydeal.schema.ServerMessage.room_message:type_name -> monopolydeal.schema.ServerRoomMessage
-	48, // 41: monopolydeal.schema.ServerMessage.game_message:type_name -> monopolydeal.schema.ServerGameMessage
-	42, // [42:42] is the sub-list for method output_type
-	42, // [42:42] is the sub-list for method input_type
-	42, // [42:42] is the sub-list for extension type_name
-	42, // [42:42] is the sub-list for extension extendee
-	0,  // [0:42] is the sub-list for field type_name
+	13, // 34: monopolydeal.schema.ServerLobbyMessage.player_joined_room:type_name -> monopolydeal.schema.PlayerJoinedRoom
+	15, // 35: monopolydeal.schema.ServerLobbyMessage.player_left_room:type_name -> monopolydeal.schema.PlayerLeftRoom
+	11, // 36: monopolydeal.schema.ServerRoomMessage.room_created:type_name -> monopolydeal.schema.RoomCreated
+	13, // 37: monopolydeal.schema.ServerRoomMessage.player_joined_room:type_name -> monopolydeal.schema.PlayerJoinedRoom
+	15, // 38: monopolydeal.schema.ServerRoomMessage.player_left_room:type_name -> monopolydeal.schema.PlayerLeftRoom
+	6,  // 39: monopolydeal.schema.ServerMessage.ping:type_name -> monopolydeal.schema.Ping
+	7,  // 40: monopolydeal.schema.ServerMessage.error:type_name -> monopolydeal.schema.Error
+	46, // 41: monopolydeal.schema.ServerMessage.lobby_message:type_name -> monopolydeal.schema.ServerLobbyMessage
+	47, // 42: monopolydeal.schema.ServerMessage.room_message:type_name -> monopolydeal.schema.ServerRoomMessage
+	48, // 43: monopolydeal.schema.ServerMessage.game_message:type_name -> monopolydeal.schema.ServerGameMessage
+	44, // [44:44] is the sub-list for method output_type
+	44, // [44:44] is the sub-list for method input_type
+	44, // [44:44] is the sub-list for extension type_name
+	44, // [44:44] is the sub-list for extension extendee
+	0,  // [0:44] is the sub-list for field type_name
 }
 
 func init() { file_schema_proto_init() }
@@ -3407,6 +3443,8 @@ func file_schema_proto_init() {
 	file_schema_proto_msgTypes[40].OneofWrappers = []any{
 		(*ServerLobbyMessage_RoomCreated)(nil),
 		(*ServerLobbyMessage_RoomDeleted)(nil),
+		(*ServerLobbyMessage_PlayerJoinedRoom)(nil),
+		(*ServerLobbyMessage_PlayerLeftRoom)(nil),
 	}
 	file_schema_proto_msgTypes[41].OneofWrappers = []any{
 		(*ServerRoomMessage_RoomCreated)(nil),

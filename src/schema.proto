@@ -294,6 +294,8 @@ message ServerLobbyMessage {
   oneof payload {
     RoomCreated room_created = 1;
     RoomDeleted room_deleted = 2;
+    PlayerJoinedRoom player_joined_room = 3;
+    PlayerLeftRoom player_left_room = 4;
   }
 }
 

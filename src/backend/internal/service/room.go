@@ -7,18 +7,34 @@ import (
 	"monopoly-deal/internal/schema"
 	"monopoly-deal/internal/store"
 	"monopoly-deal/internal/token"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 func (c *Controller) ListRooms(ctx context.Context, callback func(state *schema.ServerMessage)) error {
-	return c.bus.List(ctx, event.RoomStatePre, func(key string, state *schema.ServerMessage) {
-		callback(state)
+	return c.bus.ListRooms(ctx, func(room *schema.Room) {
+		callback(&schema.ServerMessage{
+			Payload: &schema.ServerMessage_LobbyMessage{
+				LobbyMessage: &schema.ServerLobbyMessage{
+					Payload: &schema.ServerLobbyMessage_RoomCreated{
+						RoomCreated: &schema.RoomCreated{
+							Room: room,
+						},
+					},
+				},
+			},
+		})
 	})
 }
 
 func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, payload *schema.CreateRoom) error {
+	c.mu.Lock()
+	_, ok := c.playerRoomMap[tp.PlayerID]
+	c.mu.Unlock()
+	if ok {
+		return errors.EntityAlreadyExists(errors.EntityRoom)
+	}
+
 	p, err := c.store.GetPlayer(ctx, store.GetPlayerParams{
 		PlayerID: &tp.PlayerID,
 	})
@@ -26,98 +42,128 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, payload *
 		return err
 	}
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	_, ok := c.playerRoomMap[p.PlayerID]
-	if ok {
-		return errors.EntityAlreadyExists(errors.EntityRoom)
+	roomID := uuid.New()
+	room := &schema.Room{
+		RoomId:      roomID.String(),
+		DisplayName: payload.DisplayName,
+		Players: []*schema.Player{
+			{
+				PlayerId:    p.PlayerID.String(),
+				DisplayName: p.DisplayName,
+				AvatarUrl:   p.ImageUrl,
+				IsReady:     false,
+				IsHost:      true,
+			},
+		},
+		Status:   schema.RoomStatus_LOBBY,
+		Capacity: payload.Capacity,
 	}
 
-	roomID := uuid.New()
-	res := &schema.ServerMessage{
+	err = c.bus.SetRoom(ctx, room)
+	if err != nil {
+		return err
+	}
+
+	err = c.bus.Publish(ctx, event.LobbyChannel, &schema.ServerMessage{
 		Payload: &schema.ServerMessage_LobbyMessage{
 			LobbyMessage: &schema.ServerLobbyMessage{
 				Payload: &schema.ServerLobbyMessage_RoomCreated{
 					RoomCreated: &schema.RoomCreated{
-						Room: &schema.Room{
-							RoomId:      roomID.String(),
-							DisplayName: payload.DisplayName,
-							Players: []*schema.Player{
-								{
-									PlayerId:    p.PlayerID.String(),
-									DisplayName: p.DisplayName,
-									AvatarUrl:   p.ImageUrl,
-									IsReady:     false,
-									IsHost:      true,
-								},
-							},
-							Status:   schema.RoomStatus_LOBBY,
-							Capacity: payload.Capacity,
-						},
+						Room: room,
 					},
 				},
 			},
 		},
-	}
-
-	roomKey := event.RoomStatePre + roomID.String()
-	err = c.bus.Set(ctx, roomKey, res, time.Hour*24)
+	})
 	if err != nil {
 		return err
 	}
 
-	err = c.bus.Publish(ctx, event.LobbyChannel, res)
-	if err != nil {
-		return err
-	}
-
+	c.mu.Lock()
 	c.playerRoomMap[p.PlayerID] = roomID
+	c.mu.Unlock()
 
 	return nil
 }
 
-//func (c *Controller)
+func (c *Controller) JoinRoom(ctx context.Context, tp token.Payload, payload *schema.JoinRoom) error {
+	c.mu.Lock()
+	_, ok := c.playerRoomMap[tp.PlayerID]
+	c.mu.Unlock()
+	if ok {
+		return errors.EntityAlreadyExists(errors.EntityRoom)
+	}
 
-//func (c *Controller) JoinRoom(ctx context.Context, tp token.Payload, payload *schema.JoinRoom) error {
-//	p, err := c.store.GetPlayer(ctx, store.GetPlayerParams{
-//		PlayerID: &tp.PlayerID,
-//	})
-//	if err != nil {
-//		return err
-//	}
-//
-//	roomKey := event.RoomStatePre + payload.RoomId
-//
-//	var room schema.Room
-//	err = c.bus.Get(ctx, roomKey, &room)
-//	if err != nil {
-//		return err
-//	}
-//
-//	sp := &schema.Player{
-//		PlayerId:    p.PlayerID.String(),
-//		DisplayName: p.DisplayName,
-//		AvatarUrl:   p.ImageUrl,
-//		IsReady:     false,
-//		IsHost:      false,
-//	}
-//	room.Players = append(room.Players, sp)
-//	err = c.bus.Set(ctx, roomKey, &room)
-//	if err != nil {
-//		return err
-//	}
-//
-//	res := &schema.LobbyMessage{
-//		Payload: &schema.LobbyMessage_PlayerJoinedRoom{
-//			PlayerJoinedRoom: &schema.PlayerJoinedRoom{
-//				RoomId: room.RoomId,
-//				Player: sp,
-//			},
-//		},
-//	}
-//	return c.bus.Publish(ctx, LobbyChannel, res)
-//}
-//
+	room, err := c.bus.GetRoom(ctx, payload.RoomId)
+	if err != nil {
+		return err
+	}
+
+	p, err := c.store.GetPlayer(ctx, store.GetPlayerParams{
+		PlayerID: &tp.PlayerID,
+	})
+	if err != nil {
+		return err
+	}
+
+	player := &schema.Player{
+		PlayerId:    p.PlayerID.String(),
+		DisplayName: p.DisplayName,
+		AvatarUrl:   p.ImageUrl,
+		IsReady:     false,
+		IsHost:      false,
+	}
+
+	room.Players = append(room.Players, player)
+
+	err = c.bus.SetRoom(ctx, room)
+	if err != nil {
+		return err
+	}
+
+	err = c.bus.Publish(ctx, event.LobbyChannel, &schema.ServerMessage{
+		Payload: &schema.ServerMessage_LobbyMessage{
+			LobbyMessage: &schema.ServerLobbyMessage{
+				Payload: &schema.ServerLobbyMessage_PlayerJoinedRoom{
+					PlayerJoinedRoom: &schema.PlayerJoinedRoom{
+						RoomId: room.RoomId,
+						Player: player,
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	err = c.bus.Publish(ctx, event.RoomChannelPre+room.RoomId, &schema.ServerMessage{
+		Payload: &schema.ServerMessage_RoomMessage{
+			RoomMessage: &schema.ServerRoomMessage{
+				Payload: &schema.ServerRoomMessage_PlayerJoinedRoom{
+					PlayerJoinedRoom: &schema.PlayerJoinedRoom{
+						RoomId: room.RoomId,
+						Player: player,
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	roomID, err := uuid.Parse(room.RoomId)
+	if err != nil {
+		return errors.Internal(err)
+	}
+
+	c.mu.Lock()
+	c.playerRoomMap[p.PlayerID] = roomID
+	c.mu.Unlock()
+
+	return nil
+}
 
 //func (c *Controller) LeaveRoom(ctx context.Context, tp token.Payload, payload *schema.LeaveRoom) error {
 //

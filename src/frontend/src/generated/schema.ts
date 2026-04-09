@@ -611,6 +611,8 @@ export interface ClientMessage {
 export interface ServerLobbyMessage {
   roomCreated?: RoomCreated | undefined;
   roomDeleted?: RoomDeleted | undefined;
+  playerJoinedRoom?: PlayerJoinedRoom | undefined;
+  playerLeftRoom?: PlayerLeftRoom | undefined;
 }
 
 export interface ServerRoomMessage {
@@ -4104,7 +4106,7 @@ export const ClientMessage: MessageFns<ClientMessage> = {
 };
 
 function createBaseServerLobbyMessage(): ServerLobbyMessage {
-  return { roomCreated: undefined, roomDeleted: undefined };
+  return { roomCreated: undefined, roomDeleted: undefined, playerJoinedRoom: undefined, playerLeftRoom: undefined };
 }
 
 export const ServerLobbyMessage: MessageFns<ServerLobbyMessage> = {
@@ -4114,6 +4116,12 @@ export const ServerLobbyMessage: MessageFns<ServerLobbyMessage> = {
     }
     if (message.roomDeleted !== undefined) {
       RoomDeleted.encode(message.roomDeleted, writer.uint32(18).fork()).join();
+    }
+    if (message.playerJoinedRoom !== undefined) {
+      PlayerJoinedRoom.encode(message.playerJoinedRoom, writer.uint32(26).fork()).join();
+    }
+    if (message.playerLeftRoom !== undefined) {
+      PlayerLeftRoom.encode(message.playerLeftRoom, writer.uint32(34).fork()).join();
     }
     return writer;
   },
@@ -4141,6 +4149,22 @@ export const ServerLobbyMessage: MessageFns<ServerLobbyMessage> = {
           message.roomDeleted = RoomDeleted.decode(reader, reader.uint32());
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.playerJoinedRoom = PlayerJoinedRoom.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.playerLeftRoom = PlayerLeftRoom.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4162,6 +4186,16 @@ export const ServerLobbyMessage: MessageFns<ServerLobbyMessage> = {
         : isSet(object.room_deleted)
         ? RoomDeleted.fromJSON(object.room_deleted)
         : undefined,
+      playerJoinedRoom: isSet(object.playerJoinedRoom)
+        ? PlayerJoinedRoom.fromJSON(object.playerJoinedRoom)
+        : isSet(object.player_joined_room)
+        ? PlayerJoinedRoom.fromJSON(object.player_joined_room)
+        : undefined,
+      playerLeftRoom: isSet(object.playerLeftRoom)
+        ? PlayerLeftRoom.fromJSON(object.playerLeftRoom)
+        : isSet(object.player_left_room)
+        ? PlayerLeftRoom.fromJSON(object.player_left_room)
+        : undefined,
     };
   },
 
@@ -4172,6 +4206,12 @@ export const ServerLobbyMessage: MessageFns<ServerLobbyMessage> = {
     }
     if (message.roomDeleted !== undefined) {
       obj.roomDeleted = RoomDeleted.toJSON(message.roomDeleted);
+    }
+    if (message.playerJoinedRoom !== undefined) {
+      obj.playerJoinedRoom = PlayerJoinedRoom.toJSON(message.playerJoinedRoom);
+    }
+    if (message.playerLeftRoom !== undefined) {
+      obj.playerLeftRoom = PlayerLeftRoom.toJSON(message.playerLeftRoom);
     }
     return obj;
   },
@@ -4186,6 +4226,12 @@ export const ServerLobbyMessage: MessageFns<ServerLobbyMessage> = {
       : undefined;
     message.roomDeleted = (object.roomDeleted !== undefined && object.roomDeleted !== null)
       ? RoomDeleted.fromPartial(object.roomDeleted)
+      : undefined;
+    message.playerJoinedRoom = (object.playerJoinedRoom !== undefined && object.playerJoinedRoom !== null)
+      ? PlayerJoinedRoom.fromPartial(object.playerJoinedRoom)
+      : undefined;
+    message.playerLeftRoom = (object.playerLeftRoom !== undefined && object.playerLeftRoom !== null)
+      ? PlayerLeftRoom.fromPartial(object.playerLeftRoom)
       : undefined;
     return message;
   },
