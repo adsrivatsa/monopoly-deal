@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	stderrors "errors"
 	"fmt"
-	"monopoly-deal/internal/errors"
 	"monopoly-deal/internal/schema"
 	"sync"
 	"time"
@@ -17,22 +15,24 @@ type socket struct {
 	conn    *websocket.Conn
 	writeMu sync.Mutex
 	writeCh chan *schema.ServerMessage
+	ctx     context.Context
 	cancel  context.CancelFunc
 	closed  sync.Once
 }
 
-func newSocket(conn *websocket.Conn, parentCtx context.Context) (*socket, context.Context) {
+func newSocket(conn *websocket.Conn, parentCtx context.Context) *socket {
 	ctx, cancel := context.WithCancel(parentCtx)
 
 	s := &socket{
 		conn:    conn,
 		writeCh: make(chan *schema.ServerMessage, 32),
+		ctx:     ctx,
 		cancel:  cancel,
 	}
 
 	go s.writeLoop()
 
-	return s, ctx
+	return s
 }
 
 func (s *socket) writeLoop() {
@@ -77,13 +77,14 @@ func (s *socket) close(err error) {
 }
 
 func (s *socket) send(msg *schema.ServerMessage) {
-	s.writeCh <- msg
+	select {
+	case <-s.ctx.Done():
+		return
+
+	case s.writeCh <- msg:
+	}
 }
 
 func (s *socket) error(err error) {
-	var intErr errors.Error
-	if !stderrors.As(err, &intErr) {
-		stderrors.As(errors.Internal(err), &intErr)
-	}
-	s.send(intErr.Proto())
+	s.close(err)
 }

@@ -4,15 +4,15 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"monopoly-deal/internal/schema"
 	"net/http"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Error struct {
-	Message string `json:"-"`
+	Message string `json:"message"`
 	Status  int    `json:"status"`
 	Code    string `json:"code"`
 	Inner   error  `json:"-"`
@@ -43,17 +43,27 @@ func (e Error) Unwrap() error {
 	return e.Inner
 }
 
-func (e Error) Proto() *schema.ServerMessage {
-	res := &schema.ServerMessage{
-		Payload: &schema.ServerMessage_Error{
-			Error: &schema.Error{
-				Code:    e.Code,
-				Message: e.Error(),
-				Status:  int32(e.Status),
-			},
-		},
+type ValidationError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
+func NewValidationError(field string, message string) ValidationError {
+	return ValidationError{
+		Field:   field,
+		Message: message,
 	}
-	return res
+}
+
+type ValidationErrors []ValidationError
+
+func (es ValidationErrors) Merge() error {
+	msg := ""
+	for _, e := range es {
+		msg += fmt.Sprintf("%s: %s, ", e.Field, e.Message)
+	}
+	msg = strings.TrimSuffix(msg, ", ")
+	return errors.New(msg)
 }
 
 var (
@@ -61,12 +71,17 @@ var (
 	ExpiredToken        = NewError("expired token", http.StatusUnauthorized, "TOK002")
 	InvalidTokenContent = NewError("invalid token", http.StatusBadRequest, "TOK003")
 	InvalidTokenType    = NewError("invalid token", http.StatusBadRequest, "TOK004")
-	DuplicateSocket     = NewError("duplicate socket created", http.StatusConflict, "API002")
 )
 
 func InvalidUUID(err error) Error {
 	return NewError("invalid UUID", http.StatusBadRequest, "VAL001", err)
 }
+
+func Unauthenticated(err error) Error {
+	return NewError("unauthenticated", http.StatusBadRequest, "API001", err)
+}
+
+var DuplicateSocket = NewError("duplicate socket created", http.StatusConflict, "API002")
 
 func InvalidMessageType[T any]() Error {
 	var expectedType T
@@ -74,8 +89,12 @@ func InvalidMessageType[T any]() Error {
 	return NewError(msg, http.StatusBadRequest, "API003")
 }
 
-func Unauthenticated(err error) Error {
-	return NewError("unauthenticated", http.StatusBadRequest, "API001", err)
+func Validation(err error) Error {
+	return NewError("validation error", http.StatusBadRequest, "API004", err)
+}
+
+func Read(err error) Error {
+	return NewError("read error", http.StatusBadRequest, "API005", err)
 }
 
 func Internal(err error) Error {
@@ -85,8 +104,9 @@ func Internal(err error) Error {
 type Entity string
 
 const (
-	EntityPlayer Entity = "player"
-	EntityRoom   Entity = "room"
+	EntityPlayer     Entity = "player"
+	EntityRoom       Entity = "room"
+	EntityRoomPlayer Entity = "room_player"
 )
 
 type DBViolation string
@@ -121,3 +141,5 @@ func EntityAlreadyExists(ent Entity, err ...error) Error {
 	f := fmt.Sprintf("%s already exists", ent)
 	return NewError(f, http.StatusBadRequest, "SER002", err...)
 }
+
+var RoomIsFull = NewError("room is full", http.StatusBadRequest, "SER003")

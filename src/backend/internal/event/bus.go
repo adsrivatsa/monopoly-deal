@@ -10,8 +10,6 @@ import (
 )
 
 const (
-	LobbyChannel   = "lobby-chan"
-	RoomStatePre   = "room-state:"
 	RoomChannelPre = "room-channel:"
 )
 

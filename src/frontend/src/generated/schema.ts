@@ -9,45 +9,6 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 
 export const protobufPackage = "monopolydeal.schema";
 
-export enum RoomStatus {
-  LOBBY = 0,
-  GAME = 1,
-  COMPLETED = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function roomStatusFromJSON(object: any): RoomStatus {
-  switch (object) {
-    case 0:
-    case "LOBBY":
-      return RoomStatus.LOBBY;
-    case 1:
-    case "GAME":
-      return RoomStatus.GAME;
-    case 2:
-    case "COMPLETED":
-      return RoomStatus.COMPLETED;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return RoomStatus.UNRECOGNIZED;
-  }
-}
-
-export function roomStatusToJSON(object: RoomStatus): string {
-  switch (object) {
-    case RoomStatus.LOBBY:
-      return "LOBBY";
-    case RoomStatus.GAME:
-      return "GAME";
-    case RoomStatus.COMPLETED:
-      return "COMPLETED";
-    case RoomStatus.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
 /** gameplay */
 export enum PurePropertyType {
   PURE_PROPERTY_TYPE_BROWN = 0,
@@ -399,31 +360,20 @@ export interface Ping {
   timeUnixMs: number;
 }
 
-export interface Error {
-  code: string;
-  message: string;
-  status: number;
-}
-
-/** lobby */
+/** room */
 export interface Player {
   playerId: string;
   displayName: string;
   avatarUrl: string;
   isReady: boolean;
   isHost: boolean;
-}
-
-export interface CreateRoom {
-  displayName: string;
-  capacity: number;
+  joinedAt: number;
 }
 
 export interface Room {
   roomId: string;
   displayName: string;
   players: Player[];
-  status: RoomStatus;
   capacity: number;
 }
 
@@ -431,23 +381,15 @@ export interface RoomCreated {
   room: Room | undefined;
 }
 
-export interface JoinRoom {
-  roomId: string;
-}
-
 export interface PlayerJoinedRoom {
   roomId: string;
   player: Player | undefined;
 }
 
-export interface LeaveRoom {
-  roomId: string;
-}
-
 export interface PlayerLeftRoom {
   roomId: string;
   playedId: string;
-  newHostPlayerId: string;
+  newHostPlayerId?: string | undefined;
 }
 
 export interface RoomDeleted {
@@ -589,30 +531,12 @@ export interface WildRentResponse {
   saidNo: boolean;
 }
 
-export interface ClientLobbyMessage {
-  createRoom?: CreateRoom | undefined;
-  joinRoom?: JoinRoom | undefined;
-}
-
-export interface ClientRoomMessage {
-  leaveRoom?: LeaveRoom | undefined;
-}
-
 export interface ClientGameMessage {
 }
 
 export interface ClientMessage {
   ping?: Ping | undefined;
-  lobbyMessage?: ClientLobbyMessage | undefined;
-  roomMessage?: ClientRoomMessage | undefined;
   gameMessage?: ClientGameMessage | undefined;
-}
-
-export interface ServerLobbyMessage {
-  roomCreated?: RoomCreated | undefined;
-  roomDeleted?: RoomDeleted | undefined;
-  playerJoinedRoom?: PlayerJoinedRoom | undefined;
-  playerLeftRoom?: PlayerLeftRoom | undefined;
 }
 
 export interface ServerRoomMessage {
@@ -626,8 +550,6 @@ export interface ServerGameMessage {
 
 export interface ServerMessage {
   ping?: Ping | undefined;
-  error?: Error | undefined;
-  lobbyMessage?: ServerLobbyMessage | undefined;
   roomMessage?: ServerRoomMessage | undefined;
   gameMessage?: ServerGameMessage | undefined;
 }
@@ -696,100 +618,8 @@ export const Ping: MessageFns<Ping> = {
   },
 };
 
-function createBaseError(): Error {
-  return { code: "", message: "", status: 0 };
-}
-
-export const Error: MessageFns<Error> = {
-  encode(message: Error, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.code !== "") {
-      writer.uint32(10).string(message.code);
-    }
-    if (message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
-    if (message.status !== 0) {
-      writer.uint32(24).int32(message.status);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): Error {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseError();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.code = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 24) {
-            break;
-          }
-
-          message.status = reader.int32();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): Error {
-    return {
-      code: isSet(object.code) ? globalThis.String(object.code) : "",
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-      status: isSet(object.status) ? globalThis.Number(object.status) : 0,
-    };
-  },
-
-  toJSON(message: Error): unknown {
-    const obj: any = {};
-    if (message.code !== "") {
-      obj.code = message.code;
-    }
-    if (message.message !== "") {
-      obj.message = message.message;
-    }
-    if (message.status !== 0) {
-      obj.status = Math.round(message.status);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Error>, I>>(base?: I): Error {
-    return Error.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Error>, I>>(object: I): Error {
-    const message = createBaseError();
-    message.code = object.code ?? "";
-    message.message = object.message ?? "";
-    message.status = object.status ?? 0;
-    return message;
-  },
-};
-
 function createBasePlayer(): Player {
-  return { playerId: "", displayName: "", avatarUrl: "", isReady: false, isHost: false };
+  return { playerId: "", displayName: "", avatarUrl: "", isReady: false, isHost: false, joinedAt: 0 };
 }
 
 export const Player: MessageFns<Player> = {
@@ -808,6 +638,9 @@ export const Player: MessageFns<Player> = {
     }
     if (message.isHost !== false) {
       writer.uint32(40).bool(message.isHost);
+    }
+    if (message.joinedAt !== 0) {
+      writer.uint32(48).int64(message.joinedAt);
     }
     return writer;
   },
@@ -859,6 +692,14 @@ export const Player: MessageFns<Player> = {
           message.isHost = reader.bool();
           continue;
         }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.joinedAt = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -895,6 +736,11 @@ export const Player: MessageFns<Player> = {
         : isSet(object.is_host)
         ? globalThis.Boolean(object.is_host)
         : false,
+      joinedAt: isSet(object.joinedAt)
+        ? globalThis.Number(object.joinedAt)
+        : isSet(object.joined_at)
+        ? globalThis.Number(object.joined_at)
+        : 0,
     };
   },
 
@@ -915,6 +761,9 @@ export const Player: MessageFns<Player> = {
     if (message.isHost !== false) {
       obj.isHost = message.isHost;
     }
+    if (message.joinedAt !== 0) {
+      obj.joinedAt = Math.round(message.joinedAt);
+    }
     return obj;
   },
 
@@ -928,92 +777,13 @@ export const Player: MessageFns<Player> = {
     message.avatarUrl = object.avatarUrl ?? "";
     message.isReady = object.isReady ?? false;
     message.isHost = object.isHost ?? false;
-    return message;
-  },
-};
-
-function createBaseCreateRoom(): CreateRoom {
-  return { displayName: "", capacity: 0 };
-}
-
-export const CreateRoom: MessageFns<CreateRoom> = {
-  encode(message: CreateRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.displayName !== "") {
-      writer.uint32(10).string(message.displayName);
-    }
-    if (message.capacity !== 0) {
-      writer.uint32(16).int32(message.capacity);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): CreateRoom {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseCreateRoom();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.displayName = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 16) {
-            break;
-          }
-
-          message.capacity = reader.int32();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): CreateRoom {
-    return {
-      displayName: isSet(object.displayName)
-        ? globalThis.String(object.displayName)
-        : isSet(object.display_name)
-        ? globalThis.String(object.display_name)
-        : "",
-      capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
-    };
-  },
-
-  toJSON(message: CreateRoom): unknown {
-    const obj: any = {};
-    if (message.displayName !== "") {
-      obj.displayName = message.displayName;
-    }
-    if (message.capacity !== 0) {
-      obj.capacity = Math.round(message.capacity);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CreateRoom>, I>>(base?: I): CreateRoom {
-    return CreateRoom.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CreateRoom>, I>>(object: I): CreateRoom {
-    const message = createBaseCreateRoom();
-    message.displayName = object.displayName ?? "";
-    message.capacity = object.capacity ?? 0;
+    message.joinedAt = object.joinedAt ?? 0;
     return message;
   },
 };
 
 function createBaseRoom(): Room {
-  return { roomId: "", displayName: "", players: [], status: 0, capacity: 0 };
+  return { roomId: "", displayName: "", players: [], capacity: 0 };
 }
 
 export const Room: MessageFns<Room> = {
@@ -1027,11 +797,8 @@ export const Room: MessageFns<Room> = {
     for (const v of message.players) {
       Player.encode(v!, writer.uint32(26).fork()).join();
     }
-    if (message.status !== 0) {
-      writer.uint32(32).int32(message.status);
-    }
     if (message.capacity !== 0) {
-      writer.uint32(40).int32(message.capacity);
+      writer.uint32(32).int32(message.capacity);
     }
     return writer;
   },
@@ -1072,14 +839,6 @@ export const Room: MessageFns<Room> = {
             break;
           }
 
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 5: {
-          if (tag !== 40) {
-            break;
-          }
-
           message.capacity = reader.int32();
           continue;
         }
@@ -1105,7 +864,6 @@ export const Room: MessageFns<Room> = {
         ? globalThis.String(object.display_name)
         : "",
       players: globalThis.Array.isArray(object?.players) ? object.players.map((e: any) => Player.fromJSON(e)) : [],
-      status: isSet(object.status) ? roomStatusFromJSON(object.status) : 0,
       capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
     };
   },
@@ -1121,9 +879,6 @@ export const Room: MessageFns<Room> = {
     if (message.players?.length) {
       obj.players = message.players.map((e) => Player.toJSON(e));
     }
-    if (message.status !== 0) {
-      obj.status = roomStatusToJSON(message.status);
-    }
     if (message.capacity !== 0) {
       obj.capacity = Math.round(message.capacity);
     }
@@ -1138,7 +893,6 @@ export const Room: MessageFns<Room> = {
     message.roomId = object.roomId ?? "";
     message.displayName = object.displayName ?? "";
     message.players = object.players?.map((e) => Player.fromPartial(e)) || [];
-    message.status = object.status ?? 0;
     message.capacity = object.capacity ?? 0;
     return message;
   },
@@ -1198,70 +952,6 @@ export const RoomCreated: MessageFns<RoomCreated> = {
   fromPartial<I extends Exact<DeepPartial<RoomCreated>, I>>(object: I): RoomCreated {
     const message = createBaseRoomCreated();
     message.room = (object.room !== undefined && object.room !== null) ? Room.fromPartial(object.room) : undefined;
-    return message;
-  },
-};
-
-function createBaseJoinRoom(): JoinRoom {
-  return { roomId: "" };
-}
-
-export const JoinRoom: MessageFns<JoinRoom> = {
-  encode(message: JoinRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.roomId !== "") {
-      writer.uint32(10).string(message.roomId);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): JoinRoom {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseJoinRoom();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.roomId = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): JoinRoom {
-    return {
-      roomId: isSet(object.roomId)
-        ? globalThis.String(object.roomId)
-        : isSet(object.room_id)
-        ? globalThis.String(object.room_id)
-        : "",
-    };
-  },
-
-  toJSON(message: JoinRoom): unknown {
-    const obj: any = {};
-    if (message.roomId !== "") {
-      obj.roomId = message.roomId;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<JoinRoom>, I>>(base?: I): JoinRoom {
-    return JoinRoom.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<JoinRoom>, I>>(object: I): JoinRoom {
-    const message = createBaseJoinRoom();
-    message.roomId = object.roomId ?? "";
     return message;
   },
 };
@@ -1348,72 +1038,8 @@ export const PlayerJoinedRoom: MessageFns<PlayerJoinedRoom> = {
   },
 };
 
-function createBaseLeaveRoom(): LeaveRoom {
-  return { roomId: "" };
-}
-
-export const LeaveRoom: MessageFns<LeaveRoom> = {
-  encode(message: LeaveRoom, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.roomId !== "") {
-      writer.uint32(10).string(message.roomId);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): LeaveRoom {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseLeaveRoom();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.roomId = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): LeaveRoom {
-    return {
-      roomId: isSet(object.roomId)
-        ? globalThis.String(object.roomId)
-        : isSet(object.room_id)
-        ? globalThis.String(object.room_id)
-        : "",
-    };
-  },
-
-  toJSON(message: LeaveRoom): unknown {
-    const obj: any = {};
-    if (message.roomId !== "") {
-      obj.roomId = message.roomId;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<LeaveRoom>, I>>(base?: I): LeaveRoom {
-    return LeaveRoom.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<LeaveRoom>, I>>(object: I): LeaveRoom {
-    const message = createBaseLeaveRoom();
-    message.roomId = object.roomId ?? "";
-    return message;
-  },
-};
-
 function createBasePlayerLeftRoom(): PlayerLeftRoom {
-  return { roomId: "", playedId: "", newHostPlayerId: "" };
+  return { roomId: "", playedId: "", newHostPlayerId: undefined };
 }
 
 export const PlayerLeftRoom: MessageFns<PlayerLeftRoom> = {
@@ -1424,7 +1050,7 @@ export const PlayerLeftRoom: MessageFns<PlayerLeftRoom> = {
     if (message.playedId !== "") {
       writer.uint32(18).string(message.playedId);
     }
-    if (message.newHostPlayerId !== "") {
+    if (message.newHostPlayerId !== undefined) {
       writer.uint32(26).string(message.newHostPlayerId);
     }
     return writer;
@@ -1486,7 +1112,7 @@ export const PlayerLeftRoom: MessageFns<PlayerLeftRoom> = {
         ? globalThis.String(object.newHostPlayerId)
         : isSet(object.new_host_player_id)
         ? globalThis.String(object.new_host_player_id)
-        : "",
+        : undefined,
     };
   },
 
@@ -1498,7 +1124,7 @@ export const PlayerLeftRoom: MessageFns<PlayerLeftRoom> = {
     if (message.playedId !== "") {
       obj.playedId = message.playedId;
     }
-    if (message.newHostPlayerId !== "") {
+    if (message.newHostPlayerId !== undefined) {
       obj.newHostPlayerId = message.newHostPlayerId;
     }
     return obj;
@@ -1511,7 +1137,7 @@ export const PlayerLeftRoom: MessageFns<PlayerLeftRoom> = {
     const message = createBasePlayerLeftRoom();
     message.roomId = object.roomId ?? "";
     message.playedId = object.playedId ?? "";
-    message.newHostPlayerId = object.newHostPlayerId ?? "";
+    message.newHostPlayerId = object.newHostPlayerId ?? undefined;
     return message;
   },
 };
@@ -3782,160 +3408,6 @@ export const WildRentResponse: MessageFns<WildRentResponse> = {
   },
 };
 
-function createBaseClientLobbyMessage(): ClientLobbyMessage {
-  return { createRoom: undefined, joinRoom: undefined };
-}
-
-export const ClientLobbyMessage: MessageFns<ClientLobbyMessage> = {
-  encode(message: ClientLobbyMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.createRoom !== undefined) {
-      CreateRoom.encode(message.createRoom, writer.uint32(10).fork()).join();
-    }
-    if (message.joinRoom !== undefined) {
-      JoinRoom.encode(message.joinRoom, writer.uint32(18).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): ClientLobbyMessage {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseClientLobbyMessage();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.createRoom = CreateRoom.decode(reader, reader.uint32());
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.joinRoom = JoinRoom.decode(reader, reader.uint32());
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ClientLobbyMessage {
-    return {
-      createRoom: isSet(object.createRoom)
-        ? CreateRoom.fromJSON(object.createRoom)
-        : isSet(object.create_room)
-        ? CreateRoom.fromJSON(object.create_room)
-        : undefined,
-      joinRoom: isSet(object.joinRoom)
-        ? JoinRoom.fromJSON(object.joinRoom)
-        : isSet(object.join_room)
-        ? JoinRoom.fromJSON(object.join_room)
-        : undefined,
-    };
-  },
-
-  toJSON(message: ClientLobbyMessage): unknown {
-    const obj: any = {};
-    if (message.createRoom !== undefined) {
-      obj.createRoom = CreateRoom.toJSON(message.createRoom);
-    }
-    if (message.joinRoom !== undefined) {
-      obj.joinRoom = JoinRoom.toJSON(message.joinRoom);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<ClientLobbyMessage>, I>>(base?: I): ClientLobbyMessage {
-    return ClientLobbyMessage.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<ClientLobbyMessage>, I>>(object: I): ClientLobbyMessage {
-    const message = createBaseClientLobbyMessage();
-    message.createRoom = (object.createRoom !== undefined && object.createRoom !== null)
-      ? CreateRoom.fromPartial(object.createRoom)
-      : undefined;
-    message.joinRoom = (object.joinRoom !== undefined && object.joinRoom !== null)
-      ? JoinRoom.fromPartial(object.joinRoom)
-      : undefined;
-    return message;
-  },
-};
-
-function createBaseClientRoomMessage(): ClientRoomMessage {
-  return { leaveRoom: undefined };
-}
-
-export const ClientRoomMessage: MessageFns<ClientRoomMessage> = {
-  encode(message: ClientRoomMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.leaveRoom !== undefined) {
-      LeaveRoom.encode(message.leaveRoom, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): ClientRoomMessage {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseClientRoomMessage();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.leaveRoom = LeaveRoom.decode(reader, reader.uint32());
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ClientRoomMessage {
-    return {
-      leaveRoom: isSet(object.leaveRoom)
-        ? LeaveRoom.fromJSON(object.leaveRoom)
-        : isSet(object.leave_room)
-        ? LeaveRoom.fromJSON(object.leave_room)
-        : undefined,
-    };
-  },
-
-  toJSON(message: ClientRoomMessage): unknown {
-    const obj: any = {};
-    if (message.leaveRoom !== undefined) {
-      obj.leaveRoom = LeaveRoom.toJSON(message.leaveRoom);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<ClientRoomMessage>, I>>(base?: I): ClientRoomMessage {
-    return ClientRoomMessage.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<ClientRoomMessage>, I>>(object: I): ClientRoomMessage {
-    const message = createBaseClientRoomMessage();
-    message.leaveRoom = (object.leaveRoom !== undefined && object.leaveRoom !== null)
-      ? LeaveRoom.fromPartial(object.leaveRoom)
-      : undefined;
-    return message;
-  },
-};
-
 function createBaseClientGameMessage(): ClientGameMessage {
   return {};
 }
@@ -3980,19 +3452,13 @@ export const ClientGameMessage: MessageFns<ClientGameMessage> = {
 };
 
 function createBaseClientMessage(): ClientMessage {
-  return { ping: undefined, lobbyMessage: undefined, roomMessage: undefined, gameMessage: undefined };
+  return { ping: undefined, gameMessage: undefined };
 }
 
 export const ClientMessage: MessageFns<ClientMessage> = {
   encode(message: ClientMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.ping !== undefined) {
       Ping.encode(message.ping, writer.uint32(10).fork()).join();
-    }
-    if (message.lobbyMessage !== undefined) {
-      ClientLobbyMessage.encode(message.lobbyMessage, writer.uint32(82).fork()).join();
-    }
-    if (message.roomMessage !== undefined) {
-      ClientRoomMessage.encode(message.roomMessage, writer.uint32(90).fork()).join();
     }
     if (message.gameMessage !== undefined) {
       ClientGameMessage.encode(message.gameMessage, writer.uint32(98).fork()).join();
@@ -4015,22 +3481,6 @@ export const ClientMessage: MessageFns<ClientMessage> = {
           message.ping = Ping.decode(reader, reader.uint32());
           continue;
         }
-        case 10: {
-          if (tag !== 82) {
-            break;
-          }
-
-          message.lobbyMessage = ClientLobbyMessage.decode(reader, reader.uint32());
-          continue;
-        }
-        case 11: {
-          if (tag !== 90) {
-            break;
-          }
-
-          message.roomMessage = ClientRoomMessage.decode(reader, reader.uint32());
-          continue;
-        }
         case 12: {
           if (tag !== 98) {
             break;
@@ -4051,16 +3501,6 @@ export const ClientMessage: MessageFns<ClientMessage> = {
   fromJSON(object: any): ClientMessage {
     return {
       ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
-      lobbyMessage: isSet(object.lobbyMessage)
-        ? ClientLobbyMessage.fromJSON(object.lobbyMessage)
-        : isSet(object.lobby_message)
-        ? ClientLobbyMessage.fromJSON(object.lobby_message)
-        : undefined,
-      roomMessage: isSet(object.roomMessage)
-        ? ClientRoomMessage.fromJSON(object.roomMessage)
-        : isSet(object.room_message)
-        ? ClientRoomMessage.fromJSON(object.room_message)
-        : undefined,
       gameMessage: isSet(object.gameMessage)
         ? ClientGameMessage.fromJSON(object.gameMessage)
         : isSet(object.game_message)
@@ -4074,12 +3514,6 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     if (message.ping !== undefined) {
       obj.ping = Ping.toJSON(message.ping);
     }
-    if (message.lobbyMessage !== undefined) {
-      obj.lobbyMessage = ClientLobbyMessage.toJSON(message.lobbyMessage);
-    }
-    if (message.roomMessage !== undefined) {
-      obj.roomMessage = ClientRoomMessage.toJSON(message.roomMessage);
-    }
     if (message.gameMessage !== undefined) {
       obj.gameMessage = ClientGameMessage.toJSON(message.gameMessage);
     }
@@ -4092,146 +3526,8 @@ export const ClientMessage: MessageFns<ClientMessage> = {
   fromPartial<I extends Exact<DeepPartial<ClientMessage>, I>>(object: I): ClientMessage {
     const message = createBaseClientMessage();
     message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
-    message.lobbyMessage = (object.lobbyMessage !== undefined && object.lobbyMessage !== null)
-      ? ClientLobbyMessage.fromPartial(object.lobbyMessage)
-      : undefined;
-    message.roomMessage = (object.roomMessage !== undefined && object.roomMessage !== null)
-      ? ClientRoomMessage.fromPartial(object.roomMessage)
-      : undefined;
     message.gameMessage = (object.gameMessage !== undefined && object.gameMessage !== null)
       ? ClientGameMessage.fromPartial(object.gameMessage)
-      : undefined;
-    return message;
-  },
-};
-
-function createBaseServerLobbyMessage(): ServerLobbyMessage {
-  return { roomCreated: undefined, roomDeleted: undefined, playerJoinedRoom: undefined, playerLeftRoom: undefined };
-}
-
-export const ServerLobbyMessage: MessageFns<ServerLobbyMessage> = {
-  encode(message: ServerLobbyMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.roomCreated !== undefined) {
-      RoomCreated.encode(message.roomCreated, writer.uint32(10).fork()).join();
-    }
-    if (message.roomDeleted !== undefined) {
-      RoomDeleted.encode(message.roomDeleted, writer.uint32(18).fork()).join();
-    }
-    if (message.playerJoinedRoom !== undefined) {
-      PlayerJoinedRoom.encode(message.playerJoinedRoom, writer.uint32(26).fork()).join();
-    }
-    if (message.playerLeftRoom !== undefined) {
-      PlayerLeftRoom.encode(message.playerLeftRoom, writer.uint32(34).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): ServerLobbyMessage {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseServerLobbyMessage();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.roomCreated = RoomCreated.decode(reader, reader.uint32());
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.roomDeleted = RoomDeleted.decode(reader, reader.uint32());
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.playerJoinedRoom = PlayerJoinedRoom.decode(reader, reader.uint32());
-          continue;
-        }
-        case 4: {
-          if (tag !== 34) {
-            break;
-          }
-
-          message.playerLeftRoom = PlayerLeftRoom.decode(reader, reader.uint32());
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ServerLobbyMessage {
-    return {
-      roomCreated: isSet(object.roomCreated)
-        ? RoomCreated.fromJSON(object.roomCreated)
-        : isSet(object.room_created)
-        ? RoomCreated.fromJSON(object.room_created)
-        : undefined,
-      roomDeleted: isSet(object.roomDeleted)
-        ? RoomDeleted.fromJSON(object.roomDeleted)
-        : isSet(object.room_deleted)
-        ? RoomDeleted.fromJSON(object.room_deleted)
-        : undefined,
-      playerJoinedRoom: isSet(object.playerJoinedRoom)
-        ? PlayerJoinedRoom.fromJSON(object.playerJoinedRoom)
-        : isSet(object.player_joined_room)
-        ? PlayerJoinedRoom.fromJSON(object.player_joined_room)
-        : undefined,
-      playerLeftRoom: isSet(object.playerLeftRoom)
-        ? PlayerLeftRoom.fromJSON(object.playerLeftRoom)
-        : isSet(object.player_left_room)
-        ? PlayerLeftRoom.fromJSON(object.player_left_room)
-        : undefined,
-    };
-  },
-
-  toJSON(message: ServerLobbyMessage): unknown {
-    const obj: any = {};
-    if (message.roomCreated !== undefined) {
-      obj.roomCreated = RoomCreated.toJSON(message.roomCreated);
-    }
-    if (message.roomDeleted !== undefined) {
-      obj.roomDeleted = RoomDeleted.toJSON(message.roomDeleted);
-    }
-    if (message.playerJoinedRoom !== undefined) {
-      obj.playerJoinedRoom = PlayerJoinedRoom.toJSON(message.playerJoinedRoom);
-    }
-    if (message.playerLeftRoom !== undefined) {
-      obj.playerLeftRoom = PlayerLeftRoom.toJSON(message.playerLeftRoom);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<ServerLobbyMessage>, I>>(base?: I): ServerLobbyMessage {
-    return ServerLobbyMessage.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<ServerLobbyMessage>, I>>(object: I): ServerLobbyMessage {
-    const message = createBaseServerLobbyMessage();
-    message.roomCreated = (object.roomCreated !== undefined && object.roomCreated !== null)
-      ? RoomCreated.fromPartial(object.roomCreated)
-      : undefined;
-    message.roomDeleted = (object.roomDeleted !== undefined && object.roomDeleted !== null)
-      ? RoomDeleted.fromPartial(object.roomDeleted)
-      : undefined;
-    message.playerJoinedRoom = (object.playerJoinedRoom !== undefined && object.playerJoinedRoom !== null)
-      ? PlayerJoinedRoom.fromPartial(object.playerJoinedRoom)
-      : undefined;
-    message.playerLeftRoom = (object.playerLeftRoom !== undefined && object.playerLeftRoom !== null)
-      ? PlayerLeftRoom.fromPartial(object.playerLeftRoom)
       : undefined;
     return message;
   },
@@ -4391,7 +3687,7 @@ export const ServerGameMessage: MessageFns<ServerGameMessage> = {
 };
 
 function createBaseServerMessage(): ServerMessage {
-  return { ping: undefined, error: undefined, lobbyMessage: undefined, roomMessage: undefined, gameMessage: undefined };
+  return { ping: undefined, roomMessage: undefined, gameMessage: undefined };
 }
 
 export const ServerMessage: MessageFns<ServerMessage> = {
@@ -4399,17 +3695,11 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     if (message.ping !== undefined) {
       Ping.encode(message.ping, writer.uint32(10).fork()).join();
     }
-    if (message.error !== undefined) {
-      Error.encode(message.error, writer.uint32(18).fork()).join();
-    }
-    if (message.lobbyMessage !== undefined) {
-      ServerLobbyMessage.encode(message.lobbyMessage, writer.uint32(82).fork()).join();
-    }
     if (message.roomMessage !== undefined) {
-      ServerRoomMessage.encode(message.roomMessage, writer.uint32(90).fork()).join();
+      ServerRoomMessage.encode(message.roomMessage, writer.uint32(82).fork()).join();
     }
     if (message.gameMessage !== undefined) {
-      ServerGameMessage.encode(message.gameMessage, writer.uint32(98).fork()).join();
+      ServerGameMessage.encode(message.gameMessage, writer.uint32(90).fork()).join();
     }
     return writer;
   },
@@ -4429,32 +3719,16 @@ export const ServerMessage: MessageFns<ServerMessage> = {
           message.ping = Ping.decode(reader, reader.uint32());
           continue;
         }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.error = Error.decode(reader, reader.uint32());
-          continue;
-        }
         case 10: {
           if (tag !== 82) {
-            break;
-          }
-
-          message.lobbyMessage = ServerLobbyMessage.decode(reader, reader.uint32());
-          continue;
-        }
-        case 11: {
-          if (tag !== 90) {
             break;
           }
 
           message.roomMessage = ServerRoomMessage.decode(reader, reader.uint32());
           continue;
         }
-        case 12: {
-          if (tag !== 98) {
+        case 11: {
+          if (tag !== 90) {
             break;
           }
 
@@ -4473,12 +3747,6 @@ export const ServerMessage: MessageFns<ServerMessage> = {
   fromJSON(object: any): ServerMessage {
     return {
       ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
-      error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
-      lobbyMessage: isSet(object.lobbyMessage)
-        ? ServerLobbyMessage.fromJSON(object.lobbyMessage)
-        : isSet(object.lobby_message)
-        ? ServerLobbyMessage.fromJSON(object.lobby_message)
-        : undefined,
       roomMessage: isSet(object.roomMessage)
         ? ServerRoomMessage.fromJSON(object.roomMessage)
         : isSet(object.room_message)
@@ -4497,12 +3765,6 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     if (message.ping !== undefined) {
       obj.ping = Ping.toJSON(message.ping);
     }
-    if (message.error !== undefined) {
-      obj.error = Error.toJSON(message.error);
-    }
-    if (message.lobbyMessage !== undefined) {
-      obj.lobbyMessage = ServerLobbyMessage.toJSON(message.lobbyMessage);
-    }
     if (message.roomMessage !== undefined) {
       obj.roomMessage = ServerRoomMessage.toJSON(message.roomMessage);
     }
@@ -4518,10 +3780,6 @@ export const ServerMessage: MessageFns<ServerMessage> = {
   fromPartial<I extends Exact<DeepPartial<ServerMessage>, I>>(object: I): ServerMessage {
     const message = createBaseServerMessage();
     message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
-    message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
-    message.lobbyMessage = (object.lobbyMessage !== undefined && object.lobbyMessage !== null)
-      ? ServerLobbyMessage.fromPartial(object.lobbyMessage)
-      : undefined;
     message.roomMessage = (object.roomMessage !== undefined && object.roomMessage !== null)
       ? ServerRoomMessage.fromPartial(object.roomMessage)
       : undefined;

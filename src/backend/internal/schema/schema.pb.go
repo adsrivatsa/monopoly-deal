@@ -21,55 +21,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type RoomStatus int32
-
-const (
-	RoomStatus_LOBBY     RoomStatus = 0
-	RoomStatus_GAME      RoomStatus = 1
-	RoomStatus_COMPLETED RoomStatus = 2
-)
-
-// Enum value maps for RoomStatus.
-var (
-	RoomStatus_name = map[int32]string{
-		0: "LOBBY",
-		1: "GAME",
-		2: "COMPLETED",
-	}
-	RoomStatus_value = map[string]int32{
-		"LOBBY":     0,
-		"GAME":      1,
-		"COMPLETED": 2,
-	}
-)
-
-func (x RoomStatus) Enum() *RoomStatus {
-	p := new(RoomStatus)
-	*p = x
-	return p
-}
-
-func (x RoomStatus) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (RoomStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_schema_proto_enumTypes[0].Descriptor()
-}
-
-func (RoomStatus) Type() protoreflect.EnumType {
-	return &file_schema_proto_enumTypes[0]
-}
-
-func (x RoomStatus) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use RoomStatus.Descriptor instead.
-func (RoomStatus) EnumDescriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{0}
-}
-
 // gameplay
 type PurePropertyType int32
 
@@ -125,11 +76,11 @@ func (x PurePropertyType) String() string {
 }
 
 func (PurePropertyType) Descriptor() protoreflect.EnumDescriptor {
-	return file_schema_proto_enumTypes[1].Descriptor()
+	return file_schema_proto_enumTypes[0].Descriptor()
 }
 
 func (PurePropertyType) Type() protoreflect.EnumType {
-	return &file_schema_proto_enumTypes[1]
+	return &file_schema_proto_enumTypes[0]
 }
 
 func (x PurePropertyType) Number() protoreflect.EnumNumber {
@@ -138,7 +89,7 @@ func (x PurePropertyType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PurePropertyType.Descriptor instead.
 func (PurePropertyType) EnumDescriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{1}
+	return file_schema_proto_rawDescGZIP(), []int{0}
 }
 
 type WildPropertyType int32
@@ -189,11 +140,11 @@ func (x WildPropertyType) String() string {
 }
 
 func (WildPropertyType) Descriptor() protoreflect.EnumDescriptor {
-	return file_schema_proto_enumTypes[2].Descriptor()
+	return file_schema_proto_enumTypes[1].Descriptor()
 }
 
 func (WildPropertyType) Type() protoreflect.EnumType {
-	return &file_schema_proto_enumTypes[2]
+	return &file_schema_proto_enumTypes[1]
 }
 
 func (x WildPropertyType) Number() protoreflect.EnumNumber {
@@ -202,7 +153,7 @@ func (x WildPropertyType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use WildPropertyType.Descriptor instead.
 func (WildPropertyType) EnumDescriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{2}
+	return file_schema_proto_rawDescGZIP(), []int{1}
 }
 
 type MoneyType int32
@@ -247,11 +198,11 @@ func (x MoneyType) String() string {
 }
 
 func (MoneyType) Descriptor() protoreflect.EnumDescriptor {
-	return file_schema_proto_enumTypes[3].Descriptor()
+	return file_schema_proto_enumTypes[2].Descriptor()
 }
 
 func (MoneyType) Type() protoreflect.EnumType {
-	return &file_schema_proto_enumTypes[3]
+	return &file_schema_proto_enumTypes[2]
 }
 
 func (x MoneyType) Number() protoreflect.EnumNumber {
@@ -260,7 +211,7 @@ func (x MoneyType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use MoneyType.Descriptor instead.
 func (MoneyType) EnumDescriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{3}
+	return file_schema_proto_rawDescGZIP(), []int{2}
 }
 
 type ActionType int32
@@ -317,11 +268,11 @@ func (x ActionType) String() string {
 }
 
 func (ActionType) Descriptor() protoreflect.EnumDescriptor {
-	return file_schema_proto_enumTypes[4].Descriptor()
+	return file_schema_proto_enumTypes[3].Descriptor()
 }
 
 func (ActionType) Type() protoreflect.EnumType {
-	return &file_schema_proto_enumTypes[4]
+	return &file_schema_proto_enumTypes[3]
 }
 
 func (x ActionType) Number() protoreflect.EnumNumber {
@@ -330,7 +281,7 @@ func (x ActionType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ActionType.Descriptor instead.
 func (ActionType) EnumDescriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{4}
+	return file_schema_proto_rawDescGZIP(), []int{3}
 }
 
 type RentType int32
@@ -375,11 +326,11 @@ func (x RentType) String() string {
 }
 
 func (RentType) Descriptor() protoreflect.EnumDescriptor {
-	return file_schema_proto_enumTypes[5].Descriptor()
+	return file_schema_proto_enumTypes[4].Descriptor()
 }
 
 func (RentType) Type() protoreflect.EnumType {
-	return &file_schema_proto_enumTypes[5]
+	return &file_schema_proto_enumTypes[4]
 }
 
 func (x RentType) Number() protoreflect.EnumNumber {
@@ -388,7 +339,7 @@ func (x RentType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RentType.Descriptor instead.
 func (RentType) EnumDescriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{5}
+	return file_schema_proto_rawDescGZIP(), []int{4}
 }
 
 // generic
@@ -436,67 +387,7 @@ func (x *Ping) GetTimeUnixMs() int64 {
 	return 0
 }
 
-type Error struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Status        int32                  `protobuf:"varint,3,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Error) Reset() {
-	*x = Error{}
-	mi := &file_schema_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Error) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Error) ProtoMessage() {}
-
-func (x *Error) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Error.ProtoReflect.Descriptor instead.
-func (*Error) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Error) GetCode() string {
-	if x != nil {
-		return x.Code
-	}
-	return ""
-}
-
-func (x *Error) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-func (x *Error) GetStatus() int32 {
-	if x != nil {
-		return x.Status
-	}
-	return 0
-}
-
-// lobby
+// room
 type Player struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PlayerId      string                 `protobuf:"bytes,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
@@ -504,13 +395,14 @@ type Player struct {
 	AvatarUrl     string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	IsReady       bool                   `protobuf:"varint,4,opt,name=is_ready,json=isReady,proto3" json:"is_ready,omitempty"`
 	IsHost        bool                   `protobuf:"varint,5,opt,name=is_host,json=isHost,proto3" json:"is_host,omitempty"`
+	JoinedAt      int64                  `protobuf:"varint,6,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Player) Reset() {
 	*x = Player{}
-	mi := &file_schema_proto_msgTypes[2]
+	mi := &file_schema_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -522,7 +414,7 @@ func (x *Player) String() string {
 func (*Player) ProtoMessage() {}
 
 func (x *Player) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[2]
+	mi := &file_schema_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -535,7 +427,7 @@ func (x *Player) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Player.ProtoReflect.Descriptor instead.
 func (*Player) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{2}
+	return file_schema_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Player) GetPlayerId() string {
@@ -573,54 +465,9 @@ func (x *Player) GetIsHost() bool {
 	return false
 }
 
-type CreateRoom struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DisplayName   string                 `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	Capacity      int32                  `protobuf:"varint,2,opt,name=capacity,proto3" json:"capacity,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateRoom) Reset() {
-	*x = CreateRoom{}
-	mi := &file_schema_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateRoom) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateRoom) ProtoMessage() {}
-
-func (x *CreateRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[3]
+func (x *Player) GetJoinedAt() int64 {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateRoom.ProtoReflect.Descriptor instead.
-func (*CreateRoom) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *CreateRoom) GetDisplayName() string {
-	if x != nil {
-		return x.DisplayName
-	}
-	return ""
-}
-
-func (x *CreateRoom) GetCapacity() int32 {
-	if x != nil {
-		return x.Capacity
+		return x.JoinedAt
 	}
 	return 0
 }
@@ -630,15 +477,14 @@ type Room struct {
 	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
 	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	Players       []*Player              `protobuf:"bytes,3,rep,name=players,proto3" json:"players,omitempty"`
-	Status        RoomStatus             `protobuf:"varint,4,opt,name=status,proto3,enum=monopolydeal.schema.RoomStatus" json:"status,omitempty"`
-	Capacity      int32                  `protobuf:"varint,5,opt,name=capacity,proto3" json:"capacity,omitempty"`
+	Capacity      int32                  `protobuf:"varint,4,opt,name=capacity,proto3" json:"capacity,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Room) Reset() {
 	*x = Room{}
-	mi := &file_schema_proto_msgTypes[4]
+	mi := &file_schema_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -650,7 +496,7 @@ func (x *Room) String() string {
 func (*Room) ProtoMessage() {}
 
 func (x *Room) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[4]
+	mi := &file_schema_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -663,7 +509,7 @@ func (x *Room) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Room.ProtoReflect.Descriptor instead.
 func (*Room) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{4}
+	return file_schema_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Room) GetRoomId() string {
@@ -687,13 +533,6 @@ func (x *Room) GetPlayers() []*Player {
 	return nil
 }
 
-func (x *Room) GetStatus() RoomStatus {
-	if x != nil {
-		return x.Status
-	}
-	return RoomStatus_LOBBY
-}
-
 func (x *Room) GetCapacity() int32 {
 	if x != nil {
 		return x.Capacity
@@ -710,7 +549,7 @@ type RoomCreated struct {
 
 func (x *RoomCreated) Reset() {
 	*x = RoomCreated{}
-	mi := &file_schema_proto_msgTypes[5]
+	mi := &file_schema_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -722,7 +561,7 @@ func (x *RoomCreated) String() string {
 func (*RoomCreated) ProtoMessage() {}
 
 func (x *RoomCreated) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[5]
+	mi := &file_schema_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -735,7 +574,7 @@ func (x *RoomCreated) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoomCreated.ProtoReflect.Descriptor instead.
 func (*RoomCreated) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{5}
+	return file_schema_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *RoomCreated) GetRoom() *Room {
@@ -743,50 +582,6 @@ func (x *RoomCreated) GetRoom() *Room {
 		return x.Room
 	}
 	return nil
-}
-
-type JoinRoom struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *JoinRoom) Reset() {
-	*x = JoinRoom{}
-	mi := &file_schema_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *JoinRoom) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*JoinRoom) ProtoMessage() {}
-
-func (x *JoinRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use JoinRoom.ProtoReflect.Descriptor instead.
-func (*JoinRoom) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *JoinRoom) GetRoomId() string {
-	if x != nil {
-		return x.RoomId
-	}
-	return ""
 }
 
 type PlayerJoinedRoom struct {
@@ -799,7 +594,7 @@ type PlayerJoinedRoom struct {
 
 func (x *PlayerJoinedRoom) Reset() {
 	*x = PlayerJoinedRoom{}
-	mi := &file_schema_proto_msgTypes[7]
+	mi := &file_schema_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -811,7 +606,7 @@ func (x *PlayerJoinedRoom) String() string {
 func (*PlayerJoinedRoom) ProtoMessage() {}
 
 func (x *PlayerJoinedRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[7]
+	mi := &file_schema_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -824,7 +619,7 @@ func (x *PlayerJoinedRoom) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerJoinedRoom.ProtoReflect.Descriptor instead.
 func (*PlayerJoinedRoom) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{7}
+	return file_schema_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *PlayerJoinedRoom) GetRoomId() string {
@@ -841,62 +636,18 @@ func (x *PlayerJoinedRoom) GetPlayer() *Player {
 	return nil
 }
 
-type LeaveRoom struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *LeaveRoom) Reset() {
-	*x = LeaveRoom{}
-	mi := &file_schema_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LeaveRoom) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LeaveRoom) ProtoMessage() {}
-
-func (x *LeaveRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LeaveRoom.ProtoReflect.Descriptor instead.
-func (*LeaveRoom) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *LeaveRoom) GetRoomId() string {
-	if x != nil {
-		return x.RoomId
-	}
-	return ""
-}
-
 type PlayerLeftRoom struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	RoomId          string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
 	PlayedId        string                 `protobuf:"bytes,2,opt,name=played_id,json=playedId,proto3" json:"played_id,omitempty"`
-	NewHostPlayerId string                 `protobuf:"bytes,3,opt,name=new_host_player_id,json=newHostPlayerId,proto3" json:"new_host_player_id,omitempty"`
+	NewHostPlayerId *string                `protobuf:"bytes,3,opt,name=new_host_player_id,json=newHostPlayerId,proto3,oneof" json:"new_host_player_id,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
 
 func (x *PlayerLeftRoom) Reset() {
 	*x = PlayerLeftRoom{}
-	mi := &file_schema_proto_msgTypes[9]
+	mi := &file_schema_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -908,7 +659,7 @@ func (x *PlayerLeftRoom) String() string {
 func (*PlayerLeftRoom) ProtoMessage() {}
 
 func (x *PlayerLeftRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[9]
+	mi := &file_schema_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -921,7 +672,7 @@ func (x *PlayerLeftRoom) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerLeftRoom.ProtoReflect.Descriptor instead.
 func (*PlayerLeftRoom) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{9}
+	return file_schema_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *PlayerLeftRoom) GetRoomId() string {
@@ -939,8 +690,8 @@ func (x *PlayerLeftRoom) GetPlayedId() string {
 }
 
 func (x *PlayerLeftRoom) GetNewHostPlayerId() string {
-	if x != nil {
-		return x.NewHostPlayerId
+	if x != nil && x.NewHostPlayerId != nil {
+		return *x.NewHostPlayerId
 	}
 	return ""
 }
@@ -954,7 +705,7 @@ type RoomDeleted struct {
 
 func (x *RoomDeleted) Reset() {
 	*x = RoomDeleted{}
-	mi := &file_schema_proto_msgTypes[10]
+	mi := &file_schema_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -966,7 +717,7 @@ func (x *RoomDeleted) String() string {
 func (*RoomDeleted) ProtoMessage() {}
 
 func (x *RoomDeleted) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[10]
+	mi := &file_schema_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -979,7 +730,7 @@ func (x *RoomDeleted) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoomDeleted.ProtoReflect.Descriptor instead.
 func (*RoomDeleted) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{10}
+	return file_schema_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RoomDeleted) GetRoomId() string {
@@ -1005,7 +756,7 @@ type Card struct {
 
 func (x *Card) Reset() {
 	*x = Card{}
-	mi := &file_schema_proto_msgTypes[11]
+	mi := &file_schema_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1017,7 +768,7 @@ func (x *Card) String() string {
 func (*Card) ProtoMessage() {}
 
 func (x *Card) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[11]
+	mi := &file_schema_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1030,7 +781,7 @@ func (x *Card) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Card.ProtoReflect.Descriptor instead.
 func (*Card) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{11}
+	return file_schema_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Card) GetCard() isCard_Card {
@@ -1129,7 +880,7 @@ type PropertyType struct {
 
 func (x *PropertyType) Reset() {
 	*x = PropertyType{}
-	mi := &file_schema_proto_msgTypes[12]
+	mi := &file_schema_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1141,7 +892,7 @@ func (x *PropertyType) String() string {
 func (*PropertyType) ProtoMessage() {}
 
 func (x *PropertyType) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[12]
+	mi := &file_schema_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1154,7 +905,7 @@ func (x *PropertyType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PropertyType.ProtoReflect.Descriptor instead.
 func (*PropertyType) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{12}
+	return file_schema_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *PropertyType) GetCard() *Card {
@@ -1180,7 +931,7 @@ type PropertySetType struct {
 
 func (x *PropertySetType) Reset() {
 	*x = PropertySetType{}
-	mi := &file_schema_proto_msgTypes[13]
+	mi := &file_schema_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1192,7 +943,7 @@ func (x *PropertySetType) String() string {
 func (*PropertySetType) ProtoMessage() {}
 
 func (x *PropertySetType) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[13]
+	mi := &file_schema_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1205,7 +956,7 @@ func (x *PropertySetType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PropertySetType.ProtoReflect.Descriptor instead.
 func (*PropertySetType) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{13}
+	return file_schema_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *PropertySetType) GetPropertyTypes() []*PropertyType {
@@ -1225,7 +976,7 @@ type PlayProperty struct {
 
 func (x *PlayProperty) Reset() {
 	*x = PlayProperty{}
-	mi := &file_schema_proto_msgTypes[14]
+	mi := &file_schema_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1237,7 +988,7 @@ func (x *PlayProperty) String() string {
 func (*PlayProperty) ProtoMessage() {}
 
 func (x *PlayProperty) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[14]
+	mi := &file_schema_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1250,7 +1001,7 @@ func (x *PlayProperty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayProperty.ProtoReflect.Descriptor instead.
 func (*PlayProperty) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{14}
+	return file_schema_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *PlayProperty) GetPlayerId() string {
@@ -1277,7 +1028,7 @@ type PlayMoney struct {
 
 func (x *PlayMoney) Reset() {
 	*x = PlayMoney{}
-	mi := &file_schema_proto_msgTypes[15]
+	mi := &file_schema_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1289,7 +1040,7 @@ func (x *PlayMoney) String() string {
 func (*PlayMoney) ProtoMessage() {}
 
 func (x *PlayMoney) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[15]
+	mi := &file_schema_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1302,7 +1053,7 @@ func (x *PlayMoney) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayMoney.ProtoReflect.Descriptor instead.
 func (*PlayMoney) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{15}
+	return file_schema_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *PlayMoney) GetPlayerId() string {
@@ -1329,7 +1080,7 @@ type PassGo struct {
 
 func (x *PassGo) Reset() {
 	*x = PassGo{}
-	mi := &file_schema_proto_msgTypes[16]
+	mi := &file_schema_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1341,7 +1092,7 @@ func (x *PassGo) String() string {
 func (*PassGo) ProtoMessage() {}
 
 func (x *PassGo) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[16]
+	mi := &file_schema_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1354,7 +1105,7 @@ func (x *PassGo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PassGo.ProtoReflect.Descriptor instead.
 func (*PassGo) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{16}
+	return file_schema_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *PassGo) GetPlayerId() string {
@@ -1374,7 +1125,7 @@ type PassGoResponse struct {
 
 func (x *PassGoResponse) Reset() {
 	*x = PassGoResponse{}
-	mi := &file_schema_proto_msgTypes[17]
+	mi := &file_schema_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1386,7 +1137,7 @@ func (x *PassGoResponse) String() string {
 func (*PassGoResponse) ProtoMessage() {}
 
 func (x *PassGoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[17]
+	mi := &file_schema_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1399,7 +1150,7 @@ func (x *PassGoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PassGoResponse.ProtoReflect.Descriptor instead.
 func (*PassGoResponse) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{17}
+	return file_schema_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *PassGoResponse) GetPlayerId() string {
@@ -1425,7 +1176,7 @@ type DoubleTheRent struct {
 
 func (x *DoubleTheRent) Reset() {
 	*x = DoubleTheRent{}
-	mi := &file_schema_proto_msgTypes[18]
+	mi := &file_schema_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1437,7 +1188,7 @@ func (x *DoubleTheRent) String() string {
 func (*DoubleTheRent) ProtoMessage() {}
 
 func (x *DoubleTheRent) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[18]
+	mi := &file_schema_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1450,7 +1201,7 @@ func (x *DoubleTheRent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DoubleTheRent.ProtoReflect.Descriptor instead.
 func (*DoubleTheRent) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{18}
+	return file_schema_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DoubleTheRent) GetPlayerId() string {
@@ -1470,7 +1221,7 @@ type ItsMyBirthday struct {
 
 func (x *ItsMyBirthday) Reset() {
 	*x = ItsMyBirthday{}
-	mi := &file_schema_proto_msgTypes[19]
+	mi := &file_schema_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1482,7 +1233,7 @@ func (x *ItsMyBirthday) String() string {
 func (*ItsMyBirthday) ProtoMessage() {}
 
 func (x *ItsMyBirthday) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[19]
+	mi := &file_schema_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1495,7 +1246,7 @@ func (x *ItsMyBirthday) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ItsMyBirthday.ProtoReflect.Descriptor instead.
 func (*ItsMyBirthday) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{19}
+	return file_schema_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ItsMyBirthday) GetPlayerId() string {
@@ -1516,7 +1267,7 @@ type ItsMyBirthdayResponse struct {
 
 func (x *ItsMyBirthdayResponse) Reset() {
 	*x = ItsMyBirthdayResponse{}
-	mi := &file_schema_proto_msgTypes[20]
+	mi := &file_schema_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1528,7 +1279,7 @@ func (x *ItsMyBirthdayResponse) String() string {
 func (*ItsMyBirthdayResponse) ProtoMessage() {}
 
 func (x *ItsMyBirthdayResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[20]
+	mi := &file_schema_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1541,7 +1292,7 @@ func (x *ItsMyBirthdayResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ItsMyBirthdayResponse.ProtoReflect.Descriptor instead.
 func (*ItsMyBirthdayResponse) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{20}
+	return file_schema_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ItsMyBirthdayResponse) GetPlayerId() string {
@@ -1575,7 +1326,7 @@ type House struct {
 
 func (x *House) Reset() {
 	*x = House{}
-	mi := &file_schema_proto_msgTypes[21]
+	mi := &file_schema_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1587,7 +1338,7 @@ func (x *House) String() string {
 func (*House) ProtoMessage() {}
 
 func (x *House) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[21]
+	mi := &file_schema_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1600,7 +1351,7 @@ func (x *House) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use House.ProtoReflect.Descriptor instead.
 func (*House) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{21}
+	return file_schema_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *House) GetPlayerId() string {
@@ -1628,7 +1379,7 @@ type SlyDeal struct {
 
 func (x *SlyDeal) Reset() {
 	*x = SlyDeal{}
-	mi := &file_schema_proto_msgTypes[22]
+	mi := &file_schema_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1640,7 +1391,7 @@ func (x *SlyDeal) String() string {
 func (*SlyDeal) ProtoMessage() {}
 
 func (x *SlyDeal) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[22]
+	mi := &file_schema_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1653,7 +1404,7 @@ func (x *SlyDeal) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SlyDeal.ProtoReflect.Descriptor instead.
 func (*SlyDeal) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{22}
+	return file_schema_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SlyDeal) GetPlayerId() string {
@@ -1687,7 +1438,7 @@ type SlyDealResponse struct {
 
 func (x *SlyDealResponse) Reset() {
 	*x = SlyDealResponse{}
-	mi := &file_schema_proto_msgTypes[23]
+	mi := &file_schema_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1699,7 +1450,7 @@ func (x *SlyDealResponse) String() string {
 func (*SlyDealResponse) ProtoMessage() {}
 
 func (x *SlyDealResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[23]
+	mi := &file_schema_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1712,7 +1463,7 @@ func (x *SlyDealResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SlyDealResponse.ProtoReflect.Descriptor instead.
 func (*SlyDealResponse) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{23}
+	return file_schema_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SlyDealResponse) GetPlayerId() string {
@@ -1741,7 +1492,7 @@ type ForcedDeal struct {
 
 func (x *ForcedDeal) Reset() {
 	*x = ForcedDeal{}
-	mi := &file_schema_proto_msgTypes[24]
+	mi := &file_schema_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1753,7 +1504,7 @@ func (x *ForcedDeal) String() string {
 func (*ForcedDeal) ProtoMessage() {}
 
 func (x *ForcedDeal) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[24]
+	mi := &file_schema_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1766,7 +1517,7 @@ func (x *ForcedDeal) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ForcedDeal.ProtoReflect.Descriptor instead.
 func (*ForcedDeal) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{24}
+	return file_schema_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ForcedDeal) GetPlayerId() string {
@@ -1807,7 +1558,7 @@ type ForcedDealResponse struct {
 
 func (x *ForcedDealResponse) Reset() {
 	*x = ForcedDealResponse{}
-	mi := &file_schema_proto_msgTypes[25]
+	mi := &file_schema_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1819,7 +1570,7 @@ func (x *ForcedDealResponse) String() string {
 func (*ForcedDealResponse) ProtoMessage() {}
 
 func (x *ForcedDealResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[25]
+	mi := &file_schema_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1832,7 +1583,7 @@ func (x *ForcedDealResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ForcedDealResponse.ProtoReflect.Descriptor instead.
 func (*ForcedDealResponse) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{25}
+	return file_schema_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ForcedDealResponse) GetPlayerId() string {
@@ -1859,7 +1610,7 @@ type DebtCollector struct {
 
 func (x *DebtCollector) Reset() {
 	*x = DebtCollector{}
-	mi := &file_schema_proto_msgTypes[26]
+	mi := &file_schema_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1871,7 +1622,7 @@ func (x *DebtCollector) String() string {
 func (*DebtCollector) ProtoMessage() {}
 
 func (x *DebtCollector) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[26]
+	mi := &file_schema_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1884,7 +1635,7 @@ func (x *DebtCollector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DebtCollector.ProtoReflect.Descriptor instead.
 func (*DebtCollector) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{26}
+	return file_schema_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *DebtCollector) GetPlayerId() string {
@@ -1912,7 +1663,7 @@ type DebtCollectorResponse struct {
 
 func (x *DebtCollectorResponse) Reset() {
 	*x = DebtCollectorResponse{}
-	mi := &file_schema_proto_msgTypes[27]
+	mi := &file_schema_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1924,7 +1675,7 @@ func (x *DebtCollectorResponse) String() string {
 func (*DebtCollectorResponse) ProtoMessage() {}
 
 func (x *DebtCollectorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[27]
+	mi := &file_schema_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1937,7 +1688,7 @@ func (x *DebtCollectorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DebtCollectorResponse.ProtoReflect.Descriptor instead.
 func (*DebtCollectorResponse) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{27}
+	return file_schema_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *DebtCollectorResponse) GetPlayerId() string {
@@ -1971,7 +1722,7 @@ type Hotel struct {
 
 func (x *Hotel) Reset() {
 	*x = Hotel{}
-	mi := &file_schema_proto_msgTypes[28]
+	mi := &file_schema_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1983,7 +1734,7 @@ func (x *Hotel) String() string {
 func (*Hotel) ProtoMessage() {}
 
 func (x *Hotel) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[28]
+	mi := &file_schema_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1996,7 +1747,7 @@ func (x *Hotel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Hotel.ProtoReflect.Descriptor instead.
 func (*Hotel) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{28}
+	return file_schema_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *Hotel) GetPlayerId() string {
@@ -2023,7 +1774,7 @@ type JustSayNoResponse struct {
 
 func (x *JustSayNoResponse) Reset() {
 	*x = JustSayNoResponse{}
-	mi := &file_schema_proto_msgTypes[29]
+	mi := &file_schema_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2035,7 +1786,7 @@ func (x *JustSayNoResponse) String() string {
 func (*JustSayNoResponse) ProtoMessage() {}
 
 func (x *JustSayNoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[29]
+	mi := &file_schema_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2048,7 +1799,7 @@ func (x *JustSayNoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JustSayNoResponse.ProtoReflect.Descriptor instead.
 func (*JustSayNoResponse) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{29}
+	return file_schema_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *JustSayNoResponse) GetPlayerId() string {
@@ -2076,7 +1827,7 @@ type DealBreaker struct {
 
 func (x *DealBreaker) Reset() {
 	*x = DealBreaker{}
-	mi := &file_schema_proto_msgTypes[30]
+	mi := &file_schema_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2088,7 +1839,7 @@ func (x *DealBreaker) String() string {
 func (*DealBreaker) ProtoMessage() {}
 
 func (x *DealBreaker) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[30]
+	mi := &file_schema_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2101,7 +1852,7 @@ func (x *DealBreaker) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DealBreaker.ProtoReflect.Descriptor instead.
 func (*DealBreaker) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{30}
+	return file_schema_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *DealBreaker) GetPlayerId() string {
@@ -2135,7 +1886,7 @@ type DealBreakerResponse struct {
 
 func (x *DealBreakerResponse) Reset() {
 	*x = DealBreakerResponse{}
-	mi := &file_schema_proto_msgTypes[31]
+	mi := &file_schema_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2147,7 +1898,7 @@ func (x *DealBreakerResponse) String() string {
 func (*DealBreakerResponse) ProtoMessage() {}
 
 func (x *DealBreakerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[31]
+	mi := &file_schema_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2160,7 +1911,7 @@ func (x *DealBreakerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DealBreakerResponse.ProtoReflect.Descriptor instead.
 func (*DealBreakerResponse) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{31}
+	return file_schema_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *DealBreakerResponse) GetPlayerId() string {
@@ -2187,7 +1938,7 @@ type Rent struct {
 
 func (x *Rent) Reset() {
 	*x = Rent{}
-	mi := &file_schema_proto_msgTypes[32]
+	mi := &file_schema_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2199,7 +1950,7 @@ func (x *Rent) String() string {
 func (*Rent) ProtoMessage() {}
 
 func (x *Rent) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[32]
+	mi := &file_schema_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2212,7 +1963,7 @@ func (x *Rent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Rent.ProtoReflect.Descriptor instead.
 func (*Rent) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{32}
+	return file_schema_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *Rent) GetPlayerId() string {
@@ -2240,7 +1991,7 @@ type RentResponse struct {
 
 func (x *RentResponse) Reset() {
 	*x = RentResponse{}
-	mi := &file_schema_proto_msgTypes[33]
+	mi := &file_schema_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2252,7 +2003,7 @@ func (x *RentResponse) String() string {
 func (*RentResponse) ProtoMessage() {}
 
 func (x *RentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[33]
+	mi := &file_schema_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2265,7 +2016,7 @@ func (x *RentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RentResponse.ProtoReflect.Descriptor instead.
 func (*RentResponse) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{33}
+	return file_schema_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *RentResponse) GetPlayerId() string {
@@ -2300,7 +2051,7 @@ type WildRent struct {
 
 func (x *WildRent) Reset() {
 	*x = WildRent{}
-	mi := &file_schema_proto_msgTypes[34]
+	mi := &file_schema_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2312,7 +2063,7 @@ func (x *WildRent) String() string {
 func (*WildRent) ProtoMessage() {}
 
 func (x *WildRent) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[34]
+	mi := &file_schema_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2325,7 +2076,7 @@ func (x *WildRent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WildRent.ProtoReflect.Descriptor instead.
 func (*WildRent) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{34}
+	return file_schema_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *WildRent) GetPlayerId() string {
@@ -2353,7 +2104,7 @@ type WildRentResponse struct {
 
 func (x *WildRentResponse) Reset() {
 	*x = WildRentResponse{}
-	mi := &file_schema_proto_msgTypes[35]
+	mi := &file_schema_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2365,7 +2116,7 @@ func (x *WildRentResponse) String() string {
 func (*WildRentResponse) ProtoMessage() {}
 
 func (x *WildRentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[35]
+	mi := &file_schema_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2378,7 +2129,7 @@ func (x *WildRentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WildRentResponse.ProtoReflect.Descriptor instead.
 func (*WildRentResponse) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{35}
+	return file_schema_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *WildRentResponse) GetPlayerId() string {
@@ -2402,154 +2153,6 @@ func (x *WildRentResponse) GetSaidNo() bool {
 	return false
 }
 
-type ClientLobbyMessage struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Payload:
-	//
-	//	*ClientLobbyMessage_CreateRoom
-	//	*ClientLobbyMessage_JoinRoom
-	Payload       isClientLobbyMessage_Payload `protobuf_oneof:"payload"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ClientLobbyMessage) Reset() {
-	*x = ClientLobbyMessage{}
-	mi := &file_schema_proto_msgTypes[36]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ClientLobbyMessage) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ClientLobbyMessage) ProtoMessage() {}
-
-func (x *ClientLobbyMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[36]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ClientLobbyMessage.ProtoReflect.Descriptor instead.
-func (*ClientLobbyMessage) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{36}
-}
-
-func (x *ClientLobbyMessage) GetPayload() isClientLobbyMessage_Payload {
-	if x != nil {
-		return x.Payload
-	}
-	return nil
-}
-
-func (x *ClientLobbyMessage) GetCreateRoom() *CreateRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*ClientLobbyMessage_CreateRoom); ok {
-			return x.CreateRoom
-		}
-	}
-	return nil
-}
-
-func (x *ClientLobbyMessage) GetJoinRoom() *JoinRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*ClientLobbyMessage_JoinRoom); ok {
-			return x.JoinRoom
-		}
-	}
-	return nil
-}
-
-type isClientLobbyMessage_Payload interface {
-	isClientLobbyMessage_Payload()
-}
-
-type ClientLobbyMessage_CreateRoom struct {
-	CreateRoom *CreateRoom `protobuf:"bytes,1,opt,name=create_room,json=createRoom,proto3,oneof"`
-}
-
-type ClientLobbyMessage_JoinRoom struct {
-	JoinRoom *JoinRoom `protobuf:"bytes,2,opt,name=join_room,json=joinRoom,proto3,oneof"`
-}
-
-func (*ClientLobbyMessage_CreateRoom) isClientLobbyMessage_Payload() {}
-
-func (*ClientLobbyMessage_JoinRoom) isClientLobbyMessage_Payload() {}
-
-type ClientRoomMessage struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Payload:
-	//
-	//	*ClientRoomMessage_LeaveRoom
-	Payload       isClientRoomMessage_Payload `protobuf_oneof:"payload"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ClientRoomMessage) Reset() {
-	*x = ClientRoomMessage{}
-	mi := &file_schema_proto_msgTypes[37]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ClientRoomMessage) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ClientRoomMessage) ProtoMessage() {}
-
-func (x *ClientRoomMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[37]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ClientRoomMessage.ProtoReflect.Descriptor instead.
-func (*ClientRoomMessage) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{37}
-}
-
-func (x *ClientRoomMessage) GetPayload() isClientRoomMessage_Payload {
-	if x != nil {
-		return x.Payload
-	}
-	return nil
-}
-
-func (x *ClientRoomMessage) GetLeaveRoom() *LeaveRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*ClientRoomMessage_LeaveRoom); ok {
-			return x.LeaveRoom
-		}
-	}
-	return nil
-}
-
-type isClientRoomMessage_Payload interface {
-	isClientRoomMessage_Payload()
-}
-
-type ClientRoomMessage_LeaveRoom struct {
-	LeaveRoom *LeaveRoom `protobuf:"bytes,1,opt,name=leave_room,json=leaveRoom,proto3,oneof"`
-}
-
-func (*ClientRoomMessage_LeaveRoom) isClientRoomMessage_Payload() {}
-
 type ClientGameMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -2558,7 +2161,7 @@ type ClientGameMessage struct {
 
 func (x *ClientGameMessage) Reset() {
 	*x = ClientGameMessage{}
-	mi := &file_schema_proto_msgTypes[38]
+	mi := &file_schema_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2570,7 +2173,7 @@ func (x *ClientGameMessage) String() string {
 func (*ClientGameMessage) ProtoMessage() {}
 
 func (x *ClientGameMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[38]
+	mi := &file_schema_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2583,7 +2186,7 @@ func (x *ClientGameMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClientGameMessage.ProtoReflect.Descriptor instead.
 func (*ClientGameMessage) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{38}
+	return file_schema_proto_rawDescGZIP(), []int{32}
 }
 
 type ClientMessage struct {
@@ -2591,8 +2194,6 @@ type ClientMessage struct {
 	// Types that are valid to be assigned to Payload:
 	//
 	//	*ClientMessage_Ping
-	//	*ClientMessage_LobbyMessage
-	//	*ClientMessage_RoomMessage
 	//	*ClientMessage_GameMessage
 	Payload       isClientMessage_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
@@ -2601,7 +2202,7 @@ type ClientMessage struct {
 
 func (x *ClientMessage) Reset() {
 	*x = ClientMessage{}
-	mi := &file_schema_proto_msgTypes[39]
+	mi := &file_schema_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2613,7 +2214,7 @@ func (x *ClientMessage) String() string {
 func (*ClientMessage) ProtoMessage() {}
 
 func (x *ClientMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[39]
+	mi := &file_schema_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2626,7 +2227,7 @@ func (x *ClientMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClientMessage.ProtoReflect.Descriptor instead.
 func (*ClientMessage) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{39}
+	return file_schema_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *ClientMessage) GetPayload() isClientMessage_Payload {
@@ -2640,24 +2241,6 @@ func (x *ClientMessage) GetPing() *Ping {
 	if x != nil {
 		if x, ok := x.Payload.(*ClientMessage_Ping); ok {
 			return x.Ping
-		}
-	}
-	return nil
-}
-
-func (x *ClientMessage) GetLobbyMessage() *ClientLobbyMessage {
-	if x != nil {
-		if x, ok := x.Payload.(*ClientMessage_LobbyMessage); ok {
-			return x.LobbyMessage
-		}
-	}
-	return nil
-}
-
-func (x *ClientMessage) GetRoomMessage() *ClientRoomMessage {
-	if x != nil {
-		if x, ok := x.Payload.(*ClientMessage_RoomMessage); ok {
-			return x.RoomMessage
 		}
 	}
 	return nil
@@ -2680,139 +2263,13 @@ type ClientMessage_Ping struct {
 	Ping *Ping `protobuf:"bytes,1,opt,name=ping,proto3,oneof"`
 }
 
-type ClientMessage_LobbyMessage struct {
-	LobbyMessage *ClientLobbyMessage `protobuf:"bytes,10,opt,name=lobby_message,json=lobbyMessage,proto3,oneof"`
-}
-
-type ClientMessage_RoomMessage struct {
-	RoomMessage *ClientRoomMessage `protobuf:"bytes,11,opt,name=room_message,json=roomMessage,proto3,oneof"`
-}
-
 type ClientMessage_GameMessage struct {
 	GameMessage *ClientGameMessage `protobuf:"bytes,12,opt,name=game_message,json=gameMessage,proto3,oneof"`
 }
 
 func (*ClientMessage_Ping) isClientMessage_Payload() {}
 
-func (*ClientMessage_LobbyMessage) isClientMessage_Payload() {}
-
-func (*ClientMessage_RoomMessage) isClientMessage_Payload() {}
-
 func (*ClientMessage_GameMessage) isClientMessage_Payload() {}
-
-type ServerLobbyMessage struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Payload:
-	//
-	//	*ServerLobbyMessage_RoomCreated
-	//	*ServerLobbyMessage_RoomDeleted
-	//	*ServerLobbyMessage_PlayerJoinedRoom
-	//	*ServerLobbyMessage_PlayerLeftRoom
-	Payload       isServerLobbyMessage_Payload `protobuf_oneof:"payload"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ServerLobbyMessage) Reset() {
-	*x = ServerLobbyMessage{}
-	mi := &file_schema_proto_msgTypes[40]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ServerLobbyMessage) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ServerLobbyMessage) ProtoMessage() {}
-
-func (x *ServerLobbyMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[40]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ServerLobbyMessage.ProtoReflect.Descriptor instead.
-func (*ServerLobbyMessage) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{40}
-}
-
-func (x *ServerLobbyMessage) GetPayload() isServerLobbyMessage_Payload {
-	if x != nil {
-		return x.Payload
-	}
-	return nil
-}
-
-func (x *ServerLobbyMessage) GetRoomCreated() *RoomCreated {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerLobbyMessage_RoomCreated); ok {
-			return x.RoomCreated
-		}
-	}
-	return nil
-}
-
-func (x *ServerLobbyMessage) GetRoomDeleted() *RoomDeleted {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerLobbyMessage_RoomDeleted); ok {
-			return x.RoomDeleted
-		}
-	}
-	return nil
-}
-
-func (x *ServerLobbyMessage) GetPlayerJoinedRoom() *PlayerJoinedRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerLobbyMessage_PlayerJoinedRoom); ok {
-			return x.PlayerJoinedRoom
-		}
-	}
-	return nil
-}
-
-func (x *ServerLobbyMessage) GetPlayerLeftRoom() *PlayerLeftRoom {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerLobbyMessage_PlayerLeftRoom); ok {
-			return x.PlayerLeftRoom
-		}
-	}
-	return nil
-}
-
-type isServerLobbyMessage_Payload interface {
-	isServerLobbyMessage_Payload()
-}
-
-type ServerLobbyMessage_RoomCreated struct {
-	RoomCreated *RoomCreated `protobuf:"bytes,1,opt,name=room_created,json=roomCreated,proto3,oneof"`
-}
-
-type ServerLobbyMessage_RoomDeleted struct {
-	RoomDeleted *RoomDeleted `protobuf:"bytes,2,opt,name=room_deleted,json=roomDeleted,proto3,oneof"`
-}
-
-type ServerLobbyMessage_PlayerJoinedRoom struct {
-	PlayerJoinedRoom *PlayerJoinedRoom `protobuf:"bytes,3,opt,name=player_joined_room,json=playerJoinedRoom,proto3,oneof"`
-}
-
-type ServerLobbyMessage_PlayerLeftRoom struct {
-	PlayerLeftRoom *PlayerLeftRoom `protobuf:"bytes,4,opt,name=player_left_room,json=playerLeftRoom,proto3,oneof"`
-}
-
-func (*ServerLobbyMessage_RoomCreated) isServerLobbyMessage_Payload() {}
-
-func (*ServerLobbyMessage_RoomDeleted) isServerLobbyMessage_Payload() {}
-
-func (*ServerLobbyMessage_PlayerJoinedRoom) isServerLobbyMessage_Payload() {}
-
-func (*ServerLobbyMessage_PlayerLeftRoom) isServerLobbyMessage_Payload() {}
 
 type ServerRoomMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -2828,7 +2285,7 @@ type ServerRoomMessage struct {
 
 func (x *ServerRoomMessage) Reset() {
 	*x = ServerRoomMessage{}
-	mi := &file_schema_proto_msgTypes[41]
+	mi := &file_schema_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2840,7 +2297,7 @@ func (x *ServerRoomMessage) String() string {
 func (*ServerRoomMessage) ProtoMessage() {}
 
 func (x *ServerRoomMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[41]
+	mi := &file_schema_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2853,7 +2310,7 @@ func (x *ServerRoomMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerRoomMessage.ProtoReflect.Descriptor instead.
 func (*ServerRoomMessage) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{41}
+	return file_schema_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *ServerRoomMessage) GetPayload() isServerRoomMessage_Payload {
@@ -2920,7 +2377,7 @@ type ServerGameMessage struct {
 
 func (x *ServerGameMessage) Reset() {
 	*x = ServerGameMessage{}
-	mi := &file_schema_proto_msgTypes[42]
+	mi := &file_schema_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2932,7 +2389,7 @@ func (x *ServerGameMessage) String() string {
 func (*ServerGameMessage) ProtoMessage() {}
 
 func (x *ServerGameMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[42]
+	mi := &file_schema_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2945,7 +2402,7 @@ func (x *ServerGameMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerGameMessage.ProtoReflect.Descriptor instead.
 func (*ServerGameMessage) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{42}
+	return file_schema_proto_rawDescGZIP(), []int{35}
 }
 
 type ServerMessage struct {
@@ -2953,8 +2410,6 @@ type ServerMessage struct {
 	// Types that are valid to be assigned to Payload:
 	//
 	//	*ServerMessage_Ping
-	//	*ServerMessage_Error
-	//	*ServerMessage_LobbyMessage
 	//	*ServerMessage_RoomMessage
 	//	*ServerMessage_GameMessage
 	Payload       isServerMessage_Payload `protobuf_oneof:"payload"`
@@ -2964,7 +2419,7 @@ type ServerMessage struct {
 
 func (x *ServerMessage) Reset() {
 	*x = ServerMessage{}
-	mi := &file_schema_proto_msgTypes[43]
+	mi := &file_schema_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2976,7 +2431,7 @@ func (x *ServerMessage) String() string {
 func (*ServerMessage) ProtoMessage() {}
 
 func (x *ServerMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_schema_proto_msgTypes[43]
+	mi := &file_schema_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2989,7 +2444,7 @@ func (x *ServerMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerMessage.ProtoReflect.Descriptor instead.
 func (*ServerMessage) Descriptor() ([]byte, []int) {
-	return file_schema_proto_rawDescGZIP(), []int{43}
+	return file_schema_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *ServerMessage) GetPayload() isServerMessage_Payload {
@@ -3003,24 +2458,6 @@ func (x *ServerMessage) GetPing() *Ping {
 	if x != nil {
 		if x, ok := x.Payload.(*ServerMessage_Ping); ok {
 			return x.Ping
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetError() *Error {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_Error); ok {
-			return x.Error
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetLobbyMessage() *ServerLobbyMessage {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_LobbyMessage); ok {
-			return x.LobbyMessage
 		}
 	}
 	return nil
@@ -3052,27 +2489,15 @@ type ServerMessage_Ping struct {
 	Ping *Ping `protobuf:"bytes,1,opt,name=ping,proto3,oneof"`
 }
 
-type ServerMessage_Error struct {
-	Error *Error `protobuf:"bytes,2,opt,name=error,proto3,oneof"`
-}
-
-type ServerMessage_LobbyMessage struct {
-	LobbyMessage *ServerLobbyMessage `protobuf:"bytes,10,opt,name=lobby_message,json=lobbyMessage,proto3,oneof"`
-}
-
 type ServerMessage_RoomMessage struct {
-	RoomMessage *ServerRoomMessage `protobuf:"bytes,11,opt,name=room_message,json=roomMessage,proto3,oneof"`
+	RoomMessage *ServerRoomMessage `protobuf:"bytes,10,opt,name=room_message,json=roomMessage,proto3,oneof"`
 }
 
 type ServerMessage_GameMessage struct {
-	GameMessage *ServerGameMessage `protobuf:"bytes,12,opt,name=game_message,json=gameMessage,proto3,oneof"`
+	GameMessage *ServerGameMessage `protobuf:"bytes,11,opt,name=game_message,json=gameMessage,proto3,oneof"`
 }
 
 func (*ServerMessage_Ping) isServerMessage_Payload() {}
-
-func (*ServerMessage_Error) isServerMessage_Payload() {}
-
-func (*ServerMessage_LobbyMessage) isServerMessage_Payload() {}
 
 func (*ServerMessage_RoomMessage) isServerMessage_Payload() {}
 
@@ -3085,41 +2510,30 @@ const file_schema_proto_rawDesc = "" +
 	"\fschema.proto\x12\x13monopolydeal.schema\"(\n" +
 	"\x04Ping\x12 \n" +
 	"\ftime_unix_ms\x18\x01 \x01(\x03R\n" +
-	"timeUnixMs\"M\n" +
-	"\x05Error\x12\x12\n" +
-	"\x04code\x18\x01 \x01(\tR\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\x05R\x06status\"\x9b\x01\n" +
+	"timeUnixMs\"\xb8\x01\n" +
 	"\x06Player\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x19\n" +
 	"\bis_ready\x18\x04 \x01(\bR\aisReady\x12\x17\n" +
-	"\ais_host\x18\x05 \x01(\bR\x06isHost\"K\n" +
-	"\n" +
-	"CreateRoom\x12!\n" +
-	"\fdisplay_name\x18\x01 \x01(\tR\vdisplayName\x12\x1a\n" +
-	"\bcapacity\x18\x02 \x01(\x05R\bcapacity\"\xce\x01\n" +
+	"\ais_host\x18\x05 \x01(\bR\x06isHost\x12\x1b\n" +
+	"\tjoined_at\x18\x06 \x01(\x03R\bjoinedAt\"\x95\x01\n" +
 	"\x04Room\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x125\n" +
-	"\aplayers\x18\x03 \x03(\v2\x1b.monopolydeal.schema.PlayerR\aplayers\x127\n" +
-	"\x06status\x18\x04 \x01(\x0e2\x1f.monopolydeal.schema.RoomStatusR\x06status\x12\x1a\n" +
-	"\bcapacity\x18\x05 \x01(\x05R\bcapacity\"<\n" +
+	"\aplayers\x18\x03 \x03(\v2\x1b.monopolydeal.schema.PlayerR\aplayers\x12\x1a\n" +
+	"\bcapacity\x18\x04 \x01(\x05R\bcapacity\"<\n" +
 	"\vRoomCreated\x12-\n" +
-	"\x04room\x18\x01 \x01(\v2\x19.monopolydeal.schema.RoomR\x04room\"#\n" +
-	"\bJoinRoom\x12\x17\n" +
-	"\aroom_id\x18\x01 \x01(\tR\x06roomId\"`\n" +
+	"\x04room\x18\x01 \x01(\v2\x19.monopolydeal.schema.RoomR\x04room\"`\n" +
 	"\x10PlayerJoinedRoom\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x123\n" +
-	"\x06player\x18\x02 \x01(\v2\x1b.monopolydeal.schema.PlayerR\x06player\"$\n" +
-	"\tLeaveRoom\x12\x17\n" +
-	"\aroom_id\x18\x01 \x01(\tR\x06roomId\"s\n" +
+	"\x06player\x18\x02 \x01(\v2\x1b.monopolydeal.schema.PlayerR\x06player\"\x8f\x01\n" +
 	"\x0ePlayerLeftRoom\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1b\n" +
-	"\tplayed_id\x18\x02 \x01(\tR\bplayedId\x12+\n" +
-	"\x12new_host_player_id\x18\x03 \x01(\tR\x0fnewHostPlayerId\"&\n" +
+	"\tplayed_id\x18\x02 \x01(\tR\bplayedId\x120\n" +
+	"\x12new_host_player_id\x18\x03 \x01(\tH\x00R\x0fnewHostPlayerId\x88\x01\x01B\x15\n" +
+	"\x13_new_host_player_id\"&\n" +
 	"\vRoomDeleted\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\tR\x06roomId\"\xd2\x02\n" +
 	"\x04Card\x12L\n" +
@@ -3206,49 +2620,24 @@ const file_schema_proto_rawDesc = "" +
 	"\x10WildRentResponse\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12/\n" +
 	"\x05cards\x18\x02 \x03(\v2\x19.monopolydeal.schema.CardR\x05cards\x12\x17\n" +
-	"\asaid_no\x18\x03 \x01(\bR\x06saidNo\"\xa1\x01\n" +
-	"\x12ClientLobbyMessage\x12B\n" +
-	"\vcreate_room\x18\x01 \x01(\v2\x1f.monopolydeal.schema.CreateRoomH\x00R\n" +
-	"createRoom\x12<\n" +
-	"\tjoin_room\x18\x02 \x01(\v2\x1d.monopolydeal.schema.JoinRoomH\x00R\bjoinRoomB\t\n" +
-	"\apayload\"_\n" +
-	"\x11ClientRoomMessage\x12?\n" +
-	"\n" +
-	"leave_room\x18\x01 \x01(\v2\x1e.monopolydeal.schema.LeaveRoomH\x00R\tleaveRoomB\t\n" +
-	"\apayload\"\x13\n" +
-	"\x11ClientGameMessage\"\xb5\x02\n" +
+	"\asaid_no\x18\x03 \x01(\bR\x06saidNo\"\x13\n" +
+	"\x11ClientGameMessage\"\x98\x01\n" +
 	"\rClientMessage\x12/\n" +
-	"\x04ping\x18\x01 \x01(\v2\x19.monopolydeal.schema.PingH\x00R\x04ping\x12N\n" +
-	"\rlobby_message\x18\n" +
-	" \x01(\v2'.monopolydeal.schema.ClientLobbyMessageH\x00R\flobbyMessage\x12K\n" +
-	"\froom_message\x18\v \x01(\v2&.monopolydeal.schema.ClientRoomMessageH\x00R\vroomMessage\x12K\n" +
+	"\x04ping\x18\x01 \x01(\v2\x19.monopolydeal.schema.PingH\x00R\x04ping\x12K\n" +
 	"\fgame_message\x18\f \x01(\v2&.monopolydeal.schema.ClientGameMessageH\x00R\vgameMessageB\t\n" +
-	"\apayload\"\xd5\x02\n" +
-	"\x12ServerLobbyMessage\x12E\n" +
-	"\froom_created\x18\x01 \x01(\v2 .monopolydeal.schema.RoomCreatedH\x00R\vroomCreated\x12E\n" +
-	"\froom_deleted\x18\x02 \x01(\v2 .monopolydeal.schema.RoomDeletedH\x00R\vroomDeleted\x12U\n" +
-	"\x12player_joined_room\x18\x03 \x01(\v2%.monopolydeal.schema.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12O\n" +
-	"\x10player_left_room\x18\x04 \x01(\v2#.monopolydeal.schema.PlayerLeftRoomH\x00R\x0eplayerLeftRoomB\t\n" +
 	"\apayload\"\x8d\x02\n" +
 	"\x11ServerRoomMessage\x12E\n" +
 	"\froom_created\x18\x01 \x01(\v2 .monopolydeal.schema.RoomCreatedH\x00R\vroomCreated\x12U\n" +
 	"\x12player_joined_room\x18\x02 \x01(\v2%.monopolydeal.schema.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12O\n" +
 	"\x10player_left_room\x18\x03 \x01(\v2#.monopolydeal.schema.PlayerLeftRoomH\x00R\x0eplayerLeftRoomB\t\n" +
 	"\apayload\"\x13\n" +
-	"\x11ServerGameMessage\"\xe9\x02\n" +
+	"\x11ServerGameMessage\"\xe5\x01\n" +
 	"\rServerMessage\x12/\n" +
-	"\x04ping\x18\x01 \x01(\v2\x19.monopolydeal.schema.PingH\x00R\x04ping\x122\n" +
-	"\x05error\x18\x02 \x01(\v2\x1a.monopolydeal.schema.ErrorH\x00R\x05error\x12N\n" +
-	"\rlobby_message\x18\n" +
-	" \x01(\v2'.monopolydeal.schema.ServerLobbyMessageH\x00R\flobbyMessage\x12K\n" +
-	"\froom_message\x18\v \x01(\v2&.monopolydeal.schema.ServerRoomMessageH\x00R\vroomMessage\x12K\n" +
-	"\fgame_message\x18\f \x01(\v2&.monopolydeal.schema.ServerGameMessageH\x00R\vgameMessageB\t\n" +
-	"\apayload*0\n" +
-	"\n" +
-	"RoomStatus\x12\t\n" +
-	"\x05LOBBY\x10\x00\x12\b\n" +
-	"\x04GAME\x10\x01\x12\r\n" +
-	"\tCOMPLETED\x10\x02*\xcb\x02\n" +
+	"\x04ping\x18\x01 \x01(\v2\x19.monopolydeal.schema.PingH\x00R\x04ping\x12K\n" +
+	"\froom_message\x18\n" +
+	" \x01(\v2&.monopolydeal.schema.ServerRoomMessageH\x00R\vroomMessage\x12K\n" +
+	"\fgame_message\x18\v \x01(\v2&.monopolydeal.schema.ServerGameMessageH\x00R\vgameMessageB\t\n" +
+	"\apayload*\xcb\x02\n" +
 	"\x10PurePropertyType\x12\x1c\n" +
 	"\x18PURE_PROPERTY_TYPE_BROWN\x10\x00\x12!\n" +
 	"\x1dPURE_PROPERTY_TYPE_LIGHT_BLUE\x10\x01\x12\x1b\n" +
@@ -3308,110 +2697,90 @@ func file_schema_proto_rawDescGZIP() []byte {
 	return file_schema_proto_rawDescData
 }
 
-var file_schema_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_schema_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
+var file_schema_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_schema_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
 var file_schema_proto_goTypes = []any{
-	(RoomStatus)(0),               // 0: monopolydeal.schema.RoomStatus
-	(PurePropertyType)(0),         // 1: monopolydeal.schema.PurePropertyType
-	(WildPropertyType)(0),         // 2: monopolydeal.schema.WildPropertyType
-	(MoneyType)(0),                // 3: monopolydeal.schema.MoneyType
-	(ActionType)(0),               // 4: monopolydeal.schema.ActionType
-	(RentType)(0),                 // 5: monopolydeal.schema.RentType
-	(*Ping)(nil),                  // 6: monopolydeal.schema.Ping
-	(*Error)(nil),                 // 7: monopolydeal.schema.Error
-	(*Player)(nil),                // 8: monopolydeal.schema.Player
-	(*CreateRoom)(nil),            // 9: monopolydeal.schema.CreateRoom
-	(*Room)(nil),                  // 10: monopolydeal.schema.Room
-	(*RoomCreated)(nil),           // 11: monopolydeal.schema.RoomCreated
-	(*JoinRoom)(nil),              // 12: monopolydeal.schema.JoinRoom
-	(*PlayerJoinedRoom)(nil),      // 13: monopolydeal.schema.PlayerJoinedRoom
-	(*LeaveRoom)(nil),             // 14: monopolydeal.schema.LeaveRoom
-	(*PlayerLeftRoom)(nil),        // 15: monopolydeal.schema.PlayerLeftRoom
-	(*RoomDeleted)(nil),           // 16: monopolydeal.schema.RoomDeleted
-	(*Card)(nil),                  // 17: monopolydeal.schema.Card
-	(*PropertyType)(nil),          // 18: monopolydeal.schema.PropertyType
-	(*PropertySetType)(nil),       // 19: monopolydeal.schema.PropertySetType
-	(*PlayProperty)(nil),          // 20: monopolydeal.schema.PlayProperty
-	(*PlayMoney)(nil),             // 21: monopolydeal.schema.PlayMoney
-	(*PassGo)(nil),                // 22: monopolydeal.schema.PassGo
-	(*PassGoResponse)(nil),        // 23: monopolydeal.schema.PassGoResponse
-	(*DoubleTheRent)(nil),         // 24: monopolydeal.schema.DoubleTheRent
-	(*ItsMyBirthday)(nil),         // 25: monopolydeal.schema.ItsMyBirthday
-	(*ItsMyBirthdayResponse)(nil), // 26: monopolydeal.schema.ItsMyBirthdayResponse
-	(*House)(nil),                 // 27: monopolydeal.schema.House
-	(*SlyDeal)(nil),               // 28: monopolydeal.schema.SlyDeal
-	(*SlyDealResponse)(nil),       // 29: monopolydeal.schema.SlyDealResponse
-	(*ForcedDeal)(nil),            // 30: monopolydeal.schema.ForcedDeal
-	(*ForcedDealResponse)(nil),    // 31: monopolydeal.schema.ForcedDealResponse
-	(*DebtCollector)(nil),         // 32: monopolydeal.schema.DebtCollector
-	(*DebtCollectorResponse)(nil), // 33: monopolydeal.schema.DebtCollectorResponse
-	(*Hotel)(nil),                 // 34: monopolydeal.schema.Hotel
-	(*JustSayNoResponse)(nil),     // 35: monopolydeal.schema.JustSayNoResponse
-	(*DealBreaker)(nil),           // 36: monopolydeal.schema.DealBreaker
-	(*DealBreakerResponse)(nil),   // 37: monopolydeal.schema.DealBreakerResponse
-	(*Rent)(nil),                  // 38: monopolydeal.schema.Rent
-	(*RentResponse)(nil),          // 39: monopolydeal.schema.RentResponse
-	(*WildRent)(nil),              // 40: monopolydeal.schema.WildRent
-	(*WildRentResponse)(nil),      // 41: monopolydeal.schema.WildRentResponse
-	(*ClientLobbyMessage)(nil),    // 42: monopolydeal.schema.ClientLobbyMessage
-	(*ClientRoomMessage)(nil),     // 43: monopolydeal.schema.ClientRoomMessage
-	(*ClientGameMessage)(nil),     // 44: monopolydeal.schema.ClientGameMessage
-	(*ClientMessage)(nil),         // 45: monopolydeal.schema.ClientMessage
-	(*ServerLobbyMessage)(nil),    // 46: monopolydeal.schema.ServerLobbyMessage
-	(*ServerRoomMessage)(nil),     // 47: monopolydeal.schema.ServerRoomMessage
-	(*ServerGameMessage)(nil),     // 48: monopolydeal.schema.ServerGameMessage
-	(*ServerMessage)(nil),         // 49: monopolydeal.schema.ServerMessage
+	(PurePropertyType)(0),         // 0: monopolydeal.schema.PurePropertyType
+	(WildPropertyType)(0),         // 1: monopolydeal.schema.WildPropertyType
+	(MoneyType)(0),                // 2: monopolydeal.schema.MoneyType
+	(ActionType)(0),               // 3: monopolydeal.schema.ActionType
+	(RentType)(0),                 // 4: monopolydeal.schema.RentType
+	(*Ping)(nil),                  // 5: monopolydeal.schema.Ping
+	(*Player)(nil),                // 6: monopolydeal.schema.Player
+	(*Room)(nil),                  // 7: monopolydeal.schema.Room
+	(*RoomCreated)(nil),           // 8: monopolydeal.schema.RoomCreated
+	(*PlayerJoinedRoom)(nil),      // 9: monopolydeal.schema.PlayerJoinedRoom
+	(*PlayerLeftRoom)(nil),        // 10: monopolydeal.schema.PlayerLeftRoom
+	(*RoomDeleted)(nil),           // 11: monopolydeal.schema.RoomDeleted
+	(*Card)(nil),                  // 12: monopolydeal.schema.Card
+	(*PropertyType)(nil),          // 13: monopolydeal.schema.PropertyType
+	(*PropertySetType)(nil),       // 14: monopolydeal.schema.PropertySetType
+	(*PlayProperty)(nil),          // 15: monopolydeal.schema.PlayProperty
+	(*PlayMoney)(nil),             // 16: monopolydeal.schema.PlayMoney
+	(*PassGo)(nil),                // 17: monopolydeal.schema.PassGo
+	(*PassGoResponse)(nil),        // 18: monopolydeal.schema.PassGoResponse
+	(*DoubleTheRent)(nil),         // 19: monopolydeal.schema.DoubleTheRent
+	(*ItsMyBirthday)(nil),         // 20: monopolydeal.schema.ItsMyBirthday
+	(*ItsMyBirthdayResponse)(nil), // 21: monopolydeal.schema.ItsMyBirthdayResponse
+	(*House)(nil),                 // 22: monopolydeal.schema.House
+	(*SlyDeal)(nil),               // 23: monopolydeal.schema.SlyDeal
+	(*SlyDealResponse)(nil),       // 24: monopolydeal.schema.SlyDealResponse
+	(*ForcedDeal)(nil),            // 25: monopolydeal.schema.ForcedDeal
+	(*ForcedDealResponse)(nil),    // 26: monopolydeal.schema.ForcedDealResponse
+	(*DebtCollector)(nil),         // 27: monopolydeal.schema.DebtCollector
+	(*DebtCollectorResponse)(nil), // 28: monopolydeal.schema.DebtCollectorResponse
+	(*Hotel)(nil),                 // 29: monopolydeal.schema.Hotel
+	(*JustSayNoResponse)(nil),     // 30: monopolydeal.schema.JustSayNoResponse
+	(*DealBreaker)(nil),           // 31: monopolydeal.schema.DealBreaker
+	(*DealBreakerResponse)(nil),   // 32: monopolydeal.schema.DealBreakerResponse
+	(*Rent)(nil),                  // 33: monopolydeal.schema.Rent
+	(*RentResponse)(nil),          // 34: monopolydeal.schema.RentResponse
+	(*WildRent)(nil),              // 35: monopolydeal.schema.WildRent
+	(*WildRentResponse)(nil),      // 36: monopolydeal.schema.WildRentResponse
+	(*ClientGameMessage)(nil),     // 37: monopolydeal.schema.ClientGameMessage
+	(*ClientMessage)(nil),         // 38: monopolydeal.schema.ClientMessage
+	(*ServerRoomMessage)(nil),     // 39: monopolydeal.schema.ServerRoomMessage
+	(*ServerGameMessage)(nil),     // 40: monopolydeal.schema.ServerGameMessage
+	(*ServerMessage)(nil),         // 41: monopolydeal.schema.ServerMessage
 }
 var file_schema_proto_depIdxs = []int32{
-	8,  // 0: monopolydeal.schema.Room.players:type_name -> monopolydeal.schema.Player
-	0,  // 1: monopolydeal.schema.Room.status:type_name -> monopolydeal.schema.RoomStatus
-	10, // 2: monopolydeal.schema.RoomCreated.room:type_name -> monopolydeal.schema.Room
-	8,  // 3: monopolydeal.schema.PlayerJoinedRoom.player:type_name -> monopolydeal.schema.Player
-	1,  // 4: monopolydeal.schema.Card.pure_property:type_name -> monopolydeal.schema.PurePropertyType
-	2,  // 5: monopolydeal.schema.Card.wild_property:type_name -> monopolydeal.schema.WildPropertyType
-	3,  // 6: monopolydeal.schema.Card.money:type_name -> monopolydeal.schema.MoneyType
-	4,  // 7: monopolydeal.schema.Card.action:type_name -> monopolydeal.schema.ActionType
-	5,  // 8: monopolydeal.schema.Card.rent:type_name -> monopolydeal.schema.RentType
-	17, // 9: monopolydeal.schema.PropertyType.card:type_name -> monopolydeal.schema.Card
-	18, // 10: monopolydeal.schema.PropertySetType.property_types:type_name -> monopolydeal.schema.PropertyType
-	18, // 11: monopolydeal.schema.PlayProperty.property:type_name -> monopolydeal.schema.PropertyType
-	17, // 12: monopolydeal.schema.PlayMoney.card:type_name -> monopolydeal.schema.Card
-	17, // 13: monopolydeal.schema.PassGoResponse.cards:type_name -> monopolydeal.schema.Card
-	17, // 14: monopolydeal.schema.ItsMyBirthdayResponse.cards:type_name -> monopolydeal.schema.Card
-	19, // 15: monopolydeal.schema.House.property_set:type_name -> monopolydeal.schema.PropertySetType
-	18, // 16: monopolydeal.schema.SlyDeal.property:type_name -> monopolydeal.schema.PropertyType
-	18, // 17: monopolydeal.schema.ForcedDeal.source_property:type_name -> monopolydeal.schema.PropertyType
-	18, // 18: monopolydeal.schema.ForcedDeal.target_property:type_name -> monopolydeal.schema.PropertyType
-	17, // 19: monopolydeal.schema.DebtCollectorResponse.cards:type_name -> monopolydeal.schema.Card
-	19, // 20: monopolydeal.schema.Hotel.property_set:type_name -> monopolydeal.schema.PropertySetType
-	19, // 21: monopolydeal.schema.DealBreaker.property_set:type_name -> monopolydeal.schema.PropertySetType
-	17, // 22: monopolydeal.schema.Rent.card:type_name -> monopolydeal.schema.Card
-	17, // 23: monopolydeal.schema.RentResponse.cards:type_name -> monopolydeal.schema.Card
-	17, // 24: monopolydeal.schema.WildRentResponse.cards:type_name -> monopolydeal.schema.Card
-	9,  // 25: monopolydeal.schema.ClientLobbyMessage.create_room:type_name -> monopolydeal.schema.CreateRoom
-	12, // 26: monopolydeal.schema.ClientLobbyMessage.join_room:type_name -> monopolydeal.schema.JoinRoom
-	14, // 27: monopolydeal.schema.ClientRoomMessage.leave_room:type_name -> monopolydeal.schema.LeaveRoom
-	6,  // 28: monopolydeal.schema.ClientMessage.ping:type_name -> monopolydeal.schema.Ping
-	42, // 29: monopolydeal.schema.ClientMessage.lobby_message:type_name -> monopolydeal.schema.ClientLobbyMessage
-	43, // 30: monopolydeal.schema.ClientMessage.room_message:type_name -> monopolydeal.schema.ClientRoomMessage
-	44, // 31: monopolydeal.schema.ClientMessage.game_message:type_name -> monopolydeal.schema.ClientGameMessage
-	11, // 32: monopolydeal.schema.ServerLobbyMessage.room_created:type_name -> monopolydeal.schema.RoomCreated
-	16, // 33: monopolydeal.schema.ServerLobbyMessage.room_deleted:type_name -> monopolydeal.schema.RoomDeleted
-	13, // 34: monopolydeal.schema.ServerLobbyMessage.player_joined_room:type_name -> monopolydeal.schema.PlayerJoinedRoom
-	15, // 35: monopolydeal.schema.ServerLobbyMessage.player_left_room:type_name -> monopolydeal.schema.PlayerLeftRoom
-	11, // 36: monopolydeal.schema.ServerRoomMessage.room_created:type_name -> monopolydeal.schema.RoomCreated
-	13, // 37: monopolydeal.schema.ServerRoomMessage.player_joined_room:type_name -> monopolydeal.schema.PlayerJoinedRoom
-	15, // 38: monopolydeal.schema.ServerRoomMessage.player_left_room:type_name -> monopolydeal.schema.PlayerLeftRoom
-	6,  // 39: monopolydeal.schema.ServerMessage.ping:type_name -> monopolydeal.schema.Ping
-	7,  // 40: monopolydeal.schema.ServerMessage.error:type_name -> monopolydeal.schema.Error
-	46, // 41: monopolydeal.schema.ServerMessage.lobby_message:type_name -> monopolydeal.schema.ServerLobbyMessage
-	47, // 42: monopolydeal.schema.ServerMessage.room_message:type_name -> monopolydeal.schema.ServerRoomMessage
-	48, // 43: monopolydeal.schema.ServerMessage.game_message:type_name -> monopolydeal.schema.ServerGameMessage
-	44, // [44:44] is the sub-list for method output_type
-	44, // [44:44] is the sub-list for method input_type
-	44, // [44:44] is the sub-list for extension type_name
-	44, // [44:44] is the sub-list for extension extendee
-	0,  // [0:44] is the sub-list for field type_name
+	6,  // 0: monopolydeal.schema.Room.players:type_name -> monopolydeal.schema.Player
+	7,  // 1: monopolydeal.schema.RoomCreated.room:type_name -> monopolydeal.schema.Room
+	6,  // 2: monopolydeal.schema.PlayerJoinedRoom.player:type_name -> monopolydeal.schema.Player
+	0,  // 3: monopolydeal.schema.Card.pure_property:type_name -> monopolydeal.schema.PurePropertyType
+	1,  // 4: monopolydeal.schema.Card.wild_property:type_name -> monopolydeal.schema.WildPropertyType
+	2,  // 5: monopolydeal.schema.Card.money:type_name -> monopolydeal.schema.MoneyType
+	3,  // 6: monopolydeal.schema.Card.action:type_name -> monopolydeal.schema.ActionType
+	4,  // 7: monopolydeal.schema.Card.rent:type_name -> monopolydeal.schema.RentType
+	12, // 8: monopolydeal.schema.PropertyType.card:type_name -> monopolydeal.schema.Card
+	13, // 9: monopolydeal.schema.PropertySetType.property_types:type_name -> monopolydeal.schema.PropertyType
+	13, // 10: monopolydeal.schema.PlayProperty.property:type_name -> monopolydeal.schema.PropertyType
+	12, // 11: monopolydeal.schema.PlayMoney.card:type_name -> monopolydeal.schema.Card
+	12, // 12: monopolydeal.schema.PassGoResponse.cards:type_name -> monopolydeal.schema.Card
+	12, // 13: monopolydeal.schema.ItsMyBirthdayResponse.cards:type_name -> monopolydeal.schema.Card
+	14, // 14: monopolydeal.schema.House.property_set:type_name -> monopolydeal.schema.PropertySetType
+	13, // 15: monopolydeal.schema.SlyDeal.property:type_name -> monopolydeal.schema.PropertyType
+	13, // 16: monopolydeal.schema.ForcedDeal.source_property:type_name -> monopolydeal.schema.PropertyType
+	13, // 17: monopolydeal.schema.ForcedDeal.target_property:type_name -> monopolydeal.schema.PropertyType
+	12, // 18: monopolydeal.schema.DebtCollectorResponse.cards:type_name -> monopolydeal.schema.Card
+	14, // 19: monopolydeal.schema.Hotel.property_set:type_name -> monopolydeal.schema.PropertySetType
+	14, // 20: monopolydeal.schema.DealBreaker.property_set:type_name -> monopolydeal.schema.PropertySetType
+	12, // 21: monopolydeal.schema.Rent.card:type_name -> monopolydeal.schema.Card
+	12, // 22: monopolydeal.schema.RentResponse.cards:type_name -> monopolydeal.schema.Card
+	12, // 23: monopolydeal.schema.WildRentResponse.cards:type_name -> monopolydeal.schema.Card
+	5,  // 24: monopolydeal.schema.ClientMessage.ping:type_name -> monopolydeal.schema.Ping
+	37, // 25: monopolydeal.schema.ClientMessage.game_message:type_name -> monopolydeal.schema.ClientGameMessage
+	8,  // 26: monopolydeal.schema.ServerRoomMessage.room_created:type_name -> monopolydeal.schema.RoomCreated
+	9,  // 27: monopolydeal.schema.ServerRoomMessage.player_joined_room:type_name -> monopolydeal.schema.PlayerJoinedRoom
+	10, // 28: monopolydeal.schema.ServerRoomMessage.player_left_room:type_name -> monopolydeal.schema.PlayerLeftRoom
+	5,  // 29: monopolydeal.schema.ServerMessage.ping:type_name -> monopolydeal.schema.Ping
+	39, // 30: monopolydeal.schema.ServerMessage.room_message:type_name -> monopolydeal.schema.ServerRoomMessage
+	40, // 31: monopolydeal.schema.ServerMessage.game_message:type_name -> monopolydeal.schema.ServerGameMessage
+	32, // [32:32] is the sub-list for method output_type
+	32, // [32:32] is the sub-list for method input_type
+	32, // [32:32] is the sub-list for extension type_name
+	32, // [32:32] is the sub-list for extension extendee
+	0,  // [0:32] is the sub-list for field type_name
 }
 
 func init() { file_schema_proto_init() }
@@ -3419,42 +2788,26 @@ func file_schema_proto_init() {
 	if File_schema_proto != nil {
 		return
 	}
-	file_schema_proto_msgTypes[11].OneofWrappers = []any{
+	file_schema_proto_msgTypes[5].OneofWrappers = []any{}
+	file_schema_proto_msgTypes[7].OneofWrappers = []any{
 		(*Card_PureProperty)(nil),
 		(*Card_WildProperty)(nil),
 		(*Card_Money)(nil),
 		(*Card_Action)(nil),
 		(*Card_Rent)(nil),
 	}
-	file_schema_proto_msgTypes[12].OneofWrappers = []any{}
-	file_schema_proto_msgTypes[36].OneofWrappers = []any{
-		(*ClientLobbyMessage_CreateRoom)(nil),
-		(*ClientLobbyMessage_JoinRoom)(nil),
-	}
-	file_schema_proto_msgTypes[37].OneofWrappers = []any{
-		(*ClientRoomMessage_LeaveRoom)(nil),
-	}
-	file_schema_proto_msgTypes[39].OneofWrappers = []any{
+	file_schema_proto_msgTypes[8].OneofWrappers = []any{}
+	file_schema_proto_msgTypes[33].OneofWrappers = []any{
 		(*ClientMessage_Ping)(nil),
-		(*ClientMessage_LobbyMessage)(nil),
-		(*ClientMessage_RoomMessage)(nil),
 		(*ClientMessage_GameMessage)(nil),
 	}
-	file_schema_proto_msgTypes[40].OneofWrappers = []any{
-		(*ServerLobbyMessage_RoomCreated)(nil),
-		(*ServerLobbyMessage_RoomDeleted)(nil),
-		(*ServerLobbyMessage_PlayerJoinedRoom)(nil),
-		(*ServerLobbyMessage_PlayerLeftRoom)(nil),
-	}
-	file_schema_proto_msgTypes[41].OneofWrappers = []any{
+	file_schema_proto_msgTypes[34].OneofWrappers = []any{
 		(*ServerRoomMessage_RoomCreated)(nil),
 		(*ServerRoomMessage_PlayerJoinedRoom)(nil),
 		(*ServerRoomMessage_PlayerLeftRoom)(nil),
 	}
-	file_schema_proto_msgTypes[43].OneofWrappers = []any{
+	file_schema_proto_msgTypes[36].OneofWrappers = []any{
 		(*ServerMessage_Ping)(nil),
-		(*ServerMessage_Error)(nil),
-		(*ServerMessage_LobbyMessage)(nil),
 		(*ServerMessage_RoomMessage)(nil),
 		(*ServerMessage_GameMessage)(nil),
 	}
@@ -3463,8 +2816,8 @@ func file_schema_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_schema_proto_rawDesc), len(file_schema_proto_rawDesc)),
-			NumEnums:      6,
-			NumMessages:   44,
+			NumEnums:      5,
+			NumMessages:   37,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

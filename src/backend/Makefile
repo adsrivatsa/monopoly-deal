@@ -23,3 +23,6 @@ redisup:
 redisdown:
 	@docker stop redis || true
 	@docker rm redis || true
+
+gen:
+	sqlc generate

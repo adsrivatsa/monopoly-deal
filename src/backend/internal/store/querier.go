@@ -6,12 +6,28 @@ package store
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
 	CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error)
+	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
+	CreateRoomPlayer(ctx context.Context, arg CreateRoomPlayerParams) (RoomPlayer, error)
+	DecrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
+	DeleteRoom(ctx context.Context, roomID uuid.UUID) error
+	DeleteRoomPlayer(ctx context.Context, arg DeleteRoomPlayerParams) error
+	GetOldestRoomPlayer(ctx context.Context, roomID uuid.UUID) (RoomPlayer, error)
 	GetPlayer(ctx context.Context, arg GetPlayerParams) (Player, error)
+	GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Player, error)
+	GetRoom(ctx context.Context, roomID uuid.UUID) (Room, error)
+	GetRoomPlayer(ctx context.Context, playerID uuid.UUID) (RoomPlayer, error)
+	IncrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
+	ListRoomPlayers(ctx context.Context, arg ListRoomPlayersParams) ([]ListRoomPlayersRow, error)
 	UpdatePlayer(ctx context.Context, arg UpdatePlayerParams) (Player, error)
+	UpdateRoomCapacity(ctx context.Context, arg UpdateRoomCapacityParams) (Room, error)
+	UpdateRoomOccupied(ctx context.Context, arg UpdateRoomOccupiedParams) (Room, error)
+	UpdateRoomPlayerHost(ctx context.Context, arg UpdateRoomPlayerHostParams) (RoomPlayer, error)
 }
 
 var _ Querier = (*Queries)(nil)

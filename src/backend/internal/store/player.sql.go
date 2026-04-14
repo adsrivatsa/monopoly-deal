@@ -12,8 +12,8 @@ import (
 )
 
 const createPlayer = `-- name: CreatePlayer :one
-INSERT INTO player(display_name, email, image_url)
-VALUES ($1, $2, $3)
+   INSERT INTO player(display_name, email, image_url)
+   VALUES ($1, $2, $3)
 RETURNING player_id, display_name, email, image_url, refresh_token_id
 `
 
@@ -38,10 +38,10 @@ func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Pla
 
 const getPlayer = `-- name: GetPlayer :one
 SELECT player_id, display_name, email, image_url, refresh_token_id
-FROM player
-WHERE (player_id = $1 OR $1 IS NULL)
-  AND (email = $2 OR $2 IS NULL)
-  AND NOT ($1 IS NULL AND $2 IS NULL)
+  FROM player
+ WHERE (player_id = $1 OR $1 IS NULL)
+   AND (email = $2 OR $2 IS NULL)
+   AND NOT ($1 IS NULL AND $2 IS NULL)
 `
 
 type GetPlayerParams struct {
@@ -62,10 +62,42 @@ func (q *Queries) GetPlayer(ctx context.Context, arg GetPlayerParams) (Player, e
 	return i, err
 }
 
+const getPlayers = `-- name: GetPlayers :many
+SELECT player_id, display_name, email, image_url, refresh_token_id
+  FROM player
+ WHERE (played_id = ANY ($1::uuid[]))
+`
+
+func (q *Queries) GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Player, error) {
+	rows, err := q.db.Query(ctx, getPlayers, playerIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Player{}
+	for rows.Next() {
+		var i Player
+		if err := rows.Scan(
+			&i.PlayerID,
+			&i.DisplayName,
+			&i.Email,
+			&i.ImageUrl,
+			&i.RefreshTokenID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updatePlayer = `-- name: UpdatePlayer :one
-UPDATE player
-SET display_name = $1
-WHERE player_id = $2
+   UPDATE player
+      SET display_name = $1
+    WHERE player_id = $2
 RETURNING player_id, display_name, email, image_url, refresh_token_id
 `
 

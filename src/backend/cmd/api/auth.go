@@ -49,7 +49,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := s.controller.GetPlayer(ctx, tp, service.GetPlayerParams{})
+	_, err := s.services.GetPlayer(ctx, tp, service.GetPlayerParams{})
 	if err == nil {
 		fullURL, err := url.JoinPath(s.cfg.FrontendDomain, s.cfg.FrontendLobbyRoute)
 		if err != nil {
@@ -105,7 +105,7 @@ func (s *Server) LoginCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	args := service.GetPlayerParams{Email: &oauthUser.Email}
-	p, err := s.controller.GetPlayer(ctx, token.Payload{}, args)
+	p, err := s.services.GetPlayer(ctx, token.Payload{}, args)
 	if err != nil {
 		// create user
 		args := service.CreatePlayerParams{
@@ -113,7 +113,7 @@ func (s *Server) LoginCallback(w http.ResponseWriter, r *http.Request) {
 			Email:       oauthUser.Email,
 			ImageUrl:    oauthUser.AvatarURL,
 		}
-		p, err = s.controller.CreatePlayer(ctx, args)
+		p, err = s.services.CreatePlayer(ctx, args)
 		if err != nil {
 			ErrorHTTP(w, err)
 			return
@@ -163,7 +163,7 @@ func (s *Server) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := s.controller.GetPlayer(ctx, tp, service.GetPlayerParams{})
+	p, err := s.services.GetPlayer(ctx, tp, service.GetPlayerParams{})
 	if err != nil {
 		ErrorHTTP(w, err)
 		return

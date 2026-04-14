@@ -25,21 +25,21 @@ import (
 
 const (
 	PROVIDER = "provider"
+	ROOM_ID  = "room_id"
 )
-
-var upgrader = websocket.Upgrader{}
 
 type Server struct {
 	cfg         config.Config
 	logger      *slog.Logger
-	controller  *service.Controller
+	services    *service.Controller
 	router      *chi.Mux
 	tokenMaker  token.Maker
 	cookieStore *sessions.CookieStore
 	sessionName string
 
-	lobbyMu      sync.Mutex
-	lobbySockets map[uuid.UUID]*socket
+	upgrader      *websocket.Upgrader
+	roomSocketsMu sync.Mutex
+	roomSockets   map[uuid.UUID]*socket
 }
 
 func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool, client *redis.Client) *Server {
@@ -50,9 +50,11 @@ func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool, clien
 	cookieStore := sessions.NewCookieStore([]byte(cfg.CookieSecret))
 	cookieStore.Options = &sessions.Options{
 		Path:     "/",
+		Domain:   "",
 		MaxAge:   100 * 365 * 24 * 60 * 60,
 		HttpOnly: true,
 		Secure:   cfg.IsProduction,
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	durations := map[token.TokenType]time.Duration{
@@ -64,12 +66,18 @@ func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool, clien
 	s := &Server{
 		cfg:         cfg,
 		logger:      logger,
-		controller:  service.NewController(cfg, pool, client),
+		services:    service.NewController(cfg, pool, client),
 		tokenMaker:  tokenMaker,
 		cookieStore: cookieStore,
 		sessionName: sessionName,
 
-		lobbySockets: make(map[uuid.UUID]*socket),
+		upgrader: &websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				origin := r.Header.Get("Origin")
+				return origin == cfg.FrontendDomain || !cfg.IsProduction
+			},
+		},
+		roomSockets: make(map[uuid.UUID]*socket),
 	}
 
 	s.addRoutes()
@@ -118,7 +126,8 @@ func (s *Server) addRoutes() {
 	router.Route("/", func(r chi.Router) {
 		r.Use(tokenMiddleware(s.tokenMaker, s.cookieStore, s.sessionName, token.AccessToken))
 
-		r.Mount("/lobby", s.lobbyRoutes())
+		r.Mount("/player", s.playerRoutes())
+		r.Mount("/room", s.roomRoutes())
 	})
 
 	s.router = router

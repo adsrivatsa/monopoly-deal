@@ -5,6 +5,8 @@
 package store
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -14,4 +16,20 @@ type Player struct {
 	Email          string    `json:"email"`
 	ImageUrl       string    `json:"image_url"`
 	RefreshTokenID uuid.UUID `json:"refresh_token_id"`
+}
+
+type Room struct {
+	RoomID      uuid.UUID `json:"room_id"`
+	DisplayName string    `json:"display_name"`
+	Capacity    int32     `json:"capacity"`
+	Occupied    int32     `json:"occupied"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+type RoomPlayer struct {
+	RoomID   uuid.UUID `json:"room_id"`
+	PlayerID uuid.UUID `json:"player_id"`
+	IsReady  bool      `json:"is_ready"`
+	IsHost   bool      `json:"is_host"`
+	JoinedAt time.Time `json:"joined_at"`
 }
