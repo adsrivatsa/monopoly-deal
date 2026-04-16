@@ -1,4 +1,4 @@
-module monopoly-deal
+module fun-kames
 
 go 1.25.4
 

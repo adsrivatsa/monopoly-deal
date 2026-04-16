@@ -1,10 +1,13 @@
 package main
 
 import (
-	"monopoly-deal/internal/errors"
-	"monopoly-deal/internal/schema"
-	"monopoly-deal/internal/service"
-	"monopoly-deal/internal/token"
+	"context"
+	"fmt"
+	"fun-kames/internal/errors"
+	game_settings "fun-kames/internal/game-settings"
+	"fun-kames/internal/schema"
+	"fun-kames/internal/service"
+	"fun-kames/internal/token"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -14,10 +17,13 @@ import (
 func (s *Server) roomRoutes() *chi.Mux {
 	router := chi.NewRouter()
 
+	router.Get("/", s.GetRoom)
 	router.Post("/list", s.ListRooms)
 	router.Post("/", s.CreateRoom)
-	router.Get("/join/{"+ROOM_ID+"}", s.JoinRoom)
-	router.Get("/leave", s.LeaveRoom)
+	router.Patch("/join/{"+ROOM_ID+"}", s.JoinRoom)
+	router.Patch("/leave", s.LeaveRoom)
+	router.Patch("/ready", s.ToggleIsReady)
+	router.Put("/settings", s.UpdateRoomSettings)
 	router.Get("/socket", s.RoomSocket)
 
 	return router
@@ -44,7 +50,25 @@ func (s *Server) ListRooms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteHTTP(w, http.StatusOK, ListRoomRes(rooms))
+	WriteHTTP(w, http.StatusOK, rooms)
+}
+
+func (s *Server) GetRoom(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	tp, err := tokenFromRequest(r, token.AccessToken)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	room, err := s.services.GetRoom(ctx, tp)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	WriteHTTP(w, http.StatusOK, room)
 }
 
 func (s *Server) CreateRoom(w http.ResponseWriter, r *http.Request) {
@@ -62,16 +86,30 @@ func (s *Server) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	settings, err := game_settings.ParseSettings(args.Game, args.Settings)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	err = Validate(settings.Raw())
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
 	room, err := s.services.CreateRoom(ctx, tp, service.CreateRoomParams{
 		DisplayName: args.DisplayName,
 		Capacity:    int32(args.Capacity),
+		Game:        args.Game,
+		Settings:    args.Settings,
 	})
 	if err != nil {
 		ErrorHTTP(w, err)
 		return
 	}
 
-	WriteHTTP(w, http.StatusOK, Room(room))
+	WriteHTTP(w, http.StatusOK, room)
 }
 
 func (s *Server) JoinRoom(w http.ResponseWriter, r *http.Request) {
@@ -117,6 +155,64 @@ func (s *Server) LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	WriteHTTP(w, http.StatusOK, nil)
 }
 
+func (s *Server) ToggleIsReady(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	tp, err := tokenFromRequest(r, token.AccessToken)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	err = s.services.ToggleIsReady(ctx, tp)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	WriteHTTP(w, http.StatusOK, nil)
+}
+
+func (s *Server) UpdateRoomSettings(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	tp, err := tokenFromRequest(r, token.AccessToken)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	args, err := ReadAndValidate[UpdateRoomSettingsParams](w, r)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	settings, err := game_settings.ParseSettings(args.Game, args.Settings)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	err = Validate(settings.Raw())
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	err = s.services.UpdateRoomSettings(ctx, tp, service.UpdateRoomSettingsParams{
+		Capacity: int32(args.Capacity),
+		Game:     args.Game,
+		Settings: args.Settings,
+	})
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	WriteHTTP(w, http.StatusOK, nil)
+}
+
 func (s *Server) RoomSocket(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -132,7 +228,7 @@ func (s *Server) RoomSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sock := newSocket(conn, ctx)
+	sock, ctx := newSocket(conn, ctx)
 
 	s.roomSocketsMu.Lock()
 	oldSock, ok := s.roomSockets[tp.PlayerID]
@@ -141,8 +237,16 @@ func (s *Server) RoomSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	s.roomSockets[tp.PlayerID] = sock
 	s.roomSocketsMu.Unlock()
+	defer func() {
+		s.roomSocketsMu.Lock()
+		if s2, ok := s.roomSockets[tp.PlayerID]; ok && s2 == oldSock {
+			delete(s.roomSockets, tp.PlayerID)
+		}
+		s.roomSocketsMu.Unlock()
+	}()
 
-	go s.foreverPing(ctx, sock)
+	go s.ping(ctx, sock)
+	go s.handleClientRoomMessages(ctx, sock, tp)
 
 	callback := func(message *schema.ServerMessage) {
 		sock.send(message)
@@ -152,5 +256,31 @@ func (s *Server) RoomSocket(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		sock.error(err)
 		return
+	}
+}
+
+func (s *Server) handleClientRoomMessages(ctx context.Context, sock *socket, tp token.Payload) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		msg := sock.read()
+		if msg == nil {
+			return
+		}
+
+		switch p := msg.GetPayload().(type) {
+		case *schema.ClientMessage_RoomMessage:
+			err := s.services.HandleRoomEvent(ctx, tp, p)
+			if err != nil {
+				fmt.Println(err)
+			}
+		default:
+			sock.error(errors.InvalidMessageType[schema.ClientMessage]())
+			return
+		}
 	}
 }

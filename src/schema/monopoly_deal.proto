@@ -1,49 +1,8 @@
 syntax = "proto3";
 
-package monopolydeal.schema;
+package funkames.schema;
 
-option go_package = "monopoly-deal/backend/internal/schema;schema";
-
-// generic
-message Ping {
-  int64 time_unix_ms = 1;
-}
-
-// room
-message Player {
-  string player_id = 1;
-  string display_name = 2;
-  string avatar_url = 3;
-  bool is_ready = 4;
-  bool is_host = 5;
-  int64 joined_at = 6;
-}
-
-message Room {
-  string room_id = 1;
-  string display_name = 2;
-  repeated Player players = 3;
-  int32 capacity = 4;
-}
-
-message RoomCreated {
-  Room room = 1;
-}
-
-message PlayerJoinedRoom {
-  string room_id = 1;
-  Player player = 2;
-}
-
-message PlayerLeftRoom {
-  string room_id = 1;
-  string played_id = 2;
-  optional string new_host_player_id = 3;
-}
-
-message RoomDeleted {
-  string room_id = 1;
-}
+option go_package = "funkames/backend/internal/schema;schema";
 
 // gameplay
 enum PurePropertyType {
@@ -238,38 +197,12 @@ message WildRentResponse {
   bool said_no = 3;
 }
 
-message ClientGameMessage {
+message ClientMonopolyDealMessage {
 
 }
 
-message ClientMessage {
-  oneof payload {
-    Ping ping = 1;
+message ServerMonopolyDealMessage {
 
-    ClientGameMessage game_message = 12;
-  }
-}
-
-
-message ServerRoomMessage {
-  oneof payload {
-    RoomCreated room_created = 1;
-    PlayerJoinedRoom player_joined_room = 2;
-    PlayerLeftRoom player_left_room = 3;
-  }
-}
-
-message ServerGameMessage {
-
-}
-
-message ServerMessage {
-  oneof payload {
-    Ping ping = 1;
-
-    ServerRoomMessage room_message = 10;
-    ServerGameMessage game_message = 11;
-  }
 }
 
 //

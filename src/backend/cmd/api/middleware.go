@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"monopoly-deal/internal/errors"
-	"monopoly-deal/internal/token"
+	"fun-kames/internal/errors"
+	"fun-kames/internal/token"
 	"net/http"
 
 	"github.com/gorilla/sessions"

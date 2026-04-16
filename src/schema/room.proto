@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package funkames.schema;
+
+option go_package = "funkames/backend/internal/schema;schema";
+
+message Player {
+  string player_id = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  bool is_ready = 4;
+  bool is_host = 5;
+  int64 joined_at = 6;
+}
+
+enum Game {
+  MonopolyDeal = 0;
+}
+
+message Room {
+  string room_id = 1;
+  string display_name = 2;
+  repeated Player players = 3;
+  int32 capacity = 4;
+  int32 occupied = 5;
+  Game game = 6;
+  string settings = 7;
+}
+
+message RoomCreated {
+  Room room = 1;
+}
+
+message PlayerJoinedRoom {
+  string room_id = 1;
+  Player player = 2;
+}
+
+message PlayerLeftRoom {
+  string room_id = 1;
+  string played_id = 2;
+  optional string new_host_player_id = 3;
+}
+
+message RoomDeleted {
+  string room_id = 1;
+}
+
+message Chat {
+  string payload = 1;
+}
+
+message ChatReceived {
+  string player_id = 1;
+  string payload = 2;
+}
+
+message PlayerToggledReady {
+  string player_id = 1;
+  bool is_ready = 2;
+}
+
+message SettingsUpdated {
+  int32 capacity = 1;
+  Game game = 2;
+  string settings = 3;
+}
+
+message ServerRoomMessage {
+  oneof payload {
+    RoomCreated room_created = 1;
+    PlayerJoinedRoom player_joined_room = 2;
+    PlayerLeftRoom player_left_room = 3;
+    ChatReceived chat_received = 4;
+    PlayerToggledReady player_toggled_ready = 5;
+    SettingsUpdated settings_updated = 6;
+  }
+}
+
+message ClientRoomMessage {
+  oneof payload {
+    Chat chat = 1;
+  }
+}

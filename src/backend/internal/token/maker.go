@@ -3,7 +3,7 @@ package token
 import (
 	"encoding/json"
 	stderrors "errors"
-	"monopoly-deal/internal/errors"
+	"fun-kames/internal/errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"

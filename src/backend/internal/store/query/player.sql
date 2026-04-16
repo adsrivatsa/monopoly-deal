@@ -20,3 +20,11 @@ RETURNING *;
 SELECT *
   FROM player
  WHERE (played_id = ANY (@player_ids::uuid[]));
+
+-- name: GetPlayersByRoom :many
+SELECT p.*, rp.is_ready, rp.is_host
+  FROM player p
+           INNER JOIN room_player rp
+           ON rp.player_id = p.player_id
+ WHERE rp.room_id = $1
+ ORDER BY rp.joined_at;

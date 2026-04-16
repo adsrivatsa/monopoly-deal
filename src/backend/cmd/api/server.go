@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fun-kames/internal/config"
+	"fun-kames/internal/service"
+	"fun-kames/internal/token"
 	"log/slog"
-	"monopoly-deal/internal/config"
-	"monopoly-deal/internal/service"
-	"monopoly-deal/internal/token"
 	"net/http"
 	"sync"
 	"time"

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"monopoly-deal/internal/service"
+	"fun-kames/internal/store"
 
 	"github.com/google/uuid"
 )
@@ -18,17 +18,26 @@ type Player struct {
 	ImageUrl    string    `json:"image_url"`
 }
 
-type CreateRoomParams struct {
+type UpdatePlayerParams struct {
 	DisplayName string `json:"display_name"`
-	Capacity    int    `json:"capacity" validate:"min=2,max=5"`
 }
 
-type Room = service.Room
-
-type ListRoomRes = service.ListRoomsRes
+type CreateRoomParams struct {
+	DisplayName string     `json:"display_name" validate:"required"`
+	Capacity    int        `json:"capacity" validate:"min=2,max=15"`
+	Game        store.Game `json:"game" validate:"required,game"`
+	Settings    string     `json:"settings" validate:"required,json"`
+}
 
 type ListRoomsParams struct {
-	Limit  int32   `json:"limit" validate:"min=0,max=100"`
-	Offset int32   `json:"offset" validate:"min=0"`
-	Search *string `json:"search"`
+	Limit  int32       `json:"limit" validate:"min=0,max=100"`
+	Offset int32       `json:"offset" validate:"min=0"`
+	Search *string     `json:"search"`
+	Game   *store.Game `json:"game" validate:"omitempty,game"`
+}
+
+type UpdateRoomSettingsParams struct {
+	Capacity int        `json:"capacity" validate:"min=2,max=15"`
+	Game     store.Game `json:"game" validate:"game"`
+	Settings string     `json:"settings" validate:"required,json"`
 }

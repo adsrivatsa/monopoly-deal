@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fun-kames/internal/config"
+	"fun-kames/internal/event"
+	"fun-kames/internal/store"
 	"log/slog"
-	"monopoly-deal/internal/config"
-	"monopoly-deal/internal/event"
-	"monopoly-deal/internal/store"
 	"os"
 	"time"
 )

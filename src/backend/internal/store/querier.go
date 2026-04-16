@@ -17,17 +17,21 @@ type Querier interface {
 	DecrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
 	DeleteRoom(ctx context.Context, roomID uuid.UUID) error
 	DeleteRoomPlayer(ctx context.Context, arg DeleteRoomPlayerParams) error
-	GetOldestRoomPlayer(ctx context.Context, roomID uuid.UUID) (RoomPlayer, error)
+	GetOldestRoomPlayer(ctx context.Context, arg GetOldestRoomPlayerParams) (RoomPlayer, error)
 	GetPlayer(ctx context.Context, arg GetPlayerParams) (Player, error)
 	GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Player, error)
+	GetPlayersByRoom(ctx context.Context, roomID uuid.UUID) ([]GetPlayersByRoomRow, error)
 	GetRoom(ctx context.Context, roomID uuid.UUID) (Room, error)
+	GetRoomByPlayer(ctx context.Context, playerID uuid.UUID) (Room, error)
 	GetRoomPlayer(ctx context.Context, playerID uuid.UUID) (RoomPlayer, error)
 	IncrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
-	ListRoomPlayers(ctx context.Context, arg ListRoomPlayersParams) ([]ListRoomPlayersRow, error)
+	ListRooms(ctx context.Context, arg ListRoomsParams) ([]ListRoomsRow, error)
+	ToggleRoomPlayerIsReady(ctx context.Context, arg ToggleRoomPlayerIsReadyParams) (RoomPlayer, error)
 	UpdatePlayer(ctx context.Context, arg UpdatePlayerParams) (Player, error)
 	UpdateRoomCapacity(ctx context.Context, arg UpdateRoomCapacityParams) (Room, error)
 	UpdateRoomOccupied(ctx context.Context, arg UpdateRoomOccupiedParams) (Room, error)
 	UpdateRoomPlayerHost(ctx context.Context, arg UpdateRoomPlayerHostParams) (RoomPlayer, error)
+	UpdateRoomSettings(ctx context.Context, arg UpdateRoomSettingsParams) (Room, error)
 }
 
 var _ Querier = (*Queries)(nil)

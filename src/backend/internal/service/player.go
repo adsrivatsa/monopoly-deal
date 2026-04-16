@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"monopoly-deal/internal/errors"
-	"monopoly-deal/internal/store"
-	"monopoly-deal/internal/token"
+	"fun-kames/internal/errors"
+	"fun-kames/internal/store"
+	"fun-kames/internal/token"
 )
 
 func (c *Controller) CreatePlayer(ctx context.Context, args CreatePlayerParams) (Player, error) {
@@ -35,9 +35,9 @@ func (c *Controller) GetPlayer(ctx context.Context, tp token.Payload, args GetPl
 	return p, nil
 }
 
-func (c *Controller) UpdatePlayer(ctx context.Context, tp token.Payload, name string) (Player, error) {
+func (c *Controller) UpdatePlayer(ctx context.Context, tp token.Payload, displayName string) (Player, error) {
 	p, err := c.store.UpdatePlayer(ctx, store.UpdatePlayerParams{
-		DisplayName: name,
+		DisplayName: displayName,
 		PlayerID:    tp.PlayerID,
 	})
 	if err != nil {

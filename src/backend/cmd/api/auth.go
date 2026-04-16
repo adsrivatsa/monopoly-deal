@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"monopoly-deal/internal/errors"
-	"monopoly-deal/internal/service"
-	"monopoly-deal/internal/token"
+	"fun-kames/internal/errors"
+	"fun-kames/internal/service"
+	"fun-kames/internal/token"
 	"net/http"
 	"net/url"
 

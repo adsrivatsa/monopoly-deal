@@ -3,7 +3,7 @@ package event
 import (
 	"context"
 	"fmt"
-	"monopoly-deal/internal/config"
+	"fun-kames/internal/config"
 	"time"
 
 	"github.com/go-redis/redis/v8"

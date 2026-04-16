@@ -3,7 +3,7 @@ package event
 import (
 	"context"
 	"fmt"
-	"monopoly-deal/internal/schema"
+	"fun-kames/internal/schema"
 
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/proto"

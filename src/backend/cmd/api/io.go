@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
+	"fun-kames/internal/errors"
+	"fun-kames/internal/store"
 	"io"
-	"monopoly-deal/internal/errors"
 	"net/http"
 	"reflect"
 	"strings"
@@ -15,8 +16,44 @@ import (
 
 var validate *validator.Validate
 
+type Validatable interface {
+	Scan(interface{}) error
+	Valid() bool
+}
+
+func OneOfEnum[T Validatable](fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+
+	var t T
+	underlyingType := reflect.TypeOf(t).Elem()
+
+	concreteType := reflect.PointerTo(underlyingType)
+	newValue := reflect.New(concreteType.Elem()).Interface()
+
+	instance, ok := newValue.(T)
+	if !ok {
+		return false
+	}
+
+	if err := instance.Scan(value); err != nil {
+		return false
+	}
+
+	return instance.Valid()
+}
+
+var DBEnumValidators = map[string]func(fl validator.FieldLevel) bool{
+	"game": OneOfEnum[*store.Game],
+}
+
 func init() {
 	validate = validator.New()
+
+	for key, val := range DBEnumValidators {
+		if err := validate.RegisterValidation(key, val); err != nil {
+			panic(err)
+		}
+	}
 }
 
 var maxBytes = 10 << 20
@@ -47,10 +84,10 @@ func ReadAndValidate[I any](w http.ResponseWriter, r *http.Request) (I, error) {
 		return data, err
 	}
 
-	return data, ValidateRequest(data)
+	return data, Validate(data)
 }
 
-func ValidateRequest(requestPayload any) error {
+func Validate(requestPayload any) error {
 	err := validate.Struct(requestPayload)
 	if err != nil {
 		var invalidValidationError *validator.InvalidValidationError

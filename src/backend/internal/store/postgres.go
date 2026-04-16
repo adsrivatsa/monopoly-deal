@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"monopoly-deal/internal/config"
+	"fun-kames/internal/config"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"

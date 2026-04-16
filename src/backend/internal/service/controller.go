@@ -1,9 +1,9 @@
 package service
 
 import (
-	"monopoly-deal/internal/config"
-	"monopoly-deal/internal/event"
-	"monopoly-deal/internal/store"
+	"fun-kames/internal/config"
+	"fun-kames/internal/event"
+	"fun-kames/internal/store"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5/pgxpool"

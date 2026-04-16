@@ -5,10 +5,67 @@
 package store
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type Game string
+
+const (
+	GameMonopolyDeal Game = "monopoly_deal"
+)
+
+func (e *Game) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Game(s)
+	case string:
+		*e = Game(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Game: %T", src)
+	}
+	return nil
+}
+
+type NullGame struct {
+	Game  Game `json:"game"`
+	Valid bool `json:"valid"` // Valid is true if Game is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullGame) Scan(value interface{}) error {
+	if value == nil {
+		ns.Game, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Game.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullGame) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Game), nil
+}
+
+func (e Game) Valid() bool {
+	switch e {
+	case GameMonopolyDeal:
+		return true
+	}
+	return false
+}
+
+func AllGameValues() []Game {
+	return []Game{
+		GameMonopolyDeal,
+	}
+}
 
 type Player struct {
 	PlayerID       uuid.UUID `json:"player_id"`
@@ -23,6 +80,8 @@ type Room struct {
 	DisplayName string    `json:"display_name"`
 	Capacity    int32     `json:"capacity"`
 	Occupied    int32     `json:"occupied"`
+	Game        Game      `json:"game"`
+	Settings    []byte    `json:"settings"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 

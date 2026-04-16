@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"monopoly-deal/internal/schema"
+	"fun-kames/internal/schema"
 	"sync"
 	"time"
 
@@ -20,7 +20,7 @@ type socket struct {
 	closed  sync.Once
 }
 
-func newSocket(conn *websocket.Conn, parentCtx context.Context) *socket {
+func newSocket(conn *websocket.Conn, parentCtx context.Context) (*socket, context.Context) {
 	ctx, cancel := context.WithCancel(parentCtx)
 
 	s := &socket{
@@ -32,26 +32,31 @@ func newSocket(conn *websocket.Conn, parentCtx context.Context) *socket {
 
 	go s.writeLoop()
 
-	return s
+	return s, ctx
 }
 
 func (s *socket) writeLoop() {
-	for msg := range s.writeCh {
-		_ = s.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
-
-		data, err := proto.Marshal(msg)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		s.writeMu.Lock()
-		err = s.conn.WriteMessage(websocket.BinaryMessage, data)
-		s.writeMu.Unlock()
-
-		if err != nil {
-			fmt.Println(err)
+	for {
+		select {
+		case <-s.ctx.Done():
 			return
+		case msg := <-s.writeCh:
+			_ = s.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+
+			data, err := proto.Marshal(msg)
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+
+			s.writeMu.Lock()
+			err = s.conn.WriteMessage(websocket.BinaryMessage, data)
+			s.writeMu.Unlock()
+
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 	}
 }
@@ -59,8 +64,6 @@ func (s *socket) writeLoop() {
 func (s *socket) close(err error) {
 	s.closed.Do(func() {
 		s.cancel()
-
-		close(s.writeCh)
 
 		s.writeMu.Lock()
 		defer s.writeMu.Unlock()
@@ -83,6 +86,23 @@ func (s *socket) send(msg *schema.ServerMessage) {
 
 	case s.writeCh <- msg:
 	}
+}
+
+func (s *socket) read() *schema.ClientMessage {
+	_, data, err := s.conn.ReadMessage()
+	if err != nil {
+		s.error(err)
+		return nil
+	}
+
+	msg := &schema.ClientMessage{}
+	err = proto.Unmarshal(data, msg)
+	if err != nil {
+		s.error(err)
+		return nil
+	}
+
+	return msg
 }
 
 func (s *socket) error(err error) {

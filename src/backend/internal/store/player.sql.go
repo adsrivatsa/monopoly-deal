@@ -94,6 +94,53 @@ func (q *Queries) GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Play
 	return items, nil
 }
 
+const getPlayersByRoom = `-- name: GetPlayersByRoom :many
+SELECT p.player_id, p.display_name, p.email, p.image_url, p.refresh_token_id, rp.is_ready, rp.is_host
+  FROM player p
+           INNER JOIN room_player rp
+           ON rp.player_id = p.player_id
+ WHERE rp.room_id = $1
+ ORDER BY rp.joined_at
+`
+
+type GetPlayersByRoomRow struct {
+	PlayerID       uuid.UUID `json:"player_id"`
+	DisplayName    string    `json:"display_name"`
+	Email          string    `json:"email"`
+	ImageUrl       string    `json:"image_url"`
+	RefreshTokenID uuid.UUID `json:"refresh_token_id"`
+	IsReady        bool      `json:"is_ready"`
+	IsHost         bool      `json:"is_host"`
+}
+
+func (q *Queries) GetPlayersByRoom(ctx context.Context, roomID uuid.UUID) ([]GetPlayersByRoomRow, error) {
+	rows, err := q.db.Query(ctx, getPlayersByRoom, roomID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetPlayersByRoomRow{}
+	for rows.Next() {
+		var i GetPlayersByRoomRow
+		if err := rows.Scan(
+			&i.PlayerID,
+			&i.DisplayName,
+			&i.Email,
+			&i.ImageUrl,
+			&i.RefreshTokenID,
+			&i.IsReady,
+			&i.IsHost,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updatePlayer = `-- name: UpdatePlayer :one
    UPDATE player
       SET display_name = $1

@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"monopoly-deal/internal/schema"
+	"fun-kames/internal/schema"
 	"time"
 )
 
-func (s *Server) foreverPing(ctx context.Context, sock *socket) {
+func (s *Server) ping(ctx context.Context, sock *socket) {
 	ticker := time.NewTicker(s.cfg.WebsocketPingInterval)
 	defer ticker.Stop()
 
