@@ -20,6 +20,7 @@ import {
   updateRoomSettings,
   type UpdateRoomSettingsParams,
 } from "../api/room";
+import type { ApiErrorPayload } from "../api/client";
 import { getPlayer } from "../api/player";
 import {
   connectRoomSocket,
@@ -41,6 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
+import ErrorModal from "../components/ui/error-modal";
 
 const RoomPage = () => {
   const navigate = useNavigate();
@@ -54,6 +56,7 @@ const RoomPage = () => {
   const [chatValue, setChatValue] = useState("");
   const [players, setPlayers] = useState<ShortPlayer[]>([]);
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
+  const [modalError, setModalError] = useState<ApiErrorPayload | null>(null);
   const [chatMessages, setChatMessages] = useState<
     (
       | {
@@ -351,6 +354,22 @@ const RoomPage = () => {
     }
   };
 
+  const handleStartGame = async (): Promise<void> => {
+    const everyoneReady =
+      players.length > 0 &&
+      players.every((player) => player.isHost || player.isReady);
+    if (!everyoneReady) {
+      setModalError({
+        message: "Not every player has readied up.",
+        status: 400,
+        code: "PLAYERS_NOT_READY",
+      });
+      return;
+    }
+
+    return;
+  };
+
   const buildSettingsPayload = (
     selectedGame: Game,
     settingValues: GameSettingSelectValue[],
@@ -588,7 +607,7 @@ const RoomPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {players.map((player) => (
+                {players.map((player) => (
                     <TableRow key={player.id}>
                       <TableCell>
                         <div className="host-cell">
@@ -612,10 +631,12 @@ const RoomPage = () => {
                         <div className="player-ready-cell">
                           <span
                             className={`player-ready-status${
-                              player.isReady ? " is-ready" : " is-not-ready"
+                              player.isHost || player.isReady
+                                ? " is-ready"
+                                : " is-not-ready"
                             }`}
                           >
-                            {player.isReady ? "Ready" : "Not ready"}
+                            {player.isHost || player.isReady ? "Ready" : "Not ready"}
                           </span>
                         </div>
                       </TableCell>
@@ -630,16 +651,32 @@ const RoomPage = () => {
                 </TableBody>
               </Table>
 
-              <Button
-                size="lg"
-                className="room-ready-button"
-                onClick={() => {
-                  void handleReadyUp();
-                }}
-                disabled={!currentPlayer}
-              >
-                {currentPlayer?.isReady ? "Unready" : "Ready up"}
-              </Button>
+              <div className="room-action-buttons">
+                {!currentPlayer?.isHost ? (
+                  <Button
+                    size="lg"
+                    className="room-ready-button"
+                    onClick={() => {
+                      void handleReadyUp();
+                    }}
+                    disabled={!currentPlayer}
+                  >
+                    {currentPlayer?.isReady ? "Unready" : "Ready up"}
+                  </Button>
+                ) : null}
+
+                {currentPlayer?.isHost ? (
+                  <Button
+                    size="lg"
+                    className="room-start-button"
+                    onClick={() => {
+                      void handleStartGame();
+                    }}
+                  >
+                    Start game
+                  </Button>
+                ) : null}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -708,6 +745,10 @@ const RoomPage = () => {
           </Button>
         </div>
       </section>
+
+      {modalError ? (
+        <ErrorModal error={modalError} onClose={() => setModalError(null)} />
+      ) : null}
     </main>
   );
 };

@@ -503,9 +503,21 @@ h1 {
   color: #dc2626;
 }
 
+.room-action-buttons {
+  display: flex;
+  gap: 0.6rem;
+}
+
 .room-ready-button {
+  flex: 1;
+  min-width: 0;
   width: 100%;
   flex-shrink: 0;
+}
+
+.room-start-button {
+  flex: 1;
+  min-width: 0;
 }
 
 .error-modal-backdrop {
@@ -986,6 +998,10 @@ h1 {
 
   .room-layout {
     grid-template-columns: 1fr;
+  }
+
+  .room-action-buttons {
+    flex-direction: column;
   }
 
   .profile-card {
