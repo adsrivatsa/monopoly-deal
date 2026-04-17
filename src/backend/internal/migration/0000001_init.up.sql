@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS player
         refresh_token_id uuid NOT NULL DEFAULT uuidv7()
     );
 
-CREATE TYPE game AS enum ('monopoly_deal');
+CREATE TYPE game_type AS enum ('monopoly_deal');
 
 CREATE TABLE IF NOT EXISTS room
     (
@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS room
         display_name text NOT NULL,
         capacity int NOT NULL,
         occupied int NOT NULL DEFAULT 1,
-        game game NOT NULL,
-        settings jsonb NOT NULL DEFAULT '{}',
+        game game_type NOT NULL,
+        settings jsonb NOT NULL,
         created_at timestamptz NOT NULL DEFAULT NOW()
     );
 
@@ -34,4 +34,27 @@ CREATE TABLE IF NOT EXISTS room_player
         is_host bool NOT NULL,
         joined_at timestamptz NOT NULL DEFAULT NOW(),
         PRIMARY KEY (room_id, player_id)
+    );
+
+CREATE TABLE IF NOT EXISTS game
+    (
+        game_id uuid
+            PRIMARY KEY DEFAULT uuidv7(),
+        display_name text NOT NULL,
+        game game_type NOT NULL,
+        settings jsonb NOT NULL,
+        game_state jsonb NOT NULL,
+        completed bool NOT NULL DEFAULT FALSE,
+        created_at timestamptz NOT NULL DEFAULT NOW()
+    );
+
+CREATE INDEX idx_game_settings ON game USING gin (settings);
+
+CREATE INDEX idx_game_game_state ON game USING gin (game_state);
+
+CREATE TABLE IF NOT EXISTS game_player
+    (
+        game_id uuid NOT NULL,
+        player_id uuid NOT NULL,
+        PRIMARY KEY (game_id, player_id)
     );

@@ -1,14 +1,7 @@
 package errors
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
-	"net/http"
-	"strings"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Error struct {
@@ -42,104 +35,3 @@ func (e Error) Error() string {
 func (e Error) Unwrap() error {
 	return e.Inner
 }
-
-type ValidationError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
-}
-
-func NewValidationError(field string, message string) ValidationError {
-	return ValidationError{
-		Field:   field,
-		Message: message,
-	}
-}
-
-type ValidationErrors []ValidationError
-
-func (es ValidationErrors) Merge() error {
-	msg := ""
-	for _, e := range es {
-		msg += fmt.Sprintf("%s: %s, ", e.Field, e.Message)
-	}
-	msg = strings.TrimSuffix(msg, ", ")
-	return errors.New(msg)
-}
-
-var (
-	InvalidToken        = NewError("invalid token", http.StatusBadRequest, "TOK001")
-	ExpiredToken        = NewError("expired token", http.StatusUnauthorized, "TOK002")
-	InvalidTokenContent = NewError("invalid token", http.StatusBadRequest, "TOK003")
-	InvalidTokenType    = NewError("invalid token", http.StatusBadRequest, "TOK004")
-)
-
-func InvalidUUID(err error) Error {
-	return NewError("invalid UUID", http.StatusBadRequest, "VAL001", err)
-}
-
-func Unauthenticated(err error) Error {
-	return NewError("unauthenticated", http.StatusBadRequest, "API001", err)
-}
-
-var DuplicateSocket = NewError("duplicate socket created", http.StatusConflict, "API002")
-
-func InvalidMessageType[T any]() Error {
-	var expectedType T
-	msg := fmt.Sprintf("invalid message type, expected type %t", expectedType)
-	return NewError(msg, http.StatusBadRequest, "API003")
-}
-
-func Validation(err error) Error {
-	return NewError("validation error", http.StatusBadRequest, "API004", err)
-}
-
-func Read(err error) Error {
-	return NewError("read error", http.StatusBadRequest, "API005", err)
-}
-
-func Internal(err error) Error {
-	return NewError("internal error", http.StatusInternalServerError, "INT001", err)
-}
-
-type Entity string
-
-const (
-	EntityPlayer     Entity = "player"
-	EntityRoom       Entity = "room"
-	EntityRoomPlayer Entity = "room_player"
-)
-
-type DBViolation string
-
-const (
-	ForeignKeyViolation DBViolation = "23503"
-	UniqueViolation     DBViolation = "23505"
-	NotNullViolation    DBViolation = "23502"
-	NoDataFound         DBViolation = "P0002"
-)
-
-func DBErrorCode(err error) DBViolation {
-	if errors.Is(err, pgx.ErrNoRows) || errors.Is(err, sql.ErrNoRows) {
-		return NoDataFound
-	}
-
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
-		code := DBViolation(pgErr.Code)
-		return code
-	}
-
-	return ""
-}
-
-func EntityNotFound(ent Entity, err ...error) Error {
-	f := fmt.Sprintf("%s not found", ent)
-	return NewError(f, http.StatusNotFound, "SER001", err...)
-}
-
-func EntityAlreadyExists(ent Entity, err ...error) Error {
-	f := fmt.Sprintf("%s already exists", ent)
-	return NewError(f, http.StatusBadRequest, "SER002", err...)
-}
-
-var RoomIsFull = NewError("room is full", http.StatusBadRequest, "SER003")

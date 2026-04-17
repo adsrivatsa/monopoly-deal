@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"fun-kames/internal/engine"
 	"fun-kames/internal/errors"
-	game_settings "fun-kames/internal/game-settings"
 	"fun-kames/internal/schema"
 	"fun-kames/internal/service"
 	"fun-kames/internal/token"
@@ -86,7 +86,7 @@ func (s *Server) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	settings, err := game_settings.ParseSettings(args.Game, args.Settings)
+	settings, err := engine.ParseSettings(args.Game, args.Settings)
 	if err != nil {
 		ErrorHTTP(w, err)
 		return
@@ -188,7 +188,7 @@ func (s *Server) UpdateRoomSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	settings, err := game_settings.ParseSettings(args.Game, args.Settings)
+	settings, err := engine.ParseSettings(args.Game, args.Settings)
 	if err != nil {
 		ErrorHTTP(w, err)
 		return

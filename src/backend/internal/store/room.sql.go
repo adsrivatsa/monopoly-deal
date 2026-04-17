@@ -19,10 +19,10 @@ RETURNING room_id, display_name, capacity, occupied, game, settings, created_at
 `
 
 type CreateRoomParams struct {
-	DisplayName string `json:"display_name"`
-	Capacity    int32  `json:"capacity"`
-	Game        Game   `json:"game"`
-	Settings    []byte `json:"settings"`
+	DisplayName string   `json:"display_name"`
+	Capacity    int32    `json:"capacity"`
+	Game        GameType `json:"game"`
+	Settings    []byte   `json:"settings"`
 }
 
 func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
@@ -165,10 +165,10 @@ SELECT rp.room_id, rp.player_id, rp.is_ready, rp.is_host, rp.joined_at, r.displa
 `
 
 type ListRoomsParams struct {
-	Limit  int32    `json:"limit"`
-	Offset int32    `json:"offset"`
-	Search *string  `json:"search"`
-	Game   NullGame `json:"game"`
+	Limit  int32        `json:"limit"`
+	Offset int32        `json:"offset"`
+	Search *string      `json:"search"`
+	Game   NullGameType `json:"game"`
 }
 
 type ListRoomsRow struct {
@@ -180,7 +180,7 @@ type ListRoomsRow struct {
 	RoomDisplayName string    `json:"room_display_name"`
 	RoomCapacity    int32     `json:"room_capacity"`
 	RoomOccupied    int32     `json:"room_occupied"`
-	RoomGame        Game      `json:"room_game"`
+	RoomGame        GameType  `json:"room_game"`
 	RoomSettings    []byte    `json:"room_settings"`
 	RoomCreatedAt   time.Time `json:"room_created_at"`
 	HostDisplayName string    `json:"host_display_name"`
@@ -293,7 +293,7 @@ RETURNING room_id, display_name, capacity, occupied, game, settings, created_at
 
 type UpdateRoomSettingsParams struct {
 	Capacity int32     `json:"capacity"`
-	Game     Game      `json:"game"`
+	Game     GameType  `json:"game"`
 	Settings []byte    `json:"settings"`
 	RoomID   uuid.UUID `json:"room_id"`
 }

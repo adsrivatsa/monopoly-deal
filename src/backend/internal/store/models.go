@@ -12,59 +12,74 @@ import (
 	"github.com/google/uuid"
 )
 
-type Game string
+type GameType string
 
 const (
-	GameMonopolyDeal Game = "monopoly_deal"
+	GameTypeMonopolyDeal GameType = "monopoly_deal"
 )
 
-func (e *Game) Scan(src interface{}) error {
+func (e *GameType) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = Game(s)
+		*e = GameType(s)
 	case string:
-		*e = Game(s)
+		*e = GameType(s)
 	default:
-		return fmt.Errorf("unsupported scan type for Game: %T", src)
+		return fmt.Errorf("unsupported scan type for GameType: %T", src)
 	}
 	return nil
 }
 
-type NullGame struct {
-	Game  Game `json:"game"`
-	Valid bool `json:"valid"` // Valid is true if Game is not NULL
+type NullGameType struct {
+	GameType GameType `json:"game_type"`
+	Valid    bool     `json:"valid"` // Valid is true if GameType is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullGame) Scan(value interface{}) error {
+func (ns *NullGameType) Scan(value interface{}) error {
 	if value == nil {
-		ns.Game, ns.Valid = "", false
+		ns.GameType, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.Game.Scan(value)
+	return ns.GameType.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullGame) Value() (driver.Value, error) {
+func (ns NullGameType) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.Game), nil
+	return string(ns.GameType), nil
 }
 
-func (e Game) Valid() bool {
+func (e GameType) Valid() bool {
 	switch e {
-	case GameMonopolyDeal:
+	case GameTypeMonopolyDeal:
 		return true
 	}
 	return false
 }
 
-func AllGameValues() []Game {
-	return []Game{
-		GameMonopolyDeal,
+func AllGameTypeValues() []GameType {
+	return []GameType{
+		GameTypeMonopolyDeal,
 	}
+}
+
+type Game struct {
+	GameID      uuid.UUID `json:"game_id"`
+	DisplayName string    `json:"display_name"`
+	Game        GameType  `json:"game"`
+	Settings    []byte    `json:"settings"`
+	GameState   []byte    `json:"game_state"`
+	Completed   bool      `json:"completed"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+type GamePlayer struct {
+	GameID   uuid.UUID `json:"game_id"`
+	PlayerID uuid.UUID `json:"player_id"`
 }
 
 type Player struct {
@@ -80,7 +95,7 @@ type Room struct {
 	DisplayName string    `json:"display_name"`
 	Capacity    int32     `json:"capacity"`
 	Occupied    int32     `json:"occupied"`
-	Game        Game      `json:"game"`
+	Game        GameType  `json:"game"`
 	Settings    []byte    `json:"settings"`
 	CreatedAt   time.Time `json:"created_at"`
 }

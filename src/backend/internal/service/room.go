@@ -72,9 +72,9 @@ func (c *Controller) GetRoom(ctx context.Context, tp token.Payload) (LongRoom, e
 }
 
 func (c *Controller) ListRooms(ctx context.Context, args ListRoomsParams) (ListRoomsRes, error) {
-	var game store.NullGame
+	var game store.NullGameType
 	if args.Game != nil {
-		game.Game = *args.Game
+		game.GameType = *args.Game
 		game.Valid = true
 	}
 
@@ -338,6 +338,10 @@ func (c *Controller) UpdateRoomSettings(ctx context.Context, tp token.Payload, a
 			return errors.EntityNotFound(errors.EntityRoom)
 		}
 		return errors.Internal(err)
+	}
+
+	if !rp.IsHost {
+		return errors.PlayerIsNotHost
 	}
 
 	r, err := c.store.UpdateRoomSettings(ctx, store.UpdateRoomSettingsParams{

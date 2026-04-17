@@ -23,21 +23,21 @@ type UpdatePlayerParams struct {
 }
 
 type CreateRoomParams struct {
-	DisplayName string     `json:"display_name" validate:"required"`
-	Capacity    int        `json:"capacity" validate:"min=2,max=15"`
-	Game        store.Game `json:"game" validate:"required,game"`
-	Settings    string     `json:"settings" validate:"required,json"`
+	DisplayName string         `json:"display_name" validate:"required"`
+	Capacity    int            `json:"capacity" validate:"min=2,max=15"`
+	Game        store.GameType `json:"game" validate:"required,game_type"`
+	Settings    string         `json:"settings" validate:"required,json"`
 }
 
 type ListRoomsParams struct {
-	Limit  int32       `json:"limit" validate:"min=0,max=100"`
-	Offset int32       `json:"offset" validate:"min=0"`
-	Search *string     `json:"search"`
-	Game   *store.Game `json:"game" validate:"omitempty,game"`
+	Limit  int32           `json:"limit" validate:"min=0,max=100"`
+	Offset int32           `json:"offset" validate:"min=0"`
+	Search *string         `json:"search"`
+	Game   *store.GameType `json:"game" validate:"omitempty,game_type"`
 }
 
 type UpdateRoomSettingsParams struct {
-	Capacity int        `json:"capacity" validate:"min=2,max=15"`
-	Game     store.Game `json:"game" validate:"game"`
-	Settings string     `json:"settings" validate:"required,json"`
+	Capacity int            `json:"capacity" validate:"min=2,max=15"`
+	Game     store.GameType `json:"game" validate:"game_type"`
+	Settings string         `json:"settings" validate:"required,json"`
 }

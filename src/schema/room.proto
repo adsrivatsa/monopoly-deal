@@ -66,6 +66,8 @@ message SettingsUpdated {
   string settings = 3;
 }
 
+message GameStarted {}
+
 message ServerRoomMessage {
   oneof payload {
     RoomCreated room_created = 1;
@@ -74,6 +76,7 @@ message ServerRoomMessage {
     ChatReceived chat_received = 4;
     PlayerToggledReady player_toggled_ready = 5;
     SettingsUpdated settings_updated = 6;
+    GameStarted game_started = 7;
   }
 }
 

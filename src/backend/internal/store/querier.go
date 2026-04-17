@@ -11,12 +11,15 @@ import (
 )
 
 type Querier interface {
+	CreateGame(ctx context.Context, arg CreateGameParams) (Game, error)
+	CreateGamePlayer(ctx context.Context, arg CreateGamePlayerParams) (GamePlayer, error)
 	CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error)
 	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
 	CreateRoomPlayer(ctx context.Context, arg CreateRoomPlayerParams) (RoomPlayer, error)
 	DecrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
 	DeleteRoom(ctx context.Context, roomID uuid.UUID) error
 	DeleteRoomPlayer(ctx context.Context, arg DeleteRoomPlayerParams) error
+	GetGameByPlayer(ctx context.Context, playerID uuid.UUID) (Game, error)
 	GetOldestRoomPlayer(ctx context.Context, arg GetOldestRoomPlayerParams) (RoomPlayer, error)
 	GetPlayer(ctx context.Context, arg GetPlayerParams) (Player, error)
 	GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Player, error)

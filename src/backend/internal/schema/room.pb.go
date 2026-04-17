@@ -648,6 +648,42 @@ func (x *SettingsUpdated) GetSettings() string {
 	return ""
 }
 
+type GameStarted struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GameStarted) Reset() {
+	*x = GameStarted{}
+	mi := &file_room_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GameStarted) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GameStarted) ProtoMessage() {}
+
+func (x *GameStarted) ProtoReflect() protoreflect.Message {
+	mi := &file_room_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GameStarted.ProtoReflect.Descriptor instead.
+func (*GameStarted) Descriptor() ([]byte, []int) {
+	return file_room_proto_rawDescGZIP(), []int{10}
+}
+
 type ServerRoomMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Payload:
@@ -658,6 +694,7 @@ type ServerRoomMessage struct {
 	//	*ServerRoomMessage_ChatReceived
 	//	*ServerRoomMessage_PlayerToggledReady
 	//	*ServerRoomMessage_SettingsUpdated
+	//	*ServerRoomMessage_GameStarted
 	Payload       isServerRoomMessage_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -665,7 +702,7 @@ type ServerRoomMessage struct {
 
 func (x *ServerRoomMessage) Reset() {
 	*x = ServerRoomMessage{}
-	mi := &file_room_proto_msgTypes[10]
+	mi := &file_room_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -677,7 +714,7 @@ func (x *ServerRoomMessage) String() string {
 func (*ServerRoomMessage) ProtoMessage() {}
 
 func (x *ServerRoomMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_room_proto_msgTypes[10]
+	mi := &file_room_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -690,7 +727,7 @@ func (x *ServerRoomMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerRoomMessage.ProtoReflect.Descriptor instead.
 func (*ServerRoomMessage) Descriptor() ([]byte, []int) {
-	return file_room_proto_rawDescGZIP(), []int{10}
+	return file_room_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ServerRoomMessage) GetPayload() isServerRoomMessage_Payload {
@@ -754,6 +791,15 @@ func (x *ServerRoomMessage) GetSettingsUpdated() *SettingsUpdated {
 	return nil
 }
 
+func (x *ServerRoomMessage) GetGameStarted() *GameStarted {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerRoomMessage_GameStarted); ok {
+			return x.GameStarted
+		}
+	}
+	return nil
+}
+
 type isServerRoomMessage_Payload interface {
 	isServerRoomMessage_Payload()
 }
@@ -782,6 +828,10 @@ type ServerRoomMessage_SettingsUpdated struct {
 	SettingsUpdated *SettingsUpdated `protobuf:"bytes,6,opt,name=settings_updated,json=settingsUpdated,proto3,oneof"`
 }
 
+type ServerRoomMessage_GameStarted struct {
+	GameStarted *GameStarted `protobuf:"bytes,7,opt,name=game_started,json=gameStarted,proto3,oneof"`
+}
+
 func (*ServerRoomMessage_RoomCreated) isServerRoomMessage_Payload() {}
 
 func (*ServerRoomMessage_PlayerJoinedRoom) isServerRoomMessage_Payload() {}
@@ -793,6 +843,8 @@ func (*ServerRoomMessage_ChatReceived) isServerRoomMessage_Payload() {}
 func (*ServerRoomMessage_PlayerToggledReady) isServerRoomMessage_Payload() {}
 
 func (*ServerRoomMessage_SettingsUpdated) isServerRoomMessage_Payload() {}
+
+func (*ServerRoomMessage_GameStarted) isServerRoomMessage_Payload() {}
 
 type ClientRoomMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -806,7 +858,7 @@ type ClientRoomMessage struct {
 
 func (x *ClientRoomMessage) Reset() {
 	*x = ClientRoomMessage{}
-	mi := &file_room_proto_msgTypes[11]
+	mi := &file_room_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -818,7 +870,7 @@ func (x *ClientRoomMessage) String() string {
 func (*ClientRoomMessage) ProtoMessage() {}
 
 func (x *ClientRoomMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_room_proto_msgTypes[11]
+	mi := &file_room_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -831,7 +883,7 @@ func (x *ClientRoomMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClientRoomMessage.ProtoReflect.Descriptor instead.
 func (*ClientRoomMessage) Descriptor() ([]byte, []int) {
-	return file_room_proto_rawDescGZIP(), []int{11}
+	return file_room_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ClientRoomMessage) GetPayload() isClientRoomMessage_Payload {
@@ -905,14 +957,16 @@ const file_room_proto_rawDesc = "" +
 	"\x0fSettingsUpdated\x12\x1a\n" +
 	"\bcapacity\x18\x01 \x01(\x05R\bcapacity\x12)\n" +
 	"\x04game\x18\x02 \x01(\x0e2\x15.funkames.schema.GameR\x04game\x12\x1a\n" +
-	"\bsettings\x18\x03 \x01(\tR\bsettings\"\xef\x03\n" +
+	"\bsettings\x18\x03 \x01(\tR\bsettings\"\r\n" +
+	"\vGameStarted\"\xb2\x04\n" +
 	"\x11ServerRoomMessage\x12A\n" +
 	"\froom_created\x18\x01 \x01(\v2\x1c.funkames.schema.RoomCreatedH\x00R\vroomCreated\x12Q\n" +
 	"\x12player_joined_room\x18\x02 \x01(\v2!.funkames.schema.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12K\n" +
 	"\x10player_left_room\x18\x03 \x01(\v2\x1f.funkames.schema.PlayerLeftRoomH\x00R\x0eplayerLeftRoom\x12D\n" +
 	"\rchat_received\x18\x04 \x01(\v2\x1d.funkames.schema.ChatReceivedH\x00R\fchatReceived\x12W\n" +
 	"\x14player_toggled_ready\x18\x05 \x01(\v2#.funkames.schema.PlayerToggledReadyH\x00R\x12playerToggledReady\x12M\n" +
-	"\x10settings_updated\x18\x06 \x01(\v2 .funkames.schema.SettingsUpdatedH\x00R\x0fsettingsUpdatedB\t\n" +
+	"\x10settings_updated\x18\x06 \x01(\v2 .funkames.schema.SettingsUpdatedH\x00R\x0fsettingsUpdated\x12A\n" +
+	"\fgame_started\x18\a \x01(\v2\x1c.funkames.schema.GameStartedH\x00R\vgameStartedB\t\n" +
 	"\apayload\"K\n" +
 	"\x11ClientRoomMessage\x12+\n" +
 	"\x04chat\x18\x01 \x01(\v2\x15.funkames.schema.ChatH\x00R\x04chatB\t\n" +
@@ -933,7 +987,7 @@ func file_room_proto_rawDescGZIP() []byte {
 }
 
 var file_room_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_room_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_room_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_room_proto_goTypes = []any{
 	(Game)(0),                  // 0: funkames.schema.Game
 	(*Player)(nil),             // 1: funkames.schema.Player
@@ -946,8 +1000,9 @@ var file_room_proto_goTypes = []any{
 	(*ChatReceived)(nil),       // 8: funkames.schema.ChatReceived
 	(*PlayerToggledReady)(nil), // 9: funkames.schema.PlayerToggledReady
 	(*SettingsUpdated)(nil),    // 10: funkames.schema.SettingsUpdated
-	(*ServerRoomMessage)(nil),  // 11: funkames.schema.ServerRoomMessage
-	(*ClientRoomMessage)(nil),  // 12: funkames.schema.ClientRoomMessage
+	(*GameStarted)(nil),        // 11: funkames.schema.GameStarted
+	(*ServerRoomMessage)(nil),  // 12: funkames.schema.ServerRoomMessage
+	(*ClientRoomMessage)(nil),  // 13: funkames.schema.ClientRoomMessage
 }
 var file_room_proto_depIdxs = []int32{
 	1,  // 0: funkames.schema.Room.players:type_name -> funkames.schema.Player
@@ -961,12 +1016,13 @@ var file_room_proto_depIdxs = []int32{
 	8,  // 8: funkames.schema.ServerRoomMessage.chat_received:type_name -> funkames.schema.ChatReceived
 	9,  // 9: funkames.schema.ServerRoomMessage.player_toggled_ready:type_name -> funkames.schema.PlayerToggledReady
 	10, // 10: funkames.schema.ServerRoomMessage.settings_updated:type_name -> funkames.schema.SettingsUpdated
-	7,  // 11: funkames.schema.ClientRoomMessage.chat:type_name -> funkames.schema.Chat
-	12, // [12:12] is the sub-list for method output_type
-	12, // [12:12] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	11, // 11: funkames.schema.ServerRoomMessage.game_started:type_name -> funkames.schema.GameStarted
+	7,  // 12: funkames.schema.ClientRoomMessage.chat:type_name -> funkames.schema.Chat
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_room_proto_init() }
@@ -975,15 +1031,16 @@ func file_room_proto_init() {
 		return
 	}
 	file_room_proto_msgTypes[4].OneofWrappers = []any{}
-	file_room_proto_msgTypes[10].OneofWrappers = []any{
+	file_room_proto_msgTypes[11].OneofWrappers = []any{
 		(*ServerRoomMessage_RoomCreated)(nil),
 		(*ServerRoomMessage_PlayerJoinedRoom)(nil),
 		(*ServerRoomMessage_PlayerLeftRoom)(nil),
 		(*ServerRoomMessage_ChatReceived)(nil),
 		(*ServerRoomMessage_PlayerToggledReady)(nil),
 		(*ServerRoomMessage_SettingsUpdated)(nil),
+		(*ServerRoomMessage_GameStarted)(nil),
 	}
-	file_room_proto_msgTypes[11].OneofWrappers = []any{
+	file_room_proto_msgTypes[12].OneofWrappers = []any{
 		(*ClientRoomMessage_Chat)(nil),
 	}
 	type x struct{}
@@ -992,7 +1049,7 @@ func file_room_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_room_proto_rawDesc), len(file_room_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

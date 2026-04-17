@@ -43,7 +43,7 @@ func OneOfEnum[T Validatable](fl validator.FieldLevel) bool {
 }
 
 var DBEnumValidators = map[string]func(fl validator.FieldLevel) bool{
-	"game": OneOfEnum[*store.Game],
+	"game_type": OneOfEnum[*store.GameType],
 }
 
 func init() {

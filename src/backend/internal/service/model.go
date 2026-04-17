@@ -23,39 +23,39 @@ type GetPlayerParams = store.GetPlayerParams
 type UpdatePlayerParams = store.UpdatePlayerParams
 
 type CreateRoomParams struct {
-	DisplayName string     `json:"display_name"`
-	Capacity    int32      `json:"capacity"`
-	Game        store.Game `json:"game"`
-	Settings    string     `json:"game-settings"`
+	DisplayName string         `json:"display_name"`
+	Capacity    int32          `json:"capacity"`
+	Game        store.GameType `json:"game"`
+	Settings    string         `json:"game-settings"`
 }
 
 type Room struct {
-	RoomID      uuid.UUID  `json:"room_id"`
-	DisplayName string     `json:"display_name"`
-	Capacity    int32      `json:"capacity"`
-	Occupied    int32      `json:"occupied"`
-	Game        store.Game `json:"game"`
-	Settings    string     `json:"game-settings"`
+	RoomID      uuid.UUID      `json:"room_id"`
+	DisplayName string         `json:"display_name"`
+	Capacity    int32          `json:"capacity"`
+	Occupied    int32          `json:"occupied"`
+	Game        store.GameType `json:"game"`
+	Settings    string         `json:"settings"`
 }
 
 type ShortRoom struct {
 }
 
 type LongRoom struct {
-	RoomID      uuid.UUID     `json:"room_id"`
-	DisplayName string        `json:"display_name"`
-	Capacity    int32         `json:"capacity"`
-	Occupied    int32         `json:"occupied"`
-	Players     []ShortPlayer `json:"players"`
-	Game        store.Game    `json:"game"`
-	Settings    string        `json:"game-settings"`
+	RoomID      uuid.UUID      `json:"room_id"`
+	DisplayName string         `json:"display_name"`
+	Capacity    int32          `json:"capacity"`
+	Occupied    int32          `json:"occupied"`
+	Players     []ShortPlayer  `json:"players"`
+	Game        store.GameType `json:"game"`
+	Settings    string         `json:"settings"`
 }
 
 type ListRoomsParams struct {
-	Limit  int32       `json:"limit"`
-	Offset int32       `json:"offset"`
-	Search *string     `json:"search"`
-	Game   *store.Game `json:"game"`
+	Limit  int32           `json:"limit"`
+	Offset int32           `json:"offset"`
+	Search *string         `json:"search"`
+	Game   *store.GameType `json:"game"`
 }
 
 type ListRoomsRes struct {
@@ -64,7 +64,7 @@ type ListRoomsRes struct {
 }
 
 type UpdateRoomSettingsParams struct {
-	Capacity int32      `json:"capacity"`
-	Game     store.Game `json:"game"`
-	Settings string     `json:"game-settings"`
+	Capacity int32          `json:"capacity"`
+	Game     store.GameType `json:"game"`
+	Settings string         `json:"game-settings"`
 }

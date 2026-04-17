@@ -2,9 +2,9 @@ package store
 
 import "fun-kames/internal/schema"
 
-func (g Game) Proto() schema.Game {
+func (g GameType) Proto() schema.Game {
 	switch g {
-	case GameMonopolyDeal:
+	case GameTypeMonopolyDeal:
 		return schema.Game_MonopolyDeal
 	default:
 		return schema.Game_MonopolyDeal
