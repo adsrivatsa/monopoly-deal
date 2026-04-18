@@ -6,9 +6,9 @@ import (
 )
 
 type PropertySet struct {
-	ID    Identifier `msgpack:"id"`
-	Color Color      `msgpack:"color"`
-	Cards Cards      `msgpack:"cards"`
+	ID    Identifier `json:"id" msgpack:"a"`
+	Color Color      `json:"color" msgpack:"b"`
+	Cards Cards      `json:"cards" msgpack:"c"`
 }
 
 func NewPropertySet(id Identifier, color Color) PropertySet {

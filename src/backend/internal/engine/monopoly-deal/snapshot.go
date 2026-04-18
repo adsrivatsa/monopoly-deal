@@ -3,40 +3,34 @@ package monopoly_deal
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-type IdentifierTranslatorSnapshot struct {
-	UUIDToIdentifier map[string]Identifier `msgpack:"uuid_to_identifier"`
-	IdentifierToUUID map[Identifier]string `msgpack:"identifier_to_uuid"`
-}
-
 type DemandSnapshot struct {
-	Kind         DemandKind      `msgpack:"kind"`
-	Source       Identifier      `msgpack:"source"`
-	Target       Identifier      `msgpack:"target"`
-	Amount       int             `msgpack:"amount,omitempty"`
-	SourceCardID *Identifier     `msgpack:"source_card_id,omitempty"`
-	TargetCardID Identifier      `msgpack:"target_card_id,omitempty"`
-	Cards        Cards           `msgpack:"cards,omitempty"`
-	Original     *DemandSnapshot `msgpack:"original,omitempty"`
+	Kind         DemandKind      `json:"kind" msgpack:"a"`
+	Source       Identifier      `json:"source" msgpack:"b"`
+	Target       Identifier      `json:"target" msgpack:"c"`
+	Amount       int             `json:"amount" msgpack:"d,omitempty"`
+	SourceCardID *Identifier     `json:"source_card_id" msgpack:"e,omitempty"`
+	TargetCardID Identifier      `json:"target_card_id" msgpack:"f,omitempty"`
+	Cards        Cards           `json:"cards" msgpack:"g,omitempty"`
+	Original     *DemandSnapshot `json:"original" msgpack:"h,omitempty"`
 }
 
 type GameSnapshot struct {
-	IDGenerator   IdentifierGenerator           `msgpack:"id_generator"`
-	IDTranslator  IdentifierTranslatorSnapshot  `msgpack:"id_translator"`
-	Deck          Deck                          `msgpack:"deck"`
-	Cards         map[Identifier]Card           `msgpack:"cards"`
-	Players       []Identifier                  `msgpack:"players"`
-	CurrPlayerIdx int                           `msgpack:"curr_player_idx"`
-	MovesLeft     int                           `msgpack:"moves_left"`
-	Hands         map[Identifier]Cards          `msgpack:"hands"`
-	Money         map[Identifier]Cards          `msgpack:"money"`
-	Properties    map[Identifier]PropertySets   `msgpack:"properties"`
-	Demands       map[Identifier]DemandSnapshot `msgpack:"demands"`
-	PendingRent   *PendingRent                  `msgpack:"pending_rent"`
-	Config        Settings                      `msgpack:"config"`
+	IDGenerator   IdentifierGenerator           `json:"id_generator" msgpack:"a"`
+	IDTranslator  IdentifierTranslator          `json:"id_translator" msgpack:"b"`
+	Deck          Deck                          `json:"deck" msgpack:"c"`
+	Cards         map[Identifier]Card           `json:"cards" msgpack:"d"`
+	Players       []Identifier                  `json:"players" msgpack:"e"`
+	CurrPlayerIdx int                           `json:"curr_player_idx" msgpack:"f"`
+	MovesLeft     int                           `json:"moves_left" msgpack:"g"`
+	Hands         map[Identifier]Cards          `json:"hands" msgpack:"h"`
+	Money         map[Identifier]Cards          `json:"money" msgpack:"i"`
+	Properties    map[Identifier]PropertySets   `json:"properties" msgpack:"j"`
+	Demands       map[Identifier]DemandSnapshot `json:"demands" msgpack:"k"`
+	PendingRent   *PendingRent                  `json:"pending_rent" msgpack:"l"`
+	Config        Settings                      `json:"config" msgpack:"m"`
 }
 
 func (g *Game) EncodeMsgpack() ([]byte, error) {
@@ -198,15 +192,15 @@ func demandFromSnapshot(s DemandSnapshot) (Demand, error) {
 }
 
 func (g *Game) Snapshot() (GameSnapshot, error) {
-	uuidToIdentifier := make(map[string]Identifier, len(g.IDTranslator.UUIDToIdentifier))
-	for k, v := range g.IDTranslator.UUIDToIdentifier {
-		uuidToIdentifier[k.String()] = v
-	}
-
-	identifierToUUID := make(map[Identifier]string, len(g.IDTranslator.IdentifierToUUID))
-	for k, v := range g.IDTranslator.IdentifierToUUID {
-		identifierToUUID[k] = v.String()
-	}
+	//uuidToIdentifier := make(map[string]Identifier, len(g.IDTranslator.UUIDToIdentifier))
+	//for k, v := range g.IDTranslator.UUIDToIdentifier {
+	//	uuidToIdentifier[k.String()] = v
+	//}
+	//
+	//identifierToUUID := make(map[Identifier]string, len(g.IDTranslator.IdentifierToUUID))
+	//for k, v := range g.IDTranslator.IdentifierToUUID {
+	//	identifierToUUID[k] = v.String()
+	//}
 
 	demands := make(map[Identifier]DemandSnapshot, len(g.Demands))
 	for id, demand := range g.Demands {
@@ -241,10 +235,10 @@ func (g *Game) Snapshot() (GameSnapshot, error) {
 
 	return GameSnapshot{
 		IDGenerator:   *g.IDGenerator,
-		IDTranslator:  IdentifierTranslatorSnapshot{UUIDToIdentifier: uuidToIdentifier, IdentifierToUUID: identifierToUUID},
+		IDTranslator:  g.IDTranslator,
 		Deck:          Deck{Cards: cloneCards(g.Deck.Cards)},
 		Cards:         cards,
-		Players:       append([]Identifier(nil), g.Players...),
+		Players:       g.Players,
 		CurrPlayerIdx: g.CurrPlayerIdx,
 		MovesLeft:     g.MovesLeft,
 		Hands:         hands,
@@ -257,23 +251,23 @@ func (g *Game) Snapshot() (GameSnapshot, error) {
 }
 
 func NewGameFromSnapshot(s GameSnapshot) (*Game, error) {
-	uuidToIdentifier := make(map[uuid.UUID]Identifier, len(s.IDTranslator.UUIDToIdentifier))
-	for k, v := range s.IDTranslator.UUIDToIdentifier {
-		u, err := uuid.Parse(k)
-		if err != nil {
-			return nil, fmt.Errorf("invalid uuid_to_identifier key %q: %w", k, err)
-		}
-		uuidToIdentifier[u] = v
-	}
-
-	identifierToUUID := make(map[Identifier]uuid.UUID, len(s.IDTranslator.IdentifierToUUID))
-	for k, v := range s.IDTranslator.IdentifierToUUID {
-		u, err := uuid.Parse(v)
-		if err != nil {
-			return nil, fmt.Errorf("invalid identifier_to_uuid value %q: %w", v, err)
-		}
-		identifierToUUID[k] = u
-	}
+	//uuidToIdentifier := make(map[uuid.UUID]Identifier, len(s.IDTranslator.UUIDToIdentifier))
+	//for k, v := range s.IDTranslator.UUIDToIdentifier {
+	//	u, err := uuid.Parse(k)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("invalid uuid_to_identifier key %q: %w", k, err)
+	//	}
+	//	uuidToIdentifier[u] = v
+	//}
+	//
+	//identifierToUUID := make(map[Identifier]uuid.UUID, len(s.IDTranslator.IdentifierToUUID))
+	//for k, v := range s.IDTranslator.IdentifierToUUID {
+	//	u, err := uuid.Parse(v)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("invalid identifier_to_uuid value %q: %w", v, err)
+	//	}
+	//	identifierToUUID[k] = u
+	//}
 
 	demands := make(map[Identifier]Demand, len(s.Demands))
 	for id, ds := range s.Demands {
@@ -309,10 +303,10 @@ func NewGameFromSnapshot(s GameSnapshot) (*Game, error) {
 	idGenerator := s.IDGenerator
 	return &Game{
 		IDGenerator:   &idGenerator,
-		IDTranslator:  IdentifierTranslator{UUIDToIdentifier: uuidToIdentifier, IdentifierToUUID: identifierToUUID},
+		IDTranslator:  s.IDTranslator,
 		Deck:          Deck{Cards: cloneCards(s.Deck.Cards)},
 		Cards:         cards,
-		Players:       append([]Identifier(nil), s.Players...),
+		Players:       s.Players,
 		CurrPlayerIdx: s.CurrPlayerIdx,
 		MovesLeft:     s.MovesLeft,
 		Hands:         hands,

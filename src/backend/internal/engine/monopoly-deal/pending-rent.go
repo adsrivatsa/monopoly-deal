@@ -1,10 +1,10 @@
 package monopoly_deal
 
 type PendingRent struct {
-	SourceID   Identifier   `msgpack:"source_id"`
-	TargetIDs  []Identifier `msgpack:"target_ids"`
-	BaseAmount int          `msgpack:"base_amount"`
-	Multiplier int          `msgpack:"multiplier"`
+	SourceID   Identifier   `json:"source_id" msgpack:"a"`
+	TargetIDs  []Identifier `json:"target_ids" msgpack:"b"`
+	BaseAmount int          `json:"base_amount" msgpack:"c"`
+	Multiplier int          `json:"multiplier" msgpack:"d"`
 }
 
 func NewPendingRent(sourceID Identifier, targetIDs []Identifier, baseAmount int) *PendingRent {

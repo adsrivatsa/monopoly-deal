@@ -157,12 +157,12 @@ const (
 )
 
 type Card struct {
-	ID          Identifier `json:"id"`
-	Category    Category   `json:"category"`
-	AssetKey    AssetKey   `json:"card_key"`
-	Value       int        `json:"value"`
-	Colors      []Color    `json:"colors"`
-	ActiveColor Color      `json:"active_color"`
+	ID          Identifier `json:"id" msgpack:"a"`
+	Category    Category   `json:"category" msgpack:"b"`
+	AssetKey    AssetKey   `json:"card_key" msgpack:"c"`
+	Value       int        `json:"value" msgpack:"d"`
+	Colors      []Color    `json:"colors" msgpack:"e"`
+	ActiveColor Color      `json:"active_color" msgpack:"f"`
 }
 
 func NewCard(id Identifier, c Category, ak AssetKey, v int, colors ...Color) Card {

@@ -12,10 +12,13 @@ type Settings struct {
 	DebtCollectorAmount int `msgpack:"debt_collector_amount" validate:"required,min=5,max=8"`
 }
 
-func (s Settings) Raw() any {
-	return s
+func (s *Settings) Encode() ([]byte, error) {
+	if s == nil {
+		return nil, nil
+	}
+	return msgpack.Marshal(*s)
 }
 
-func (s Settings) Encode() ([]byte, error) {
-	return msgpack.Marshal(s)
+func (s *Settings) Decode(data []byte) error {
+	return msgpack.Unmarshal(data, s)
 }

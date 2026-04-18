@@ -23,10 +23,10 @@ type Demand interface {
 }
 
 type DeniedDemand struct {
-	Kind     DemandKind `msgpack:"kind"`
-	Source   Identifier `msgpack:"source"`
-	Target   Identifier `msgpack:"target"`
-	Original Demand     `msgpack:"original"`
+	Kind     DemandKind `json:"kind"`
+	Source   Identifier `json:"source"`
+	Target   Identifier `json:"target"`
+	Original Demand     `json:"original"`
 }
 
 func NewDeniedDemand(source Identifier, target Identifier, original Demand) Demand {
@@ -69,10 +69,10 @@ func (d *DeniedDemand) IsCompliant(id Identifier, cards ...Card) error {
 }
 
 type PaymentDemand struct {
-	Kind   DemandKind `msgpack:"kind"`
-	Source Identifier `msgpack:"source"`
-	Target Identifier `msgpack:"target"`
-	Amount int        `msgpack:"amount"`
+	Kind   DemandKind `json:"kind"`
+	Source Identifier `json:"source"`
+	Target Identifier `json:"target"`
+	Amount int        `json:"amount"`
 }
 
 func NewPaymentDemand(source Identifier, target Identifier, amount int) Demand {
@@ -133,11 +133,11 @@ func (pd *PaymentDemand) IsCompliant(id Identifier, cards ...Card) error {
 }
 
 type PropertyDemand struct {
-	Kind         DemandKind  `msgpack:"kind"`
-	Source       Identifier  `msgpack:"source"`
-	Target       Identifier  `msgpack:"target"`
-	SourceCardID *Identifier `msgpack:"source_card"`
-	TargetCardID Identifier  `msgpack:"target_card"`
+	Kind         DemandKind  `json:"kind"`
+	Source       Identifier  `json:"source"`
+	Target       Identifier  `json:"target"`
+	SourceCardID *Identifier `json:"source_card"`
+	TargetCardID Identifier  `json:"target_card"`
 }
 
 func NewPropertyDemand(source Identifier, target Identifier, sourceCardID *Identifier, targetCardID Identifier) Demand {
@@ -189,10 +189,10 @@ func (pd *PropertyDemand) IsCompliant(id Identifier, cards ...Card) error {
 }
 
 type PropertySetDemand struct {
-	Kind   DemandKind `msgpack:"kind"`
-	Source Identifier `msgpack:"source"`
-	Target Identifier `msgpack:"target"`
-	Cards  Cards      `msgpack:"cards"`
+	Kind   DemandKind `json:"kind"`
+	Source Identifier `json:"source"`
+	Target Identifier `json:"target"`
+	Cards  Cards      `json:"cards"`
 }
 
 func NewPropertySetDemand(source Identifier, target Identifier, cards ...Card) Demand {

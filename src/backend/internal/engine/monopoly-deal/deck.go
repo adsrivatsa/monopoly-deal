@@ -6,7 +6,7 @@ import (
 )
 
 type Deck struct {
-	Cards Cards
+	Cards Cards `json:"cards" msgpack:"a"`
 }
 
 func NewDeck(cfg Settings, gen *IdentifierGenerator) (Deck, map[Identifier]Card) {

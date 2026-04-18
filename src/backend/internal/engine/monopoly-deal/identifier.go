@@ -13,7 +13,7 @@ const (
 )
 
 type IdentifierGenerator struct {
-	Next uint16 `msgpack:"next"`
+	Next uint16 `json:"next" msgpack:"a"`
 }
 
 func NewIdentifierGenerator() *IdentifierGenerator {
@@ -29,8 +29,8 @@ func (g *IdentifierGenerator) New() Identifier {
 }
 
 type IdentifierTranslator struct {
-	UUIDToIdentifier map[uuid.UUID]Identifier `msgpack:"uuid_to_identifier"`
-	IdentifierToUUID map[Identifier]uuid.UUID `msgpack:"identifier_to_uuid"`
+	UUIDToIdentifier map[uuid.UUID]Identifier `json:"uuid_to_identifier" msgpack:"a"`
+	IdentifierToUUID map[Identifier]uuid.UUID `json:"identifier_to_uuid" msgpack:"b"`
 }
 
 func NewIdentifierTranslator(gen *IdentifierGenerator, playerUUIDs []uuid.UUID) IdentifierTranslator {

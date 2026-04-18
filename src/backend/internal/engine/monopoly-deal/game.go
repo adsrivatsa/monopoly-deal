@@ -9,19 +9,19 @@ import (
 )
 
 type Game struct {
-	IDGenerator   *IdentifierGenerator        `msgpack:"id_generator"`
-	IDTranslator  IdentifierTranslator        `msgpack:"id_translator"`
-	Deck          Deck                        `msgpack:"deck"`
-	Cards         map[Identifier]Card         `msgpack:"cards"`
-	Players       []Identifier                `msgpack:"players"`
-	CurrPlayerIdx int                         `msgpack:"curr_player_idx"`
-	MovesLeft     int                         `msgpack:"moves_left"`
-	Hands         map[Identifier]Cards        `msgpack:"hands"`
-	Money         map[Identifier]Cards        `msgpack:"money"`
-	Properties    map[Identifier]PropertySets `msgpack:"properties"`
-	Demands       map[Identifier]Demand       `msgpack:"demands"`
-	PendingRent   *PendingRent                `msgpack:"pending_rent"`
-	Config        Settings                    `msgpack:"config"`
+	IDGenerator   *IdentifierGenerator        `json:"id_generator" msgpack:"a"`
+	IDTranslator  IdentifierTranslator        `json:"id_translator" msgpack:"b"`
+	Deck          Deck                        `json:"deck" msgpack:"c"`
+	Cards         map[Identifier]Card         `json:"cards" msgpack:"d"`
+	Players       []Identifier                `json:"players" msgpack:"e"`
+	CurrPlayerIdx int                         `json:"curr_player_idx" msgpack:"f"`
+	MovesLeft     int                         `json:"moves_left" msgpack:"g"`
+	Hands         map[Identifier]Cards        `json:"hands" msgpack:"h"`
+	Money         map[Identifier]Cards        `json:"money" msgpack:"i"`
+	Properties    map[Identifier]PropertySets `json:"properties" msgpack:"j"`
+	Demands       map[Identifier]Demand       `json:"demands" msgpack:"k"`
+	PendingRent   *PendingRent                `json:"pending_rent" msgpack:"l"`
+	Config        Settings                    `json:"config" msgpack:"m"`
 }
 
 func NewGame(cfg Settings, playerUUIDs []uuid.UUID) *Game {
