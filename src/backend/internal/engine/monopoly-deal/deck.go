@@ -6,101 +6,106 @@ import (
 )
 
 type Deck struct {
-	Cards []Card
+	Cards Cards
 }
 
-func NewDeck(cfg Settings, shuffle bool) Deck {
-	cards := make([]Card, 0, 110)
+func NewDeck(cfg Settings, gen *IdentifierGenerator) (Deck, map[Identifier]Card) {
+	n := 28 + 11 + 20 + 34 + 13
+	cards := make([]Card, 0, n*cfg.NumDecks)
+	cardMap := make(map[Identifier]Card)
 
-	addCopies := func(ck CardKey, count int) {
-		card, ok := CardByKey[ck]
+	addCopies := func(ck AssetKey, count int) {
+		card, ok := CardByAssetKey[ck]
 		if !ok {
 			panic("missing card definition for key: " + string(ck))
 		}
 
-		for i := 0; i < count*int(cfg.NumDecks); i++ {
+		for i := 0; i < count*cfg.NumDecks; i++ {
+			id := gen.New()
+			card = NewCard(id, card.Category, card.AssetKey, card.Value, card.Colors...)
+			cardMap[id] = card
 			cards = append(cards, card)
 		}
 	}
 
 	// Pure property cards (28)
-	addCopies(CardKeyBalticAve, 1)
-	addCopies(CardKeyMediterraneanAve, 1)
-	addCopies(CardKeyConnecticutAve, 1)
-	addCopies(CardKeyOrientalAve, 1)
-	addCopies(CardKeyVermontAve, 1)
-	addCopies(CardKeyStCharlesPlace, 1)
-	addCopies(CardKeyVirginiaAve, 1)
-	addCopies(CardKeyStateAve, 1)
-	addCopies(CardKeyNewYorkAve, 1)
-	addCopies(CardKeyStJamesPlace, 1)
-	addCopies(CardKeyTennesseeAve, 1)
-	addCopies(CardKeyKentuckyAve, 1)
-	addCopies(CardKeyIndianaAve, 1)
-	addCopies(CardKeyIllinoisAve, 1)
-	addCopies(CardKeyVentnorAve, 1)
-	addCopies(CardKeyMarvinGardens, 1)
-	addCopies(CardKeyAtlanticAve, 1)
-	addCopies(CardKeyNorthCarolinaAve, 1)
-	addCopies(CardKeyPacificAve, 1)
-	addCopies(CardKeyPennsylvaniaAve, 1)
-	addCopies(CardKeyBoardwalk, 1)
-	addCopies(CardKeyParkPlace, 1)
-	addCopies(CardKeyWaterWorks, 1)
-	addCopies(CardKeyElectricCompany, 1)
-	addCopies(CardKeyShortLine, 1)
-	addCopies(CardKeyBandORailRoad, 1)
-	addCopies(CardKeyReadingRailroad, 1)
-	addCopies(CardKeyPennsylvaniaRailroad, 1)
+	addCopies(AssetKeyBalticAve, 1)
+	addCopies(AssetKeyMediterraneanAve, 1)
+	addCopies(AssetKeyConnecticutAve, 1)
+	addCopies(AssetKeyOrientalAve, 1)
+	addCopies(AssetKeyVermontAve, 1)
+	addCopies(AssetKeyStCharlesPlace, 1)
+	addCopies(AssetKeyVirginiaAve, 1)
+	addCopies(AssetKeyStateAve, 1)
+	addCopies(AssetKeyNewYorkAve, 1)
+	addCopies(AssetKeyStJamesPlace, 1)
+	addCopies(AssetKeyTennesseeAve, 1)
+	addCopies(AssetKeyKentuckyAve, 1)
+	addCopies(AssetKeyIndianaAve, 1)
+	addCopies(AssetKeyIllinoisAve, 1)
+	addCopies(AssetKeyVentnorAve, 1)
+	addCopies(AssetKeyMarvinGardens, 1)
+	addCopies(AssetKeyAtlanticAve, 1)
+	addCopies(AssetKeyNorthCarolinaAve, 1)
+	addCopies(AssetKeyPacificAve, 1)
+	addCopies(AssetKeyPennsylvaniaAve, 1)
+	addCopies(AssetKeyBoardwalk, 1)
+	addCopies(AssetKeyParkPlace, 1)
+	addCopies(AssetKeyWaterWorks, 1)
+	addCopies(AssetKeyElectricCompany, 1)
+	addCopies(AssetKeyShortLine, 1)
+	addCopies(AssetKeyBandORailRoad, 1)
+	addCopies(AssetKeyReadingRailroad, 1)
+	addCopies(AssetKeyPennsylvaniaRailroad, 1)
 
-	// Wild property cards (12)
-	addCopies(CardKeyWildBrownSky, 1)
-	addCopies(CardKeyWildSkyRailroad, 1)
-	addCopies(CardKeyWildPinkOrange, 2)
-	addCopies(CardKeyWildRedYellow, 2)
-	addCopies(CardKeyWildGreenBlue, 2)
-	addCopies(CardKeyWildGreenRailroad, 1)
-	addCopies(CardKeyWildUtilityRailroad, 1)
-	addCopies(CardKeyWildWild, 2)
+	// Wild property cards (11)
+	addCopies(AssetKeyWildBrownSky, 1)
+	addCopies(AssetKeyWildSkyRailroad, 1)
+	addCopies(AssetKeyWildPinkOrange, 2)
+	addCopies(AssetKeyWildRedYellow, 2)
+	addCopies(AssetKeyWildGreenBlue, 1)
+	addCopies(AssetKeyWildGreenRailroad, 1)
+	addCopies(AssetKeyWildUtilityRailroad, 1)
+	addCopies(AssetKeyWildWild, 2)
 
 	// Money cards (20)
-	addCopies(CardKeyMoney1, 6)
-	addCopies(CardKeyMoney2, 5)
-	addCopies(CardKeyMoney3, 3)
-	addCopies(CardKeyMoney4, 3)
-	addCopies(CardKeyMoney5, 2)
-	addCopies(CardKeyMoney10, 1)
+	addCopies(AssetKeyMoney1, 6)
+	addCopies(AssetKeyMoney2, 5)
+	addCopies(AssetKeyMoney3, 3)
+	addCopies(AssetKeyMoney4, 3)
+	addCopies(AssetKeyMoney5, 2)
+	addCopies(AssetKeyMoney10, 1)
 
-	// Action cards (50)
-	addCopies(CardKeyPassGo, 10)
-	addCopies(CardKeyDoubleTheRent, 2)
-	addCopies(CardKeyItsMyBirthday, 3)
-	addCopies(CardKeyHouse, 3)
-	addCopies(CardKeySlyDeal, 3)
-	addCopies(CardKeyForcedDeal, 3)
-	addCopies(CardKeyDebtCollector, 3)
-	addCopies(CardKeyHotel, 2)
-	addCopies(CardKeyJustSayNo, 3)
-	addCopies(CardKeyDealBreaker, 2)
-	addCopies(CardKeyRentBrownSky, 2)
-	addCopies(CardKeyRentPinkOrange, 2)
-	addCopies(CardKeyRentRedYellow, 2)
-	addCopies(CardKeyRentGreenBlue, 2)
-	addCopies(CardKeyRentUtilityRailroad, 2)
-	addCopies(CardKeyRentWild, 3)
+	// Action cards (34)
+	addCopies(AssetKeyPassGo, 10)
+	addCopies(AssetKeyDoubleTheRent, 2)
+	addCopies(AssetKeyItsMyBirthday, 3)
+	addCopies(AssetKeyHouse, 3)
+	addCopies(AssetKeySlyDeal, 3)
+	addCopies(AssetKeyForcedDeal, 3)
+	addCopies(AssetKeyDebtCollector, 3)
+	addCopies(AssetKeyHotel, 2)
+	addCopies(AssetKeyJustSayNo, 3)
+	addCopies(AssetKeyDealBreaker, 2)
+
+	// Rent cards (13)
+	addCopies(AssetKeyRentBrownSky, 2)
+	addCopies(AssetKeyRentPinkOrange, 2)
+	addCopies(AssetKeyRentRedYellow, 2)
+	addCopies(AssetKeyRentGreenBlue, 2)
+	addCopies(AssetKeyRentUtilityRailroad, 2)
+	addCopies(AssetKeyRentWild, 3)
 
 	d := Deck{Cards: cards}
 
-	if shuffle {
-		d.Shuffle()
-	}
+	d.Shuffle()
 
-	return d
+	return d, cardMap
 }
 
 func (d *Deck) Shuffle() {
 	//r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	r := rand.New(rand.NewSource(43))
+	r := rand.New(rand.NewSource(5))
 	r.Shuffle(len(d.Cards), func(i, j int) {
 		d.Cards[i], d.Cards[j] = d.Cards[j], d.Cards[i]
 	})
