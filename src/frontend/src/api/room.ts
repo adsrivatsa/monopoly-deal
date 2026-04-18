@@ -31,6 +31,7 @@ export type RoomListItem = {
   occupied: number;
   players: ShortPlayer[];
   game: Game;
+  settings: string | number[];
 };
 
 export type ListRoomsResponse = {
@@ -42,7 +43,7 @@ export type CreateRoomParams = {
   display_name: string;
   capacity: number;
   game: Game;
-  settings: string;
+  settings: Uint8Array;
 };
 
 export type CreateRoomResponse = {
@@ -59,7 +60,7 @@ export type RoomResponse = {
   capacity: number;
   occupied: number;
   game: Game;
-  settings: string;
+  settings: string | number[];
   players: RoomPlayer[];
 };
 
@@ -90,7 +91,7 @@ export type ReadyRoomResult =
 export type UpdateRoomSettingsParams = {
   capacity: number;
   game: Game;
-  settings: string;
+  settings: Uint8Array;
 };
 
 export type UpdateRoomSettingsResult =
@@ -153,10 +154,15 @@ export const joinRoom = async (roomId: string): Promise<JoinRoomResult> => {
 export const createRoom = async (
   params: CreateRoomParams,
 ): Promise<CreateRoomResult> => {
+  const payload = {
+    ...params,
+    settings: Array.from(params.settings),
+  };
+
   const response = await apiFetch("/room/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
+    body: JSON.stringify(payload),
   });
 
   if (response.status !== 200) {
@@ -225,10 +231,15 @@ export const readyRoom = async (): Promise<ReadyRoomResult> => {
 export const updateRoomSettings = async (
   params: UpdateRoomSettingsParams,
 ): Promise<UpdateRoomSettingsResult> => {
+  const payload = {
+    ...params,
+    settings: Array.from(params.settings),
+  };
+
   const response = await apiFetch("/room/settings", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
+    body: JSON.stringify(payload),
   });
 
   if (response.status !== 200) {

@@ -24,7 +24,7 @@ message Room {
   int32 capacity = 4;
   int32 occupied = 5;
   Game game = 6;
-  string settings = 7;
+  bytes settings = 7;
 }
 
 message RoomCreated {
@@ -63,7 +63,7 @@ message PlayerToggledReady {
 message SettingsUpdated {
   int32 capacity = 1;
   Game game = 2;
-  string settings = 3;
+  bytes settings = 3;
 }
 
 message GameStarted {}

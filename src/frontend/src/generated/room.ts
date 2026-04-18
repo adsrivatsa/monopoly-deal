@@ -52,7 +52,7 @@ export interface Room {
   capacity: number;
   occupied: number;
   game: Game;
-  settings: string;
+  settings: Uint8Array;
 }
 
 export interface RoomCreated {
@@ -91,7 +91,10 @@ export interface PlayerToggledReady {
 export interface SettingsUpdated {
   capacity: number;
   game: Game;
-  settings: string;
+  settings: Uint8Array;
+}
+
+export interface GameStarted {
 }
 
 export interface ServerRoomMessage {
@@ -101,6 +104,7 @@ export interface ServerRoomMessage {
   chatReceived?: ChatReceived | undefined;
   playerToggledReady?: PlayerToggledReady | undefined;
   settingsUpdated?: SettingsUpdated | undefined;
+  gameStarted?: GameStarted | undefined;
 }
 
 export interface ClientRoomMessage {
@@ -272,7 +276,7 @@ export const Player: MessageFns<Player> = {
 };
 
 function createBaseRoom(): Room {
-  return { roomId: "", displayName: "", players: [], capacity: 0, occupied: 0, game: 0, settings: "" };
+  return { roomId: "", displayName: "", players: [], capacity: 0, occupied: 0, game: 0, settings: new Uint8Array(0) };
 }
 
 export const Room: MessageFns<Room> = {
@@ -295,8 +299,8 @@ export const Room: MessageFns<Room> = {
     if (message.game !== 0) {
       writer.uint32(48).int32(message.game);
     }
-    if (message.settings !== "") {
-      writer.uint32(58).string(message.settings);
+    if (message.settings.length !== 0) {
+      writer.uint32(58).bytes(message.settings);
     }
     return writer;
   },
@@ -361,7 +365,7 @@ export const Room: MessageFns<Room> = {
             break;
           }
 
-          message.settings = reader.string();
+          message.settings = reader.bytes();
           continue;
         }
       }
@@ -389,7 +393,7 @@ export const Room: MessageFns<Room> = {
       capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
       occupied: isSet(object.occupied) ? globalThis.Number(object.occupied) : 0,
       game: isSet(object.game) ? gameFromJSON(object.game) : 0,
-      settings: isSet(object.settings) ? globalThis.String(object.settings) : "",
+      settings: isSet(object.settings) ? bytesFromBase64(object.settings) : new Uint8Array(0),
     };
   },
 
@@ -413,8 +417,8 @@ export const Room: MessageFns<Room> = {
     if (message.game !== 0) {
       obj.game = gameToJSON(message.game);
     }
-    if (message.settings !== "") {
-      obj.settings = message.settings;
+    if (message.settings.length !== 0) {
+      obj.settings = base64FromBytes(message.settings);
     }
     return obj;
   },
@@ -430,7 +434,7 @@ export const Room: MessageFns<Room> = {
     message.capacity = object.capacity ?? 0;
     message.occupied = object.occupied ?? 0;
     message.game = object.game ?? 0;
-    message.settings = object.settings ?? "";
+    message.settings = object.settings ?? new Uint8Array(0);
     return message;
   },
 };
@@ -966,7 +970,7 @@ export const PlayerToggledReady: MessageFns<PlayerToggledReady> = {
 };
 
 function createBaseSettingsUpdated(): SettingsUpdated {
-  return { capacity: 0, game: 0, settings: "" };
+  return { capacity: 0, game: 0, settings: new Uint8Array(0) };
 }
 
 export const SettingsUpdated: MessageFns<SettingsUpdated> = {
@@ -977,8 +981,8 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
     if (message.game !== 0) {
       writer.uint32(16).int32(message.game);
     }
-    if (message.settings !== "") {
-      writer.uint32(26).string(message.settings);
+    if (message.settings.length !== 0) {
+      writer.uint32(26).bytes(message.settings);
     }
     return writer;
   },
@@ -1011,7 +1015,7 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
             break;
           }
 
-          message.settings = reader.string();
+          message.settings = reader.bytes();
           continue;
         }
       }
@@ -1027,7 +1031,7 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
     return {
       capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
       game: isSet(object.game) ? gameFromJSON(object.game) : 0,
-      settings: isSet(object.settings) ? globalThis.String(object.settings) : "",
+      settings: isSet(object.settings) ? bytesFromBase64(object.settings) : new Uint8Array(0),
     };
   },
 
@@ -1039,8 +1043,8 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
     if (message.game !== 0) {
       obj.game = gameToJSON(message.game);
     }
-    if (message.settings !== "") {
-      obj.settings = message.settings;
+    if (message.settings.length !== 0) {
+      obj.settings = base64FromBytes(message.settings);
     }
     return obj;
   },
@@ -1052,7 +1056,50 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
     const message = createBaseSettingsUpdated();
     message.capacity = object.capacity ?? 0;
     message.game = object.game ?? 0;
-    message.settings = object.settings ?? "";
+    message.settings = object.settings ?? new Uint8Array(0);
+    return message;
+  },
+};
+
+function createBaseGameStarted(): GameStarted {
+  return {};
+}
+
+export const GameStarted: MessageFns<GameStarted> = {
+  encode(_: GameStarted, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GameStarted {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGameStarted();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): GameStarted {
+    return {};
+  },
+
+  toJSON(_: GameStarted): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GameStarted>, I>>(base?: I): GameStarted {
+    return GameStarted.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GameStarted>, I>>(_: I): GameStarted {
+    const message = createBaseGameStarted();
     return message;
   },
 };
@@ -1065,6 +1112,7 @@ function createBaseServerRoomMessage(): ServerRoomMessage {
     chatReceived: undefined,
     playerToggledReady: undefined,
     settingsUpdated: undefined,
+    gameStarted: undefined,
   };
 }
 
@@ -1087,6 +1135,9 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
     }
     if (message.settingsUpdated !== undefined) {
       SettingsUpdated.encode(message.settingsUpdated, writer.uint32(50).fork()).join();
+    }
+    if (message.gameStarted !== undefined) {
+      GameStarted.encode(message.gameStarted, writer.uint32(58).fork()).join();
     }
     return writer;
   },
@@ -1146,6 +1197,14 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
           message.settingsUpdated = SettingsUpdated.decode(reader, reader.uint32());
           continue;
         }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.gameStarted = GameStarted.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1187,6 +1246,11 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
         : isSet(object.settings_updated)
         ? SettingsUpdated.fromJSON(object.settings_updated)
         : undefined,
+      gameStarted: isSet(object.gameStarted)
+        ? GameStarted.fromJSON(object.gameStarted)
+        : isSet(object.game_started)
+        ? GameStarted.fromJSON(object.game_started)
+        : undefined,
     };
   },
 
@@ -1209,6 +1273,9 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
     }
     if (message.settingsUpdated !== undefined) {
       obj.settingsUpdated = SettingsUpdated.toJSON(message.settingsUpdated);
+    }
+    if (message.gameStarted !== undefined) {
+      obj.gameStarted = GameStarted.toJSON(message.gameStarted);
     }
     return obj;
   },
@@ -1235,6 +1302,9 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
       : undefined;
     message.settingsUpdated = (object.settingsUpdated !== undefined && object.settingsUpdated !== null)
       ? SettingsUpdated.fromPartial(object.settingsUpdated)
+      : undefined;
+    message.gameStarted = (object.gameStarted !== undefined && object.gameStarted !== null)
+      ? GameStarted.fromPartial(object.gameStarted)
       : undefined;
     return message;
   },
@@ -1297,6 +1367,31 @@ export const ClientRoomMessage: MessageFns<ClientRoomMessage> = {
     return message;
   },
 };
+
+function bytesFromBase64(b64: string): Uint8Array {
+  if ((globalThis as any).Buffer) {
+    return Uint8Array.from((globalThis as any).Buffer.from(b64, "base64"));
+  } else {
+    const bin = globalThis.atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; ++i) {
+      arr[i] = bin.charCodeAt(i);
+    }
+    return arr;
+  }
+}
+
+function base64FromBytes(arr: Uint8Array): string {
+  if ((globalThis as any).Buffer) {
+    return (globalThis as any).Buffer.from(arr).toString("base64");
+  } else {
+    const bin: string[] = [];
+    arr.forEach((byte) => {
+      bin.push(globalThis.String.fromCharCode(byte));
+    });
+    return globalThis.btoa(bin.join(""));
+  }
+}
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 

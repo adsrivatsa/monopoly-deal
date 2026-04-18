@@ -26,7 +26,7 @@ type CreateRoomParams struct {
 	DisplayName string         `json:"display_name" validate:"required"`
 	Capacity    int            `json:"capacity" validate:"min=2,max=15"`
 	Game        store.GameType `json:"game" validate:"required,game_type"`
-	Settings    string         `json:"settings" validate:"required,json"`
+	Settings    []byte         `json:"settings" validate:"required"`
 }
 
 type ListRoomsParams struct {
@@ -39,5 +39,5 @@ type ListRoomsParams struct {
 type UpdateRoomSettingsParams struct {
 	Capacity int            `json:"capacity" validate:"min=2,max=15"`
 	Game     store.GameType `json:"game" validate:"game_type"`
-	Settings string         `json:"settings" validate:"required,json"`
+	Settings []byte         `json:"settings" validate:"required"`
 }

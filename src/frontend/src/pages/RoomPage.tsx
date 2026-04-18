@@ -8,6 +8,7 @@ import {
   getGameSettingSelectValues,
   getDefaultSettingsForGame,
   parseGame,
+  parseGameSettings,
   stringifyGameSettings,
   supportedGames,
   type GameSettingSelectValue,
@@ -75,24 +76,38 @@ const RoomPage = () => {
     )[]
   >([]);
 
-  const roomSettingsJson = useMemo(() => {
+  const getDefaultSettingsPayload = (selectedGame: Game): Uint8Array => {
+    return stringifyGameSettings(selectedGame, getDefaultSettingsForGame(selectedGame));
+  };
+
+  const buildSettingsPayload = (
+    selectedGame: Game,
+    settingValues: GameSettingSelectValue[],
+  ): Uint8Array => {
+    const candidateSettings = Object.fromEntries(
+      settingValues.map((setting) => {
+        const parsedValue = Number.parseInt(setting.value, 10);
+        return [
+          setting.key,
+          Number.isNaN(parsedValue)
+            ? Number.parseInt(setting.options[0]?.value ?? "0", 10)
+            : parsedValue,
+        ];
+      }),
+    );
+
+    return stringifyGameSettings(
+      selectedGame,
+      parseGameSettings(selectedGame, JSON.stringify(candidateSettings)),
+    );
+  };
+
+  const roomSettingsPayload = useMemo(() => {
     if (!roomGame) {
-      return "{}";
+      return new Uint8Array(0);
     }
 
-    if (roomGame === Game.MonopolyDeal) {
-      const deckSetting = roomSettingSelectValues.find(
-        (setting) => setting.key === "num_decks",
-      );
-      const parsedDecks = Number.parseInt(deckSetting?.value ?? "", 10);
-      return stringifyGameSettings(roomGame, {
-        num_decks: Number.isNaN(parsedDecks)
-          ? getDefaultSettingsForGame(roomGame).num_decks
-          : parsedDecks,
-      });
-    }
-
-    return stringifyGameSettings(roomGame, getDefaultSettingsForGame(roomGame));
+    return buildSettingsPayload(roomGame, roomSettingSelectValues);
   }, [roomGame, roomSettingSelectValues]);
 
   const capacityRange = useMemo(() => {
@@ -100,8 +115,8 @@ const RoomPage = () => {
       return { min: 2, max: 5 };
     }
 
-    return getCapacityRangeForGame(roomGame, roomSettingsJson);
-  }, [roomGame, roomSettingsJson]);
+    return getCapacityRangeForGame(roomGame, roomSettingsPayload);
+  }, [roomGame, roomSettingsPayload]);
 
   useEffect(() => {
     if (roomCapacity === null) {
@@ -282,7 +297,7 @@ const RoomPage = () => {
         const settingsUpdated = message?.roomMessage?.settingsUpdated;
         if (settingsUpdated) {
           const nextGame =
-            settingsUpdated.game === 0 ? Game.MonopolyDeal : null;
+            settingsUpdated.game === 0 ? Game.MonopolyDeal : roomGame;
 
           if (nextGame) {
             setRoomGame(nextGame);
@@ -370,26 +385,6 @@ const RoomPage = () => {
     return;
   };
 
-  const buildSettingsPayload = (
-    selectedGame: Game,
-    settingValues: GameSettingSelectValue[],
-  ): string => {
-    if (selectedGame === Game.MonopolyDeal) {
-      const deckSetting = settingValues.find((setting) => setting.key === "num_decks");
-      const parsedDecks = Number.parseInt(deckSetting?.value ?? "", 10);
-      return stringifyGameSettings(selectedGame, {
-        num_decks: Number.isNaN(parsedDecks)
-          ? getDefaultSettingsForGame(selectedGame).num_decks
-          : parsedDecks,
-      });
-    }
-
-    return stringifyGameSettings(
-      selectedGame,
-      getDefaultSettingsForGame(selectedGame),
-    );
-  };
-
   const persistRoomSettings = async (
     params: UpdateRoomSettingsParams,
   ): Promise<void> => {
@@ -432,8 +427,15 @@ const RoomPage = () => {
                         return;
                       }
 
-                      const nextSettings = getGameSettingSelectValues(nextGame, "{}");
-                      const nextCapacity = getCapacityRangeForGame(nextGame, "{}").min;
+                      const defaultSettingsPayload = getDefaultSettingsPayload(nextGame);
+                      const nextSettings = getGameSettingSelectValues(
+                        nextGame,
+                        defaultSettingsPayload,
+                      );
+                      const nextCapacity = getCapacityRangeForGame(
+                        nextGame,
+                        defaultSettingsPayload,
+                      ).min;
 
                       setRoomGame(nextGame);
                       setRoomSettingSelectValues(nextSettings);

@@ -1,3 +1,7 @@
+import { decode, encode } from "@msgpack/msgpack";
+
+type EncodedSettings = string | Uint8Array | number[];
+
 export type ShortPlayer = {
   id: string;
   name: string;
@@ -14,6 +18,12 @@ export const supportedGames: Game[] = [Game.MonopolyDeal];
 
 export type MonopolyDealSettings = {
   num_decks: number;
+  start_num_cards: number;
+  max_hand_size: number;
+  moves_per_turn: number;
+  pass_go_draw: number;
+  its_my_birthday_amount: number;
+  debt_collector_amount: number;
 };
 
 type GameSettingsByGame = {
@@ -68,7 +78,15 @@ export const getDefaultSettingsForGame = <TGame extends Game>(
 ): GameSettingsFor<TGame> => {
   switch (game) {
     case Game.MonopolyDeal:
-      return { num_decks: 1 } as GameSettingsFor<TGame>;
+      return {
+        num_decks: 1,
+        start_num_cards: 5,
+        max_hand_size: 5,
+        moves_per_turn: 3,
+        pass_go_draw: 2,
+        its_my_birthday_amount: 2,
+        debt_collector_amount: 5,
+      } as GameSettingsFor<TGame>;
     default:
       return assertNever(game as never);
   }
@@ -77,8 +95,8 @@ export const getDefaultSettingsForGame = <TGame extends Game>(
 export const stringifyGameSettings = <TGame extends Game>(
   _game: TGame,
   settings: GameSettingsFor<TGame>,
-): string => {
-  return JSON.stringify(settings);
+): Uint8Array => {
+  return encode(settings as Record<string, unknown>);
 };
 
 const buildRangeOptions = (
@@ -95,6 +113,44 @@ const inRange = (value: number, min: number, max: number): boolean => {
   return Number.isInteger(value) && value >= min && value <= max;
 };
 
+const decodeMsgPackObject = (settings: Uint8Array): Record<string, unknown> | null => {
+  try {
+    const parsed = decode(settings) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return null;
+    }
+    return parsed as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+};
+
+const decodeBase64 = (value: string): Uint8Array | null => {
+  try {
+    const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+    const paddingLength = normalized.length % 4;
+    const padded =
+      paddingLength === 0
+        ? normalized
+        : normalized.padEnd(normalized.length + (4 - paddingLength), "=");
+    const decoded = globalThis.atob(padded);
+    const bytes = new Uint8Array(decoded.length);
+    for (let index = 0; index < decoded.length; index += 1) {
+      bytes[index] = decoded.charCodeAt(index);
+    }
+    return bytes;
+  } catch {
+    return null;
+  }
+};
+
+const toUint8Array = (value: number[]): Uint8Array | null => {
+  if (value.some((entry) => !Number.isInteger(entry) || entry < 0 || entry > 255)) {
+    return null;
+  }
+  return new Uint8Array(value);
+};
+
 const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
   switch (game) {
     case Game.MonopolyDeal:
@@ -104,6 +160,42 @@ const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
           label: "Number of decks",
           min: 1,
           max: 3,
+        },
+        {
+          key: "start_num_cards",
+          label: "Starting cards",
+          min: 5,
+          max: 8,
+        },
+        {
+          key: "max_hand_size",
+          label: "Max hand size",
+          min: 5,
+          max: 10,
+        },
+        {
+          key: "moves_per_turn",
+          label: "Moves per turn",
+          min: 3,
+          max: 5,
+        },
+        {
+          key: "pass_go_draw",
+          label: "Pass Go draw",
+          min: 2,
+          max: 5,
+        },
+        {
+          key: "its_my_birthday_amount",
+          label: "It's My Birthday amount",
+          min: 2,
+          max: 5,
+        },
+        {
+          key: "debt_collector_amount",
+          label: "Debt Collector amount",
+          min: 5,
+          max: 8,
         },
       ];
     default:
@@ -125,7 +217,25 @@ export const getGameSettingDefinition = (
   return matched ?? null;
 };
 
-const parseSettingsObject = (settings: string): Record<string, unknown> | null => {
+const parseSettingsObject = (
+  settings: EncodedSettings,
+): Record<string, unknown> | null => {
+  if (settings instanceof Uint8Array) {
+    return decodeMsgPackObject(settings);
+  }
+
+  if (Array.isArray(settings)) {
+    const bytes = toUint8Array(settings);
+    if (!bytes) {
+      return null;
+    }
+    return decodeMsgPackObject(bytes);
+  }
+
+  if (!settings.trim()) {
+    return null;
+  }
+
   try {
     const parsed = JSON.parse(settings) as unknown;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
@@ -133,33 +243,57 @@ const parseSettingsObject = (settings: string): Record<string, unknown> | null =
     }
     return parsed as Record<string, unknown>;
   } catch {
-    return null;
+    const bytes = decodeBase64(settings);
+    if (!bytes) {
+      return null;
+    }
+    return decodeMsgPackObject(bytes);
   }
 };
 
 export const parseGameSettings = <TGame extends Game>(
   game: TGame,
-  settings: string,
+  settings: EncodedSettings,
 ): GameSettingsFor<TGame> => {
   const defaults = getDefaultSettingsForGame(game);
   const parsed = parseSettingsObject(settings);
 
   switch (game) {
     case Game.MonopolyDeal: {
-      const numDecksSetting = getSettingDefinitionsForGame(Game.MonopolyDeal)[0];
+      const definitions = getSettingDefinitionsForGame(Game.MonopolyDeal);
       if (!parsed) {
         return defaults;
       }
 
-      const numDecks = parsed.num_decks;
-      if (
-        typeof numDecks === "number" &&
-        inRange(numDecks, numDecksSetting.min, numDecksSetting.max)
-      ) {
-        return { num_decks: numDecks } as GameSettingsFor<TGame>;
-      }
+      const getSettingValue = (key: string, defaultValue: number): number => {
+        const definition = definitions.find((setting) => setting.key === key);
+        if (!definition) {
+          return defaultValue;
+        }
 
-      return defaults;
+        const value = parsed[key];
+        if (typeof value === "number" && inRange(value, definition.min, definition.max)) {
+          return value;
+        }
+
+        return defaultValue;
+      };
+
+      return {
+        num_decks: getSettingValue("num_decks", defaults.num_decks),
+        start_num_cards: getSettingValue("start_num_cards", defaults.start_num_cards),
+        max_hand_size: getSettingValue("max_hand_size", defaults.max_hand_size),
+        moves_per_turn: getSettingValue("moves_per_turn", defaults.moves_per_turn),
+        pass_go_draw: getSettingValue("pass_go_draw", defaults.pass_go_draw),
+        its_my_birthday_amount: getSettingValue(
+          "its_my_birthday_amount",
+          defaults.its_my_birthday_amount,
+        ),
+        debt_collector_amount: getSettingValue(
+          "debt_collector_amount",
+          defaults.debt_collector_amount,
+        ),
+      } as GameSettingsFor<TGame>;
     }
     default:
       return assertNever(game as never);
@@ -168,7 +302,7 @@ export const parseGameSettings = <TGame extends Game>(
 
 export const getGameSettingSelectValues = (
   gameKey: string,
-  settings: string,
+  settings: EncodedSettings,
 ): GameSettingSelectValue[] => {
   const game = parseGame(gameKey);
   if (!game) {
@@ -178,15 +312,19 @@ export const getGameSettingSelectValues = (
   switch (game) {
     case Game.MonopolyDeal: {
       const parsed = parseGameSettings(game, settings);
-      const definition = getSettingDefinitionsForGame(game)[0];
-      return [
-        {
+      const definitions = getSettingDefinitionsForGame(game);
+
+      return definitions.map((definition) => {
+        const value = parsed[definition.key as keyof MonopolyDealSettings];
+        const numericValue = typeof value === "number" ? value : definition.min;
+
+        return {
           key: definition.key,
           label: definition.label,
-          value: String(parsed.num_decks),
+          value: String(numericValue),
           options: buildRangeOptions(definition.min, definition.max),
-        },
-      ];
+        };
+      });
     }
     default:
       return assertNever(game as never);
@@ -202,7 +340,7 @@ export const getCapacityOptions = (
 
 export const getCapacityRangeForGame = (
   gameKey: string,
-  settings: string,
+  settings: EncodedSettings,
   baseRange: CapacityRange = { min: 2, max: 5 },
 ): CapacityRange => {
   const game = parseGame(gameKey);

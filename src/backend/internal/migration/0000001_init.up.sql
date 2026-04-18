@@ -20,11 +20,9 @@ CREATE TABLE IF NOT EXISTS room
         capacity int NOT NULL,
         occupied int NOT NULL DEFAULT 1,
         game game_type NOT NULL,
-        settings jsonb NOT NULL,
+        settings bytea NOT NULL,
         created_at timestamptz NOT NULL DEFAULT NOW()
     );
-
-CREATE INDEX idx_rooms_settings ON room USING gin (settings);
 
 CREATE TABLE IF NOT EXISTS room_player
     (

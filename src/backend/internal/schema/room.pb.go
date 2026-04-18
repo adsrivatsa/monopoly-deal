@@ -156,7 +156,7 @@ type Room struct {
 	Capacity      int32                  `protobuf:"varint,4,opt,name=capacity,proto3" json:"capacity,omitempty"`
 	Occupied      int32                  `protobuf:"varint,5,opt,name=occupied,proto3" json:"occupied,omitempty"`
 	Game          Game                   `protobuf:"varint,6,opt,name=game,proto3,enum=funkames.schema.Game" json:"game,omitempty"`
-	Settings      string                 `protobuf:"bytes,7,opt,name=settings,proto3" json:"settings,omitempty"`
+	Settings      []byte                 `protobuf:"bytes,7,opt,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -233,11 +233,11 @@ func (x *Room) GetGame() Game {
 	return Game_MonopolyDeal
 }
 
-func (x *Room) GetSettings() string {
+func (x *Room) GetSettings() []byte {
 	if x != nil {
 		return x.Settings
 	}
-	return ""
+	return nil
 }
 
 type RoomCreated struct {
@@ -592,7 +592,7 @@ type SettingsUpdated struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Capacity      int32                  `protobuf:"varint,1,opt,name=capacity,proto3" json:"capacity,omitempty"`
 	Game          Game                   `protobuf:"varint,2,opt,name=game,proto3,enum=funkames.schema.Game" json:"game,omitempty"`
-	Settings      string                 `protobuf:"bytes,3,opt,name=settings,proto3" json:"settings,omitempty"`
+	Settings      []byte                 `protobuf:"bytes,3,opt,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -641,11 +641,11 @@ func (x *SettingsUpdated) GetGame() Game {
 	return Game_MonopolyDeal
 }
 
-func (x *SettingsUpdated) GetSettings() string {
+func (x *SettingsUpdated) GetSettings() []byte {
 	if x != nil {
 		return x.Settings
 	}
-	return ""
+	return nil
 }
 
 type GameStarted struct {
@@ -933,7 +933,7 @@ const file_room_proto_rawDesc = "" +
 	"\bcapacity\x18\x04 \x01(\x05R\bcapacity\x12\x1a\n" +
 	"\boccupied\x18\x05 \x01(\x05R\boccupied\x12)\n" +
 	"\x04game\x18\x06 \x01(\x0e2\x15.funkames.schema.GameR\x04game\x12\x1a\n" +
-	"\bsettings\x18\a \x01(\tR\bsettings\"8\n" +
+	"\bsettings\x18\a \x01(\fR\bsettings\"8\n" +
 	"\vRoomCreated\x12)\n" +
 	"\x04room\x18\x01 \x01(\v2\x15.funkames.schema.RoomR\x04room\"\\\n" +
 	"\x10PlayerJoinedRoom\x12\x17\n" +
@@ -957,7 +957,7 @@ const file_room_proto_rawDesc = "" +
 	"\x0fSettingsUpdated\x12\x1a\n" +
 	"\bcapacity\x18\x01 \x01(\x05R\bcapacity\x12)\n" +
 	"\x04game\x18\x02 \x01(\x0e2\x15.funkames.schema.GameR\x04game\x12\x1a\n" +
-	"\bsettings\x18\x03 \x01(\tR\bsettings\"\r\n" +
+	"\bsettings\x18\x03 \x01(\fR\bsettings\"\r\n" +
 	"\vGameStarted\"\xb2\x04\n" +
 	"\x11ServerRoomMessage\x12A\n" +
 	"\froom_created\x18\x01 \x01(\v2\x1c.funkames.schema.RoomCreatedH\x00R\vroomCreated\x12Q\n" +

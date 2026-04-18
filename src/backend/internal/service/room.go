@@ -67,7 +67,7 @@ func (c *Controller) GetRoom(ctx context.Context, tp token.Payload) (LongRoom, e
 		Occupied:    r.Occupied,
 		Players:     players,
 		Game:        r.Game,
-		Settings:    string(r.Settings),
+		Settings:    r.Settings,
 	}, nil
 }
 
@@ -106,7 +106,7 @@ func (c *Controller) ListRooms(ctx context.Context, args ListRoomsParams) (ListR
 				},
 			},
 			Game:     rp.RoomGame,
-			Settings: string(rp.RoomSettings),
+			Settings: rp.RoomSettings,
 		}
 	}
 
@@ -123,11 +123,16 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, args Crea
 		return Room{}, errors.Internal(err)
 	}
 
+	settings, err := args.Settings.Encode()
+	if err != nil {
+		return Room{}, errors.Internal(err)
+	}
+
 	r, err := c.store.CreateRoom(ctx, store.CreateRoomParams{
 		DisplayName: args.DisplayName,
 		Capacity:    args.Capacity,
 		Game:        args.Game,
-		Settings:    []byte(args.Settings),
+		Settings:    settings,
 	})
 	if err != nil {
 		return Room{}, errors.Internal(err)
@@ -148,7 +153,7 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, args Crea
 		Capacity:    r.Capacity,
 		Occupied:    r.Occupied,
 		Game:        r.Game,
-		Settings:    string(r.Settings),
+		Settings:    r.Settings,
 	}, nil
 }
 
@@ -344,10 +349,15 @@ func (c *Controller) UpdateRoomSettings(ctx context.Context, tp token.Payload, a
 		return errors.PlayerIsNotHost
 	}
 
+	settings, err := args.Settings.Encode()
+	if err != nil {
+		return errors.Internal(err)
+	}
+
 	r, err := c.store.UpdateRoomSettings(ctx, store.UpdateRoomSettingsParams{
 		Capacity: args.Capacity,
 		Game:     args.Game,
-		Settings: []byte(args.Settings),
+		Settings: settings,
 		RoomID:   rp.RoomID,
 	})
 	if err != nil {
@@ -357,7 +367,7 @@ func (c *Controller) UpdateRoomSettings(ctx context.Context, tp token.Payload, a
 	e := &schema.SettingsUpdated{
 		Capacity: r.Capacity,
 		Game:     r.Game.Proto(),
-		Settings: string(r.Settings),
+		Settings: r.Settings,
 	}
 
 	return c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), &schema.ServerMessage{

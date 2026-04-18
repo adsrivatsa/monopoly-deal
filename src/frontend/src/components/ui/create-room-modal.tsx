@@ -6,9 +6,11 @@ import {
   Game,
   getDefaultSettingsForGame,
   getGameDisplayName,
-  getGameSettingDefinition,
+  getGameSettingSelectValues,
+  parseGameSettings,
   parseGame,
   stringifyGameSettings,
+  type GameSettingSelectValue,
 } from "../../api/models";
 import { appConfig } from "../../config";
 import Button from "./button";
@@ -32,29 +34,44 @@ const gameOptions: Array<{ value: Game; label: string }> = availableGames.map((g
   };
 });
 
-const monopolyDeckSetting = getGameSettingDefinition(
-  Game.MonopolyDeal,
-  "num_decks",
-);
-
 const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
   const [displayName, setDisplayName] = useState("");
   const [capacity, setCapacity] = useState(String(appConfig.room.create.capacity.min));
   const [game, setGame] = useState<Game>(availableGames[0]);
-  const [monopolyNumDecks, setMonopolyNumDecks] = useState(
-    String(getDefaultSettingsForGame(Game.MonopolyDeal).num_decks),
-  );
+  const [settingSelectValues, setSettingSelectValues] = useState<GameSettingSelectValue[]>(() => {
+    const defaultGame = availableGames[0];
+    const defaultPayload = stringifyGameSettings(
+      defaultGame,
+      getDefaultSettingsForGame(defaultGame),
+    );
+    return getGameSettingSelectValues(defaultGame, defaultPayload);
+  });
+
+  const buildSettingsPayload = (
+    selectedGame: Game,
+    values: GameSettingSelectValue[],
+  ): Uint8Array => {
+    const candidateSettings = Object.fromEntries(
+      values.map((setting) => {
+        const parsedValue = Number.parseInt(setting.value, 10);
+        return [
+          setting.key,
+          Number.isNaN(parsedValue)
+            ? Number.parseInt(setting.options[0]?.value ?? "0", 10)
+            : parsedValue,
+        ];
+      }),
+    );
+
+    return stringifyGameSettings(
+      selectedGame,
+      parseGameSettings(selectedGame, JSON.stringify(candidateSettings)),
+    );
+  };
 
   const currentSettings = useMemo(() => {
-    if (game === Game.MonopolyDeal) {
-      const parsedNumDecks = Number.parseInt(monopolyNumDecks, 10);
-      return stringifyGameSettings(game, {
-        num_decks: Number.isNaN(parsedNumDecks) ? 1 : parsedNumDecks,
-      });
-    }
-
-    return stringifyGameSettings(game, getDefaultSettingsForGame(game));
-  }, [game, monopolyNumDecks]);
+    return buildSettingsPayload(game, settingSelectValues);
+  }, [game, settingSelectValues]);
 
   const capacityRange = useMemo(() => {
     return getCapacityRangeForGame(game, currentSettings, {
@@ -93,25 +110,7 @@ const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
       return;
     }
 
-    const defaultSettings = getDefaultSettingsForGame(selectedGame);
-    let settings = stringifyGameSettings(selectedGame, defaultSettings);
-
-    if (selectedGame === Game.MonopolyDeal) {
-      const parsedNumDecks = Number.parseInt(monopolyNumDecks, 10);
-      const minDecks = monopolyDeckSetting?.min ?? 1;
-      const maxDecks = monopolyDeckSetting?.max ?? 5;
-      if (
-        Number.isNaN(parsedNumDecks) ||
-        parsedNumDecks < minDecks ||
-        parsedNumDecks > maxDecks
-      ) {
-        return;
-      }
-
-      settings = stringifyGameSettings(selectedGame, {
-        num_decks: parsedNumDecks,
-      });
-    }
+    const settings = buildSettingsPayload(selectedGame, settingSelectValues);
 
     onCreate({
       display_name: displayName.trim(),
@@ -180,9 +179,16 @@ const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
               if (!nextGame) {
                 return;
               }
-              setGame(nextGame);
-            }}
-          >
+               setGame(nextGame);
+               const nextDefaultPayload = stringifyGameSettings(
+                 nextGame,
+                 getDefaultSettingsForGame(nextGame),
+               );
+               setSettingSelectValues(
+                 getGameSettingSelectValues(nextGame, nextDefaultPayload),
+               );
+             }}
+           >
             {gameOptions.map((option) => {
               return (
                 <option key={option.value} value={option.value}>
@@ -192,31 +198,43 @@ const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
             })}
           </select>
 
-          {game === Game.MonopolyDeal ? (
-            <>
-              <label className="field-label" htmlFor="monopoly-num-decks">
-                Number of decks
-              </label>
-              <select
-                id="monopoly-num-decks"
-                className="field-input"
-                aria-label="Select number of decks"
-                value={monopolyNumDecks}
-                onChange={(event) => setMonopolyNumDecks(event.target.value)}
-              >
-                {getCapacityOptions(
-                  monopolyDeckSetting?.min ?? 1,
-                  monopolyDeckSetting?.max ?? 5,
-                ).map((option) => {
-                  return (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  );
-                })}
-              </select>
-            </>
-          ) : null}
+          {settingSelectValues.map((setting) => {
+            return (
+              <div key={setting.key}>
+                <label className="field-label" htmlFor={`create-room-setting-${setting.key}`}>
+                  {setting.label}
+                </label>
+                <select
+                  id={`create-room-setting-${setting.key}`}
+                  className="field-input"
+                  value={setting.value}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    setSettingSelectValues((currentSettings) => {
+                      return currentSettings.map((currentSetting) => {
+                        if (currentSetting.key !== setting.key) {
+                          return currentSetting;
+                        }
+
+                        return {
+                          ...currentSetting,
+                          value: nextValue,
+                        };
+                      });
+                    });
+                  }}
+                >
+                  {setting.options.map((option) => {
+                    return (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            );
+          })}
 
           <div className="overlay-actions">
             <Button variant="outline" type="button" onClick={onClose}>

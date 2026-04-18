@@ -5,6 +5,7 @@ import {
   CreateRoomParams,
   getRoom,
   joinRoom,
+  leaveRoom,
   listRooms,
   RoomListItem,
 } from "../api/room";
@@ -206,6 +207,28 @@ const LobbyPage = () => {
     navigate(`/room/${result.data.room_id}`);
   };
 
+  const handleLeaveActiveRoom = async () => {
+    const result = await leaveRoom();
+
+    if (!result.ok) {
+      if (result.isTokenError) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      setApiError(
+        result.error ?? {
+          message: "Could not leave room.",
+          status: 500,
+          code: "UNKNOWN",
+        },
+      );
+      return;
+    }
+
+    setActiveRoom(null);
+  };
+
   return (
     <main className="page">
       {activeRoom ? (
@@ -214,14 +237,22 @@ const LobbyPage = () => {
             <span>
               You are still in <strong>{activeRoom.displayName}</strong>.
             </span>
-            <Button
-              size="sm"
-              onClick={() => {
-                navigate(`/room/${activeRoom.roomId}`);
-              }}
-            >
-              Reconnect
-            </Button>
+
+            <div className="reconnect-banner-actions">
+              <Button
+                size="sm"
+                onClick={() => {
+                  navigate(`/room/${activeRoom.roomId}`);
+                }}
+              >
+                Reconnect
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => {
+                void handleLeaveActiveRoom();
+              }}>
+                Leave room
+              </Button>
+            </div>
           </div>
         </div>
       ) : null}
