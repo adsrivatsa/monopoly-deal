@@ -6,6 +6,7 @@ import (
 	"fun-kames/internal/token"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -124,6 +125,16 @@ func (s *Server) addRoutes() {
 		WriteHTTP(w, http.StatusOK, "success")
 	})
 
+	// TODO - make this customizable
+	staticDir := "./public"
+
+	absDir, err := filepath.Abs(staticDir)
+	if err != nil {
+		panic(err)
+	}
+
+	fileServer := http.FileServer(http.Dir(absDir))
+
 	router.Mount("/auth", s.authRoutes())
 
 	router.Route("/", func(r chi.Router) {
@@ -132,6 +143,9 @@ func (s *Server) addRoutes() {
 		r.Mount("/player", s.playerRoutes())
 		r.Mount("/room", s.roomRoutes())
 		r.Mount("/game", s.gameRoutes())
+
+		// TODO - make this customizable
+		r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
 	})
 
 	s.router = router

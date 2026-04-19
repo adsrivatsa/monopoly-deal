@@ -1,6 +1,7 @@
 package monopoly_deal
 
 import (
+	"fmt"
 	"fun-kames/internal/errors"
 	"fun-kames/internal/schema/monopoly_deal_schema"
 	"slices"
@@ -126,6 +127,15 @@ func (g *Game) Proto(playerUUID uuid.UUID, allPlayerUUIDs []uuid.UUID) *monopoly
 		pendingRentProto = g.PendingRent.Proto(playerUUID, targetUUIDs)
 	}
 
+	assetKeys := AllAssetKeys()
+	assetImages := make([]*monopoly_deal_schema.AssetImage, 0, len(assetKeys))
+	for _, assetKey := range assetKeys {
+		assetImages = append(assetImages, &monopoly_deal_schema.AssetImage{
+			AssetKey: assetKey.Proto(),
+			ImageUrl: fmt.Sprintf("http://127.0.0.1:4000/static/card/%s.svg", string(assetKey)), // TODO - this is just for now
+		})
+	}
+
 	return &monopoly_deal_schema.GameState{
 		SeqNum:          int32(g.SequenceNum),
 		Players:         nil, // populated by caller
@@ -138,6 +148,7 @@ func (g *Game) Proto(playerUUID uuid.UUID, allPlayerUUIDs []uuid.UUID) *monopoly
 		Demand:          demandProto,
 		PendingRent:     pendingRentProto,
 		LastAction:      g.LastAction.Proto(),
+		AssetImages:     assetImages,
 	}
 }
 

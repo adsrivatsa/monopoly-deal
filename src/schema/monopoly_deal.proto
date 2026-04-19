@@ -1,208 +1,257 @@
 syntax = "proto3";
 
-package funkames.schema;
+package fun_kames.schema.monopoly_deal;
 
-option go_package = "funkames/backend/internal/schema;schema";
+option go_package = "fun-kames/internal/schema/monopoly_deal_schema;monopoly_deal_schema";
 
-// gameplay
-enum PurePropertyType {
-  PURE_PROPERTY_TYPE_BROWN = 0;
-  PURE_PROPERTY_TYPE_LIGHT_BLUE = 1;
-  PURE_PROPERTY_TYPE_PINK = 2;
-  PURE_PROPERTY_TYPE_ORANGE = 3;
-  PURE_PROPERTY_TYPE_RED = 4;
-  PURE_PROPERTY_TYPE_YELLOW = 5;
-  PURE_PROPERTY_TYPE_GREEN = 6;
-  PURE_PROPERTY_TYPE_DARK_BLUE = 7;
-  PURE_PROPERTY_TYPE_UTILITY = 8;
-  PURE_PROPERTY_TYPE_RAILROAD = 9;
+message Error {
+  string message = 1;
+  int32 status = 2;
+  string code = 3;
 }
 
-enum WildPropertyType {
-  WILD_PROPERTY_TYPE_WILD_BROWN_LIGHT_BLUE = 0;
-  WILD_PROPERTY_TYPE_WILD_LIGHT_BLUE_RAIROAD = 1;
-  WILD_PROPERTY_TYPE_WILD_PINK_ORANGE = 2;
-  WILD_PROPERTY_TYPE_WILD_ORANGE_UTILITY = 3;
-  WILD_PROPERTY_TYPE_WILD_GREEN_DARK_BLUE = 4;
-  WILD_PROPERTY_TYPE_WILRD_GREEN_RAILROAD = 5;
-  WILD_PROPERTY_TYPE_WILD_UTLITY_RAILROAD = 6;
-  WILD_PROPERTY_TYPE_WILD = 7;
+enum AssetKey {
+  BALTIC_AVE = 0;
+  MEDITERRANEAN_AVE = 1;
+  CONNECTICUT_AVE = 2;
+  ORIENTAL_AVE = 3;
+  VERMONT_AVE = 4;
+  ST_CHARLES_PLACE = 5;
+  VIRGINIA_AVE = 6;
+  STATE_AVE = 7;
+  NEW_YORK_AVE = 8;
+  ST_JAMES_PLACE = 9;
+  TENNESSEE_AVE = 10;
+  KENTUCKY_AVE = 11;
+  INDIANA_AVE = 12;
+  ILLINOIS_AVE = 13;
+  VENTNOR_AVE = 14;
+  MARVIN_GARDENS = 15;
+  ATLANTIC_AVE = 16;
+  NORTH_CAROLINA_AVE = 17;
+  PACIFIC_AVE = 18;
+  PENNSYLVANIA_AVE = 19;
+  BOARDWALK = 20;
+  PARK_PLACE = 21;
+  WATER_WORKS = 22;
+  ELECTRIC_COMPANY = 23;
+  SHORT_LINE = 24;
+  B_AND_O_RAILROAD = 25;
+  READING_RAILROAD = 26;
+  PENNSYLVANIA_RAILROAD = 27;
+
+  WILD_BROWN_SKY = 28;
+  WILD_SKY_RAILROAD = 29;
+  WILD_PINK_ORANGE = 30;
+  WILD_RED_YELLOW = 31;
+  WILD_GREEN_BLUE = 32;
+  WILD_GREEN_RAILROAD = 33;
+  WILD_UTILITY_RAILROAD = 34;
+  WILD_WILD = 35;
+
+  MONEY_10 = 36;
+  MONEY_5 = 37;
+  MONEY_4 = 38;
+  MONEY_3 = 39;
+  MONEY_2 = 40;
+  MONEY_1 = 41;
+
+  DEAL_BREAKER = 42;
+  JUST_SAY_NO = 43;
+  HOTEL = 44;
+  DEBT_COLLECTOR = 45;
+  FORCED_DEAL = 46;
+  SLY_DEAL = 47;
+  HOUSE = 48;
+  ITS_MY_BIRTHDAY = 49;
+  DOUBLE_THE_RENT = 50;
+  PASS_GO = 51;
+
+  RENT_WILD = 52;
+  RENT_BROWN_SKY = 53;
+  RENT_PINK_ORANGE = 54;
+  RENT_RED_YELLOW = 55;
+  RENT_GREEN_BLUE = 56;
+  RENT_UTILITY_RAILROAD = 57;
 }
 
-enum MoneyType {
-  MONEY_TYPE_1 = 0;
-  MONEY_TYPE_2 = 1;
-  MONEY_TYPE_3 = 2;
-  MONEY_TYPE_4 = 3;
-  MONEY_TYPE_5 = 4;
-  MONEY_TYPE_10 = 5;
+enum Category {
+  PURE_PROPERTY = 0;
+  WILD_PROPERTY = 1;
+  MONEY = 2;
+  ACTION = 3;
 }
 
-enum ActionType {
-  ACTION_TYPE_PASS_GO = 0;
-  ACTION_TYPE_DOUBLE_THE_RENT = 1;
-  ACTION_TYPE_ITS_MY_BIRTHDAY = 2;
-  ACTION_TYPE_HOUSE = 3;
-  ACTION_TYPE_SLY_DEAL = 4;
-  ACTION_TYPE_FORCED_DEAL = 5;
-  ACTION_TYPE_DEBT_COLLECTOR = 6;
-  ACTION_TYPE_HOTEL = 7;
-  ACTION_TYPE_JUST_SAY_NO = 8;
-  ACTION_TYPE_DEAL_BREAKER = 9;
-}
-
-enum RentType {
-  RENT_TYPE_BROWN_LIGHT_BLUE = 0;
-  RENT_TYPE_PINK_ORANGE = 1;
-  RENT_TYPE_RED_YELLOW = 2;
-  RENT_TYPE_GREEN_DARK_BLUE = 3;
-  RENT_TYPE_UTILITY_RAILROAD = 4;
-  RENT_TYPE_WILD = 5;
+enum Color {
+  NONE = 0;
+  BROWN = 1;
+  SKY = 2;
+  PINK = 3;
+  ORANGE = 4;
+  RED = 5;
+  YELLOW = 6;
+  GREEN = 7;
+  BLUE = 8;
+  UTILITY = 9;
+  RAILROAD = 10;
 }
 
 message Card {
-  oneof card {
-    PurePropertyType pure_property = 1;
-    WildPropertyType wild_property = 2;
-    MoneyType money = 3;
-    ActionType action = 4;
-    RentType rent = 5;
+  string card_id = 1;
+  AssetKey asset_key = 2;
+  Category category = 3;
+  Color active_color = 4;
+  repeated Color colors = 5;
+  int32 value = 6;
+}
+
+message Player {
+  string player_id = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+}
+
+message Hand {
+  repeated Card cards = 1;
+}
+
+message MaskedHand {
+  string player_id = 1;
+  int32 num_cards = 2;
+}
+
+message Money {
+  string player_id = 1;
+  repeated Card cards = 2;
+}
+
+message PropertySet {
+  string player_id = 1;
+  string property_set_id = 2;
+  Color color = 3;
+  repeated Card cards = 4;
+}
+
+enum DemandKind {
+  PAYMENT = 0;
+  PROPERTY = 1;
+  PROPERTY_SET = 2;
+}
+
+message PaymentDemand {
+  int32 amount = 1;
+}
+
+message PropertyDemand {
+  optional string source_card_id = 1;
+  string target_card_id = 2;
+}
+
+message PropertySetDemand {
+  string property_set_id = 1;
+}
+
+message Demand {
+  string source_id = 1;
+  DemandKind demand_kind = 2;
+  oneof demand {
+    PaymentDemand payment_demand = 3;
+    PropertyDemand property_demand = 4;
+    PropertySetDemand property_set_demand = 5;
   }
+  bool is_active = 6;
 }
 
-message PropertyType {
-  Card card = 1;
-  optional string property_name = 2;
+message PendingRent {
+  string player_id = 1;
+  repeated string target_ids = 2;
+  int32 base_amount = 3;
+  int32 multiplier = 4;
 }
 
-message PropertySetType {
-  repeated PropertyType property_types = 1;
+message AssetImage {
+  AssetKey asset_key = 1;
+  string image_url = 2;
+}
+
+message GameState {
+  int32 seq_num = 1;
+  repeated Player players = 2;
+  string current_player_id = 3;
+  int32 moves_left = 4;
+  Hand your_hand = 5;
+  repeated MaskedHand other_hands = 6;
+  repeated Money money = 7;
+  repeated PropertySet properties = 8;
+  optional Demand demand = 9;
+  optional PendingRent pending_rent = 10;
+  Card last_action = 11;
+  repeated AssetImage asset_images = 12;
+}
+
+message StartTurn {
+
+}
+
+message StartTurnRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  repeated Card cards = 3;
+}
+
+message StartTurnMaskedRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  int32 num_cards = 3;
+}
+
+//message DiscardCards {
+//  repeated string card_ids = 1;
+//}
+//
+//message DiscardCardsRes {
+//  // TODO
+//}
+
+message PlayMoney {
+  string card_id = 1;
+}
+
+message PlayMoneyRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  Card card = 3;
 }
 
 message PlayProperty {
-  string player_id = 1;
-  PropertyType property = 2;
+  string card_id = 1;
+  optional string property_set_id = 2;
+  optional Color active_color = 3;
 }
 
-message PlayMoney {
-  string player_id = 1;
-  Card card = 2;
+message PlayPropertyRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  PropertySet property_set = 3;
 }
 
-// pass go loop
-message PassGo {
-  string player_id = 1;
+message ClientMessage {
+  oneof payload {
+    StartTurn start_turn = 1;
+    PlayMoney play_money = 2;
+    PlayProperty play_property = 3;
+  }
 }
 
-message PassGoResponse {
-  string player_id = 1;
-  repeated Card cards = 2;
-}
-
-message DoubleTheRent {
-  string player_id = 1;
-}
-
-// its my birthday loop
-message ItsMyBirthday {
-  string player_id = 1;
-}
-
-message ItsMyBirthdayResponse {
-  string player_id = 1;
-  repeated Card cards = 2;
-  bool said_no = 3;
-}
-
-message House {
-  string player_id = 1;
-  PropertySetType property_set = 2;
-}
-
-message SlyDeal {
-  string player_id = 1;
-  string target_player_id = 2;
-  PropertyType property = 3;
-}
-
-message SlyDealResponse {
-  string player_id = 1;
-  bool said_no = 2;
-}
-
-message ForcedDeal {
-  string player_id = 1;
-  string target_player_id = 2;
-  PropertyType source_property = 3;
-  PropertyType target_property = 4;
-}
-
-message ForcedDealResponse {
-  string player_id = 1;
-  bool said_no = 2;
-}
-
-message DebtCollector {
-  string player_id = 1;
-  string target_player_id = 2;
-}
-
-message DebtCollectorResponse {
-  string player_id = 1;
-  repeated Card cards = 2;
-  bool said_no = 3;
-}
-
-message Hotel {
-  string player_id = 1;
-  PropertySetType property_set = 2;
-}
-
-message JustSayNoResponse {
-  string player_id = 1;
-  bool said_no = 2;
-}
-
-message DealBreaker {
-  string player_id = 1;
-  string target_player_id = 2;
-  PropertySetType property_set = 3;
-}
-
-message DealBreakerResponse {
-  string player_id = 1;
-  bool said_no = 2;
-}
-
-message Rent {
-  string player_id = 1;
-  Card card = 2;
-}
-
-message RentResponse {
-  string player_id = 1;
-  repeated Card cards = 2;
-  bool said_no = 3;
-}
-
-// TODO
-message WildRent {
-  string player_id = 1;
-  string target_player_id = 2;
-}
-
-message WildRentResponse {
-  string player_id = 1;
-  repeated Card cards = 2;
-  bool said_no = 3;
-}
-
-message ClientMonopolyDealMessage {
-
-}
-
-message ServerMonopolyDealMessage {
-
+message ServerMessage {
+  oneof payload {
+    Error error = 1;
+    GameState game_state = 2;
+    StartTurnRes start_turn_res = 3;
+    StartTurnMaskedRes start_turn_masked_res = 4;
+    PlayMoneyRes play_money_res = 5;
+    PlayPropertyRes play_property_res = 6;
+  }
 }
 
 //
