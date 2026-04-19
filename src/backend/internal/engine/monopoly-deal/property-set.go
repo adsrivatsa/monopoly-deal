@@ -49,17 +49,17 @@ func (ps *PropertySet) IsComplete() bool {
 }
 
 var Rent = map[Color]map[int]int{
-	ColorNone:     {0: 0},
-	ColorBrown:    {1: 1, 2: 2},
-	ColorSky:      {1: 1, 2: 2, 3: 3},
-	ColorPink:     {1: 1, 2: 2, 3: 4},
-	ColorOrange:   {1: 1, 2: 3, 3: 5},
-	ColorRed:      {1: 2, 2: 3, 3: 6},
-	ColorYellow:   {1: 2, 2: 4, 3: 6},
-	ColorGreen:    {1: 2, 2: 4, 3: 7},
-	ColorBlue:     {1: 3, 2: 8},
-	ColorUtility:  {1: 1, 2: 2},
-	ColorRailroad: {1: 1, 2: 2, 3: 3, 4: 4},
+	ColorUnspecified: {0: 0},
+	ColorBrown:       {1: 1, 2: 2},
+	ColorSky:         {1: 1, 2: 2, 3: 3},
+	ColorPink:        {1: 1, 2: 2, 3: 4},
+	ColorOrange:      {1: 1, 2: 3, 3: 5},
+	ColorRed:         {1: 2, 2: 3, 3: 6},
+	ColorYellow:      {1: 2, 2: 4, 3: 6},
+	ColorGreen:       {1: 2, 2: 4, 3: 7},
+	ColorBlue:        {1: 3, 2: 8},
+	ColorUtility:     {1: 1, 2: 2},
+	ColorRailroad:    {1: 1, 2: 2, 3: 3, 4: 4},
 }
 
 func (ps *PropertySet) Rent() int {

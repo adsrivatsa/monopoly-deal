@@ -9,6 +9,7 @@ import (
 type AssetKey string
 
 const (
+	AssetKeyUnspecified          AssetKey = ""
 	AssetKeyBalticAve            AssetKey = "baltic_ave"
 	AssetKeyMediterraneanAve     AssetKey = "mediterranean_ave"
 	AssetKeyConnecticutAve       AssetKey = "connecticut_ave"
@@ -70,64 +71,65 @@ const (
 )
 
 var AssetKeyProtoMap = map[AssetKey]monopoly_deal_schema.AssetKey{
-	AssetKeyBalticAve:            monopoly_deal_schema.AssetKey_BALTIC_AVE,
-	AssetKeyMediterraneanAve:     monopoly_deal_schema.AssetKey_MEDITERRANEAN_AVE,
-	AssetKeyConnecticutAve:       monopoly_deal_schema.AssetKey_CONNECTICUT_AVE,
-	AssetKeyOrientalAve:          monopoly_deal_schema.AssetKey_ORIENTAL_AVE,
-	AssetKeyVermontAve:           monopoly_deal_schema.AssetKey_VERMONT_AVE,
-	AssetKeyStCharlesPlace:       monopoly_deal_schema.AssetKey_ST_CHARLES_PLACE,
-	AssetKeyVirginiaAve:          monopoly_deal_schema.AssetKey_VIRGINIA_AVE,
-	AssetKeyStateAve:             monopoly_deal_schema.AssetKey_STATE_AVE,
-	AssetKeyNewYorkAve:           monopoly_deal_schema.AssetKey_NEW_YORK_AVE,
-	AssetKeyStJamesPlace:         monopoly_deal_schema.AssetKey_ST_JAMES_PLACE,
-	AssetKeyTennesseeAve:         monopoly_deal_schema.AssetKey_TENNESSEE_AVE,
-	AssetKeyKentuckyAve:          monopoly_deal_schema.AssetKey_KENTUCKY_AVE,
-	AssetKeyIndianaAve:           monopoly_deal_schema.AssetKey_INDIANA_AVE,
-	AssetKeyIllinoisAve:          monopoly_deal_schema.AssetKey_ILLINOIS_AVE,
-	AssetKeyVentnorAve:           monopoly_deal_schema.AssetKey_VENTNOR_AVE,
-	AssetKeyMarvinGardens:        monopoly_deal_schema.AssetKey_MARVIN_GARDENS,
-	AssetKeyAtlanticAve:          monopoly_deal_schema.AssetKey_ATLANTIC_AVE,
-	AssetKeyNorthCarolinaAve:     monopoly_deal_schema.AssetKey_NORTH_CAROLINA_AVE,
-	AssetKeyPacificAve:           monopoly_deal_schema.AssetKey_PACIFIC_AVE,
-	AssetKeyPennsylvaniaAve:      monopoly_deal_schema.AssetKey_PENNSYLVANIA_AVE,
-	AssetKeyBoardwalk:            monopoly_deal_schema.AssetKey_BOARDWALK,
-	AssetKeyParkPlace:            monopoly_deal_schema.AssetKey_PARK_PLACE,
-	AssetKeyWaterWorks:           monopoly_deal_schema.AssetKey_WATER_WORKS,
-	AssetKeyElectricCompany:      monopoly_deal_schema.AssetKey_ELECTRIC_COMPANY,
-	AssetKeyShortLine:            monopoly_deal_schema.AssetKey_SHORT_LINE,
-	AssetKeyBandORailRoad:        monopoly_deal_schema.AssetKey_B_AND_O_RAILROAD,
-	AssetKeyReadingRailroad:      monopoly_deal_schema.AssetKey_READING_RAILROAD,
-	AssetKeyPennsylvaniaRailroad: monopoly_deal_schema.AssetKey_PENNSYLVANIA_RAILROAD,
-	AssetKeyWildBrownSky:         monopoly_deal_schema.AssetKey_WILD_BROWN_SKY,
-	AssetKeyWildSkyRailroad:      monopoly_deal_schema.AssetKey_WILD_SKY_RAILROAD,
-	AssetKeyWildPinkOrange:       monopoly_deal_schema.AssetKey_WILD_PINK_ORANGE,
-	AssetKeyWildRedYellow:        monopoly_deal_schema.AssetKey_WILD_RED_YELLOW,
-	AssetKeyWildGreenBlue:        monopoly_deal_schema.AssetKey_WILD_GREEN_BLUE,
-	AssetKeyWildGreenRailroad:    monopoly_deal_schema.AssetKey_WILD_GREEN_RAILROAD,
-	AssetKeyWildUtilityRailroad:  monopoly_deal_schema.AssetKey_WILD_UTILITY_RAILROAD,
-	AssetKeyWildWild:             monopoly_deal_schema.AssetKey_WILD_WILD,
-	AssetKeyMoney10:              monopoly_deal_schema.AssetKey_MONEY_10,
-	AssetKeyMoney5:               monopoly_deal_schema.AssetKey_MONEY_5,
-	AssetKeyMoney4:               monopoly_deal_schema.AssetKey_MONEY_4,
-	AssetKeyMoney3:               monopoly_deal_schema.AssetKey_MONEY_3,
-	AssetKeyMoney2:               monopoly_deal_schema.AssetKey_MONEY_2,
-	AssetKeyMoney1:               monopoly_deal_schema.AssetKey_MONEY_1,
-	AssetKeyDealBreaker:          monopoly_deal_schema.AssetKey_DEAL_BREAKER,
-	AssetKeyJustSayNo:            monopoly_deal_schema.AssetKey_JUST_SAY_NO,
-	AssetKeyHotel:                monopoly_deal_schema.AssetKey_HOTEL,
-	AssetKeyDebtCollector:        monopoly_deal_schema.AssetKey_DEBT_COLLECTOR,
-	AssetKeyForcedDeal:           monopoly_deal_schema.AssetKey_FORCED_DEAL,
-	AssetKeySlyDeal:              monopoly_deal_schema.AssetKey_SLY_DEAL,
-	AssetKeyHouse:                monopoly_deal_schema.AssetKey_HOUSE,
-	AssetKeyItsMyBirthday:        monopoly_deal_schema.AssetKey_ITS_MY_BIRTHDAY,
-	AssetKeyDoubleTheRent:        monopoly_deal_schema.AssetKey_DOUBLE_THE_RENT,
-	AssetKeyPassGo:               monopoly_deal_schema.AssetKey_PASS_GO,
-	AssetKeyRentWild:             monopoly_deal_schema.AssetKey_RENT_WILD,
-	AssetKeyRentBrownSky:         monopoly_deal_schema.AssetKey_RENT_BROWN_SKY,
-	AssetKeyRentPinkOrange:       monopoly_deal_schema.AssetKey_RENT_PINK_ORANGE,
-	AssetKeyRentRedYellow:        monopoly_deal_schema.AssetKey_RENT_RED_YELLOW,
-	AssetKeyRentGreenBlue:        monopoly_deal_schema.AssetKey_RENT_GREEN_BLUE,
-	AssetKeyRentUtilityRailroad:  monopoly_deal_schema.AssetKey_RENT_UTILITY_RAILROAD,
+	AssetKeyUnspecified:          monopoly_deal_schema.AssetKey_ASSET_KEY_UNSPECIFIED,
+	AssetKeyBalticAve:            monopoly_deal_schema.AssetKey_ASSET_KEY_BALTIC_AVE,
+	AssetKeyMediterraneanAve:     monopoly_deal_schema.AssetKey_ASSET_KEY_MEDITERRANEAN_AVE,
+	AssetKeyConnecticutAve:       monopoly_deal_schema.AssetKey_ASSET_KEY_CONNECTICUT_AVE,
+	AssetKeyOrientalAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_ORIENTAL_AVE,
+	AssetKeyVermontAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_VERMONT_AVE,
+	AssetKeyStCharlesPlace:       monopoly_deal_schema.AssetKey_ASSET_KEY_ST_CHARLES_PLACE,
+	AssetKeyVirginiaAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_VIRGINIA_AVE,
+	AssetKeyStateAve:             monopoly_deal_schema.AssetKey_ASSET_KEY_STATE_AVE,
+	AssetKeyNewYorkAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_NEW_YORK_AVE,
+	AssetKeyStJamesPlace:         monopoly_deal_schema.AssetKey_ASSET_KEY_ST_JAMES_PLACE,
+	AssetKeyTennesseeAve:         monopoly_deal_schema.AssetKey_ASSET_KEY_TENNESSEE_AVE,
+	AssetKeyKentuckyAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_KENTUCKY_AVE,
+	AssetKeyIndianaAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_INDIANA_AVE,
+	AssetKeyIllinoisAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_ILLINOIS_AVE,
+	AssetKeyVentnorAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_VENTNOR_AVE,
+	AssetKeyMarvinGardens:        monopoly_deal_schema.AssetKey_ASSET_KEY_MARVIN_GARDENS,
+	AssetKeyAtlanticAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_ATLANTIC_AVE,
+	AssetKeyNorthCarolinaAve:     monopoly_deal_schema.AssetKey_ASSET_KEY_NORTH_CAROLINA_AVE,
+	AssetKeyPacificAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_PACIFIC_AVE,
+	AssetKeyPennsylvaniaAve:      monopoly_deal_schema.AssetKey_ASSET_KEY_PENNSYLVANIA_AVE,
+	AssetKeyBoardwalk:            monopoly_deal_schema.AssetKey_ASSET_KEY_BOARDWALK,
+	AssetKeyParkPlace:            monopoly_deal_schema.AssetKey_ASSET_KEY_PARK_PLACE,
+	AssetKeyWaterWorks:           monopoly_deal_schema.AssetKey_ASSET_KEY_WATER_WORKS,
+	AssetKeyElectricCompany:      monopoly_deal_schema.AssetKey_ASSET_KEY_ELECTRIC_COMPANY,
+	AssetKeyShortLine:            monopoly_deal_schema.AssetKey_ASSET_KEY_SHORT_LINE,
+	AssetKeyBandORailRoad:        monopoly_deal_schema.AssetKey_ASSET_KEY_B_AND_O_RAILROAD,
+	AssetKeyReadingRailroad:      monopoly_deal_schema.AssetKey_ASSET_KEY_READING_RAILROAD,
+	AssetKeyPennsylvaniaRailroad: monopoly_deal_schema.AssetKey_ASSET_KEY_PENNSYLVANIA_RAILROAD,
+	AssetKeyWildBrownSky:         monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_BROWN_SKY,
+	AssetKeyWildSkyRailroad:      monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_SKY_RAILROAD,
+	AssetKeyWildPinkOrange:       monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_PINK_ORANGE,
+	AssetKeyWildRedYellow:        monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_RED_YELLOW,
+	AssetKeyWildGreenBlue:        monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_GREEN_BLUE,
+	AssetKeyWildGreenRailroad:    monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_GREEN_RAILROAD,
+	AssetKeyWildUtilityRailroad:  monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_UTILITY_RAILROAD,
+	AssetKeyWildWild:             monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_WILD,
+	AssetKeyMoney10:              monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_10,
+	AssetKeyMoney5:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_5,
+	AssetKeyMoney4:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_4,
+	AssetKeyMoney3:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_3,
+	AssetKeyMoney2:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_2,
+	AssetKeyMoney1:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_1,
+	AssetKeyDealBreaker:          monopoly_deal_schema.AssetKey_ASSET_KEY_DEAL_BREAKER,
+	AssetKeyJustSayNo:            monopoly_deal_schema.AssetKey_ASSET_KEY_JUST_SAY_NO,
+	AssetKeyHotel:                monopoly_deal_schema.AssetKey_ASSET_KEY_HOTEL,
+	AssetKeyDebtCollector:        monopoly_deal_schema.AssetKey_ASSET_KEY_DEBT_COLLECTOR,
+	AssetKeyForcedDeal:           monopoly_deal_schema.AssetKey_ASSET_KEY_FORCED_DEAL,
+	AssetKeySlyDeal:              monopoly_deal_schema.AssetKey_ASSET_KEY_SLY_DEAL,
+	AssetKeyHouse:                monopoly_deal_schema.AssetKey_ASSET_KEY_HOUSE,
+	AssetKeyItsMyBirthday:        monopoly_deal_schema.AssetKey_ASSET_KEY_ITS_MY_BIRTHDAY,
+	AssetKeyDoubleTheRent:        monopoly_deal_schema.AssetKey_ASSET_KEY_DOUBLE_THE_RENT,
+	AssetKeyPassGo:               monopoly_deal_schema.AssetKey_ASSET_KEY_PASS_GO,
+	AssetKeyRentWild:             monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_WILD,
+	AssetKeyRentBrownSky:         monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_BROWN_SKY,
+	AssetKeyRentPinkOrange:       monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_PINK_ORANGE,
+	AssetKeyRentRedYellow:        monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_RED_YELLOW,
+	AssetKeyRentGreenBlue:        monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_GREEN_BLUE,
+	AssetKeyRentUtilityRailroad:  monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_UTILITY_RAILROAD,
 }
 
 func AllAssetKeys() []AssetKey {
@@ -204,17 +206,19 @@ func (a AssetKey) Proto() monopoly_deal_schema.AssetKey {
 type Category int
 
 const (
-	CategoryPureProperty Category = iota
+	CategoryUnspecified Category = iota
+	CategoryPureProperty
 	CategoryWildProperty
 	CategoryMoney
 	CategoryAction
 )
 
 var CategoryProtoMap = map[Category]monopoly_deal_schema.Category{
-	CategoryPureProperty: monopoly_deal_schema.Category_PURE_PROPERTY,
-	CategoryWildProperty: monopoly_deal_schema.Category_WILD_PROPERTY,
-	CategoryMoney:        monopoly_deal_schema.Category_MONEY,
-	CategoryAction:       monopoly_deal_schema.Category_ACTION,
+	CategoryUnspecified:  monopoly_deal_schema.Category_CATEGORY_UNSPECIFIED,
+	CategoryPureProperty: monopoly_deal_schema.Category_CATEGORY_PURE_PROPERTY,
+	CategoryWildProperty: monopoly_deal_schema.Category_CATEGORY_WILD_PROPERTY,
+	CategoryMoney:        monopoly_deal_schema.Category_CATEGORY_MONEY,
+	CategoryAction:       monopoly_deal_schema.Category_CATEGORY_ACTION,
 }
 
 func (c Category) Proto() monopoly_deal_schema.Category {
@@ -224,7 +228,7 @@ func (c Category) Proto() monopoly_deal_schema.Category {
 type Color int
 
 const (
-	ColorNone Color = iota
+	ColorUnspecified Color = iota
 	ColorBrown
 	ColorSky
 	ColorPink
@@ -238,17 +242,17 @@ const (
 )
 
 var ColorProtoMap = map[Color]monopoly_deal_schema.Color{
-	ColorNone:     monopoly_deal_schema.Color_NONE,
-	ColorBrown:    monopoly_deal_schema.Color_BROWN,
-	ColorSky:      monopoly_deal_schema.Color_SKY,
-	ColorPink:     monopoly_deal_schema.Color_PINK,
-	ColorOrange:   monopoly_deal_schema.Color_ORANGE,
-	ColorRed:      monopoly_deal_schema.Color_RED,
-	ColorYellow:   monopoly_deal_schema.Color_YELLOW,
-	ColorGreen:    monopoly_deal_schema.Color_GREEN,
-	ColorBlue:     monopoly_deal_schema.Color_BLUE,
-	ColorUtility:  monopoly_deal_schema.Color_UTILITY,
-	ColorRailroad: monopoly_deal_schema.Color_RAILROAD,
+	ColorUnspecified: monopoly_deal_schema.Color_COLOR_UNSPECIFIED,
+	ColorBrown:       monopoly_deal_schema.Color_COLOR_BROWN,
+	ColorSky:         monopoly_deal_schema.Color_COLOR_SKY,
+	ColorPink:        monopoly_deal_schema.Color_COLOR_PINK,
+	ColorOrange:      monopoly_deal_schema.Color_COLOR_ORANGE,
+	ColorRed:         monopoly_deal_schema.Color_COLOR_RED,
+	ColorYellow:      monopoly_deal_schema.Color_COLOR_YELLOW,
+	ColorGreen:       monopoly_deal_schema.Color_COLOR_GREEN,
+	ColorBlue:        monopoly_deal_schema.Color_COLOR_BLUE,
+	ColorUtility:     monopoly_deal_schema.Color_COLOR_UTILITY,
+	ColorRailroad:    monopoly_deal_schema.Color_COLOR_RAILROAD,
 }
 
 func (c Color) Proto() monopoly_deal_schema.Color {
@@ -267,7 +271,7 @@ type Card struct {
 func NewCard(id Identifier, c Category, ak AssetKey, v int, colors ...Color) Card {
 	slices.Sort(colors)
 
-	activeColor := ColorNone
+	activeColor := ColorUnspecified
 	if len(colors) > 0 {
 		activeColor = colors[0]
 	}

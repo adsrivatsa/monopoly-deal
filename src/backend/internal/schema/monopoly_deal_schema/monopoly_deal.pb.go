@@ -24,187 +24,190 @@ const (
 type AssetKey int32
 
 const (
-	AssetKey_BALTIC_AVE            AssetKey = 0
-	AssetKey_MEDITERRANEAN_AVE     AssetKey = 1
-	AssetKey_CONNECTICUT_AVE       AssetKey = 2
-	AssetKey_ORIENTAL_AVE          AssetKey = 3
-	AssetKey_VERMONT_AVE           AssetKey = 4
-	AssetKey_ST_CHARLES_PLACE      AssetKey = 5
-	AssetKey_VIRGINIA_AVE          AssetKey = 6
-	AssetKey_STATE_AVE             AssetKey = 7
-	AssetKey_NEW_YORK_AVE          AssetKey = 8
-	AssetKey_ST_JAMES_PLACE        AssetKey = 9
-	AssetKey_TENNESSEE_AVE         AssetKey = 10
-	AssetKey_KENTUCKY_AVE          AssetKey = 11
-	AssetKey_INDIANA_AVE           AssetKey = 12
-	AssetKey_ILLINOIS_AVE          AssetKey = 13
-	AssetKey_VENTNOR_AVE           AssetKey = 14
-	AssetKey_MARVIN_GARDENS        AssetKey = 15
-	AssetKey_ATLANTIC_AVE          AssetKey = 16
-	AssetKey_NORTH_CAROLINA_AVE    AssetKey = 17
-	AssetKey_PACIFIC_AVE           AssetKey = 18
-	AssetKey_PENNSYLVANIA_AVE      AssetKey = 19
-	AssetKey_BOARDWALK             AssetKey = 20
-	AssetKey_PARK_PLACE            AssetKey = 21
-	AssetKey_WATER_WORKS           AssetKey = 22
-	AssetKey_ELECTRIC_COMPANY      AssetKey = 23
-	AssetKey_SHORT_LINE            AssetKey = 24
-	AssetKey_B_AND_O_RAILROAD      AssetKey = 25
-	AssetKey_READING_RAILROAD      AssetKey = 26
-	AssetKey_PENNSYLVANIA_RAILROAD AssetKey = 27
-	AssetKey_WILD_BROWN_SKY        AssetKey = 28
-	AssetKey_WILD_SKY_RAILROAD     AssetKey = 29
-	AssetKey_WILD_PINK_ORANGE      AssetKey = 30
-	AssetKey_WILD_RED_YELLOW       AssetKey = 31
-	AssetKey_WILD_GREEN_BLUE       AssetKey = 32
-	AssetKey_WILD_GREEN_RAILROAD   AssetKey = 33
-	AssetKey_WILD_UTILITY_RAILROAD AssetKey = 34
-	AssetKey_WILD_WILD             AssetKey = 35
-	AssetKey_MONEY_10              AssetKey = 36
-	AssetKey_MONEY_5               AssetKey = 37
-	AssetKey_MONEY_4               AssetKey = 38
-	AssetKey_MONEY_3               AssetKey = 39
-	AssetKey_MONEY_2               AssetKey = 40
-	AssetKey_MONEY_1               AssetKey = 41
-	AssetKey_DEAL_BREAKER          AssetKey = 42
-	AssetKey_JUST_SAY_NO           AssetKey = 43
-	AssetKey_HOTEL                 AssetKey = 44
-	AssetKey_DEBT_COLLECTOR        AssetKey = 45
-	AssetKey_FORCED_DEAL           AssetKey = 46
-	AssetKey_SLY_DEAL              AssetKey = 47
-	AssetKey_HOUSE                 AssetKey = 48
-	AssetKey_ITS_MY_BIRTHDAY       AssetKey = 49
-	AssetKey_DOUBLE_THE_RENT       AssetKey = 50
-	AssetKey_PASS_GO               AssetKey = 51
-	AssetKey_RENT_WILD             AssetKey = 52
-	AssetKey_RENT_BROWN_SKY        AssetKey = 53
-	AssetKey_RENT_PINK_ORANGE      AssetKey = 54
-	AssetKey_RENT_RED_YELLOW       AssetKey = 55
-	AssetKey_RENT_GREEN_BLUE       AssetKey = 56
-	AssetKey_RENT_UTILITY_RAILROAD AssetKey = 57
+	AssetKey_ASSET_KEY_UNSPECIFIED           AssetKey = 0
+	AssetKey_ASSET_KEY_BALTIC_AVE            AssetKey = 1
+	AssetKey_ASSET_KEY_MEDITERRANEAN_AVE     AssetKey = 2
+	AssetKey_ASSET_KEY_CONNECTICUT_AVE       AssetKey = 3
+	AssetKey_ASSET_KEY_ORIENTAL_AVE          AssetKey = 4
+	AssetKey_ASSET_KEY_VERMONT_AVE           AssetKey = 5
+	AssetKey_ASSET_KEY_ST_CHARLES_PLACE      AssetKey = 6
+	AssetKey_ASSET_KEY_VIRGINIA_AVE          AssetKey = 7
+	AssetKey_ASSET_KEY_STATE_AVE             AssetKey = 8
+	AssetKey_ASSET_KEY_NEW_YORK_AVE          AssetKey = 9
+	AssetKey_ASSET_KEY_ST_JAMES_PLACE        AssetKey = 10
+	AssetKey_ASSET_KEY_TENNESSEE_AVE         AssetKey = 11
+	AssetKey_ASSET_KEY_KENTUCKY_AVE          AssetKey = 12
+	AssetKey_ASSET_KEY_INDIANA_AVE           AssetKey = 13
+	AssetKey_ASSET_KEY_ILLINOIS_AVE          AssetKey = 14
+	AssetKey_ASSET_KEY_VENTNOR_AVE           AssetKey = 15
+	AssetKey_ASSET_KEY_MARVIN_GARDENS        AssetKey = 16
+	AssetKey_ASSET_KEY_ATLANTIC_AVE          AssetKey = 17
+	AssetKey_ASSET_KEY_NORTH_CAROLINA_AVE    AssetKey = 18
+	AssetKey_ASSET_KEY_PACIFIC_AVE           AssetKey = 19
+	AssetKey_ASSET_KEY_PENNSYLVANIA_AVE      AssetKey = 20
+	AssetKey_ASSET_KEY_BOARDWALK             AssetKey = 21
+	AssetKey_ASSET_KEY_PARK_PLACE            AssetKey = 22
+	AssetKey_ASSET_KEY_WATER_WORKS           AssetKey = 23
+	AssetKey_ASSET_KEY_ELECTRIC_COMPANY      AssetKey = 24
+	AssetKey_ASSET_KEY_SHORT_LINE            AssetKey = 25
+	AssetKey_ASSET_KEY_B_AND_O_RAILROAD      AssetKey = 26
+	AssetKey_ASSET_KEY_READING_RAILROAD      AssetKey = 27
+	AssetKey_ASSET_KEY_PENNSYLVANIA_RAILROAD AssetKey = 28
+	AssetKey_ASSET_KEY_WILD_BROWN_SKY        AssetKey = 29
+	AssetKey_ASSET_KEY_WILD_SKY_RAILROAD     AssetKey = 30
+	AssetKey_ASSET_KEY_WILD_PINK_ORANGE      AssetKey = 31
+	AssetKey_ASSET_KEY_WILD_RED_YELLOW       AssetKey = 32
+	AssetKey_ASSET_KEY_WILD_GREEN_BLUE       AssetKey = 33
+	AssetKey_ASSET_KEY_WILD_GREEN_RAILROAD   AssetKey = 34
+	AssetKey_ASSET_KEY_WILD_UTILITY_RAILROAD AssetKey = 35
+	AssetKey_ASSET_KEY_WILD_WILD             AssetKey = 36
+	AssetKey_ASSET_KEY_MONEY_10              AssetKey = 37
+	AssetKey_ASSET_KEY_MONEY_5               AssetKey = 38
+	AssetKey_ASSET_KEY_MONEY_4               AssetKey = 39
+	AssetKey_ASSET_KEY_MONEY_3               AssetKey = 40
+	AssetKey_ASSET_KEY_MONEY_2               AssetKey = 41
+	AssetKey_ASSET_KEY_MONEY_1               AssetKey = 42
+	AssetKey_ASSET_KEY_DEAL_BREAKER          AssetKey = 43
+	AssetKey_ASSET_KEY_JUST_SAY_NO           AssetKey = 44
+	AssetKey_ASSET_KEY_HOTEL                 AssetKey = 45
+	AssetKey_ASSET_KEY_DEBT_COLLECTOR        AssetKey = 46
+	AssetKey_ASSET_KEY_FORCED_DEAL           AssetKey = 47
+	AssetKey_ASSET_KEY_SLY_DEAL              AssetKey = 48
+	AssetKey_ASSET_KEY_HOUSE                 AssetKey = 49
+	AssetKey_ASSET_KEY_ITS_MY_BIRTHDAY       AssetKey = 50
+	AssetKey_ASSET_KEY_DOUBLE_THE_RENT       AssetKey = 51
+	AssetKey_ASSET_KEY_PASS_GO               AssetKey = 52
+	AssetKey_ASSET_KEY_RENT_WILD             AssetKey = 53
+	AssetKey_ASSET_KEY_RENT_BROWN_SKY        AssetKey = 54
+	AssetKey_ASSET_KEY_RENT_PINK_ORANGE      AssetKey = 55
+	AssetKey_ASSET_KEY_RENT_RED_YELLOW       AssetKey = 56
+	AssetKey_ASSET_KEY_RENT_GREEN_BLUE       AssetKey = 57
+	AssetKey_ASSET_KEY_RENT_UTILITY_RAILROAD AssetKey = 58
 )
 
 // Enum value maps for AssetKey.
 var (
 	AssetKey_name = map[int32]string{
-		0:  "BALTIC_AVE",
-		1:  "MEDITERRANEAN_AVE",
-		2:  "CONNECTICUT_AVE",
-		3:  "ORIENTAL_AVE",
-		4:  "VERMONT_AVE",
-		5:  "ST_CHARLES_PLACE",
-		6:  "VIRGINIA_AVE",
-		7:  "STATE_AVE",
-		8:  "NEW_YORK_AVE",
-		9:  "ST_JAMES_PLACE",
-		10: "TENNESSEE_AVE",
-		11: "KENTUCKY_AVE",
-		12: "INDIANA_AVE",
-		13: "ILLINOIS_AVE",
-		14: "VENTNOR_AVE",
-		15: "MARVIN_GARDENS",
-		16: "ATLANTIC_AVE",
-		17: "NORTH_CAROLINA_AVE",
-		18: "PACIFIC_AVE",
-		19: "PENNSYLVANIA_AVE",
-		20: "BOARDWALK",
-		21: "PARK_PLACE",
-		22: "WATER_WORKS",
-		23: "ELECTRIC_COMPANY",
-		24: "SHORT_LINE",
-		25: "B_AND_O_RAILROAD",
-		26: "READING_RAILROAD",
-		27: "PENNSYLVANIA_RAILROAD",
-		28: "WILD_BROWN_SKY",
-		29: "WILD_SKY_RAILROAD",
-		30: "WILD_PINK_ORANGE",
-		31: "WILD_RED_YELLOW",
-		32: "WILD_GREEN_BLUE",
-		33: "WILD_GREEN_RAILROAD",
-		34: "WILD_UTILITY_RAILROAD",
-		35: "WILD_WILD",
-		36: "MONEY_10",
-		37: "MONEY_5",
-		38: "MONEY_4",
-		39: "MONEY_3",
-		40: "MONEY_2",
-		41: "MONEY_1",
-		42: "DEAL_BREAKER",
-		43: "JUST_SAY_NO",
-		44: "HOTEL",
-		45: "DEBT_COLLECTOR",
-		46: "FORCED_DEAL",
-		47: "SLY_DEAL",
-		48: "HOUSE",
-		49: "ITS_MY_BIRTHDAY",
-		50: "DOUBLE_THE_RENT",
-		51: "PASS_GO",
-		52: "RENT_WILD",
-		53: "RENT_BROWN_SKY",
-		54: "RENT_PINK_ORANGE",
-		55: "RENT_RED_YELLOW",
-		56: "RENT_GREEN_BLUE",
-		57: "RENT_UTILITY_RAILROAD",
+		0:  "ASSET_KEY_UNSPECIFIED",
+		1:  "ASSET_KEY_BALTIC_AVE",
+		2:  "ASSET_KEY_MEDITERRANEAN_AVE",
+		3:  "ASSET_KEY_CONNECTICUT_AVE",
+		4:  "ASSET_KEY_ORIENTAL_AVE",
+		5:  "ASSET_KEY_VERMONT_AVE",
+		6:  "ASSET_KEY_ST_CHARLES_PLACE",
+		7:  "ASSET_KEY_VIRGINIA_AVE",
+		8:  "ASSET_KEY_STATE_AVE",
+		9:  "ASSET_KEY_NEW_YORK_AVE",
+		10: "ASSET_KEY_ST_JAMES_PLACE",
+		11: "ASSET_KEY_TENNESSEE_AVE",
+		12: "ASSET_KEY_KENTUCKY_AVE",
+		13: "ASSET_KEY_INDIANA_AVE",
+		14: "ASSET_KEY_ILLINOIS_AVE",
+		15: "ASSET_KEY_VENTNOR_AVE",
+		16: "ASSET_KEY_MARVIN_GARDENS",
+		17: "ASSET_KEY_ATLANTIC_AVE",
+		18: "ASSET_KEY_NORTH_CAROLINA_AVE",
+		19: "ASSET_KEY_PACIFIC_AVE",
+		20: "ASSET_KEY_PENNSYLVANIA_AVE",
+		21: "ASSET_KEY_BOARDWALK",
+		22: "ASSET_KEY_PARK_PLACE",
+		23: "ASSET_KEY_WATER_WORKS",
+		24: "ASSET_KEY_ELECTRIC_COMPANY",
+		25: "ASSET_KEY_SHORT_LINE",
+		26: "ASSET_KEY_B_AND_O_RAILROAD",
+		27: "ASSET_KEY_READING_RAILROAD",
+		28: "ASSET_KEY_PENNSYLVANIA_RAILROAD",
+		29: "ASSET_KEY_WILD_BROWN_SKY",
+		30: "ASSET_KEY_WILD_SKY_RAILROAD",
+		31: "ASSET_KEY_WILD_PINK_ORANGE",
+		32: "ASSET_KEY_WILD_RED_YELLOW",
+		33: "ASSET_KEY_WILD_GREEN_BLUE",
+		34: "ASSET_KEY_WILD_GREEN_RAILROAD",
+		35: "ASSET_KEY_WILD_UTILITY_RAILROAD",
+		36: "ASSET_KEY_WILD_WILD",
+		37: "ASSET_KEY_MONEY_10",
+		38: "ASSET_KEY_MONEY_5",
+		39: "ASSET_KEY_MONEY_4",
+		40: "ASSET_KEY_MONEY_3",
+		41: "ASSET_KEY_MONEY_2",
+		42: "ASSET_KEY_MONEY_1",
+		43: "ASSET_KEY_DEAL_BREAKER",
+		44: "ASSET_KEY_JUST_SAY_NO",
+		45: "ASSET_KEY_HOTEL",
+		46: "ASSET_KEY_DEBT_COLLECTOR",
+		47: "ASSET_KEY_FORCED_DEAL",
+		48: "ASSET_KEY_SLY_DEAL",
+		49: "ASSET_KEY_HOUSE",
+		50: "ASSET_KEY_ITS_MY_BIRTHDAY",
+		51: "ASSET_KEY_DOUBLE_THE_RENT",
+		52: "ASSET_KEY_PASS_GO",
+		53: "ASSET_KEY_RENT_WILD",
+		54: "ASSET_KEY_RENT_BROWN_SKY",
+		55: "ASSET_KEY_RENT_PINK_ORANGE",
+		56: "ASSET_KEY_RENT_RED_YELLOW",
+		57: "ASSET_KEY_RENT_GREEN_BLUE",
+		58: "ASSET_KEY_RENT_UTILITY_RAILROAD",
 	}
 	AssetKey_value = map[string]int32{
-		"BALTIC_AVE":            0,
-		"MEDITERRANEAN_AVE":     1,
-		"CONNECTICUT_AVE":       2,
-		"ORIENTAL_AVE":          3,
-		"VERMONT_AVE":           4,
-		"ST_CHARLES_PLACE":      5,
-		"VIRGINIA_AVE":          6,
-		"STATE_AVE":             7,
-		"NEW_YORK_AVE":          8,
-		"ST_JAMES_PLACE":        9,
-		"TENNESSEE_AVE":         10,
-		"KENTUCKY_AVE":          11,
-		"INDIANA_AVE":           12,
-		"ILLINOIS_AVE":          13,
-		"VENTNOR_AVE":           14,
-		"MARVIN_GARDENS":        15,
-		"ATLANTIC_AVE":          16,
-		"NORTH_CAROLINA_AVE":    17,
-		"PACIFIC_AVE":           18,
-		"PENNSYLVANIA_AVE":      19,
-		"BOARDWALK":             20,
-		"PARK_PLACE":            21,
-		"WATER_WORKS":           22,
-		"ELECTRIC_COMPANY":      23,
-		"SHORT_LINE":            24,
-		"B_AND_O_RAILROAD":      25,
-		"READING_RAILROAD":      26,
-		"PENNSYLVANIA_RAILROAD": 27,
-		"WILD_BROWN_SKY":        28,
-		"WILD_SKY_RAILROAD":     29,
-		"WILD_PINK_ORANGE":      30,
-		"WILD_RED_YELLOW":       31,
-		"WILD_GREEN_BLUE":       32,
-		"WILD_GREEN_RAILROAD":   33,
-		"WILD_UTILITY_RAILROAD": 34,
-		"WILD_WILD":             35,
-		"MONEY_10":              36,
-		"MONEY_5":               37,
-		"MONEY_4":               38,
-		"MONEY_3":               39,
-		"MONEY_2":               40,
-		"MONEY_1":               41,
-		"DEAL_BREAKER":          42,
-		"JUST_SAY_NO":           43,
-		"HOTEL":                 44,
-		"DEBT_COLLECTOR":        45,
-		"FORCED_DEAL":           46,
-		"SLY_DEAL":              47,
-		"HOUSE":                 48,
-		"ITS_MY_BIRTHDAY":       49,
-		"DOUBLE_THE_RENT":       50,
-		"PASS_GO":               51,
-		"RENT_WILD":             52,
-		"RENT_BROWN_SKY":        53,
-		"RENT_PINK_ORANGE":      54,
-		"RENT_RED_YELLOW":       55,
-		"RENT_GREEN_BLUE":       56,
-		"RENT_UTILITY_RAILROAD": 57,
+		"ASSET_KEY_UNSPECIFIED":           0,
+		"ASSET_KEY_BALTIC_AVE":            1,
+		"ASSET_KEY_MEDITERRANEAN_AVE":     2,
+		"ASSET_KEY_CONNECTICUT_AVE":       3,
+		"ASSET_KEY_ORIENTAL_AVE":          4,
+		"ASSET_KEY_VERMONT_AVE":           5,
+		"ASSET_KEY_ST_CHARLES_PLACE":      6,
+		"ASSET_KEY_VIRGINIA_AVE":          7,
+		"ASSET_KEY_STATE_AVE":             8,
+		"ASSET_KEY_NEW_YORK_AVE":          9,
+		"ASSET_KEY_ST_JAMES_PLACE":        10,
+		"ASSET_KEY_TENNESSEE_AVE":         11,
+		"ASSET_KEY_KENTUCKY_AVE":          12,
+		"ASSET_KEY_INDIANA_AVE":           13,
+		"ASSET_KEY_ILLINOIS_AVE":          14,
+		"ASSET_KEY_VENTNOR_AVE":           15,
+		"ASSET_KEY_MARVIN_GARDENS":        16,
+		"ASSET_KEY_ATLANTIC_AVE":          17,
+		"ASSET_KEY_NORTH_CAROLINA_AVE":    18,
+		"ASSET_KEY_PACIFIC_AVE":           19,
+		"ASSET_KEY_PENNSYLVANIA_AVE":      20,
+		"ASSET_KEY_BOARDWALK":             21,
+		"ASSET_KEY_PARK_PLACE":            22,
+		"ASSET_KEY_WATER_WORKS":           23,
+		"ASSET_KEY_ELECTRIC_COMPANY":      24,
+		"ASSET_KEY_SHORT_LINE":            25,
+		"ASSET_KEY_B_AND_O_RAILROAD":      26,
+		"ASSET_KEY_READING_RAILROAD":      27,
+		"ASSET_KEY_PENNSYLVANIA_RAILROAD": 28,
+		"ASSET_KEY_WILD_BROWN_SKY":        29,
+		"ASSET_KEY_WILD_SKY_RAILROAD":     30,
+		"ASSET_KEY_WILD_PINK_ORANGE":      31,
+		"ASSET_KEY_WILD_RED_YELLOW":       32,
+		"ASSET_KEY_WILD_GREEN_BLUE":       33,
+		"ASSET_KEY_WILD_GREEN_RAILROAD":   34,
+		"ASSET_KEY_WILD_UTILITY_RAILROAD": 35,
+		"ASSET_KEY_WILD_WILD":             36,
+		"ASSET_KEY_MONEY_10":              37,
+		"ASSET_KEY_MONEY_5":               38,
+		"ASSET_KEY_MONEY_4":               39,
+		"ASSET_KEY_MONEY_3":               40,
+		"ASSET_KEY_MONEY_2":               41,
+		"ASSET_KEY_MONEY_1":               42,
+		"ASSET_KEY_DEAL_BREAKER":          43,
+		"ASSET_KEY_JUST_SAY_NO":           44,
+		"ASSET_KEY_HOTEL":                 45,
+		"ASSET_KEY_DEBT_COLLECTOR":        46,
+		"ASSET_KEY_FORCED_DEAL":           47,
+		"ASSET_KEY_SLY_DEAL":              48,
+		"ASSET_KEY_HOUSE":                 49,
+		"ASSET_KEY_ITS_MY_BIRTHDAY":       50,
+		"ASSET_KEY_DOUBLE_THE_RENT":       51,
+		"ASSET_KEY_PASS_GO":               52,
+		"ASSET_KEY_RENT_WILD":             53,
+		"ASSET_KEY_RENT_BROWN_SKY":        54,
+		"ASSET_KEY_RENT_PINK_ORANGE":      55,
+		"ASSET_KEY_RENT_RED_YELLOW":       56,
+		"ASSET_KEY_RENT_GREEN_BLUE":       57,
+		"ASSET_KEY_RENT_UTILITY_RAILROAD": 58,
 	}
 )
 
@@ -238,25 +241,28 @@ func (AssetKey) EnumDescriptor() ([]byte, []int) {
 type Category int32
 
 const (
-	Category_PURE_PROPERTY Category = 0
-	Category_WILD_PROPERTY Category = 1
-	Category_MONEY         Category = 2
-	Category_ACTION        Category = 3
+	Category_CATEGORY_UNSPECIFIED   Category = 0
+	Category_CATEGORY_PURE_PROPERTY Category = 1
+	Category_CATEGORY_WILD_PROPERTY Category = 2
+	Category_CATEGORY_MONEY         Category = 3
+	Category_CATEGORY_ACTION        Category = 4
 )
 
 // Enum value maps for Category.
 var (
 	Category_name = map[int32]string{
-		0: "PURE_PROPERTY",
-		1: "WILD_PROPERTY",
-		2: "MONEY",
-		3: "ACTION",
+		0: "CATEGORY_UNSPECIFIED",
+		1: "CATEGORY_PURE_PROPERTY",
+		2: "CATEGORY_WILD_PROPERTY",
+		3: "CATEGORY_MONEY",
+		4: "CATEGORY_ACTION",
 	}
 	Category_value = map[string]int32{
-		"PURE_PROPERTY": 0,
-		"WILD_PROPERTY": 1,
-		"MONEY":         2,
-		"ACTION":        3,
+		"CATEGORY_UNSPECIFIED":   0,
+		"CATEGORY_PURE_PROPERTY": 1,
+		"CATEGORY_WILD_PROPERTY": 2,
+		"CATEGORY_MONEY":         3,
+		"CATEGORY_ACTION":        4,
 	}
 )
 
@@ -290,46 +296,46 @@ func (Category) EnumDescriptor() ([]byte, []int) {
 type Color int32
 
 const (
-	Color_NONE     Color = 0
-	Color_BROWN    Color = 1
-	Color_SKY      Color = 2
-	Color_PINK     Color = 3
-	Color_ORANGE   Color = 4
-	Color_RED      Color = 5
-	Color_YELLOW   Color = 6
-	Color_GREEN    Color = 7
-	Color_BLUE     Color = 8
-	Color_UTILITY  Color = 9
-	Color_RAILROAD Color = 10
+	Color_COLOR_UNSPECIFIED Color = 0
+	Color_COLOR_BROWN       Color = 1
+	Color_COLOR_SKY         Color = 2
+	Color_COLOR_PINK        Color = 3
+	Color_COLOR_ORANGE      Color = 4
+	Color_COLOR_RED         Color = 5
+	Color_COLOR_YELLOW      Color = 6
+	Color_COLOR_GREEN       Color = 7
+	Color_COLOR_BLUE        Color = 8
+	Color_COLOR_UTILITY     Color = 9
+	Color_COLOR_RAILROAD    Color = 10
 )
 
 // Enum value maps for Color.
 var (
 	Color_name = map[int32]string{
-		0:  "NONE",
-		1:  "BROWN",
-		2:  "SKY",
-		3:  "PINK",
-		4:  "ORANGE",
-		5:  "RED",
-		6:  "YELLOW",
-		7:  "GREEN",
-		8:  "BLUE",
-		9:  "UTILITY",
-		10: "RAILROAD",
+		0:  "COLOR_UNSPECIFIED",
+		1:  "COLOR_BROWN",
+		2:  "COLOR_SKY",
+		3:  "COLOR_PINK",
+		4:  "COLOR_ORANGE",
+		5:  "COLOR_RED",
+		6:  "COLOR_YELLOW",
+		7:  "COLOR_GREEN",
+		8:  "COLOR_BLUE",
+		9:  "COLOR_UTILITY",
+		10: "COLOR_RAILROAD",
 	}
 	Color_value = map[string]int32{
-		"NONE":     0,
-		"BROWN":    1,
-		"SKY":      2,
-		"PINK":     3,
-		"ORANGE":   4,
-		"RED":      5,
-		"YELLOW":   6,
-		"GREEN":    7,
-		"BLUE":     8,
-		"UTILITY":  9,
-		"RAILROAD": 10,
+		"COLOR_UNSPECIFIED": 0,
+		"COLOR_BROWN":       1,
+		"COLOR_SKY":         2,
+		"COLOR_PINK":        3,
+		"COLOR_ORANGE":      4,
+		"COLOR_RED":         5,
+		"COLOR_YELLOW":      6,
+		"COLOR_GREEN":       7,
+		"COLOR_BLUE":        8,
+		"COLOR_UTILITY":     9,
+		"COLOR_RAILROAD":    10,
 	}
 )
 
@@ -363,22 +369,25 @@ func (Color) EnumDescriptor() ([]byte, []int) {
 type DemandKind int32
 
 const (
-	DemandKind_PAYMENT      DemandKind = 0
-	DemandKind_PROPERTY     DemandKind = 1
-	DemandKind_PROPERTY_SET DemandKind = 2
+	DemandKind_DEMAND_KIND_UNSPECIFIED  DemandKind = 0
+	DemandKind_DEMAND_KIND_PAYMENT      DemandKind = 1
+	DemandKind_DEMAND_KIND_PROPERTY     DemandKind = 2
+	DemandKind_DEMAND_KIND_PROPERTY_SET DemandKind = 3
 )
 
 // Enum value maps for DemandKind.
 var (
 	DemandKind_name = map[int32]string{
-		0: "PAYMENT",
-		1: "PROPERTY",
-		2: "PROPERTY_SET",
+		0: "DEMAND_KIND_UNSPECIFIED",
+		1: "DEMAND_KIND_PAYMENT",
+		2: "DEMAND_KIND_PROPERTY",
+		3: "DEMAND_KIND_PROPERTY_SET",
 	}
 	DemandKind_value = map[string]int32{
-		"PAYMENT":      0,
-		"PROPERTY":     1,
-		"PROPERTY_SET": 2,
+		"DEMAND_KIND_UNSPECIFIED":  0,
+		"DEMAND_KIND_PAYMENT":      1,
+		"DEMAND_KIND_PROPERTY":     2,
+		"DEMAND_KIND_PROPERTY_SET": 3,
 	}
 )
 
@@ -522,21 +531,21 @@ func (x *Card) GetAssetKey() AssetKey {
 	if x != nil {
 		return x.AssetKey
 	}
-	return AssetKey_BALTIC_AVE
+	return AssetKey_ASSET_KEY_UNSPECIFIED
 }
 
 func (x *Card) GetCategory() Category {
 	if x != nil {
 		return x.Category
 	}
-	return Category_PURE_PROPERTY
+	return Category_CATEGORY_UNSPECIFIED
 }
 
 func (x *Card) GetActiveColor() Color {
 	if x != nil {
 		return x.ActiveColor
 	}
-	return Color_NONE
+	return Color_COLOR_UNSPECIFIED
 }
 
 func (x *Card) GetColors() []Color {
@@ -819,7 +828,7 @@ func (x *PropertySet) GetColor() Color {
 	if x != nil {
 		return x.Color
 	}
-	return Color_NONE
+	return Color_COLOR_UNSPECIFIED
 }
 
 func (x *PropertySet) GetCards() []*Card {
@@ -1025,7 +1034,7 @@ func (x *Demand) GetDemandKind() DemandKind {
 	if x != nil {
 		return x.DemandKind
 	}
-	return DemandKind_PAYMENT
+	return DemandKind_DEMAND_KIND_UNSPECIFIED
 }
 
 func (x *Demand) GetDemand() isDemand_Demand {
@@ -1201,7 +1210,7 @@ func (x *AssetImage) GetAssetKey() AssetKey {
 	if x != nil {
 		return x.AssetKey
 	}
-	return AssetKey_BALTIC_AVE
+	return AssetKey_ASSET_KEY_UNSPECIFIED
 }
 
 func (x *AssetImage) GetImageUrl() string {
@@ -1660,7 +1669,7 @@ func (x *PlayProperty) GetActiveColor() Color {
 	if x != nil && x.ActiveColor != nil {
 		return *x.ActiveColor
 	}
-	return Color_NONE
+	return Color_COLOR_UNSPECIFIED
 }
 
 type PlayPropertyRes struct {
@@ -2093,96 +2102,95 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\x15start_turn_masked_res\x18\x04 \x01(\v22.fun_kames.schema.monopoly_deal.StartTurnMaskedResH\x00R\x12startTurnMaskedRes\x12T\n" +
 	"\x0eplay_money_res\x18\x05 \x01(\v2,.fun_kames.schema.monopoly_deal.PlayMoneyResH\x00R\fplayMoneyRes\x12]\n" +
 	"\x11play_property_res\x18\x06 \x01(\v2/.fun_kames.schema.monopoly_deal.PlayPropertyResH\x00R\x0fplayPropertyResB\t\n" +
-	"\apayload*\xbf\b\n" +
-	"\bAssetKey\x12\x0e\n" +
+	"\apayload*\x9e\r\n" +
+	"\bAssetKey\x12\x19\n" +
+	"\x15ASSET_KEY_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x14ASSET_KEY_BALTIC_AVE\x10\x01\x12\x1f\n" +
+	"\x1bASSET_KEY_MEDITERRANEAN_AVE\x10\x02\x12\x1d\n" +
+	"\x19ASSET_KEY_CONNECTICUT_AVE\x10\x03\x12\x1a\n" +
+	"\x16ASSET_KEY_ORIENTAL_AVE\x10\x04\x12\x19\n" +
+	"\x15ASSET_KEY_VERMONT_AVE\x10\x05\x12\x1e\n" +
+	"\x1aASSET_KEY_ST_CHARLES_PLACE\x10\x06\x12\x1a\n" +
+	"\x16ASSET_KEY_VIRGINIA_AVE\x10\a\x12\x17\n" +
+	"\x13ASSET_KEY_STATE_AVE\x10\b\x12\x1a\n" +
+	"\x16ASSET_KEY_NEW_YORK_AVE\x10\t\x12\x1c\n" +
+	"\x18ASSET_KEY_ST_JAMES_PLACE\x10\n" +
+	"\x12\x1b\n" +
+	"\x17ASSET_KEY_TENNESSEE_AVE\x10\v\x12\x1a\n" +
+	"\x16ASSET_KEY_KENTUCKY_AVE\x10\f\x12\x19\n" +
+	"\x15ASSET_KEY_INDIANA_AVE\x10\r\x12\x1a\n" +
+	"\x16ASSET_KEY_ILLINOIS_AVE\x10\x0e\x12\x19\n" +
+	"\x15ASSET_KEY_VENTNOR_AVE\x10\x0f\x12\x1c\n" +
+	"\x18ASSET_KEY_MARVIN_GARDENS\x10\x10\x12\x1a\n" +
+	"\x16ASSET_KEY_ATLANTIC_AVE\x10\x11\x12 \n" +
+	"\x1cASSET_KEY_NORTH_CAROLINA_AVE\x10\x12\x12\x19\n" +
+	"\x15ASSET_KEY_PACIFIC_AVE\x10\x13\x12\x1e\n" +
+	"\x1aASSET_KEY_PENNSYLVANIA_AVE\x10\x14\x12\x17\n" +
+	"\x13ASSET_KEY_BOARDWALK\x10\x15\x12\x18\n" +
+	"\x14ASSET_KEY_PARK_PLACE\x10\x16\x12\x19\n" +
+	"\x15ASSET_KEY_WATER_WORKS\x10\x17\x12\x1e\n" +
+	"\x1aASSET_KEY_ELECTRIC_COMPANY\x10\x18\x12\x18\n" +
+	"\x14ASSET_KEY_SHORT_LINE\x10\x19\x12\x1e\n" +
+	"\x1aASSET_KEY_B_AND_O_RAILROAD\x10\x1a\x12\x1e\n" +
+	"\x1aASSET_KEY_READING_RAILROAD\x10\x1b\x12#\n" +
+	"\x1fASSET_KEY_PENNSYLVANIA_RAILROAD\x10\x1c\x12\x1c\n" +
+	"\x18ASSET_KEY_WILD_BROWN_SKY\x10\x1d\x12\x1f\n" +
+	"\x1bASSET_KEY_WILD_SKY_RAILROAD\x10\x1e\x12\x1e\n" +
+	"\x1aASSET_KEY_WILD_PINK_ORANGE\x10\x1f\x12\x1d\n" +
+	"\x19ASSET_KEY_WILD_RED_YELLOW\x10 \x12\x1d\n" +
+	"\x19ASSET_KEY_WILD_GREEN_BLUE\x10!\x12!\n" +
+	"\x1dASSET_KEY_WILD_GREEN_RAILROAD\x10\"\x12#\n" +
+	"\x1fASSET_KEY_WILD_UTILITY_RAILROAD\x10#\x12\x17\n" +
+	"\x13ASSET_KEY_WILD_WILD\x10$\x12\x16\n" +
+	"\x12ASSET_KEY_MONEY_10\x10%\x12\x15\n" +
+	"\x11ASSET_KEY_MONEY_5\x10&\x12\x15\n" +
+	"\x11ASSET_KEY_MONEY_4\x10'\x12\x15\n" +
+	"\x11ASSET_KEY_MONEY_3\x10(\x12\x15\n" +
+	"\x11ASSET_KEY_MONEY_2\x10)\x12\x15\n" +
+	"\x11ASSET_KEY_MONEY_1\x10*\x12\x1a\n" +
+	"\x16ASSET_KEY_DEAL_BREAKER\x10+\x12\x19\n" +
+	"\x15ASSET_KEY_JUST_SAY_NO\x10,\x12\x13\n" +
+	"\x0fASSET_KEY_HOTEL\x10-\x12\x1c\n" +
+	"\x18ASSET_KEY_DEBT_COLLECTOR\x10.\x12\x19\n" +
+	"\x15ASSET_KEY_FORCED_DEAL\x10/\x12\x16\n" +
+	"\x12ASSET_KEY_SLY_DEAL\x100\x12\x13\n" +
+	"\x0fASSET_KEY_HOUSE\x101\x12\x1d\n" +
+	"\x19ASSET_KEY_ITS_MY_BIRTHDAY\x102\x12\x1d\n" +
+	"\x19ASSET_KEY_DOUBLE_THE_RENT\x103\x12\x15\n" +
+	"\x11ASSET_KEY_PASS_GO\x104\x12\x17\n" +
+	"\x13ASSET_KEY_RENT_WILD\x105\x12\x1c\n" +
+	"\x18ASSET_KEY_RENT_BROWN_SKY\x106\x12\x1e\n" +
+	"\x1aASSET_KEY_RENT_PINK_ORANGE\x107\x12\x1d\n" +
+	"\x19ASSET_KEY_RENT_RED_YELLOW\x108\x12\x1d\n" +
+	"\x19ASSET_KEY_RENT_GREEN_BLUE\x109\x12#\n" +
+	"\x1fASSET_KEY_RENT_UTILITY_RAILROAD\x10:*\x85\x01\n" +
+	"\bCategory\x12\x18\n" +
+	"\x14CATEGORY_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16CATEGORY_PURE_PROPERTY\x10\x01\x12\x1a\n" +
+	"\x16CATEGORY_WILD_PROPERTY\x10\x02\x12\x12\n" +
+	"\x0eCATEGORY_MONEY\x10\x03\x12\x13\n" +
+	"\x0fCATEGORY_ACTION\x10\x04*\xc9\x01\n" +
+	"\x05Color\x12\x15\n" +
+	"\x11COLOR_UNSPECIFIED\x10\x00\x12\x0f\n" +
+	"\vCOLOR_BROWN\x10\x01\x12\r\n" +
+	"\tCOLOR_SKY\x10\x02\x12\x0e\n" +
 	"\n" +
-	"BALTIC_AVE\x10\x00\x12\x15\n" +
-	"\x11MEDITERRANEAN_AVE\x10\x01\x12\x13\n" +
-	"\x0fCONNECTICUT_AVE\x10\x02\x12\x10\n" +
-	"\fORIENTAL_AVE\x10\x03\x12\x0f\n" +
-	"\vVERMONT_AVE\x10\x04\x12\x14\n" +
-	"\x10ST_CHARLES_PLACE\x10\x05\x12\x10\n" +
-	"\fVIRGINIA_AVE\x10\x06\x12\r\n" +
-	"\tSTATE_AVE\x10\a\x12\x10\n" +
-	"\fNEW_YORK_AVE\x10\b\x12\x12\n" +
-	"\x0eST_JAMES_PLACE\x10\t\x12\x11\n" +
-	"\rTENNESSEE_AVE\x10\n" +
-	"\x12\x10\n" +
-	"\fKENTUCKY_AVE\x10\v\x12\x0f\n" +
-	"\vINDIANA_AVE\x10\f\x12\x10\n" +
-	"\fILLINOIS_AVE\x10\r\x12\x0f\n" +
-	"\vVENTNOR_AVE\x10\x0e\x12\x12\n" +
-	"\x0eMARVIN_GARDENS\x10\x0f\x12\x10\n" +
-	"\fATLANTIC_AVE\x10\x10\x12\x16\n" +
-	"\x12NORTH_CAROLINA_AVE\x10\x11\x12\x0f\n" +
-	"\vPACIFIC_AVE\x10\x12\x12\x14\n" +
-	"\x10PENNSYLVANIA_AVE\x10\x13\x12\r\n" +
-	"\tBOARDWALK\x10\x14\x12\x0e\n" +
+	"COLOR_PINK\x10\x03\x12\x10\n" +
+	"\fCOLOR_ORANGE\x10\x04\x12\r\n" +
+	"\tCOLOR_RED\x10\x05\x12\x10\n" +
+	"\fCOLOR_YELLOW\x10\x06\x12\x0f\n" +
+	"\vCOLOR_GREEN\x10\a\x12\x0e\n" +
 	"\n" +
-	"PARK_PLACE\x10\x15\x12\x0f\n" +
-	"\vWATER_WORKS\x10\x16\x12\x14\n" +
-	"\x10ELECTRIC_COMPANY\x10\x17\x12\x0e\n" +
+	"COLOR_BLUE\x10\b\x12\x11\n" +
+	"\rCOLOR_UTILITY\x10\t\x12\x12\n" +
+	"\x0eCOLOR_RAILROAD\x10\n" +
+	"*z\n" +
 	"\n" +
-	"SHORT_LINE\x10\x18\x12\x14\n" +
-	"\x10B_AND_O_RAILROAD\x10\x19\x12\x14\n" +
-	"\x10READING_RAILROAD\x10\x1a\x12\x19\n" +
-	"\x15PENNSYLVANIA_RAILROAD\x10\x1b\x12\x12\n" +
-	"\x0eWILD_BROWN_SKY\x10\x1c\x12\x15\n" +
-	"\x11WILD_SKY_RAILROAD\x10\x1d\x12\x14\n" +
-	"\x10WILD_PINK_ORANGE\x10\x1e\x12\x13\n" +
-	"\x0fWILD_RED_YELLOW\x10\x1f\x12\x13\n" +
-	"\x0fWILD_GREEN_BLUE\x10 \x12\x17\n" +
-	"\x13WILD_GREEN_RAILROAD\x10!\x12\x19\n" +
-	"\x15WILD_UTILITY_RAILROAD\x10\"\x12\r\n" +
-	"\tWILD_WILD\x10#\x12\f\n" +
-	"\bMONEY_10\x10$\x12\v\n" +
-	"\aMONEY_5\x10%\x12\v\n" +
-	"\aMONEY_4\x10&\x12\v\n" +
-	"\aMONEY_3\x10'\x12\v\n" +
-	"\aMONEY_2\x10(\x12\v\n" +
-	"\aMONEY_1\x10)\x12\x10\n" +
-	"\fDEAL_BREAKER\x10*\x12\x0f\n" +
-	"\vJUST_SAY_NO\x10+\x12\t\n" +
-	"\x05HOTEL\x10,\x12\x12\n" +
-	"\x0eDEBT_COLLECTOR\x10-\x12\x0f\n" +
-	"\vFORCED_DEAL\x10.\x12\f\n" +
-	"\bSLY_DEAL\x10/\x12\t\n" +
-	"\x05HOUSE\x100\x12\x13\n" +
-	"\x0fITS_MY_BIRTHDAY\x101\x12\x13\n" +
-	"\x0fDOUBLE_THE_RENT\x102\x12\v\n" +
-	"\aPASS_GO\x103\x12\r\n" +
-	"\tRENT_WILD\x104\x12\x12\n" +
-	"\x0eRENT_BROWN_SKY\x105\x12\x14\n" +
-	"\x10RENT_PINK_ORANGE\x106\x12\x13\n" +
-	"\x0fRENT_RED_YELLOW\x107\x12\x13\n" +
-	"\x0fRENT_GREEN_BLUE\x108\x12\x19\n" +
-	"\x15RENT_UTILITY_RAILROAD\x109*G\n" +
-	"\bCategory\x12\x11\n" +
-	"\rPURE_PROPERTY\x10\x00\x12\x11\n" +
-	"\rWILD_PROPERTY\x10\x01\x12\t\n" +
-	"\x05MONEY\x10\x02\x12\n" +
-	"\n" +
-	"\x06ACTION\x10\x03*\x80\x01\n" +
-	"\x05Color\x12\b\n" +
-	"\x04NONE\x10\x00\x12\t\n" +
-	"\x05BROWN\x10\x01\x12\a\n" +
-	"\x03SKY\x10\x02\x12\b\n" +
-	"\x04PINK\x10\x03\x12\n" +
-	"\n" +
-	"\x06ORANGE\x10\x04\x12\a\n" +
-	"\x03RED\x10\x05\x12\n" +
-	"\n" +
-	"\x06YELLOW\x10\x06\x12\t\n" +
-	"\x05GREEN\x10\a\x12\b\n" +
-	"\x04BLUE\x10\b\x12\v\n" +
-	"\aUTILITY\x10\t\x12\f\n" +
-	"\bRAILROAD\x10\n" +
-	"*9\n" +
-	"\n" +
-	"DemandKind\x12\v\n" +
-	"\aPAYMENT\x10\x00\x12\f\n" +
-	"\bPROPERTY\x10\x01\x12\x10\n" +
-	"\fPROPERTY_SET\x10\x02BEZCfun-kames/internal/schema/monopoly_deal_schema;monopoly_deal_schemab\x06proto3"
+	"DemandKind\x12\x1b\n" +
+	"\x17DEMAND_KIND_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13DEMAND_KIND_PAYMENT\x10\x01\x12\x18\n" +
+	"\x14DEMAND_KIND_PROPERTY\x10\x02\x12\x1c\n" +
+	"\x18DEMAND_KIND_PROPERTY_SET\x10\x03BEZCfun-kames/internal/schema/monopoly_deal_schema;monopoly_deal_schemab\x06proto3"
 
 var (
 	file_monopoly_deal_proto_rawDescOnce sync.Once

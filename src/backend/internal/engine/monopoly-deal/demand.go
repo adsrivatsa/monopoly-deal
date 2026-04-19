@@ -22,15 +22,17 @@ type PropertySetDemand struct {
 type DemandKind int
 
 const (
-	DemandKindPayment DemandKind = iota
+	DemandKindUnspecified DemandKind = iota
+	DemandKindPayment
 	DemandKindProperty
 	DemandKindPropertySet
 )
 
 var DemandKindProtoMap = map[DemandKind]monopoly_deal_schema.DemandKind{
-	DemandKindPayment:     monopoly_deal_schema.DemandKind_PAYMENT,
-	DemandKindProperty:    monopoly_deal_schema.DemandKind_PROPERTY,
-	DemandKindPropertySet: monopoly_deal_schema.DemandKind_PROPERTY_SET,
+	DemandKindUnspecified: monopoly_deal_schema.DemandKind_DEMAND_KIND_UNSPECIFIED,
+	DemandKindPayment:     monopoly_deal_schema.DemandKind_DEMAND_KIND_PAYMENT,
+	DemandKindProperty:    monopoly_deal_schema.DemandKind_DEMAND_KIND_PROPERTY,
+	DemandKindPropertySet: monopoly_deal_schema.DemandKind_DEMAND_KIND_PROPERTY_SET,
 }
 
 func (dk DemandKind) Proto() monopoly_deal_schema.DemandKind {

@@ -2,14 +2,14 @@
 // versions:
 //   protoc-gen-ts_proto  v2.11.6
 //   protoc               v7.34.1
-// source: message.proto
+// source: gateway.proto
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { ClientMonopolyDealMessage, ServerMonopolyDealMessage } from "./monopoly_deal";
-import { ClientRoomMessage, ServerRoomMessage } from "./room";
+import { ClientMessage as ClientMessage2, ServerMessage as ServerMessage4 } from "./monopoly_deal";
+import { ClientMessage as ClientMessage1, ServerMessage as ServerMessage3 } from "./room";
 
-export const protobufPackage = "funkames.schema";
+export const protobufPackage = "fun_kames.schema";
 
 export interface Ping {
   timeUnixMs: number;
@@ -17,14 +17,14 @@ export interface Ping {
 
 export interface ClientMessage {
   ping?: Ping | undefined;
-  roomMessage?: ClientRoomMessage | undefined;
-  monopolyDealMessage?: ClientMonopolyDealMessage | undefined;
+  roomMessage?: ClientMessage1 | undefined;
+  monopolyDealMessage?: ClientMessage2 | undefined;
 }
 
 export interface ServerMessage {
   ping?: Ping | undefined;
-  roomMessage?: ServerRoomMessage | undefined;
-  monopolyDealMessage?: ServerMonopolyDealMessage | undefined;
+  roomMessage?: ServerMessage3 | undefined;
+  monopolyDealMessage?: ServerMessage4 | undefined;
 }
 
 function createBasePing(): Ping {
@@ -101,10 +101,10 @@ export const ClientMessage: MessageFns<ClientMessage> = {
       Ping.encode(message.ping, writer.uint32(10).fork()).join();
     }
     if (message.roomMessage !== undefined) {
-      ClientRoomMessage.encode(message.roomMessage, writer.uint32(82).fork()).join();
+      ClientMessage1.encode(message.roomMessage, writer.uint32(82).fork()).join();
     }
     if (message.monopolyDealMessage !== undefined) {
-      ClientMonopolyDealMessage.encode(message.monopolyDealMessage, writer.uint32(90).fork()).join();
+      ClientMessage2.encode(message.monopolyDealMessage, writer.uint32(90).fork()).join();
     }
     return writer;
   },
@@ -129,7 +129,7 @@ export const ClientMessage: MessageFns<ClientMessage> = {
             break;
           }
 
-          message.roomMessage = ClientRoomMessage.decode(reader, reader.uint32());
+          message.roomMessage = ClientMessage1.decode(reader, reader.uint32());
           continue;
         }
         case 11: {
@@ -137,7 +137,7 @@ export const ClientMessage: MessageFns<ClientMessage> = {
             break;
           }
 
-          message.monopolyDealMessage = ClientMonopolyDealMessage.decode(reader, reader.uint32());
+          message.monopolyDealMessage = ClientMessage2.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -153,14 +153,14 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     return {
       ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
       roomMessage: isSet(object.roomMessage)
-        ? ClientRoomMessage.fromJSON(object.roomMessage)
+        ? ClientMessage1.fromJSON(object.roomMessage)
         : isSet(object.room_message)
-        ? ClientRoomMessage.fromJSON(object.room_message)
+        ? ClientMessage1.fromJSON(object.room_message)
         : undefined,
       monopolyDealMessage: isSet(object.monopolyDealMessage)
-        ? ClientMonopolyDealMessage.fromJSON(object.monopolyDealMessage)
+        ? ClientMessage2.fromJSON(object.monopolyDealMessage)
         : isSet(object.monopoly_deal_message)
-        ? ClientMonopolyDealMessage.fromJSON(object.monopoly_deal_message)
+        ? ClientMessage2.fromJSON(object.monopoly_deal_message)
         : undefined,
     };
   },
@@ -171,10 +171,10 @@ export const ClientMessage: MessageFns<ClientMessage> = {
       obj.ping = Ping.toJSON(message.ping);
     }
     if (message.roomMessage !== undefined) {
-      obj.roomMessage = ClientRoomMessage.toJSON(message.roomMessage);
+      obj.roomMessage = ClientMessage1.toJSON(message.roomMessage);
     }
     if (message.monopolyDealMessage !== undefined) {
-      obj.monopolyDealMessage = ClientMonopolyDealMessage.toJSON(message.monopolyDealMessage);
+      obj.monopolyDealMessage = ClientMessage2.toJSON(message.monopolyDealMessage);
     }
     return obj;
   },
@@ -186,10 +186,10 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     const message = createBaseClientMessage();
     message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
     message.roomMessage = (object.roomMessage !== undefined && object.roomMessage !== null)
-      ? ClientRoomMessage.fromPartial(object.roomMessage)
+      ? ClientMessage1.fromPartial(object.roomMessage)
       : undefined;
     message.monopolyDealMessage = (object.monopolyDealMessage !== undefined && object.monopolyDealMessage !== null)
-      ? ClientMonopolyDealMessage.fromPartial(object.monopolyDealMessage)
+      ? ClientMessage2.fromPartial(object.monopolyDealMessage)
       : undefined;
     return message;
   },
@@ -205,10 +205,10 @@ export const ServerMessage: MessageFns<ServerMessage> = {
       Ping.encode(message.ping, writer.uint32(10).fork()).join();
     }
     if (message.roomMessage !== undefined) {
-      ServerRoomMessage.encode(message.roomMessage, writer.uint32(82).fork()).join();
+      ServerMessage3.encode(message.roomMessage, writer.uint32(82).fork()).join();
     }
     if (message.monopolyDealMessage !== undefined) {
-      ServerMonopolyDealMessage.encode(message.monopolyDealMessage, writer.uint32(90).fork()).join();
+      ServerMessage4.encode(message.monopolyDealMessage, writer.uint32(90).fork()).join();
     }
     return writer;
   },
@@ -233,7 +233,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.roomMessage = ServerRoomMessage.decode(reader, reader.uint32());
+          message.roomMessage = ServerMessage3.decode(reader, reader.uint32());
           continue;
         }
         case 11: {
@@ -241,7 +241,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.monopolyDealMessage = ServerMonopolyDealMessage.decode(reader, reader.uint32());
+          message.monopolyDealMessage = ServerMessage4.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -257,14 +257,14 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     return {
       ping: isSet(object.ping) ? Ping.fromJSON(object.ping) : undefined,
       roomMessage: isSet(object.roomMessage)
-        ? ServerRoomMessage.fromJSON(object.roomMessage)
+        ? ServerMessage3.fromJSON(object.roomMessage)
         : isSet(object.room_message)
-        ? ServerRoomMessage.fromJSON(object.room_message)
+        ? ServerMessage3.fromJSON(object.room_message)
         : undefined,
       monopolyDealMessage: isSet(object.monopolyDealMessage)
-        ? ServerMonopolyDealMessage.fromJSON(object.monopolyDealMessage)
+        ? ServerMessage4.fromJSON(object.monopolyDealMessage)
         : isSet(object.monopoly_deal_message)
-        ? ServerMonopolyDealMessage.fromJSON(object.monopoly_deal_message)
+        ? ServerMessage4.fromJSON(object.monopoly_deal_message)
         : undefined,
     };
   },
@@ -275,10 +275,10 @@ export const ServerMessage: MessageFns<ServerMessage> = {
       obj.ping = Ping.toJSON(message.ping);
     }
     if (message.roomMessage !== undefined) {
-      obj.roomMessage = ServerRoomMessage.toJSON(message.roomMessage);
+      obj.roomMessage = ServerMessage3.toJSON(message.roomMessage);
     }
     if (message.monopolyDealMessage !== undefined) {
-      obj.monopolyDealMessage = ServerMonopolyDealMessage.toJSON(message.monopolyDealMessage);
+      obj.monopolyDealMessage = ServerMessage4.toJSON(message.monopolyDealMessage);
     }
     return obj;
   },
@@ -290,10 +290,10 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     const message = createBaseServerMessage();
     message.ping = (object.ping !== undefined && object.ping !== null) ? Ping.fromPartial(object.ping) : undefined;
     message.roomMessage = (object.roomMessage !== undefined && object.roomMessage !== null)
-      ? ServerRoomMessage.fromPartial(object.roomMessage)
+      ? ServerMessage3.fromPartial(object.roomMessage)
       : undefined;
     message.monopolyDealMessage = (object.monopolyDealMessage !== undefined && object.monopolyDealMessage !== null)
-      ? ServerMonopolyDealMessage.fromPartial(object.monopolyDealMessage)
+      ? ServerMessage4.fromPartial(object.monopolyDealMessage)
       : undefined;
     return message;
   },
