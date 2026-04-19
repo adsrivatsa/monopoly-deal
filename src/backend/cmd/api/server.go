@@ -40,6 +40,8 @@ type Server struct {
 	upgrader      *websocket.Upgrader
 	roomSocketsMu sync.Mutex
 	roomSockets   map[uuid.UUID]*socket
+	gameSocketsMu sync.Mutex
+	gameSockets   map[uuid.UUID]*socket
 }
 
 func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool, client *redis.Client) *Server {
@@ -78,6 +80,7 @@ func NewServer(cfg config.Config, logger *slog.Logger, pool *pgxpool.Pool, clien
 			},
 		},
 		roomSockets: make(map[uuid.UUID]*socket),
+		gameSockets: make(map[uuid.UUID]*socket),
 	}
 
 	s.addRoutes()
@@ -128,6 +131,7 @@ func (s *Server) addRoutes() {
 
 		r.Mount("/player", s.playerRoutes())
 		r.Mount("/room", s.roomRoutes())
+		r.Mount("/game", s.gameRoutes())
 	})
 
 	s.router = router

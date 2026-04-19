@@ -5,10 +5,12 @@ import (
 	"fun-kames/internal/errors"
 	"fun-kames/internal/event"
 	"fun-kames/internal/schema"
+	"fun-kames/internal/schema/room_schema"
 	"fun-kames/internal/store"
 	"fun-kames/internal/token"
 
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
 )
 
 func (c *Controller) ListenRoomEvents(ctx context.Context, tp token.Payload, callback func(message *schema.ServerMessage)) error {
@@ -17,7 +19,7 @@ func (c *Controller) ListenRoomEvents(ctx context.Context, tp token.Payload, cal
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return errors.EntityNotFound(errors.EntityRoom, err)
 		}
-		return errors.Internal(err)
+		return err
 	}
 
 	ch, err := c.bus.Subscribe(ctx, event.RoomChannelPre+rp.RoomID.String())
@@ -29,8 +31,15 @@ func (c *Controller) ListenRoomEvents(ctx context.Context, tp token.Payload, cal
 		select {
 		case <-ctx.Done():
 			return nil
-		case msg := <-ch:
-			callback(msg)
+		case e := <-ch:
+			if e.Kind == event.KindServerMessage {
+				var msg schema.ServerMessage
+				err = proto.Unmarshal(e.Message, &msg)
+				if err != nil {
+					return err
+				}
+				callback(&msg)
+			}
 		}
 	}
 }
@@ -41,12 +50,12 @@ func (c *Controller) GetRoom(ctx context.Context, tp token.Payload) (LongRoom, e
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return LongRoom{}, errors.EntityNotFound(errors.EntityRoom, err)
 		}
-		return LongRoom{}, errors.Internal(err)
+		return LongRoom{}, err
 	}
 
 	ps, err := c.store.GetPlayersByRoom(ctx, r.RoomID)
 	if err != nil {
-		return LongRoom{}, errors.Internal(err)
+		return LongRoom{}, err
 	}
 
 	players := make([]ShortPlayer, len(ps))
@@ -85,7 +94,7 @@ func (c *Controller) ListRooms(ctx context.Context, args ListRoomsParams) (ListR
 		Game:   game,
 	})
 	if err != nil {
-		return ListRoomsRes{}, errors.Internal(err)
+		return ListRoomsRes{}, err
 	}
 
 	res := ListRoomsRes{}
@@ -120,22 +129,17 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, args Crea
 		return Room{}, errors.EntityAlreadyExists(errors.EntityRoom)
 	}
 	if errors.DBErrorCode(err) != errors.NoDataFound {
-		return Room{}, errors.Internal(err)
-	}
-
-	settings, err := args.Settings.Encode()
-	if err != nil {
-		return Room{}, errors.Internal(err)
+		return Room{}, err
 	}
 
 	r, err := c.store.CreateRoom(ctx, store.CreateRoomParams{
 		DisplayName: args.DisplayName,
 		Capacity:    args.Capacity,
 		Game:        args.Game,
-		Settings:    settings,
+		Settings:    args.Settings,
 	})
 	if err != nil {
-		return Room{}, errors.Internal(err)
+		return Room{}, err
 	}
 
 	_, err = c.store.CreateRoomPlayer(ctx, store.CreateRoomPlayerParams{
@@ -144,7 +148,7 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, args Crea
 		IsHost:   true,
 	})
 	if err != nil {
-		return Room{}, errors.Internal(err)
+		return Room{}, err
 	}
 
 	return Room{
@@ -163,14 +167,14 @@ func (c *Controller) JoinRoom(ctx context.Context, tp token.Payload, roomID uuid
 		return errors.EntityAlreadyExists(errors.EntityRoomPlayer)
 	}
 	if errors.DBErrorCode(err) != errors.NoDataFound {
-		return errors.Internal(err)
+		return err
 	}
 
 	p, err := c.store.GetPlayer(ctx, store.GetPlayerParams{
 		PlayerID: &tp.PlayerID,
 	})
 	if err != nil {
-		return errors.Internal(err)
+		return err
 	}
 
 	r, err := c.store.GetRoom(ctx, roomID)
@@ -178,7 +182,7 @@ func (c *Controller) JoinRoom(ctx context.Context, tp token.Payload, roomID uuid
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return errors.EntityNotFound(errors.EntityRoom, err)
 		}
-		return errors.Internal(err)
+		return err
 	}
 
 	if r.Occupied >= r.Capacity {
@@ -194,15 +198,15 @@ func (c *Controller) JoinRoom(ctx context.Context, tp token.Payload, roomID uuid
 		if errors.DBErrorCode(err) == errors.ForeignKeyViolation {
 			return errors.EntityNotFound(errors.EntityRoom, err)
 		}
-		return errors.Internal(err)
+		return err
 	}
 
 	_, err = c.store.IncrementRoomOccupied(ctx, r.RoomID)
 	if err != nil {
-		return errors.Internal(err)
+		return err
 	}
 
-	player := &schema.Player{
+	player := &room_schema.Player{
 		PlayerId:    p.PlayerID.String(),
 		DisplayName: p.DisplayName,
 		AvatarUrl:   p.ImageUrl,
@@ -211,20 +215,25 @@ func (c *Controller) JoinRoom(ctx context.Context, tp token.Payload, roomID uuid
 		JoinedAt:    rp.JoinedAt.UnixMilli(),
 	}
 
-	e := &schema.PlayerJoinedRoom{
-		RoomId: roomID.String(),
-		Player: player,
-	}
-
-	return c.bus.Publish(ctx, event.RoomChannelPre+roomID.String(), &schema.ServerMessage{
+	e := &schema.ServerMessage{
 		Payload: &schema.ServerMessage_RoomMessage{
-			RoomMessage: &schema.ServerRoomMessage{
-				Payload: &schema.ServerRoomMessage_PlayerJoinedRoom{
-					PlayerJoinedRoom: e,
+			RoomMessage: &room_schema.ServerMessage{
+				Payload: &room_schema.ServerMessage_PlayerJoinedRoom{
+					PlayerJoinedRoom: &room_schema.PlayerJoinedRoom{
+						RoomId: roomID.String(),
+						Player: player,
+					},
 				},
 			},
 		},
-	})
+	}
+
+	buf, err := proto.Marshal(e)
+	if err != nil {
+		return err
+	}
+
+	return c.bus.Publish(ctx, event.RoomChannelPre+roomID.String(), event.NewServerMessageEvent(buf))
 }
 
 func (c *Controller) LeaveRoom(ctx context.Context, tp token.Payload) error {
@@ -233,7 +242,7 @@ func (c *Controller) LeaveRoom(ctx context.Context, tp token.Payload) error {
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return errors.EntityNotFound(errors.EntityRoom)
 		}
-		return errors.Internal(err)
+		return err
 	}
 
 	var newHostPlayerID *string
@@ -248,7 +257,7 @@ func (c *Controller) LeaveRoom(ctx context.Context, tp token.Payload) error {
 				// no other player exists to become new host, delete the room
 				deleteRoom = true
 			} else {
-				return errors.Internal(err)
+				return err
 			}
 		}
 
@@ -262,7 +271,7 @@ func (c *Controller) LeaveRoom(ctx context.Context, tp token.Payload) error {
 				PlayerID: newHost.PlayerID,
 			})
 			if err != nil {
-				return errors.Internal(err)
+				return err
 			}
 		}
 	}
@@ -272,7 +281,7 @@ func (c *Controller) LeaveRoom(ctx context.Context, tp token.Payload) error {
 		PlayerID: tp.PlayerID,
 	})
 	if err != nil {
-		return errors.Internal(err)
+		return err
 	}
 
 	if deleteRoom {
@@ -280,24 +289,29 @@ func (c *Controller) LeaveRoom(ctx context.Context, tp token.Payload) error {
 	} else {
 		_, err = c.store.DecrementRoomOccupied(ctx, rp.RoomID)
 		if err != nil {
-			return errors.Internal(err)
+			return err
 		}
 
-		e := &schema.PlayerLeftRoom{
-			RoomId:          rp.RoomID.String(),
-			PlayedId:        tp.PlayerID.String(),
-			NewHostPlayerId: newHostPlayerID,
-		}
-
-		err = c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), &schema.ServerMessage{
+		e := &schema.ServerMessage{
 			Payload: &schema.ServerMessage_RoomMessage{
-				RoomMessage: &schema.ServerRoomMessage{
-					Payload: &schema.ServerRoomMessage_PlayerLeftRoom{
-						PlayerLeftRoom: e,
+				RoomMessage: &room_schema.ServerMessage{
+					Payload: &room_schema.ServerMessage_PlayerLeftRoom{
+						PlayerLeftRoom: &room_schema.PlayerLeftRoom{
+							RoomId:          rp.RoomID.String(),
+							PlayedId:        tp.PlayerID.String(),
+							NewHostPlayerId: newHostPlayerID,
+						},
 					},
 				},
 			},
-		})
+		}
+
+		buf, err := proto.Marshal(e)
+		if err != nil {
+			return err
+		}
+
+		err = c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), event.NewServerMessageEvent(buf))
 	}
 
 	return err
@@ -309,7 +323,7 @@ func (c *Controller) ToggleIsReady(ctx context.Context, tp token.Payload) error 
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return errors.EntityNotFound(errors.EntityRoom)
 		}
-		return errors.Internal(err)
+		return err
 	}
 
 	rp, err = c.store.ToggleRoomPlayerIsReady(ctx, store.ToggleRoomPlayerIsReadyParams{
@@ -317,23 +331,28 @@ func (c *Controller) ToggleIsReady(ctx context.Context, tp token.Payload) error 
 		PlayerID: tp.PlayerID,
 	})
 	if err != nil {
-		return errors.Internal(err)
+		return err
 	}
 
-	e := &schema.PlayerToggledReady{
-		PlayerId: tp.PlayerID.String(),
-		IsReady:  rp.IsReady,
-	}
-
-	return c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), &schema.ServerMessage{
+	e := &schema.ServerMessage{
 		Payload: &schema.ServerMessage_RoomMessage{
-			RoomMessage: &schema.ServerRoomMessage{
-				Payload: &schema.ServerRoomMessage_PlayerToggledReady{
-					PlayerToggledReady: e,
+			RoomMessage: &room_schema.ServerMessage{
+				Payload: &room_schema.ServerMessage_PlayerToggledReady{
+					PlayerToggledReady: &room_schema.PlayerToggledReady{
+						PlayerId: tp.PlayerID.String(),
+						IsReady:  rp.IsReady,
+					},
 				},
 			},
 		},
-	})
+	}
+
+	buf, err := proto.Marshal(e)
+	if err != nil {
+		return err
+	}
+
+	return c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), event.NewServerMessageEvent(buf))
 }
 
 func (c *Controller) UpdateRoomSettings(ctx context.Context, tp token.Payload, args UpdateRoomSettingsParams) error {
@@ -342,76 +361,81 @@ func (c *Controller) UpdateRoomSettings(ctx context.Context, tp token.Payload, a
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return errors.EntityNotFound(errors.EntityRoom)
 		}
-		return errors.Internal(err)
+		return err
 	}
 
 	if !rp.IsHost {
 		return errors.PlayerIsNotHost
 	}
 
-	settings, err := args.Settings.Encode()
-	if err != nil {
-		return errors.Internal(err)
-	}
-
 	r, err := c.store.UpdateRoomSettings(ctx, store.UpdateRoomSettingsParams{
 		Capacity: args.Capacity,
 		Game:     args.Game,
-		Settings: settings,
+		Settings: args.Settings,
 		RoomID:   rp.RoomID,
 	})
 	if err != nil {
-		return errors.Internal(err)
+		return err
 	}
 
-	e := &schema.SettingsUpdated{
-		Capacity: r.Capacity,
-		Game:     r.Game.Proto(),
-		Settings: r.Settings,
-	}
-
-	return c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), &schema.ServerMessage{
+	e := &schema.ServerMessage{
 		Payload: &schema.ServerMessage_RoomMessage{
-			RoomMessage: &schema.ServerRoomMessage{
-				Payload: &schema.ServerRoomMessage_SettingsUpdated{
-					SettingsUpdated: e,
+			RoomMessage: &room_schema.ServerMessage{
+				Payload: &room_schema.ServerMessage_SettingsUpdated{
+					SettingsUpdated: &room_schema.SettingsUpdated{
+						Capacity: r.Capacity,
+						Game:     r.Game.Proto(),
+						Settings: r.Settings,
+					},
 				},
 			},
 		},
-	})
+	}
+
+	buf, err := proto.Marshal(e)
+	if err != nil {
+		return err
+	}
+
+	return c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), event.NewServerMessageEvent(buf))
 }
 
 func (c *Controller) HandleRoomEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_RoomMessage) error {
 	switch p := msg.RoomMessage.GetPayload().(type) {
-	case *schema.ClientRoomMessage_Chat:
+	case *room_schema.ClientMessage_Chat:
 		return c.handleRoomChat(ctx, tp, p)
 	default:
 		return nil
 	}
 }
 
-func (c *Controller) handleRoomChat(ctx context.Context, tp token.Payload, msg *schema.ClientRoomMessage_Chat) error {
+func (c *Controller) handleRoomChat(ctx context.Context, tp token.Payload, msg *room_schema.ClientMessage_Chat) error {
 	rp, err := c.store.GetRoomPlayer(ctx, tp.PlayerID)
 	if err != nil {
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return errors.EntityNotFound(errors.EntityRoom)
 		}
-		return errors.Internal(err)
+		return err
 	}
 
-	e := &schema.ChatReceived{
-		PlayerId: tp.PlayerID.String(),
-		Payload:  msg.Chat.Payload,
-	}
-
-	err = c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), &schema.ServerMessage{
+	e := &schema.ServerMessage{
 		Payload: &schema.ServerMessage_RoomMessage{
-			RoomMessage: &schema.ServerRoomMessage{
-				Payload: &schema.ServerRoomMessage_ChatReceived{
-					ChatReceived: e,
+			RoomMessage: &room_schema.ServerMessage{
+				Payload: &room_schema.ServerMessage_ChatReceived{
+					ChatReceived: &room_schema.ChatReceived{
+						PlayerId: tp.PlayerID.String(),
+						Payload:  msg.Chat.Payload,
+					},
 				},
 			},
 		},
-	})
+	}
+
+	buf, err := proto.Marshal(e)
+	if err != nil {
+		return err
+	}
+
+	err = c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), event.NewServerMessageEvent(buf))
 	return err
 }

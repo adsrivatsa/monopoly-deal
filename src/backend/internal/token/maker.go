@@ -56,7 +56,7 @@ func (j Maker) CreateToken(payload Payload, tokenType TokenType) (string, Payloa
 
 	js, err := json.Marshal(payload)
 	if err != nil {
-		return "", payload, errors.Internal(err)
+		return "", payload, err
 	}
 
 	tokenPayload := JWTPayload{
@@ -67,7 +67,7 @@ func (j Maker) CreateToken(payload Payload, tokenType TokenType) (string, Payloa
 	token := jwt.NewWithClaims(j.signingMethod, tokenPayload)
 	signed, err := token.SignedString(j.secretKey)
 	if err != nil {
-		return "", payload, errors.Internal(err)
+		return "", payload, err
 	}
 
 	return signed, payload, nil
@@ -95,7 +95,7 @@ func (j Maker) VerifyToken(s string, tokenType TokenType) (Payload, error) {
 	}
 
 	if err := json.Unmarshal([]byte(tokenPayload["payload"].(string)), &payload); err != nil {
-		return payload, errors.Internal(err)
+		return payload, err
 	}
 
 	if payload.GetType() != tokenType {

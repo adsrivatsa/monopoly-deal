@@ -53,6 +53,17 @@ func (q *Queries) DeleteRoomPlayer(ctx context.Context, arg DeleteRoomPlayerPara
 	return err
 }
 
+const deleteRoomPlayersByRoom = `-- name: DeleteRoomPlayersByRoom :exec
+DELETE
+  FROM room_player
+ WHERE room_id = $1
+`
+
+func (q *Queries) DeleteRoomPlayersByRoom(ctx context.Context, roomID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteRoomPlayersByRoom, roomID)
+	return err
+}
+
 const getOldestRoomPlayer = `-- name: GetOldestRoomPlayer :one
 SELECT room_id, player_id, is_ready, is_host, joined_at
   FROM room_player

@@ -40,15 +40,11 @@ CREATE TABLE IF NOT EXISTS game
             PRIMARY KEY DEFAULT uuidv7(),
         display_name text NOT NULL,
         game game_type NOT NULL,
-        settings jsonb NOT NULL,
-        game_state jsonb NOT NULL,
+        game_state bytea NOT NULL,
+        sequence_num int2 NOT NULL DEFAULT 0,
         completed bool NOT NULL DEFAULT FALSE,
         created_at timestamptz NOT NULL DEFAULT NOW()
     );
-
-CREATE INDEX idx_game_settings ON game USING gin (settings);
-
-CREATE INDEX idx_game_game_state ON game USING gin (game_state);
 
 CREATE TABLE IF NOT EXISTS game_player
     (

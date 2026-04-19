@@ -28,3 +28,10 @@ SELECT p.*, rp.is_ready, rp.is_host
            ON rp.player_id = p.player_id
  WHERE rp.room_id = $1
  ORDER BY rp.joined_at;
+
+-- name: GetPlayersByGame :many
+SELECT p.*
+  FROM player p
+           INNER JOIN game_player gp
+           ON gp.player_id = p.player_id
+ WHERE gp.game_id = $1;

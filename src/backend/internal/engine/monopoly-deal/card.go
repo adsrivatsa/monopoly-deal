@@ -2,6 +2,7 @@ package monopoly_deal
 
 import (
 	"fmt"
+	"fun-kames/internal/schema/monopoly_deal_schema"
 	"slices"
 )
 
@@ -67,6 +68,71 @@ const (
 	AssetKeyRentGreenBlue        AssetKey = "rent-green-blue"
 	AssetKeyRentUtilityRailroad  AssetKey = "rent-utility-railroad"
 )
+
+var AssetKeyProtoMap = map[AssetKey]monopoly_deal_schema.AssetKey{
+	AssetKeyBalticAve:            monopoly_deal_schema.AssetKey_BALTIC_AVE,
+	AssetKeyMediterraneanAve:     monopoly_deal_schema.AssetKey_MEDITERRANEAN_AVE,
+	AssetKeyConnecticutAve:       monopoly_deal_schema.AssetKey_CONNECTICUT_AVE,
+	AssetKeyOrientalAve:          monopoly_deal_schema.AssetKey_ORIENTAL_AVE,
+	AssetKeyVermontAve:           monopoly_deal_schema.AssetKey_VERMONT_AVE,
+	AssetKeyStCharlesPlace:       monopoly_deal_schema.AssetKey_ST_CHARLES_PLACE,
+	AssetKeyVirginiaAve:          monopoly_deal_schema.AssetKey_VIRGINIA_AVE,
+	AssetKeyStateAve:             monopoly_deal_schema.AssetKey_STATE_AVE,
+	AssetKeyNewYorkAve:           monopoly_deal_schema.AssetKey_NEW_YORK_AVE,
+	AssetKeyStJamesPlace:         monopoly_deal_schema.AssetKey_ST_JAMES_PLACE,
+	AssetKeyTennesseeAve:         monopoly_deal_schema.AssetKey_TENNESSEE_AVE,
+	AssetKeyKentuckyAve:          monopoly_deal_schema.AssetKey_KENTUCKY_AVE,
+	AssetKeyIndianaAve:           monopoly_deal_schema.AssetKey_INDIANA_AVE,
+	AssetKeyIllinoisAve:          monopoly_deal_schema.AssetKey_ILLINOIS_AVE,
+	AssetKeyVentnorAve:           monopoly_deal_schema.AssetKey_VENTNOR_AVE,
+	AssetKeyMarvinGardens:        monopoly_deal_schema.AssetKey_MARVIN_GARDENS,
+	AssetKeyAtlanticAve:          monopoly_deal_schema.AssetKey_ATLANTIC_AVE,
+	AssetKeyNorthCarolinaAve:     monopoly_deal_schema.AssetKey_NORTH_CAROLINA_AVE,
+	AssetKeyPacificAve:           monopoly_deal_schema.AssetKey_PACIFIC_AVE,
+	AssetKeyPennsylvaniaAve:      monopoly_deal_schema.AssetKey_PENNSYLVANIA_AVE,
+	AssetKeyBoardwalk:            monopoly_deal_schema.AssetKey_BOARDWALK,
+	AssetKeyParkPlace:            monopoly_deal_schema.AssetKey_PARK_PLACE,
+	AssetKeyWaterWorks:           monopoly_deal_schema.AssetKey_WATER_WORKS,
+	AssetKeyElectricCompany:      monopoly_deal_schema.AssetKey_ELECTRIC_COMPANY,
+	AssetKeyShortLine:            monopoly_deal_schema.AssetKey_SHORT_LINE,
+	AssetKeyBandORailRoad:        monopoly_deal_schema.AssetKey_B_AND_O_RAILROAD,
+	AssetKeyReadingRailroad:      monopoly_deal_schema.AssetKey_READING_RAILROAD,
+	AssetKeyPennsylvaniaRailroad: monopoly_deal_schema.AssetKey_PENNSYLVANIA_RAILROAD,
+	AssetKeyWildBrownSky:         monopoly_deal_schema.AssetKey_WILD_BROWN_SKY,
+	AssetKeyWildSkyRailroad:      monopoly_deal_schema.AssetKey_WILD_SKY_RAILROAD,
+	AssetKeyWildPinkOrange:       monopoly_deal_schema.AssetKey_WILD_PINK_ORANGE,
+	AssetKeyWildRedYellow:        monopoly_deal_schema.AssetKey_WILD_RED_YELLOW,
+	AssetKeyWildGreenBlue:        monopoly_deal_schema.AssetKey_WILD_GREEN_BLUE,
+	AssetKeyWildGreenRailroad:    monopoly_deal_schema.AssetKey_WILD_GREEN_RAILROAD,
+	AssetKeyWildUtilityRailroad:  monopoly_deal_schema.AssetKey_WILD_UTILITY_RAILROAD,
+	AssetKeyWildWild:             monopoly_deal_schema.AssetKey_WILD_WILD,
+	AssetKeyMoney10:              monopoly_deal_schema.AssetKey_MONEY_10,
+	AssetKeyMoney5:               monopoly_deal_schema.AssetKey_MONEY_5,
+	AssetKeyMoney4:               monopoly_deal_schema.AssetKey_MONEY_4,
+	AssetKeyMoney3:               monopoly_deal_schema.AssetKey_MONEY_3,
+	AssetKeyMoney2:               monopoly_deal_schema.AssetKey_MONEY_2,
+	AssetKeyMoney1:               monopoly_deal_schema.AssetKey_MONEY_1,
+	AssetKeyDealBreaker:          monopoly_deal_schema.AssetKey_DEAL_BREAKER,
+	AssetKeyJustSayNo:            monopoly_deal_schema.AssetKey_JUST_SAY_NO,
+	AssetKeyHotel:                monopoly_deal_schema.AssetKey_HOTEL,
+	AssetKeyDebtCollector:        monopoly_deal_schema.AssetKey_DEBT_COLLECTOR,
+	AssetKeyForcedDeal:           monopoly_deal_schema.AssetKey_FORCED_DEAL,
+	AssetKeySlyDeal:              monopoly_deal_schema.AssetKey_SLY_DEAL,
+	AssetKeyHouse:                monopoly_deal_schema.AssetKey_HOUSE,
+	AssetKeyItsMyBirthday:        monopoly_deal_schema.AssetKey_ITS_MY_BIRTHDAY,
+	AssetKeyDoubleTheRent:        monopoly_deal_schema.AssetKey_DOUBLE_THE_RENT,
+	AssetKeyPassGo:               monopoly_deal_schema.AssetKey_PASS_GO,
+	AssetKeyRentWild:             monopoly_deal_schema.AssetKey_RENT_WILD,
+	AssetKeyRentBrownSky:         monopoly_deal_schema.AssetKey_RENT_BROWN_SKY,
+	AssetKeyRentPinkOrange:       monopoly_deal_schema.AssetKey_RENT_PINK_ORANGE,
+	AssetKeyRentRedYellow:        monopoly_deal_schema.AssetKey_RENT_RED_YELLOW,
+	AssetKeyRentGreenBlue:        monopoly_deal_schema.AssetKey_RENT_GREEN_BLUE,
+	AssetKeyRentUtilityRailroad:  monopoly_deal_schema.AssetKey_RENT_UTILITY_RAILROAD,
+}
+
+func (a AssetKey) Proto() monopoly_deal_schema.AssetKey {
+	return AssetKeyProtoMap[a]
+}
 
 //type AssetKey int
 //
@@ -140,6 +206,17 @@ const (
 	CategoryAction
 )
 
+var CategoryProtoMap = map[Category]monopoly_deal_schema.Category{
+	CategoryPureProperty: monopoly_deal_schema.Category_PURE_PROPERTY,
+	CategoryWildProperty: monopoly_deal_schema.Category_WILD_PROPERTY,
+	CategoryMoney:        monopoly_deal_schema.Category_MONEY,
+	CategoryAction:       monopoly_deal_schema.Category_ACTION,
+}
+
+func (c Category) Proto() monopoly_deal_schema.Category {
+	return CategoryProtoMap[c]
+}
+
 type Color int
 
 const (
@@ -155,6 +232,24 @@ const (
 	ColorUtility
 	ColorRailroad
 )
+
+var ColorProtoMap = map[Color]monopoly_deal_schema.Color{
+	ColorNone:     monopoly_deal_schema.Color_NONE,
+	ColorBrown:    monopoly_deal_schema.Color_BROWN,
+	ColorSky:      monopoly_deal_schema.Color_SKY,
+	ColorPink:     monopoly_deal_schema.Color_PINK,
+	ColorOrange:   monopoly_deal_schema.Color_ORANGE,
+	ColorRed:      monopoly_deal_schema.Color_RED,
+	ColorYellow:   monopoly_deal_schema.Color_YELLOW,
+	ColorGreen:    monopoly_deal_schema.Color_GREEN,
+	ColorBlue:     monopoly_deal_schema.Color_BLUE,
+	ColorUtility:  monopoly_deal_schema.Color_UTILITY,
+	ColorRailroad: monopoly_deal_schema.Color_RAILROAD,
+}
+
+func (c Color) Proto() monopoly_deal_schema.Color {
+	return ColorProtoMap[c]
+}
 
 type Card struct {
 	ID          Identifier `json:"id" msgpack:"a"`
@@ -183,7 +278,23 @@ func NewCard(id Identifier, c Category, ak AssetKey, v int, colors ...Color) Car
 	}
 }
 
-// DO NOT USE THIS MAP DO FETCH CARDS!
+func (c Card) Proto() *monopoly_deal_schema.Card {
+	colors := make([]monopoly_deal_schema.Color, len(c.Colors))
+	for i, color := range c.Colors {
+		colors[i] = color.Proto()
+	}
+
+	return &monopoly_deal_schema.Card{
+		CardId:      string(c.ID),
+		AssetKey:    c.AssetKey.Proto(),
+		Category:    c.Category.Proto(),
+		ActiveColor: c.ActiveColor.Proto(),
+		Colors:      colors,
+		Value:       int32(c.Value),
+	}
+}
+
+// DO NOT USE THIS MAP TO FETCH CARDS!
 // Cards are NOT unique here.
 var CardByAssetKey = map[AssetKey]Card{
 	AssetKeyBalticAve:            NewCard("", CategoryPureProperty, AssetKeyBalticAve, 1, ColorBrown),
@@ -259,6 +370,14 @@ func (c Card) HasColor(color Color) bool {
 }
 
 type Cards []Card
+
+func (c *Cards) Proto() []*monopoly_deal_schema.Card {
+	cards := make([]*monopoly_deal_schema.Card, len(*c))
+	for i, card := range *c {
+		cards[i] = card.Proto()
+	}
+	return cards
+}
 
 func (c *Cards) Len() int {
 	return len(*c)

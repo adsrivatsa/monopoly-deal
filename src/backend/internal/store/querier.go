@@ -13,16 +13,19 @@ import (
 type Querier interface {
 	CreateGame(ctx context.Context, arg CreateGameParams) (Game, error)
 	CreateGamePlayer(ctx context.Context, arg CreateGamePlayerParams) (GamePlayer, error)
+	CreateGamePlayersFromRoom(ctx context.Context, arg CreateGamePlayersFromRoomParams) error
 	CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error)
 	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
 	CreateRoomPlayer(ctx context.Context, arg CreateRoomPlayerParams) (RoomPlayer, error)
 	DecrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
 	DeleteRoom(ctx context.Context, roomID uuid.UUID) error
 	DeleteRoomPlayer(ctx context.Context, arg DeleteRoomPlayerParams) error
+	DeleteRoomPlayersByRoom(ctx context.Context, roomID uuid.UUID) error
 	GetGameByPlayer(ctx context.Context, playerID uuid.UUID) (Game, error)
 	GetOldestRoomPlayer(ctx context.Context, arg GetOldestRoomPlayerParams) (RoomPlayer, error)
 	GetPlayer(ctx context.Context, arg GetPlayerParams) (Player, error)
 	GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Player, error)
+	GetPlayersByGame(ctx context.Context, gameID uuid.UUID) ([]Player, error)
 	GetPlayersByRoom(ctx context.Context, roomID uuid.UUID) ([]GetPlayersByRoomRow, error)
 	GetRoom(ctx context.Context, roomID uuid.UUID) (Room, error)
 	GetRoomByPlayer(ctx context.Context, playerID uuid.UUID) (Room, error)
@@ -30,6 +33,7 @@ type Querier interface {
 	IncrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
 	ListRooms(ctx context.Context, arg ListRoomsParams) ([]ListRoomsRow, error)
 	ToggleRoomPlayerIsReady(ctx context.Context, arg ToggleRoomPlayerIsReadyParams) (RoomPlayer, error)
+	UpdateGameState(ctx context.Context, arg UpdateGameStateParams) (Game, error)
 	UpdatePlayer(ctx context.Context, arg UpdatePlayerParams) (Player, error)
 	UpdateRoomCapacity(ctx context.Context, arg UpdateRoomCapacityParams) (Room, error)
 	UpdateRoomOccupied(ctx context.Context, arg UpdateRoomOccupiedParams) (Room, error)

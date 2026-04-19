@@ -94,6 +94,40 @@ func (q *Queries) GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Play
 	return items, nil
 }
 
+const getPlayersByGame = `-- name: GetPlayersByGame :many
+SELECT p.player_id, p.display_name, p.email, p.image_url, p.refresh_token_id
+  FROM player p
+           INNER JOIN game_player gp
+           ON gp.player_id = p.player_id
+ WHERE gp.game_id = $1
+`
+
+func (q *Queries) GetPlayersByGame(ctx context.Context, gameID uuid.UUID) ([]Player, error) {
+	rows, err := q.db.Query(ctx, getPlayersByGame, gameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Player{}
+	for rows.Next() {
+		var i Player
+		if err := rows.Scan(
+			&i.PlayerID,
+			&i.DisplayName,
+			&i.Email,
+			&i.ImageUrl,
+			&i.RefreshTokenID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPlayersByRoom = `-- name: GetPlayersByRoom :many
 SELECT p.player_id, p.display_name, p.email, p.image_url, p.refresh_token_id, rp.is_ready, rp.is_host
   FROM player p

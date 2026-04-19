@@ -7,7 +7,7 @@
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 
-export const protobufPackage = "funkames.schema";
+export const protobufPackage = "fun_kames.schema.room";
 
 export enum Game {
   MonopolyDeal = 0,
@@ -95,9 +95,10 @@ export interface SettingsUpdated {
 }
 
 export interface GameStarted {
+  gameId: string;
 }
 
-export interface ServerRoomMessage {
+export interface ServerMessage {
   roomCreated?: RoomCreated | undefined;
   playerJoinedRoom?: PlayerJoinedRoom | undefined;
   playerLeftRoom?: PlayerLeftRoom | undefined;
@@ -107,7 +108,7 @@ export interface ServerRoomMessage {
   gameStarted?: GameStarted | undefined;
 }
 
-export interface ClientRoomMessage {
+export interface ClientMessage {
   chat?: Chat | undefined;
 }
 
@@ -1062,11 +1063,14 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
 };
 
 function createBaseGameStarted(): GameStarted {
-  return {};
+  return { gameId: "" };
 }
 
 export const GameStarted: MessageFns<GameStarted> = {
-  encode(_: GameStarted, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: GameStarted, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.gameId !== "") {
+      writer.uint32(10).string(message.gameId);
+    }
     return writer;
   },
 
@@ -1077,6 +1081,14 @@ export const GameStarted: MessageFns<GameStarted> = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.gameId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1086,25 +1098,35 @@ export const GameStarted: MessageFns<GameStarted> = {
     return message;
   },
 
-  fromJSON(_: any): GameStarted {
-    return {};
+  fromJSON(object: any): GameStarted {
+    return {
+      gameId: isSet(object.gameId)
+        ? globalThis.String(object.gameId)
+        : isSet(object.game_id)
+        ? globalThis.String(object.game_id)
+        : "",
+    };
   },
 
-  toJSON(_: GameStarted): unknown {
+  toJSON(message: GameStarted): unknown {
     const obj: any = {};
+    if (message.gameId !== "") {
+      obj.gameId = message.gameId;
+    }
     return obj;
   },
 
   create<I extends Exact<DeepPartial<GameStarted>, I>>(base?: I): GameStarted {
     return GameStarted.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<GameStarted>, I>>(_: I): GameStarted {
+  fromPartial<I extends Exact<DeepPartial<GameStarted>, I>>(object: I): GameStarted {
     const message = createBaseGameStarted();
+    message.gameId = object.gameId ?? "";
     return message;
   },
 };
 
-function createBaseServerRoomMessage(): ServerRoomMessage {
+function createBaseServerMessage(): ServerMessage {
   return {
     roomCreated: undefined,
     playerJoinedRoom: undefined,
@@ -1116,8 +1138,8 @@ function createBaseServerRoomMessage(): ServerRoomMessage {
   };
 }
 
-export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
-  encode(message: ServerRoomMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const ServerMessage: MessageFns<ServerMessage> = {
+  encode(message: ServerMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.roomCreated !== undefined) {
       RoomCreated.encode(message.roomCreated, writer.uint32(10).fork()).join();
     }
@@ -1142,10 +1164,10 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): ServerRoomMessage {
+  decode(input: BinaryReader | Uint8Array, length?: number): ServerMessage {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseServerRoomMessage();
+    const message = createBaseServerMessage();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1214,7 +1236,7 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
     return message;
   },
 
-  fromJSON(object: any): ServerRoomMessage {
+  fromJSON(object: any): ServerMessage {
     return {
       roomCreated: isSet(object.roomCreated)
         ? RoomCreated.fromJSON(object.roomCreated)
@@ -1254,7 +1276,7 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
     };
   },
 
-  toJSON(message: ServerRoomMessage): unknown {
+  toJSON(message: ServerMessage): unknown {
     const obj: any = {};
     if (message.roomCreated !== undefined) {
       obj.roomCreated = RoomCreated.toJSON(message.roomCreated);
@@ -1280,11 +1302,11 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<ServerRoomMessage>, I>>(base?: I): ServerRoomMessage {
-    return ServerRoomMessage.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ServerMessage>, I>>(base?: I): ServerMessage {
+    return ServerMessage.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<ServerRoomMessage>, I>>(object: I): ServerRoomMessage {
-    const message = createBaseServerRoomMessage();
+  fromPartial<I extends Exact<DeepPartial<ServerMessage>, I>>(object: I): ServerMessage {
+    const message = createBaseServerMessage();
     message.roomCreated = (object.roomCreated !== undefined && object.roomCreated !== null)
       ? RoomCreated.fromPartial(object.roomCreated)
       : undefined;
@@ -1310,22 +1332,22 @@ export const ServerRoomMessage: MessageFns<ServerRoomMessage> = {
   },
 };
 
-function createBaseClientRoomMessage(): ClientRoomMessage {
+function createBaseClientMessage(): ClientMessage {
   return { chat: undefined };
 }
 
-export const ClientRoomMessage: MessageFns<ClientRoomMessage> = {
-  encode(message: ClientRoomMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const ClientMessage: MessageFns<ClientMessage> = {
+  encode(message: ClientMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.chat !== undefined) {
       Chat.encode(message.chat, writer.uint32(10).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): ClientRoomMessage {
+  decode(input: BinaryReader | Uint8Array, length?: number): ClientMessage {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseClientRoomMessage();
+    const message = createBaseClientMessage();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1346,11 +1368,11 @@ export const ClientRoomMessage: MessageFns<ClientRoomMessage> = {
     return message;
   },
 
-  fromJSON(object: any): ClientRoomMessage {
+  fromJSON(object: any): ClientMessage {
     return { chat: isSet(object.chat) ? Chat.fromJSON(object.chat) : undefined };
   },
 
-  toJSON(message: ClientRoomMessage): unknown {
+  toJSON(message: ClientMessage): unknown {
     const obj: any = {};
     if (message.chat !== undefined) {
       obj.chat = Chat.toJSON(message.chat);
@@ -1358,11 +1380,11 @@ export const ClientRoomMessage: MessageFns<ClientRoomMessage> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<ClientRoomMessage>, I>>(base?: I): ClientRoomMessage {
-    return ClientRoomMessage.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ClientMessage>, I>>(base?: I): ClientMessage {
+    return ClientMessage.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<ClientRoomMessage>, I>>(object: I): ClientRoomMessage {
-    const message = createBaseClientRoomMessage();
+  fromPartial<I extends Exact<DeepPartial<ClientMessage>, I>>(object: I): ClientMessage {
+    const message = createBaseClientMessage();
     message.chat = (object.chat !== undefined && object.chat !== null) ? Chat.fromPartial(object.chat) : undefined;
     return message;
   },

@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"fun-kames/internal/engine"
+	monopoly_deal "fun-kames/internal/engine/monopoly-deal"
 	"fun-kames/internal/errors"
 	"fun-kames/internal/schema"
 	"fun-kames/internal/service"
+	"fun-kames/internal/store"
 	"fun-kames/internal/token"
 	"net/http"
 
@@ -86,15 +87,22 @@ func (s *Server) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	settings, err := engine.ParseSettings(args.Game, args.Settings)
-	if err != nil {
-		ErrorHTTP(w, err)
-		return
-	}
+	switch args.Game {
+	case store.GameTypeMonopolyDeal:
+		var settings monopoly_deal.Settings
+		err = settings.Decode(args.Settings)
+		if err != nil {
+			ErrorHTTP(w, err)
+			return
+		}
 
-	err = Validate(settings.Raw())
-	if err != nil {
-		ErrorHTTP(w, err)
+		err = Validate(settings)
+		if err != nil {
+			ErrorHTTP(w, err)
+			return
+		}
+	default:
+		ErrorHTTP(w, errors.GameNotSupported)
 		return
 	}
 
@@ -102,7 +110,7 @@ func (s *Server) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		DisplayName: args.DisplayName,
 		Capacity:    int32(args.Capacity),
 		Game:        args.Game,
-		Settings:    settings,
+		Settings:    args.Settings,
 	})
 	if err != nil {
 		ErrorHTTP(w, err)
@@ -188,22 +196,29 @@ func (s *Server) UpdateRoomSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	settings, err := engine.ParseSettings(args.Game, args.Settings)
-	if err != nil {
-		ErrorHTTP(w, err)
-		return
-	}
+	switch args.Game {
+	case store.GameTypeMonopolyDeal:
+		var settings monopoly_deal.Settings
+		err = settings.Decode(args.Settings)
+		if err != nil {
+			ErrorHTTP(w, err)
+			return
+		}
 
-	err = Validate(settings.Raw())
-	if err != nil {
-		ErrorHTTP(w, err)
+		err = Validate(settings)
+		if err != nil {
+			ErrorHTTP(w, err)
+			return
+		}
+	default:
+		ErrorHTTP(w, errors.GameNotSupported)
 		return
 	}
 
 	err = s.services.UpdateRoomSettings(ctx, tp, service.UpdateRoomSettingsParams{
 		Capacity: int32(args.Capacity),
 		Game:     args.Game,
-		Settings: settings,
+		Settings: args.Settings,
 	})
 	if err != nil {
 		ErrorHTTP(w, err)
@@ -224,7 +239,7 @@ func (s *Server) RoomSocket(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := s.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		ErrorHTTP(w, errors.Internal(err))
+		ErrorHTTP(w, err)
 		return
 	}
 

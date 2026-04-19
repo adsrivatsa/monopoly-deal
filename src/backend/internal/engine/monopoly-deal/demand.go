@@ -1,254 +1,149 @@
 package monopoly_deal
 
 import (
-	"fun-kames/internal/errors"
-	"slices"
+	"fun-kames/internal/schema/monopoly_deal_schema"
+
+	"github.com/google/uuid"
 )
+
+type PaymentDemand struct {
+	Amount int `json:"amount" msgpack:"a"`
+}
+
+type PropertyDemand struct {
+	SourceCardID *Identifier `json:"source_card_id" msgpack:"a"`
+	TargetCardID Identifier  `json:"target_card_id" msgpack:"b"`
+}
+
+type PropertySetDemand struct {
+	PropertySetID Identifier `json:"property_set_id" msgpack:"a"`
+}
 
 type DemandKind int
 
 const (
-	DemandKindDenied DemandKind = iota
-	DemandKindPayment
+	DemandKindPayment DemandKind = iota
 	DemandKindProperty
 	DemandKindPropertySet
 )
 
-type Demand interface {
-	GetKind() DemandKind
-	GetSource() Identifier
-	GetTarget() Identifier
-	Deny(id Identifier) (Demand, error)
-	IsCompliant(id Identifier, cards ...Card) error
+var DemandKindProtoMap = map[DemandKind]monopoly_deal_schema.DemandKind{
+	DemandKindPayment:     monopoly_deal_schema.DemandKind_PAYMENT,
+	DemandKindProperty:    monopoly_deal_schema.DemandKind_PROPERTY,
+	DemandKindPropertySet: monopoly_deal_schema.DemandKind_PROPERTY_SET,
 }
 
-type DeniedDemand struct {
-	Kind     DemandKind `json:"kind"`
-	Source   Identifier `json:"source"`
-	Target   Identifier `json:"target"`
-	Original Demand     `json:"original"`
+func (dk DemandKind) Proto() monopoly_deal_schema.DemandKind {
+	return DemandKindProtoMap[dk]
 }
 
-func NewDeniedDemand(source Identifier, target Identifier, original Demand) Demand {
-	return &DeniedDemand{
-		Kind:     DemandKindDenied,
-		Source:   source,
-		Target:   target,
-		Original: original,
+type Demand struct {
+	Kind        DemandKind        `json:"kind" msgpack:"a"`
+	SourceID    Identifier        `json:"source_id" msgpack:"b"`
+	TargetID    Identifier        `json:"target_id" msgpack:"c"`
+	Payment     PaymentDemand     `json:"payment" msgpack:"d"`
+	Property    PropertyDemand    `json:"property" msgpack:"e"`
+	PropertySet PropertySetDemand `json:"property_set" msgpack:"f"`
+	IsActive    bool              `json:"is_active" msgpack:"g"`
+}
+
+func NewPaymentDemand(sourceID, targetID Identifier, amount int) Demand {
+	return Demand{
+		Kind:     DemandKindPayment,
+		SourceID: sourceID,
+		TargetID: targetID,
+		Payment: PaymentDemand{
+			Amount: amount,
+		},
+		IsActive: true,
 	}
 }
 
-func (d *DeniedDemand) GetKind() DemandKind {
-	return d.Kind
-}
-
-func (d *DeniedDemand) GetSource() Identifier {
-	return d.Source
-}
-
-func (d *DeniedDemand) GetTarget() Identifier {
-	return d.Target
-}
-
-func (d *DeniedDemand) Deny(id Identifier) (Demand, error) {
-	if id != d.Target {
-		return nil, errors.CannotRespondToDemand
+func NewPaymentDemands(sourceID Identifier, targetIDs []Identifier, amount int) map[Identifier]Demand {
+	ds := make(map[Identifier]Demand)
+	for _, targetID := range targetIDs {
+		ds[targetID] = NewPaymentDemand(sourceID, targetID, amount)
 	}
-
-	return d.Original, nil
+	return ds
 }
 
-func (d *DeniedDemand) IsCompliant(id Identifier, cards ...Card) error {
-	if d.Target != id {
-		return errors.CannotRespondToDemand
-	}
-
-	// nothing to comply with
-
-	return nil
-}
-
-type PaymentDemand struct {
-	Kind   DemandKind `json:"kind"`
-	Source Identifier `json:"source"`
-	Target Identifier `json:"target"`
-	Amount int        `json:"amount"`
-}
-
-func NewPaymentDemand(source Identifier, target Identifier, amount int) Demand {
-	return &PaymentDemand{
-		Kind:   DemandKindPayment,
-		Source: source,
-		Target: target,
-		Amount: amount,
+func NewPropertyDemand(sourceID, targetID Identifier, sourceCardID *Identifier, targetCardID Identifier) Demand {
+	return Demand{
+		Kind:     DemandKindProperty,
+		SourceID: sourceID,
+		TargetID: targetID,
+		Property: PropertyDemand{
+			SourceCardID: sourceCardID,
+			TargetCardID: targetCardID,
+		},
+		IsActive: true,
 	}
 }
 
-func NewPaymentDemands(source Identifier, target []Identifier, amount int) map[Identifier]Demand {
-	demands := make(map[Identifier]Demand)
-	for _, id := range target {
-		if source == id {
-			continue
+func NewPropertySetDemand(sourceID, targetID, propertySetID Identifier) Demand {
+	return Demand{
+		Kind:     DemandKindPropertySet,
+		SourceID: sourceID,
+		TargetID: targetID,
+		PropertySet: PropertySetDemand{
+			PropertySetID: propertySetID,
+		},
+		IsActive: true,
+	}
+}
+
+func (d *Demand) Proto(sourceUUID uuid.UUID) *monopoly_deal_schema.Demand {
+	switch d.Kind {
+	case DemandKindPayment:
+		return &monopoly_deal_schema.Demand{
+			SourceId:   sourceUUID.String(),
+			DemandKind: d.Kind.Proto(),
+			Demand: &monopoly_deal_schema.Demand_PaymentDemand{
+				PaymentDemand: &monopoly_deal_schema.PaymentDemand{
+					Amount: int32(d.Payment.Amount),
+				},
+			},
+			IsActive: d.IsActive,
 		}
-		demands[id] = NewPaymentDemand(source, id, amount)
-	}
-	return demands
-}
+	case DemandKindProperty:
+		var sourceCardID *string
+		if d.Property.SourceCardID != nil {
+			id := string(*d.Property.SourceCardID)
+			sourceCardID = &id
+		}
 
-func (pd *PaymentDemand) GetKind() DemandKind {
-	return pd.Kind
-}
+		return &monopoly_deal_schema.Demand{
+			SourceId:   sourceUUID.String(),
+			DemandKind: d.Kind.Proto(),
+			Demand: &monopoly_deal_schema.Demand_PropertyDemand{
+				PropertyDemand: &monopoly_deal_schema.PropertyDemand{
+					SourceCardId: sourceCardID,
+					TargetCardId: string(d.Property.TargetCardID),
+				},
+			},
+			IsActive: d.IsActive,
+		}
+	case DemandKindPropertySet:
+		return &monopoly_deal_schema.Demand{
+			SourceId:   sourceUUID.String(),
+			DemandKind: d.Kind.Proto(),
+			Demand: &monopoly_deal_schema.Demand_PropertySetDemand{
+				PropertySetDemand: &monopoly_deal_schema.PropertySetDemand{
+					PropertySetId: string(d.PropertySet.PropertySetID),
+				},
+			},
+			IsActive: d.IsActive,
+		}
 
-func (pd *PaymentDemand) GetSource() Identifier {
-	return pd.Source
-}
-
-func (pd *PaymentDemand) GetTarget() Identifier {
-	return pd.Target
-}
-
-func (pd *PaymentDemand) Deny(id Identifier) (Demand, error) {
-	if id != pd.Target {
-		return nil, errors.CannotRespondToDemand
-	}
-
-	return NewDeniedDemand(pd.Target, pd.Source, pd), nil
-}
-
-func (pd *PaymentDemand) IsCompliant(id Identifier, cards ...Card) error {
-	if pd.Target != id {
-		return errors.CannotRespondToDemand
-	}
-
-	var value int
-	for _, card := range cards {
-		value += card.Value
-	}
-
-	if value < pd.Amount {
-		return errors.PaymentDoesNotCoverAmount
-	}
-
-	return nil
-}
-
-type PropertyDemand struct {
-	Kind         DemandKind  `json:"kind"`
-	Source       Identifier  `json:"source"`
-	Target       Identifier  `json:"target"`
-	SourceCardID *Identifier `json:"source_card"`
-	TargetCardID Identifier  `json:"target_card"`
-}
-
-func NewPropertyDemand(source Identifier, target Identifier, sourceCardID *Identifier, targetCardID Identifier) Demand {
-	return &PropertyDemand{
-		Kind:         DemandKindProperty,
-		Source:       source,
-		Target:       target,
-		SourceCardID: sourceCardID,
-		TargetCardID: targetCardID,
+	default:
+		return nil
 	}
 }
 
-func (pd *PropertyDemand) GetKind() DemandKind {
-	return pd.Kind
-}
+func (d *Demand) Deny() {
+	tmp := d.SourceID
+	d.SourceID = d.TargetID
+	d.TargetID = tmp
 
-func (pd *PropertyDemand) GetSource() Identifier {
-	return pd.Source
-}
-
-func (pd *PropertyDemand) GetTarget() Identifier {
-	return pd.Target
-}
-
-func (pd *PropertyDemand) Deny(id Identifier) (Demand, error) {
-	if id != pd.Target {
-		return nil, errors.CannotRespondToDemand
-	}
-
-	return NewDeniedDemand(pd.Target, pd.Source, pd), nil
-}
-
-func (pd *PropertyDemand) IsCompliant(id Identifier, cards ...Card) error {
-	if pd.Target != id {
-		return errors.CannotRespondToDemand
-	}
-
-	if len(cards) != 1 {
-		return errors.InvalidAmountOfCards
-	}
-
-	card := cards[0]
-
-	if card.ID != pd.TargetCardID {
-		return errors.InvalidCardForAction
-	}
-
-	return nil
-}
-
-type PropertySetDemand struct {
-	Kind   DemandKind `json:"kind"`
-	Source Identifier `json:"source"`
-	Target Identifier `json:"target"`
-	Cards  Cards      `json:"cards"`
-}
-
-func NewPropertySetDemand(source Identifier, target Identifier, cards ...Card) Demand {
-	return &PropertySetDemand{
-		Kind:   DemandKindPropertySet,
-		Source: source,
-		Target: target,
-		Cards:  cards,
-	}
-}
-
-func (psd *PropertySetDemand) GetKind() DemandKind {
-	return psd.Kind
-}
-
-func (psd *PropertySetDemand) GetSource() Identifier {
-	return psd.Source
-}
-
-func (psd *PropertySetDemand) GetTarget() Identifier {
-	return psd.Target
-}
-
-func (psd *PropertySetDemand) Deny(id Identifier) (Demand, error) {
-	if id != psd.Target {
-		return nil, errors.CannotRespondToDemand
-	}
-
-	return NewDeniedDemand(psd.Target, psd.Source, psd), nil
-}
-
-func (psd *PropertySetDemand) IsCompliant(id Identifier, cards ...Card) error {
-	if psd.Target != id {
-		return errors.CannotRespondToDemand
-	}
-
-	if len(cards) != len(psd.Cards) {
-		return errors.InvalidAmountOfCards
-	}
-
-	expected := make([]Identifier, len(psd.Cards))
-	for i, card := range psd.Cards {
-		expected[i] = card.ID
-	}
-
-	provided := make([]Identifier, len(cards))
-	for i, card := range cards {
-		provided[i] = card.ID
-	}
-
-	slices.Sort(expected)
-	slices.Sort(provided)
-
-	if !slices.Equal(expected, provided) {
-		return errors.InvalidCardForAction
-	}
-
-	return nil
+	d.IsActive = !d.IsActive
 }

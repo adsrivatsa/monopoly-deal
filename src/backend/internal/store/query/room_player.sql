@@ -35,3 +35,8 @@ SELECT *
     WHERE room_id = $1
       AND player_id = $2
 RETURNING *;
+
+-- name: DeleteRoomPlayersByRoom :exec
+DELETE
+  FROM room_player
+ WHERE room_id = $1;

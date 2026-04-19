@@ -1,12 +1,14 @@
 package store
 
-import "fun-kames/internal/schema"
+import (
+	"fun-kames/internal/schema/room_schema"
+)
 
-func (g GameType) Proto() schema.Game {
+func (g GameType) Proto() room_schema.Game {
 	switch g {
 	case GameTypeMonopolyDeal:
-		return schema.Game_MonopolyDeal
+		return room_schema.Game_MonopolyDeal
 	default:
-		return schema.Game_MonopolyDeal
+		return room_schema.Game_MonopolyDeal
 	}
 }

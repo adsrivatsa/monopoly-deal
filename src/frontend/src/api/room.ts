@@ -98,6 +98,10 @@ export type UpdateRoomSettingsResult =
   | { ok: true }
   | { ok: false; error: ApiErrorPayload | null; isTokenError: boolean };
 
+export type StartGameResult =
+  | { ok: true }
+  | { ok: false; error: ApiErrorPayload | null; isTokenError: boolean };
+
 const defaultListRoomsParams: ListRoomsParams = {
   limit: 10,
   offset: 0,
@@ -240,6 +244,23 @@ export const updateRoomSettings = async (
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
+  });
+
+  if (response.status !== 200) {
+    const error = await readApiError(response);
+    return {
+      ok: false,
+      error,
+      isTokenError: isTokenErrorCode(error?.code),
+    };
+  }
+
+  return { ok: true };
+};
+
+export const startGame = async (): Promise<StartGameResult> => {
+  const response = await apiFetch("/game/", {
+    method: "POST",
   });
 
   if (response.status !== 200) {

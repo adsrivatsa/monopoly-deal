@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package funkames.schema;
+package fun_kames.schema.room;
 
-option go_package = "funkames/backend/internal/schema;schema";
+option go_package = "fun-kames/internal/schema/room_schema;room_schema";
 
 message Player {
   string player_id = 1;
@@ -66,9 +66,11 @@ message SettingsUpdated {
   bytes settings = 3;
 }
 
-message GameStarted {}
+message GameStarted {
+  string game_id = 1;
+}
 
-message ServerRoomMessage {
+message ServerMessage {
   oneof payload {
     RoomCreated room_created = 1;
     PlayerJoinedRoom player_joined_room = 2;
@@ -80,7 +82,7 @@ message ServerRoomMessage {
   }
 }
 
-message ClientRoomMessage {
+message ClientMessage {
   oneof payload {
     Chat chat = 1;
   }

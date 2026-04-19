@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fun-kames/internal/engine"
 	"fun-kames/internal/store"
 
 	"github.com/google/uuid"
@@ -24,10 +23,10 @@ type GetPlayerParams = store.GetPlayerParams
 type UpdatePlayerParams = store.UpdatePlayerParams
 
 type CreateRoomParams struct {
-	DisplayName string          `json:"display_name"`
-	Capacity    int32           `json:"capacity"`
-	Game        store.GameType  `json:"game"`
-	Settings    engine.Settings `json:"settings"`
+	DisplayName string         `json:"display_name"`
+	Capacity    int32          `json:"capacity"`
+	Game        store.GameType `json:"game"`
+	Settings    []byte         `json:"settings"`
 }
 
 type Room struct {
@@ -65,7 +64,9 @@ type ListRoomsRes struct {
 }
 
 type UpdateRoomSettingsParams struct {
-	Capacity int32           `json:"capacity"`
-	Game     store.GameType  `json:"game"`
-	Settings engine.Settings `json:"settings"`
+	Capacity int32          `json:"capacity"`
+	Game     store.GameType `json:"game"`
+	Settings []byte         `json:"settings"`
 }
+
+type Game = store.Game

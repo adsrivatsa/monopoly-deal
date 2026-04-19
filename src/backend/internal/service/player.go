@@ -13,7 +13,7 @@ func (c *Controller) CreatePlayer(ctx context.Context, args CreatePlayerParams) 
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return p, errors.EntityNotFound(errors.EntityPlayer, err)
 		}
-		return p, errors.Internal(err)
+		return p, err
 	}
 
 	return p, nil
@@ -29,7 +29,7 @@ func (c *Controller) GetPlayer(ctx context.Context, tp token.Payload, args GetPl
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return p, errors.EntityNotFound(errors.EntityPlayer, err)
 		}
-		return p, errors.Internal(err)
+		return p, err
 	}
 
 	return p, nil
@@ -44,7 +44,7 @@ func (c *Controller) UpdatePlayer(ctx context.Context, tp token.Payload, display
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return p, errors.EntityNotFound(errors.EntityPlayer, err)
 		}
-		return p, errors.Internal(err)
+		return p, err
 	}
 
 	return p, nil

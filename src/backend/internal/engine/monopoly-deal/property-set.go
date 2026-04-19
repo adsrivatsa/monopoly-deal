@@ -1,8 +1,11 @@
 package monopoly_deal
 
 import (
+	"fun-kames/internal/schema/monopoly_deal_schema"
 	"slices"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type PropertySet struct {
@@ -15,6 +18,15 @@ func NewPropertySet(id Identifier, color Color) PropertySet {
 	return PropertySet{
 		ID:    id,
 		Color: color,
+	}
+}
+
+func (ps *PropertySet) Proto(playerUUID uuid.UUID) *monopoly_deal_schema.PropertySet {
+	return &monopoly_deal_schema.PropertySet{
+		PlayerId:      playerUUID.String(),
+		PropertySetId: string(ps.ID),
+		Color:         ps.Color.Proto(),
+		Cards:         ps.Cards.Proto(),
 	}
 }
 
@@ -95,6 +107,14 @@ func (ps *PropertySet) Index(cardID Identifier) int {
 }
 
 type PropertySets []PropertySet
+
+func (ps *PropertySets) Proto(playerUUID uuid.UUID) []*monopoly_deal_schema.PropertySet {
+	sets := make([]*monopoly_deal_schema.PropertySet, len(*ps))
+	for i, p := range *ps {
+		sets[i] = p.Proto(playerUUID)
+	}
+	return sets
+}
 
 func (ps *PropertySets) IndexBySetID(id Identifier) int {
 	i, ok := slices.BinarySearchFunc(*ps, id, func(set PropertySet, id Identifier) int {

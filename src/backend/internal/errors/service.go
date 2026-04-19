@@ -16,6 +16,8 @@ const (
 	EntityPlayer     Entity = "player"
 	EntityRoom       Entity = "room"
 	EntityRoomPlayer Entity = "room_player"
+	EntityGame       Entity = "game"
+	EntityGamePlayer Entity = "game_player"
 )
 
 type DBViolation string

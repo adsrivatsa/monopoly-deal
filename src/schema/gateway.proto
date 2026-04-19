@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package fun_kames.schema;
+
+import "monopoly_deal.proto";
+import "room.proto";
+
+option go_package = "fun-kames/internal/schema;schema";
+
+message Ping {
+  int64 time_unix_ms = 1;
+}
+
+message ClientMessage {
+  oneof payload {
+    Ping ping = 1;
+
+    fun_kames.schema.room.ClientMessage room_message = 10;
+    fun_kames.schema.monopoly_deal.ClientMessage monopoly_deal_message = 11;
+  }
+}
+
+message ServerMessage {
+  oneof payload {
+    Ping ping = 1;
+
+    fun_kames.schema.room.ServerMessage room_message = 10;
+    fun_kames.schema.monopoly_deal.ServerMessage monopoly_deal_message = 11;
+  }
+}

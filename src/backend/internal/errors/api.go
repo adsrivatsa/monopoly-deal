@@ -41,6 +41,8 @@ func InvalidUUID(err error) Error {
 	return NewError("invalid UUID", http.StatusBadRequest, "VAL001", err)
 }
 
+var GameNotSupported = NewError("game not supported", http.StatusBadRequest, "VAL002")
+
 func Unauthenticated(err error) Error {
 	return NewError("unauthenticated", http.StatusBadRequest, "API001", err)
 }

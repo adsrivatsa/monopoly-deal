@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
+	"fun-kames/internal/errors"
 	"fun-kames/internal/schema"
 	"sync"
 	"time"
@@ -106,5 +108,9 @@ func (s *socket) read() *schema.ClientMessage {
 }
 
 func (s *socket) error(err error) {
-	s.close(err)
+	var intErr errors.Error
+	if !stderrors.As(err, &intErr) {
+		intErr = errors.Internal(err)
+	}
+	s.close(intErr)
 }

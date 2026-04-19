@@ -47,3 +47,7 @@ var PendingRentDoesntExist = NewError("pending rent does not exist", http.Status
 var InvalidPropertySets = NewError("invalid property sets", http.StatusBadRequest, "GME0022")
 
 var CannotDiscardYet = NewError("cannot discard yet", http.StatusBadRequest, "GME0023")
+
+var InvalidDemand = NewError("invalid demand", http.StatusInternalServerError, "GME0024")
+
+var DuplicateCardPaymentExists = NewError("duplicate card payment exists", http.StatusBadRequest, "GME0025")

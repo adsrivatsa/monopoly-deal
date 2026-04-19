@@ -53,7 +53,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		fullURL, err := url.JoinPath(s.cfg.FrontendDomain, s.cfg.FrontendLobbyRoute)
 		if err != nil {
-			ErrorHTTP(w, errors.Internal(err))
+			ErrorHTTP(w, err)
 		}
 
 		http.Redirect(w, r, fullURL, http.StatusFound)
@@ -72,7 +72,7 @@ func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
 
 	err := gothic.Logout(w, r)
 	if err != nil {
-		ErrorHTTP(w, errors.Internal(err))
+		ErrorHTTP(w, err)
 		return
 	}
 
@@ -81,13 +81,13 @@ func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
 	sess.Values[token.RefreshToken] = ""
 	err = sess.Save(r, w)
 	if err != nil {
-		ErrorHTTP(w, errors.Internal(err))
+		ErrorHTTP(w, err)
 		return
 	}
 
 	fullURL, err := url.JoinPath(s.cfg.FrontendDomain, s.cfg.FrontendLoginRoute)
 	if err != nil {
-		ErrorHTTP(w, errors.Internal(err))
+		ErrorHTTP(w, err)
 		return
 	}
 	http.Redirect(w, r, fullURL, http.StatusFound)
@@ -141,13 +141,13 @@ func (s *Server) LoginCallback(w http.ResponseWriter, r *http.Request) {
 	sess.Values[token.RefreshToken] = refreshToken
 	err = sess.Save(r, w)
 	if err != nil {
-		ErrorHTTP(w, errors.Internal(err))
+		ErrorHTTP(w, err)
 		return
 	}
 
 	fullUrl, err := url.JoinPath(s.cfg.FrontendDomain, s.cfg.FrontendLobbyRoute)
 	if err != nil {
-		ErrorHTTP(w, errors.Internal(err))
+		ErrorHTTP(w, err)
 		return
 	}
 
@@ -185,7 +185,7 @@ func (s *Server) Refresh(w http.ResponseWriter, r *http.Request) {
 	sess.Values[token.AccessToken] = accessToken
 	err = sess.Save(r, w)
 	if err != nil {
-		ErrorHTTP(w, errors.Internal(err))
+		ErrorHTTP(w, err)
 		return
 	}
 

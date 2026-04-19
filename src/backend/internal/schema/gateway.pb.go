@@ -2,11 +2,13 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v7.34.1
-// source: message.proto
+// source: gateway.proto
 
 package schema
 
 import (
+	monopoly_deal_schema "fun-kames/internal/schema/monopoly_deal_schema"
+	room_schema "fun-kames/internal/schema/room_schema"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -30,7 +32,7 @@ type Ping struct {
 
 func (x *Ping) Reset() {
 	*x = Ping{}
-	mi := &file_message_proto_msgTypes[0]
+	mi := &file_gateway_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +44,7 @@ func (x *Ping) String() string {
 func (*Ping) ProtoMessage() {}
 
 func (x *Ping) ProtoReflect() protoreflect.Message {
-	mi := &file_message_proto_msgTypes[0]
+	mi := &file_gateway_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +57,7 @@ func (x *Ping) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ping.ProtoReflect.Descriptor instead.
 func (*Ping) Descriptor() ([]byte, []int) {
-	return file_message_proto_rawDescGZIP(), []int{0}
+	return file_gateway_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Ping) GetTimeUnixMs() int64 {
@@ -79,7 +81,7 @@ type ClientMessage struct {
 
 func (x *ClientMessage) Reset() {
 	*x = ClientMessage{}
-	mi := &file_message_proto_msgTypes[1]
+	mi := &file_gateway_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -91,7 +93,7 @@ func (x *ClientMessage) String() string {
 func (*ClientMessage) ProtoMessage() {}
 
 func (x *ClientMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_message_proto_msgTypes[1]
+	mi := &file_gateway_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -104,7 +106,7 @@ func (x *ClientMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClientMessage.ProtoReflect.Descriptor instead.
 func (*ClientMessage) Descriptor() ([]byte, []int) {
-	return file_message_proto_rawDescGZIP(), []int{1}
+	return file_gateway_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ClientMessage) GetPayload() isClientMessage_Payload {
@@ -123,7 +125,7 @@ func (x *ClientMessage) GetPing() *Ping {
 	return nil
 }
 
-func (x *ClientMessage) GetRoomMessage() *ClientRoomMessage {
+func (x *ClientMessage) GetRoomMessage() *room_schema.ClientMessage {
 	if x != nil {
 		if x, ok := x.Payload.(*ClientMessage_RoomMessage); ok {
 			return x.RoomMessage
@@ -132,7 +134,7 @@ func (x *ClientMessage) GetRoomMessage() *ClientRoomMessage {
 	return nil
 }
 
-func (x *ClientMessage) GetMonopolyDealMessage() *ClientMonopolyDealMessage {
+func (x *ClientMessage) GetMonopolyDealMessage() *monopoly_deal_schema.ClientMessage {
 	if x != nil {
 		if x, ok := x.Payload.(*ClientMessage_MonopolyDealMessage); ok {
 			return x.MonopolyDealMessage
@@ -150,11 +152,11 @@ type ClientMessage_Ping struct {
 }
 
 type ClientMessage_RoomMessage struct {
-	RoomMessage *ClientRoomMessage `protobuf:"bytes,10,opt,name=room_message,json=roomMessage,proto3,oneof"`
+	RoomMessage *room_schema.ClientMessage `protobuf:"bytes,10,opt,name=room_message,json=roomMessage,proto3,oneof"`
 }
 
 type ClientMessage_MonopolyDealMessage struct {
-	MonopolyDealMessage *ClientMonopolyDealMessage `protobuf:"bytes,11,opt,name=monopoly_deal_message,json=monopolyDealMessage,proto3,oneof"`
+	MonopolyDealMessage *monopoly_deal_schema.ClientMessage `protobuf:"bytes,11,opt,name=monopoly_deal_message,json=monopolyDealMessage,proto3,oneof"`
 }
 
 func (*ClientMessage_Ping) isClientMessage_Payload() {}
@@ -177,7 +179,7 @@ type ServerMessage struct {
 
 func (x *ServerMessage) Reset() {
 	*x = ServerMessage{}
-	mi := &file_message_proto_msgTypes[2]
+	mi := &file_gateway_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -189,7 +191,7 @@ func (x *ServerMessage) String() string {
 func (*ServerMessage) ProtoMessage() {}
 
 func (x *ServerMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_message_proto_msgTypes[2]
+	mi := &file_gateway_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -202,7 +204,7 @@ func (x *ServerMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerMessage.ProtoReflect.Descriptor instead.
 func (*ServerMessage) Descriptor() ([]byte, []int) {
-	return file_message_proto_rawDescGZIP(), []int{2}
+	return file_gateway_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ServerMessage) GetPayload() isServerMessage_Payload {
@@ -221,7 +223,7 @@ func (x *ServerMessage) GetPing() *Ping {
 	return nil
 }
 
-func (x *ServerMessage) GetRoomMessage() *ServerRoomMessage {
+func (x *ServerMessage) GetRoomMessage() *room_schema.ServerMessage {
 	if x != nil {
 		if x, ok := x.Payload.(*ServerMessage_RoomMessage); ok {
 			return x.RoomMessage
@@ -230,7 +232,7 @@ func (x *ServerMessage) GetRoomMessage() *ServerRoomMessage {
 	return nil
 }
 
-func (x *ServerMessage) GetMonopolyDealMessage() *ServerMonopolyDealMessage {
+func (x *ServerMessage) GetMonopolyDealMessage() *monopoly_deal_schema.ServerMessage {
 	if x != nil {
 		if x, ok := x.Payload.(*ServerMessage_MonopolyDealMessage); ok {
 			return x.MonopolyDealMessage
@@ -248,11 +250,11 @@ type ServerMessage_Ping struct {
 }
 
 type ServerMessage_RoomMessage struct {
-	RoomMessage *ServerRoomMessage `protobuf:"bytes,10,opt,name=room_message,json=roomMessage,proto3,oneof"`
+	RoomMessage *room_schema.ServerMessage `protobuf:"bytes,10,opt,name=room_message,json=roomMessage,proto3,oneof"`
 }
 
 type ServerMessage_MonopolyDealMessage struct {
-	MonopolyDealMessage *ServerMonopolyDealMessage `protobuf:"bytes,11,opt,name=monopoly_deal_message,json=monopolyDealMessage,proto3,oneof"`
+	MonopolyDealMessage *monopoly_deal_schema.ServerMessage `protobuf:"bytes,11,opt,name=monopoly_deal_message,json=monopolyDealMessage,proto3,oneof"`
 }
 
 func (*ServerMessage_Ping) isServerMessage_Payload() {}
@@ -261,57 +263,57 @@ func (*ServerMessage_RoomMessage) isServerMessage_Payload() {}
 
 func (*ServerMessage_MonopolyDealMessage) isServerMessage_Payload() {}
 
-var File_message_proto protoreflect.FileDescriptor
+var File_gateway_proto protoreflect.FileDescriptor
 
-const file_message_proto_rawDesc = "" +
+const file_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\rmessage.proto\x12\x0ffunkames.schema\x1a\x13monopoly_deal.proto\x1a\n" +
+	"\rgateway.proto\x12\x10fun_kames.schema\x1a\x13monopoly_deal.proto\x1a\n" +
 	"room.proto\"(\n" +
 	"\x04Ping\x12 \n" +
 	"\ftime_unix_ms\x18\x01 \x01(\x03R\n" +
-	"timeUnixMs\"\xf2\x01\n" +
-	"\rClientMessage\x12+\n" +
-	"\x04ping\x18\x01 \x01(\v2\x15.funkames.schema.PingH\x00R\x04ping\x12G\n" +
+	"timeUnixMs\"\xf8\x01\n" +
+	"\rClientMessage\x12,\n" +
+	"\x04ping\x18\x01 \x01(\v2\x16.fun_kames.schema.PingH\x00R\x04ping\x12I\n" +
 	"\froom_message\x18\n" +
-	" \x01(\v2\".funkames.schema.ClientRoomMessageH\x00R\vroomMessage\x12`\n" +
-	"\x15monopoly_deal_message\x18\v \x01(\v2*.funkames.schema.ClientMonopolyDealMessageH\x00R\x13monopolyDealMessageB\t\n" +
-	"\apayload\"\xf2\x01\n" +
-	"\rServerMessage\x12+\n" +
-	"\x04ping\x18\x01 \x01(\v2\x15.funkames.schema.PingH\x00R\x04ping\x12G\n" +
+	" \x01(\v2$.fun_kames.schema.room.ClientMessageH\x00R\vroomMessage\x12c\n" +
+	"\x15monopoly_deal_message\x18\v \x01(\v2-.fun_kames.schema.monopoly_deal.ClientMessageH\x00R\x13monopolyDealMessageB\t\n" +
+	"\apayload\"\xf8\x01\n" +
+	"\rServerMessage\x12,\n" +
+	"\x04ping\x18\x01 \x01(\v2\x16.fun_kames.schema.PingH\x00R\x04ping\x12I\n" +
 	"\froom_message\x18\n" +
-	" \x01(\v2\".funkames.schema.ServerRoomMessageH\x00R\vroomMessage\x12`\n" +
-	"\x15monopoly_deal_message\x18\v \x01(\v2*.funkames.schema.ServerMonopolyDealMessageH\x00R\x13monopolyDealMessageB\t\n" +
-	"\apayloadB)Z'funkames/backend/internal/schema;schemab\x06proto3"
+	" \x01(\v2$.fun_kames.schema.room.ServerMessageH\x00R\vroomMessage\x12c\n" +
+	"\x15monopoly_deal_message\x18\v \x01(\v2-.fun_kames.schema.monopoly_deal.ServerMessageH\x00R\x13monopolyDealMessageB\t\n" +
+	"\apayloadB\"Z fun-kames/internal/schema;schemab\x06proto3"
 
 var (
-	file_message_proto_rawDescOnce sync.Once
-	file_message_proto_rawDescData []byte
+	file_gateway_proto_rawDescOnce sync.Once
+	file_gateway_proto_rawDescData []byte
 )
 
-func file_message_proto_rawDescGZIP() []byte {
-	file_message_proto_rawDescOnce.Do(func() {
-		file_message_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_message_proto_rawDesc), len(file_message_proto_rawDesc)))
+func file_gateway_proto_rawDescGZIP() []byte {
+	file_gateway_proto_rawDescOnce.Do(func() {
+		file_gateway_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_gateway_proto_rawDesc), len(file_gateway_proto_rawDesc)))
 	})
-	return file_message_proto_rawDescData
+	return file_gateway_proto_rawDescData
 }
 
-var file_message_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_message_proto_goTypes = []any{
-	(*Ping)(nil),                      // 0: funkames.schema.Ping
-	(*ClientMessage)(nil),             // 1: funkames.schema.ClientMessage
-	(*ServerMessage)(nil),             // 2: funkames.schema.ServerMessage
-	(*ClientRoomMessage)(nil),         // 3: funkames.schema.ClientRoomMessage
-	(*ClientMonopolyDealMessage)(nil), // 4: funkames.schema.ClientMonopolyDealMessage
-	(*ServerRoomMessage)(nil),         // 5: funkames.schema.ServerRoomMessage
-	(*ServerMonopolyDealMessage)(nil), // 6: funkames.schema.ServerMonopolyDealMessage
+var file_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_gateway_proto_goTypes = []any{
+	(*Ping)(nil),                               // 0: fun_kames.schema.Ping
+	(*ClientMessage)(nil),                      // 1: fun_kames.schema.ClientMessage
+	(*ServerMessage)(nil),                      // 2: fun_kames.schema.ServerMessage
+	(*room_schema.ClientMessage)(nil),          // 3: fun_kames.schema.room.ClientMessage
+	(*monopoly_deal_schema.ClientMessage)(nil), // 4: fun_kames.schema.monopoly_deal.ClientMessage
+	(*room_schema.ServerMessage)(nil),          // 5: fun_kames.schema.room.ServerMessage
+	(*monopoly_deal_schema.ServerMessage)(nil), // 6: fun_kames.schema.monopoly_deal.ServerMessage
 }
-var file_message_proto_depIdxs = []int32{
-	0, // 0: funkames.schema.ClientMessage.ping:type_name -> funkames.schema.Ping
-	3, // 1: funkames.schema.ClientMessage.room_message:type_name -> funkames.schema.ClientRoomMessage
-	4, // 2: funkames.schema.ClientMessage.monopoly_deal_message:type_name -> funkames.schema.ClientMonopolyDealMessage
-	0, // 3: funkames.schema.ServerMessage.ping:type_name -> funkames.schema.Ping
-	5, // 4: funkames.schema.ServerMessage.room_message:type_name -> funkames.schema.ServerRoomMessage
-	6, // 5: funkames.schema.ServerMessage.monopoly_deal_message:type_name -> funkames.schema.ServerMonopolyDealMessage
+var file_gateway_proto_depIdxs = []int32{
+	0, // 0: fun_kames.schema.ClientMessage.ping:type_name -> fun_kames.schema.Ping
+	3, // 1: fun_kames.schema.ClientMessage.room_message:type_name -> fun_kames.schema.room.ClientMessage
+	4, // 2: fun_kames.schema.ClientMessage.monopoly_deal_message:type_name -> fun_kames.schema.monopoly_deal.ClientMessage
+	0, // 3: fun_kames.schema.ServerMessage.ping:type_name -> fun_kames.schema.Ping
+	5, // 4: fun_kames.schema.ServerMessage.room_message:type_name -> fun_kames.schema.room.ServerMessage
+	6, // 5: fun_kames.schema.ServerMessage.monopoly_deal_message:type_name -> fun_kames.schema.monopoly_deal.ServerMessage
 	6, // [6:6] is the sub-list for method output_type
 	6, // [6:6] is the sub-list for method input_type
 	6, // [6:6] is the sub-list for extension type_name
@@ -319,19 +321,17 @@ var file_message_proto_depIdxs = []int32{
 	0, // [0:6] is the sub-list for field type_name
 }
 
-func init() { file_message_proto_init() }
-func file_message_proto_init() {
-	if File_message_proto != nil {
+func init() { file_gateway_proto_init() }
+func file_gateway_proto_init() {
+	if File_gateway_proto != nil {
 		return
 	}
-	file_monopoly_deal_proto_init()
-	file_room_proto_init()
-	file_message_proto_msgTypes[1].OneofWrappers = []any{
+	file_gateway_proto_msgTypes[1].OneofWrappers = []any{
 		(*ClientMessage_Ping)(nil),
 		(*ClientMessage_RoomMessage)(nil),
 		(*ClientMessage_MonopolyDealMessage)(nil),
 	}
-	file_message_proto_msgTypes[2].OneofWrappers = []any{
+	file_gateway_proto_msgTypes[2].OneofWrappers = []any{
 		(*ServerMessage_Ping)(nil),
 		(*ServerMessage_RoomMessage)(nil),
 		(*ServerMessage_MonopolyDealMessage)(nil),
@@ -340,17 +340,17 @@ func file_message_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_message_proto_rawDesc), len(file_message_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gateway_proto_rawDesc), len(file_gateway_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_message_proto_goTypes,
-		DependencyIndexes: file_message_proto_depIdxs,
-		MessageInfos:      file_message_proto_msgTypes,
+		GoTypes:           file_gateway_proto_goTypes,
+		DependencyIndexes: file_gateway_proto_depIdxs,
+		MessageInfos:      file_gateway_proto_msgTypes,
 	}.Build()
-	File_message_proto = out.File
-	file_message_proto_goTypes = nil
-	file_message_proto_depIdxs = nil
+	File_gateway_proto = out.File
+	file_gateway_proto_goTypes = nil
+	file_gateway_proto_depIdxs = nil
 }

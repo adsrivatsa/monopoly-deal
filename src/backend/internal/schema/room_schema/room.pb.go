@@ -4,7 +4,7 @@
 // 	protoc        v7.34.1
 // source: room.proto
 
-package schema
+package room_schema
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -155,7 +155,7 @@ type Room struct {
 	Players       []*Player              `protobuf:"bytes,3,rep,name=players,proto3" json:"players,omitempty"`
 	Capacity      int32                  `protobuf:"varint,4,opt,name=capacity,proto3" json:"capacity,omitempty"`
 	Occupied      int32                  `protobuf:"varint,5,opt,name=occupied,proto3" json:"occupied,omitempty"`
-	Game          Game                   `protobuf:"varint,6,opt,name=game,proto3,enum=funkames.schema.Game" json:"game,omitempty"`
+	Game          Game                   `protobuf:"varint,6,opt,name=game,proto3,enum=fun_kames.schema.room.Game" json:"game,omitempty"`
 	Settings      []byte                 `protobuf:"bytes,7,opt,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -591,7 +591,7 @@ func (x *PlayerToggledReady) GetIsReady() bool {
 type SettingsUpdated struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Capacity      int32                  `protobuf:"varint,1,opt,name=capacity,proto3" json:"capacity,omitempty"`
-	Game          Game                   `protobuf:"varint,2,opt,name=game,proto3,enum=funkames.schema.Game" json:"game,omitempty"`
+	Game          Game                   `protobuf:"varint,2,opt,name=game,proto3,enum=fun_kames.schema.room.Game" json:"game,omitempty"`
 	Settings      []byte                 `protobuf:"bytes,3,opt,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -650,6 +650,7 @@ func (x *SettingsUpdated) GetSettings() []byte {
 
 type GameStarted struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	GameId        string                 `protobuf:"bytes,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -684,36 +685,43 @@ func (*GameStarted) Descriptor() ([]byte, []int) {
 	return file_room_proto_rawDescGZIP(), []int{10}
 }
 
-type ServerRoomMessage struct {
+func (x *GameStarted) GetGameId() string {
+	if x != nil {
+		return x.GameId
+	}
+	return ""
+}
+
+type ServerMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Payload:
 	//
-	//	*ServerRoomMessage_RoomCreated
-	//	*ServerRoomMessage_PlayerJoinedRoom
-	//	*ServerRoomMessage_PlayerLeftRoom
-	//	*ServerRoomMessage_ChatReceived
-	//	*ServerRoomMessage_PlayerToggledReady
-	//	*ServerRoomMessage_SettingsUpdated
-	//	*ServerRoomMessage_GameStarted
-	Payload       isServerRoomMessage_Payload `protobuf_oneof:"payload"`
+	//	*ServerMessage_RoomCreated
+	//	*ServerMessage_PlayerJoinedRoom
+	//	*ServerMessage_PlayerLeftRoom
+	//	*ServerMessage_ChatReceived
+	//	*ServerMessage_PlayerToggledReady
+	//	*ServerMessage_SettingsUpdated
+	//	*ServerMessage_GameStarted
+	Payload       isServerMessage_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ServerRoomMessage) Reset() {
-	*x = ServerRoomMessage{}
+func (x *ServerMessage) Reset() {
+	*x = ServerMessage{}
 	mi := &file_room_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ServerRoomMessage) String() string {
+func (x *ServerMessage) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ServerRoomMessage) ProtoMessage() {}
+func (*ServerMessage) ProtoMessage() {}
 
-func (x *ServerRoomMessage) ProtoReflect() protoreflect.Message {
+func (x *ServerMessage) ProtoReflect() protoreflect.Message {
 	mi := &file_room_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -725,151 +733,151 @@ func (x *ServerRoomMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ServerRoomMessage.ProtoReflect.Descriptor instead.
-func (*ServerRoomMessage) Descriptor() ([]byte, []int) {
+// Deprecated: Use ServerMessage.ProtoReflect.Descriptor instead.
+func (*ServerMessage) Descriptor() ([]byte, []int) {
 	return file_room_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *ServerRoomMessage) GetPayload() isServerRoomMessage_Payload {
+func (x *ServerMessage) GetPayload() isServerMessage_Payload {
 	if x != nil {
 		return x.Payload
 	}
 	return nil
 }
 
-func (x *ServerRoomMessage) GetRoomCreated() *RoomCreated {
+func (x *ServerMessage) GetRoomCreated() *RoomCreated {
 	if x != nil {
-		if x, ok := x.Payload.(*ServerRoomMessage_RoomCreated); ok {
+		if x, ok := x.Payload.(*ServerMessage_RoomCreated); ok {
 			return x.RoomCreated
 		}
 	}
 	return nil
 }
 
-func (x *ServerRoomMessage) GetPlayerJoinedRoom() *PlayerJoinedRoom {
+func (x *ServerMessage) GetPlayerJoinedRoom() *PlayerJoinedRoom {
 	if x != nil {
-		if x, ok := x.Payload.(*ServerRoomMessage_PlayerJoinedRoom); ok {
+		if x, ok := x.Payload.(*ServerMessage_PlayerJoinedRoom); ok {
 			return x.PlayerJoinedRoom
 		}
 	}
 	return nil
 }
 
-func (x *ServerRoomMessage) GetPlayerLeftRoom() *PlayerLeftRoom {
+func (x *ServerMessage) GetPlayerLeftRoom() *PlayerLeftRoom {
 	if x != nil {
-		if x, ok := x.Payload.(*ServerRoomMessage_PlayerLeftRoom); ok {
+		if x, ok := x.Payload.(*ServerMessage_PlayerLeftRoom); ok {
 			return x.PlayerLeftRoom
 		}
 	}
 	return nil
 }
 
-func (x *ServerRoomMessage) GetChatReceived() *ChatReceived {
+func (x *ServerMessage) GetChatReceived() *ChatReceived {
 	if x != nil {
-		if x, ok := x.Payload.(*ServerRoomMessage_ChatReceived); ok {
+		if x, ok := x.Payload.(*ServerMessage_ChatReceived); ok {
 			return x.ChatReceived
 		}
 	}
 	return nil
 }
 
-func (x *ServerRoomMessage) GetPlayerToggledReady() *PlayerToggledReady {
+func (x *ServerMessage) GetPlayerToggledReady() *PlayerToggledReady {
 	if x != nil {
-		if x, ok := x.Payload.(*ServerRoomMessage_PlayerToggledReady); ok {
+		if x, ok := x.Payload.(*ServerMessage_PlayerToggledReady); ok {
 			return x.PlayerToggledReady
 		}
 	}
 	return nil
 }
 
-func (x *ServerRoomMessage) GetSettingsUpdated() *SettingsUpdated {
+func (x *ServerMessage) GetSettingsUpdated() *SettingsUpdated {
 	if x != nil {
-		if x, ok := x.Payload.(*ServerRoomMessage_SettingsUpdated); ok {
+		if x, ok := x.Payload.(*ServerMessage_SettingsUpdated); ok {
 			return x.SettingsUpdated
 		}
 	}
 	return nil
 }
 
-func (x *ServerRoomMessage) GetGameStarted() *GameStarted {
+func (x *ServerMessage) GetGameStarted() *GameStarted {
 	if x != nil {
-		if x, ok := x.Payload.(*ServerRoomMessage_GameStarted); ok {
+		if x, ok := x.Payload.(*ServerMessage_GameStarted); ok {
 			return x.GameStarted
 		}
 	}
 	return nil
 }
 
-type isServerRoomMessage_Payload interface {
-	isServerRoomMessage_Payload()
+type isServerMessage_Payload interface {
+	isServerMessage_Payload()
 }
 
-type ServerRoomMessage_RoomCreated struct {
+type ServerMessage_RoomCreated struct {
 	RoomCreated *RoomCreated `protobuf:"bytes,1,opt,name=room_created,json=roomCreated,proto3,oneof"`
 }
 
-type ServerRoomMessage_PlayerJoinedRoom struct {
+type ServerMessage_PlayerJoinedRoom struct {
 	PlayerJoinedRoom *PlayerJoinedRoom `protobuf:"bytes,2,opt,name=player_joined_room,json=playerJoinedRoom,proto3,oneof"`
 }
 
-type ServerRoomMessage_PlayerLeftRoom struct {
+type ServerMessage_PlayerLeftRoom struct {
 	PlayerLeftRoom *PlayerLeftRoom `protobuf:"bytes,3,opt,name=player_left_room,json=playerLeftRoom,proto3,oneof"`
 }
 
-type ServerRoomMessage_ChatReceived struct {
+type ServerMessage_ChatReceived struct {
 	ChatReceived *ChatReceived `protobuf:"bytes,4,opt,name=chat_received,json=chatReceived,proto3,oneof"`
 }
 
-type ServerRoomMessage_PlayerToggledReady struct {
+type ServerMessage_PlayerToggledReady struct {
 	PlayerToggledReady *PlayerToggledReady `protobuf:"bytes,5,opt,name=player_toggled_ready,json=playerToggledReady,proto3,oneof"`
 }
 
-type ServerRoomMessage_SettingsUpdated struct {
+type ServerMessage_SettingsUpdated struct {
 	SettingsUpdated *SettingsUpdated `protobuf:"bytes,6,opt,name=settings_updated,json=settingsUpdated,proto3,oneof"`
 }
 
-type ServerRoomMessage_GameStarted struct {
+type ServerMessage_GameStarted struct {
 	GameStarted *GameStarted `protobuf:"bytes,7,opt,name=game_started,json=gameStarted,proto3,oneof"`
 }
 
-func (*ServerRoomMessage_RoomCreated) isServerRoomMessage_Payload() {}
+func (*ServerMessage_RoomCreated) isServerMessage_Payload() {}
 
-func (*ServerRoomMessage_PlayerJoinedRoom) isServerRoomMessage_Payload() {}
+func (*ServerMessage_PlayerJoinedRoom) isServerMessage_Payload() {}
 
-func (*ServerRoomMessage_PlayerLeftRoom) isServerRoomMessage_Payload() {}
+func (*ServerMessage_PlayerLeftRoom) isServerMessage_Payload() {}
 
-func (*ServerRoomMessage_ChatReceived) isServerRoomMessage_Payload() {}
+func (*ServerMessage_ChatReceived) isServerMessage_Payload() {}
 
-func (*ServerRoomMessage_PlayerToggledReady) isServerRoomMessage_Payload() {}
+func (*ServerMessage_PlayerToggledReady) isServerMessage_Payload() {}
 
-func (*ServerRoomMessage_SettingsUpdated) isServerRoomMessage_Payload() {}
+func (*ServerMessage_SettingsUpdated) isServerMessage_Payload() {}
 
-func (*ServerRoomMessage_GameStarted) isServerRoomMessage_Payload() {}
+func (*ServerMessage_GameStarted) isServerMessage_Payload() {}
 
-type ClientRoomMessage struct {
+type ClientMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Payload:
 	//
-	//	*ClientRoomMessage_Chat
-	Payload       isClientRoomMessage_Payload `protobuf_oneof:"payload"`
+	//	*ClientMessage_Chat
+	Payload       isClientMessage_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ClientRoomMessage) Reset() {
-	*x = ClientRoomMessage{}
+func (x *ClientMessage) Reset() {
+	*x = ClientMessage{}
 	mi := &file_room_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ClientRoomMessage) String() string {
+func (x *ClientMessage) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ClientRoomMessage) ProtoMessage() {}
+func (*ClientMessage) ProtoMessage() {}
 
-func (x *ClientRoomMessage) ProtoReflect() protoreflect.Message {
+func (x *ClientMessage) ProtoReflect() protoreflect.Message {
 	mi := &file_room_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -881,43 +889,43 @@ func (x *ClientRoomMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ClientRoomMessage.ProtoReflect.Descriptor instead.
-func (*ClientRoomMessage) Descriptor() ([]byte, []int) {
+// Deprecated: Use ClientMessage.ProtoReflect.Descriptor instead.
+func (*ClientMessage) Descriptor() ([]byte, []int) {
 	return file_room_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *ClientRoomMessage) GetPayload() isClientRoomMessage_Payload {
+func (x *ClientMessage) GetPayload() isClientMessage_Payload {
 	if x != nil {
 		return x.Payload
 	}
 	return nil
 }
 
-func (x *ClientRoomMessage) GetChat() *Chat {
+func (x *ClientMessage) GetChat() *Chat {
 	if x != nil {
-		if x, ok := x.Payload.(*ClientRoomMessage_Chat); ok {
+		if x, ok := x.Payload.(*ClientMessage_Chat); ok {
 			return x.Chat
 		}
 	}
 	return nil
 }
 
-type isClientRoomMessage_Payload interface {
-	isClientRoomMessage_Payload()
+type isClientMessage_Payload interface {
+	isClientMessage_Payload()
 }
 
-type ClientRoomMessage_Chat struct {
+type ClientMessage_Chat struct {
 	Chat *Chat `protobuf:"bytes,1,opt,name=chat,proto3,oneof"`
 }
 
-func (*ClientRoomMessage_Chat) isClientRoomMessage_Payload() {}
+func (*ClientMessage_Chat) isClientMessage_Payload() {}
 
 var File_room_proto protoreflect.FileDescriptor
 
 const file_room_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"room.proto\x12\x0ffunkames.schema\"\xb8\x01\n" +
+	"room.proto\x12\x15fun_kames.schema.room\"\xb8\x01\n" +
 	"\x06Player\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x1d\n" +
@@ -925,20 +933,20 @@ const file_room_proto_rawDesc = "" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x19\n" +
 	"\bis_ready\x18\x04 \x01(\bR\aisReady\x12\x17\n" +
 	"\ais_host\x18\x05 \x01(\bR\x06isHost\x12\x1b\n" +
-	"\tjoined_at\x18\x06 \x01(\x03R\bjoinedAt\"\xf4\x01\n" +
+	"\tjoined_at\x18\x06 \x01(\x03R\bjoinedAt\"\x80\x02\n" +
 	"\x04Room\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x121\n" +
-	"\aplayers\x18\x03 \x03(\v2\x17.funkames.schema.PlayerR\aplayers\x12\x1a\n" +
+	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x127\n" +
+	"\aplayers\x18\x03 \x03(\v2\x1d.fun_kames.schema.room.PlayerR\aplayers\x12\x1a\n" +
 	"\bcapacity\x18\x04 \x01(\x05R\bcapacity\x12\x1a\n" +
-	"\boccupied\x18\x05 \x01(\x05R\boccupied\x12)\n" +
-	"\x04game\x18\x06 \x01(\x0e2\x15.funkames.schema.GameR\x04game\x12\x1a\n" +
-	"\bsettings\x18\a \x01(\fR\bsettings\"8\n" +
-	"\vRoomCreated\x12)\n" +
-	"\x04room\x18\x01 \x01(\v2\x15.funkames.schema.RoomR\x04room\"\\\n" +
+	"\boccupied\x18\x05 \x01(\x05R\boccupied\x12/\n" +
+	"\x04game\x18\x06 \x01(\x0e2\x1b.fun_kames.schema.room.GameR\x04game\x12\x1a\n" +
+	"\bsettings\x18\a \x01(\fR\bsettings\">\n" +
+	"\vRoomCreated\x12/\n" +
+	"\x04room\x18\x01 \x01(\v2\x1b.fun_kames.schema.room.RoomR\x04room\"b\n" +
 	"\x10PlayerJoinedRoom\x12\x17\n" +
-	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12/\n" +
-	"\x06player\x18\x02 \x01(\v2\x17.funkames.schema.PlayerR\x06player\"\x8f\x01\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x125\n" +
+	"\x06player\x18\x02 \x01(\v2\x1d.fun_kames.schema.room.PlayerR\x06player\"\x8f\x01\n" +
 	"\x0ePlayerLeftRoom\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1b\n" +
 	"\tplayed_id\x18\x02 \x01(\tR\bplayedId\x120\n" +
@@ -953,26 +961,27 @@ const file_room_proto_rawDesc = "" +
 	"\apayload\x18\x02 \x01(\tR\apayload\"L\n" +
 	"\x12PlayerToggledReady\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12\x19\n" +
-	"\bis_ready\x18\x02 \x01(\bR\aisReady\"t\n" +
+	"\bis_ready\x18\x02 \x01(\bR\aisReady\"z\n" +
 	"\x0fSettingsUpdated\x12\x1a\n" +
-	"\bcapacity\x18\x01 \x01(\x05R\bcapacity\x12)\n" +
-	"\x04game\x18\x02 \x01(\x0e2\x15.funkames.schema.GameR\x04game\x12\x1a\n" +
-	"\bsettings\x18\x03 \x01(\fR\bsettings\"\r\n" +
-	"\vGameStarted\"\xb2\x04\n" +
-	"\x11ServerRoomMessage\x12A\n" +
-	"\froom_created\x18\x01 \x01(\v2\x1c.funkames.schema.RoomCreatedH\x00R\vroomCreated\x12Q\n" +
-	"\x12player_joined_room\x18\x02 \x01(\v2!.funkames.schema.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12K\n" +
-	"\x10player_left_room\x18\x03 \x01(\v2\x1f.funkames.schema.PlayerLeftRoomH\x00R\x0eplayerLeftRoom\x12D\n" +
-	"\rchat_received\x18\x04 \x01(\v2\x1d.funkames.schema.ChatReceivedH\x00R\fchatReceived\x12W\n" +
-	"\x14player_toggled_ready\x18\x05 \x01(\v2#.funkames.schema.PlayerToggledReadyH\x00R\x12playerToggledReady\x12M\n" +
-	"\x10settings_updated\x18\x06 \x01(\v2 .funkames.schema.SettingsUpdatedH\x00R\x0fsettingsUpdated\x12A\n" +
-	"\fgame_started\x18\a \x01(\v2\x1c.funkames.schema.GameStartedH\x00R\vgameStartedB\t\n" +
-	"\apayload\"K\n" +
-	"\x11ClientRoomMessage\x12+\n" +
-	"\x04chat\x18\x01 \x01(\v2\x15.funkames.schema.ChatH\x00R\x04chatB\t\n" +
+	"\bcapacity\x18\x01 \x01(\x05R\bcapacity\x12/\n" +
+	"\x04game\x18\x02 \x01(\x0e2\x1b.fun_kames.schema.room.GameR\x04game\x12\x1a\n" +
+	"\bsettings\x18\x03 \x01(\fR\bsettings\"&\n" +
+	"\vGameStarted\x12\x17\n" +
+	"\agame_id\x18\x01 \x01(\tR\x06gameId\"\xd8\x04\n" +
+	"\rServerMessage\x12G\n" +
+	"\froom_created\x18\x01 \x01(\v2\".fun_kames.schema.room.RoomCreatedH\x00R\vroomCreated\x12W\n" +
+	"\x12player_joined_room\x18\x02 \x01(\v2'.fun_kames.schema.room.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12Q\n" +
+	"\x10player_left_room\x18\x03 \x01(\v2%.fun_kames.schema.room.PlayerLeftRoomH\x00R\x0eplayerLeftRoom\x12J\n" +
+	"\rchat_received\x18\x04 \x01(\v2#.fun_kames.schema.room.ChatReceivedH\x00R\fchatReceived\x12]\n" +
+	"\x14player_toggled_ready\x18\x05 \x01(\v2).fun_kames.schema.room.PlayerToggledReadyH\x00R\x12playerToggledReady\x12S\n" +
+	"\x10settings_updated\x18\x06 \x01(\v2&.fun_kames.schema.room.SettingsUpdatedH\x00R\x0fsettingsUpdated\x12G\n" +
+	"\fgame_started\x18\a \x01(\v2\".fun_kames.schema.room.GameStartedH\x00R\vgameStartedB\t\n" +
+	"\apayload\"M\n" +
+	"\rClientMessage\x121\n" +
+	"\x04chat\x18\x01 \x01(\v2\x1b.fun_kames.schema.room.ChatH\x00R\x04chatB\t\n" +
 	"\apayload*\x18\n" +
 	"\x04Game\x12\x10\n" +
-	"\fMonopolyDeal\x10\x00B)Z'funkames/backend/internal/schema;schemab\x06proto3"
+	"\fMonopolyDeal\x10\x00B3Z1fun-kames/internal/schema/room_schema;room_schemab\x06proto3"
 
 var (
 	file_room_proto_rawDescOnce sync.Once
@@ -989,35 +998,35 @@ func file_room_proto_rawDescGZIP() []byte {
 var file_room_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_room_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_room_proto_goTypes = []any{
-	(Game)(0),                  // 0: funkames.schema.Game
-	(*Player)(nil),             // 1: funkames.schema.Player
-	(*Room)(nil),               // 2: funkames.schema.Room
-	(*RoomCreated)(nil),        // 3: funkames.schema.RoomCreated
-	(*PlayerJoinedRoom)(nil),   // 4: funkames.schema.PlayerJoinedRoom
-	(*PlayerLeftRoom)(nil),     // 5: funkames.schema.PlayerLeftRoom
-	(*RoomDeleted)(nil),        // 6: funkames.schema.RoomDeleted
-	(*Chat)(nil),               // 7: funkames.schema.Chat
-	(*ChatReceived)(nil),       // 8: funkames.schema.ChatReceived
-	(*PlayerToggledReady)(nil), // 9: funkames.schema.PlayerToggledReady
-	(*SettingsUpdated)(nil),    // 10: funkames.schema.SettingsUpdated
-	(*GameStarted)(nil),        // 11: funkames.schema.GameStarted
-	(*ServerRoomMessage)(nil),  // 12: funkames.schema.ServerRoomMessage
-	(*ClientRoomMessage)(nil),  // 13: funkames.schema.ClientRoomMessage
+	(Game)(0),                  // 0: fun_kames.schema.room.Game
+	(*Player)(nil),             // 1: fun_kames.schema.room.Player
+	(*Room)(nil),               // 2: fun_kames.schema.room.Room
+	(*RoomCreated)(nil),        // 3: fun_kames.schema.room.RoomCreated
+	(*PlayerJoinedRoom)(nil),   // 4: fun_kames.schema.room.PlayerJoinedRoom
+	(*PlayerLeftRoom)(nil),     // 5: fun_kames.schema.room.PlayerLeftRoom
+	(*RoomDeleted)(nil),        // 6: fun_kames.schema.room.RoomDeleted
+	(*Chat)(nil),               // 7: fun_kames.schema.room.Chat
+	(*ChatReceived)(nil),       // 8: fun_kames.schema.room.ChatReceived
+	(*PlayerToggledReady)(nil), // 9: fun_kames.schema.room.PlayerToggledReady
+	(*SettingsUpdated)(nil),    // 10: fun_kames.schema.room.SettingsUpdated
+	(*GameStarted)(nil),        // 11: fun_kames.schema.room.GameStarted
+	(*ServerMessage)(nil),      // 12: fun_kames.schema.room.ServerMessage
+	(*ClientMessage)(nil),      // 13: fun_kames.schema.room.ClientMessage
 }
 var file_room_proto_depIdxs = []int32{
-	1,  // 0: funkames.schema.Room.players:type_name -> funkames.schema.Player
-	0,  // 1: funkames.schema.Room.game:type_name -> funkames.schema.Game
-	2,  // 2: funkames.schema.RoomCreated.room:type_name -> funkames.schema.Room
-	1,  // 3: funkames.schema.PlayerJoinedRoom.player:type_name -> funkames.schema.Player
-	0,  // 4: funkames.schema.SettingsUpdated.game:type_name -> funkames.schema.Game
-	3,  // 5: funkames.schema.ServerRoomMessage.room_created:type_name -> funkames.schema.RoomCreated
-	4,  // 6: funkames.schema.ServerRoomMessage.player_joined_room:type_name -> funkames.schema.PlayerJoinedRoom
-	5,  // 7: funkames.schema.ServerRoomMessage.player_left_room:type_name -> funkames.schema.PlayerLeftRoom
-	8,  // 8: funkames.schema.ServerRoomMessage.chat_received:type_name -> funkames.schema.ChatReceived
-	9,  // 9: funkames.schema.ServerRoomMessage.player_toggled_ready:type_name -> funkames.schema.PlayerToggledReady
-	10, // 10: funkames.schema.ServerRoomMessage.settings_updated:type_name -> funkames.schema.SettingsUpdated
-	11, // 11: funkames.schema.ServerRoomMessage.game_started:type_name -> funkames.schema.GameStarted
-	7,  // 12: funkames.schema.ClientRoomMessage.chat:type_name -> funkames.schema.Chat
+	1,  // 0: fun_kames.schema.room.Room.players:type_name -> fun_kames.schema.room.Player
+	0,  // 1: fun_kames.schema.room.Room.game:type_name -> fun_kames.schema.room.Game
+	2,  // 2: fun_kames.schema.room.RoomCreated.room:type_name -> fun_kames.schema.room.Room
+	1,  // 3: fun_kames.schema.room.PlayerJoinedRoom.player:type_name -> fun_kames.schema.room.Player
+	0,  // 4: fun_kames.schema.room.SettingsUpdated.game:type_name -> fun_kames.schema.room.Game
+	3,  // 5: fun_kames.schema.room.ServerMessage.room_created:type_name -> fun_kames.schema.room.RoomCreated
+	4,  // 6: fun_kames.schema.room.ServerMessage.player_joined_room:type_name -> fun_kames.schema.room.PlayerJoinedRoom
+	5,  // 7: fun_kames.schema.room.ServerMessage.player_left_room:type_name -> fun_kames.schema.room.PlayerLeftRoom
+	8,  // 8: fun_kames.schema.room.ServerMessage.chat_received:type_name -> fun_kames.schema.room.ChatReceived
+	9,  // 9: fun_kames.schema.room.ServerMessage.player_toggled_ready:type_name -> fun_kames.schema.room.PlayerToggledReady
+	10, // 10: fun_kames.schema.room.ServerMessage.settings_updated:type_name -> fun_kames.schema.room.SettingsUpdated
+	11, // 11: fun_kames.schema.room.ServerMessage.game_started:type_name -> fun_kames.schema.room.GameStarted
+	7,  // 12: fun_kames.schema.room.ClientMessage.chat:type_name -> fun_kames.schema.room.Chat
 	13, // [13:13] is the sub-list for method output_type
 	13, // [13:13] is the sub-list for method input_type
 	13, // [13:13] is the sub-list for extension type_name
@@ -1032,16 +1041,16 @@ func file_room_proto_init() {
 	}
 	file_room_proto_msgTypes[4].OneofWrappers = []any{}
 	file_room_proto_msgTypes[11].OneofWrappers = []any{
-		(*ServerRoomMessage_RoomCreated)(nil),
-		(*ServerRoomMessage_PlayerJoinedRoom)(nil),
-		(*ServerRoomMessage_PlayerLeftRoom)(nil),
-		(*ServerRoomMessage_ChatReceived)(nil),
-		(*ServerRoomMessage_PlayerToggledReady)(nil),
-		(*ServerRoomMessage_SettingsUpdated)(nil),
-		(*ServerRoomMessage_GameStarted)(nil),
+		(*ServerMessage_RoomCreated)(nil),
+		(*ServerMessage_PlayerJoinedRoom)(nil),
+		(*ServerMessage_PlayerLeftRoom)(nil),
+		(*ServerMessage_ChatReceived)(nil),
+		(*ServerMessage_PlayerToggledReady)(nil),
+		(*ServerMessage_SettingsUpdated)(nil),
+		(*ServerMessage_GameStarted)(nil),
 	}
 	file_room_proto_msgTypes[12].OneofWrappers = []any{
-		(*ClientRoomMessage_Chat)(nil),
+		(*ClientMessage_Chat)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
