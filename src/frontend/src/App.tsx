@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import AppNavbar from "./components/layout/app-navbar";
+import GamePage from "./pages/GamePage";
 import LoginPage from "./pages/LoginPage";
 import LobbyPage from "./pages/LobbyPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -18,6 +19,7 @@ const App = () => {
             <Route path="/lobby" element={<LobbyPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/room/:room_id" element={<RoomPage />} />
+            <Route path="/game/:game_id" element={<GamePage />} />
           </Route>
         </Routes>
       </div>

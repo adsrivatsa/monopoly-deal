@@ -81,7 +81,7 @@ export const getDefaultSettingsForGame = <TGame extends Game>(
       return {
         num_decks: 1,
         start_num_cards: 5,
-        max_hand_size: 5,
+        max_hand_size: 7,
         moves_per_turn: 3,
         pass_go_draw: 2,
         its_my_birthday_amount: 2,
@@ -113,7 +113,9 @@ const inRange = (value: number, min: number, max: number): boolean => {
   return Number.isInteger(value) && value >= min && value <= max;
 };
 
-const decodeMsgPackObject = (settings: Uint8Array): Record<string, unknown> | null => {
+const decodeMsgPackObject = (
+  settings: Uint8Array,
+): Record<string, unknown> | null => {
   try {
     const parsed = decode(settings) as unknown;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
@@ -145,7 +147,9 @@ const decodeBase64 = (value: string): Uint8Array | null => {
 };
 
 const toUint8Array = (value: number[]): Uint8Array | null => {
-  if (value.some((entry) => !Number.isInteger(entry) || entry < 0 || entry > 255)) {
+  if (
+    value.some((entry) => !Number.isInteger(entry) || entry < 0 || entry > 255)
+  ) {
     return null;
   }
   return new Uint8Array(value);
@@ -170,7 +174,7 @@ const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
         {
           key: "max_hand_size",
           label: "Max hand size",
-          min: 5,
+          min: 7,
           max: 10,
         },
         {
@@ -203,7 +207,9 @@ const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
   }
 };
 
-export const getGameSettingDefinitions = (gameKey: string): GameSettingDefinition[] => {
+export const getGameSettingDefinitions = (
+  gameKey: string,
+): GameSettingDefinition[] => {
   const game = parseGame(gameKey);
   return game ? getSettingDefinitionsForGame(game) : [];
 };
@@ -272,7 +278,10 @@ export const parseGameSettings = <TGame extends Game>(
         }
 
         const value = parsed[key];
-        if (typeof value === "number" && inRange(value, definition.min, definition.max)) {
+        if (
+          typeof value === "number" &&
+          inRange(value, definition.min, definition.max)
+        ) {
           return value;
         }
 
@@ -281,9 +290,15 @@ export const parseGameSettings = <TGame extends Game>(
 
       return {
         num_decks: getSettingValue("num_decks", defaults.num_decks),
-        start_num_cards: getSettingValue("start_num_cards", defaults.start_num_cards),
+        start_num_cards: getSettingValue(
+          "start_num_cards",
+          defaults.start_num_cards,
+        ),
         max_hand_size: getSettingValue("max_hand_size", defaults.max_hand_size),
-        moves_per_turn: getSettingValue("moves_per_turn", defaults.moves_per_turn),
+        moves_per_turn: getSettingValue(
+          "moves_per_turn",
+          defaults.moves_per_turn,
+        ),
         pass_go_draw: getSettingValue("pass_go_draw", defaults.pass_go_draw),
         its_my_birthday_amount: getSettingValue(
           "its_my_birthday_amount",

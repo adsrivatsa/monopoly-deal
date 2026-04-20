@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Game,
@@ -18,6 +18,7 @@ import {
   getRoom,
   leaveRoom,
   readyRoom,
+  startGame,
   updateRoomSettings,
   type UpdateRoomSettingsParams,
 } from "../api/room";
@@ -44,6 +45,7 @@ import {
   TableRow,
 } from "../components/ui/table";
 import ErrorModal from "../components/ui/error-modal";
+import ChatBox from "../components/chat/ChatBox";
 
 const RoomPage = () => {
   const navigate = useNavigate();
@@ -54,7 +56,6 @@ const RoomPage = () => {
   const [roomSettingSelectValues, setRoomSettingSelectValues] = useState<
     GameSettingSelectValue[]
   >([]);
-  const [chatValue, setChatValue] = useState("");
   const [players, setPlayers] = useState<ShortPlayer[]>([]);
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [modalError, setModalError] = useState<ApiErrorPayload | null>(null);
@@ -77,7 +78,10 @@ const RoomPage = () => {
   >([]);
 
   const getDefaultSettingsPayload = (selectedGame: Game): Uint8Array => {
-    return stringifyGameSettings(selectedGame, getDefaultSettingsForGame(selectedGame));
+    return stringifyGameSettings(
+      selectedGame,
+      getDefaultSettingsForGame(selectedGame),
+    );
   };
 
   const buildSettingsPayload = (
@@ -308,6 +312,12 @@ const RoomPage = () => {
           }
         }
 
+        const gameStarted = message?.roomMessage?.gameStarted;
+        if (gameStarted?.gameId) {
+          navigate(`/game/${gameStarted.gameId}`);
+          return;
+        }
+
         console.log("[room-ws] message", message ?? event.data);
       })();
     };
@@ -329,12 +339,9 @@ const RoomPage = () => {
       socketRef.current = null;
       socket.close();
     };
-  }, [roomId]);
+  }, [navigate, roomId]);
 
-  const handleSendMessage = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const payload = chatValue.trim();
+  const handleSendMessage = (payload: string) => {
     if (!payload) {
       return;
     }
@@ -345,7 +352,6 @@ const RoomPage = () => {
     }
 
     sendRoomChatMessage(socket, payload);
-    setChatValue("");
   };
 
   const handleLeaveRoom = async () => {
@@ -370,9 +376,6 @@ const RoomPage = () => {
   };
 
   const handleStartGame = async (): Promise<void> => {
-    const everyoneReady =
-      players.length > 0 &&
-      players.every((player) => player.isHost || player.isReady);
     if (!everyoneReady) {
       setModalError({
         message: "Not every player has readied up.",
@@ -381,6 +384,8 @@ const RoomPage = () => {
       });
       return;
     }
+
+    await startGame();
 
     return;
   };
@@ -397,11 +402,107 @@ const RoomPage = () => {
 
   const currentPlayer = players.find((player) => player.id === currentPlayerId);
   const canEditSettings = currentPlayer?.isHost ?? false;
+  const everyoneReady =
+    players.length > 0 &&
+    players.every((player) => player.isHost || player.isReady);
 
   return (
     <main className="page room-page">
       <section className="room-layout">
         <div className="room-left-panel">
+          <Card className="room-left-card room-players-card">
+            <CardHeader>
+              <CardTitle>Current players</CardTitle>
+            </CardHeader>
+            <CardContent className="room-players-content">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="room-players-header-player">
+                      Player
+                    </TableHead>
+                    <TableHead className="room-players-header-ready">
+                      Ready
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {players.map((player) => (
+                    <TableRow key={player.id}>
+                      <TableCell>
+                        <div className="host-cell">
+                          <span
+                            className="player-host-badge"
+                            aria-hidden="true"
+                          >
+                            {player.isHost ? "👑" : ""}
+                          </span>
+                          <img
+                            src={player.imageUrl}
+                            alt={player.name}
+                            className="host-avatar"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                          />
+                          <span>{player.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="player-ready-cell">
+                          <span
+                            className={`player-ready-status${
+                              player.isHost || player.isReady
+                                ? " is-ready"
+                                : " is-not-ready"
+                            }`}
+                          >
+                            {player.isHost || player.isReady
+                              ? "Ready"
+                              : "Not ready"}
+                          </span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {players.length === 0 ? (
+                    <TableRow>
+                      <TableCell>Loading players...</TableCell>
+                      <TableCell>-</TableCell>
+                    </TableRow>
+                  ) : null}
+                </TableBody>
+              </Table>
+
+              <div className="room-action-buttons">
+                {!currentPlayer?.isHost ? (
+                  <Button
+                    size="lg"
+                    className="room-ready-button"
+                    onClick={() => {
+                      void handleReadyUp();
+                    }}
+                    disabled={!currentPlayer}
+                  >
+                    {currentPlayer?.isReady ? "Unready" : "Ready up"}
+                  </Button>
+                ) : null}
+
+                {currentPlayer?.isHost ? (
+                  <Button
+                    size="lg"
+                    className="room-start-button"
+                    disabled={!everyoneReady}
+                    onClick={() => {
+                      void handleStartGame();
+                    }}
+                  >
+                    Start game
+                  </Button>
+                ) : null}
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="room-left-card room-settings-card">
             <CardHeader>
               <CardTitle>Room settings</CardTitle>
@@ -409,7 +510,10 @@ const RoomPage = () => {
             <CardContent>
               <div className="room-settings-grid">
                 <div className="room-settings-row">
-                  <label className="room-setting-label" htmlFor="room-game-setting">
+                  <label
+                    className="room-setting-label"
+                    htmlFor="room-game-setting"
+                  >
                     Game
                   </label>
                   <select
@@ -427,7 +531,8 @@ const RoomPage = () => {
                         return;
                       }
 
-                      const defaultSettingsPayload = getDefaultSettingsPayload(nextGame);
+                      const defaultSettingsPayload =
+                        getDefaultSettingsPayload(nextGame);
                       const nextSettings = getGameSettingSelectValues(
                         nextGame,
                         defaultSettingsPayload,
@@ -459,7 +564,10 @@ const RoomPage = () => {
                 </div>
 
                 <div className="room-settings-row">
-                  <label className="room-setting-label" htmlFor="room-capacity-setting">
+                  <label
+                    className="room-setting-label"
+                    htmlFor="room-capacity-setting"
+                  >
                     Capacity
                   </label>
                   <select
@@ -472,7 +580,10 @@ const RoomPage = () => {
                         return;
                       }
 
-                      const nextCapacity = Number.parseInt(event.target.value, 10);
+                      const nextCapacity = Number.parseInt(
+                        event.target.value,
+                        10,
+                      );
                       if (Number.isNaN(nextCapacity) || !roomGame) {
                         return;
                       }
@@ -482,26 +593,33 @@ const RoomPage = () => {
                       void persistRoomSettings({
                         capacity: nextCapacity,
                         game: roomGame,
-                        settings: buildSettingsPayload(roomGame, roomSettingSelectValues),
+                        settings: buildSettingsPayload(
+                          roomGame,
+                          roomSettingSelectValues,
+                        ),
                       });
                     }}
                   >
-                    {getCapacityOptions(capacityRange.min, capacityRange.max).map(
-                      (option) => {
-                        return (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        );
-                      },
-                    )}
+                    {getCapacityOptions(
+                      capacityRange.min,
+                      capacityRange.max,
+                    ).map((option) => {
+                      return (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
                 {roomSettingSelectValues.map((setting) => {
                   return (
                     <div key={setting.key} className="room-settings-row">
-                      <label className="room-setting-label" htmlFor={`room-setting-${setting.key}`}>
+                      <label
+                        className="room-setting-label"
+                        htmlFor={`room-setting-${setting.key}`}
+                      >
                         {setting.label}
                       </label>
                       <select
@@ -532,16 +650,18 @@ const RoomPage = () => {
                             return;
                           }
 
-                          const nextSettings = roomSettingSelectValues.map((currentSetting) => {
-                            if (currentSetting.key !== setting.key) {
-                              return currentSetting;
-                            }
+                          const nextSettings = roomSettingSelectValues.map(
+                            (currentSetting) => {
+                              if (currentSetting.key !== setting.key) {
+                                return currentSetting;
+                              }
 
-                            return {
-                              ...currentSetting,
-                              value: nextValue,
-                            };
-                          });
+                              return {
+                                ...currentSetting,
+                                value: nextValue,
+                              };
+                            },
+                          );
 
                           const nextSettingsPayload = buildSettingsPayload(
                             roomGame,
@@ -591,156 +711,48 @@ const RoomPage = () => {
               ) : null}
             </CardContent>
           </Card>
-
-          <Card className="room-left-card room-players-card">
-            <CardHeader>
-              <CardTitle>Current players</CardTitle>
-            </CardHeader>
-            <CardContent className="room-players-content">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="room-players-header-player">
-                      Player
-                    </TableHead>
-                    <TableHead className="room-players-header-ready">
-                      Ready
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                {players.map((player) => (
-                    <TableRow key={player.id}>
-                      <TableCell>
-                        <div className="host-cell">
-                          <span
-                            className="player-host-badge"
-                            aria-hidden="true"
-                          >
-                            {player.isHost ? "👑" : ""}
-                          </span>
-                          <img
-                            src={player.imageUrl}
-                            alt={player.name}
-                            className="host-avatar"
-                            loading="lazy"
-                            referrerPolicy="no-referrer"
-                          />
-                          <span>{player.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="player-ready-cell">
-                          <span
-                            className={`player-ready-status${
-                              player.isHost || player.isReady
-                                ? " is-ready"
-                                : " is-not-ready"
-                            }`}
-                          >
-                            {player.isHost || player.isReady ? "Ready" : "Not ready"}
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {players.length === 0 ? (
-                    <TableRow>
-                      <TableCell>Loading players...</TableCell>
-                      <TableCell>-</TableCell>
-                    </TableRow>
-                  ) : null}
-                </TableBody>
-              </Table>
-
-              <div className="room-action-buttons">
-                {!currentPlayer?.isHost ? (
-                  <Button
-                    size="lg"
-                    className="room-ready-button"
-                    onClick={() => {
-                      void handleReadyUp();
-                    }}
-                    disabled={!currentPlayer}
-                  >
-                    {currentPlayer?.isReady ? "Unready" : "Ready up"}
-                  </Button>
-                ) : null}
-
-                {currentPlayer?.isHost ? (
-                  <Button
-                    size="lg"
-                    className="room-start-button"
-                    onClick={() => {
-                      void handleStartGame();
-                    }}
-                  >
-                    Start game
-                  </Button>
-                ) : null}
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="room-chat-column">
-          <Card className="room-chat-panel">
-            <CardHeader>
-              <CardTitle>Room chat</CardTitle>
-            </CardHeader>
-            <CardContent className="room-chat-content">
-              <div className="chat-log">
-                {chatMessages.length === 0 ? (
-                  <p className="chat-message chat-message--empty">
-                    No new events.
-                  </p>
-                ) : (
-                  chatMessages.map((chatMessage) => {
-                    if (chatMessage.kind === "system") {
-                      return (
-                        <div key={chatMessage.id} className="chat-event-join">
-                          {chatMessage.playerImageUrl ? (
-                            <img
-                              src={chatMessage.playerImageUrl}
-                              alt={chatMessage.playerName}
-                              className="host-avatar"
-                              loading="lazy"
-                              referrerPolicy="no-referrer"
-                            />
-                          ) : null}
-                          <p className="chat-message chat-message--system">
-                            {chatMessage.text}
-                          </p>
-                        </div>
-                      );
-                    }
+          <ChatBox
+            title="Room chat"
+            messages={chatMessages}
+            onSendMessage={handleSendMessage}
+            getMessageKey={(message) => message.id}
+            renderMessage={(chatMessage) => {
+              if (chatMessage.kind === "system") {
+                return (
+                  <div className="chat-event-join">
+                    {chatMessage.playerImageUrl ? (
+                      <img
+                        src={chatMessage.playerImageUrl}
+                        alt={chatMessage.playerName}
+                        className="host-avatar"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : null}
+                    <p className="chat-message chat-message--system">
+                      {chatMessage.text}
+                    </p>
+                  </div>
+                );
+              }
 
-                    const chatPlayer = players.find(
-                      (player) => player.id === chatMessage.playerId,
-                    );
+              const chatPlayer = players.find(
+                (player) => player.id === chatMessage.playerId,
+              );
 
-                    return (
-                      <p key={chatMessage.id} className="chat-message">
-                        <span className="chat-message__author">
-                          {chatPlayer?.name ?? "Player"}:
-                        </span>{" "}
-                        {chatMessage.text}
-                      </p>
-                    );
-                  })
-                )}
-              </div>
-
-              <form className="chat-input-row" onSubmit={handleSendMessage}>
-                <input
-                  className="field-input"
-                  placeholder="Type a message..."
-                  value={chatValue}
-                  onChange={(event) => setChatValue(event.target.value)}
-                />
-              </form>
-            </CardContent>
-          </Card>
+              return (
+                <p className="chat-message">
+                  <span className="chat-message__author">
+                    {chatPlayer?.name ?? "Player"}:
+                  </span>{" "}
+                  {chatMessage.text}
+                </p>
+              );
+            }}
+          />
 
           <Button variant="outline" onClick={handleLeaveRoom}>
             Leave room

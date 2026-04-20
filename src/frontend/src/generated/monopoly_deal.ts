@@ -10,243 +10,247 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 export const protobufPackage = "fun_kames.schema.monopoly_deal";
 
 export enum AssetKey {
-  BALTIC_AVE = 0,
-  MEDITERRANEAN_AVE = 1,
-  CONNECTICUT_AVE = 2,
-  ORIENTAL_AVE = 3,
-  VERMONT_AVE = 4,
-  ST_CHARLES_PLACE = 5,
-  VIRGINIA_AVE = 6,
-  STATE_AVE = 7,
-  NEW_YORK_AVE = 8,
-  ST_JAMES_PLACE = 9,
-  TENNESSEE_AVE = 10,
-  KENTUCKY_AVE = 11,
-  INDIANA_AVE = 12,
-  ILLINOIS_AVE = 13,
-  VENTNOR_AVE = 14,
-  MARVIN_GARDENS = 15,
-  ATLANTIC_AVE = 16,
-  NORTH_CAROLINA_AVE = 17,
-  PACIFIC_AVE = 18,
-  PENNSYLVANIA_AVE = 19,
-  BOARDWALK = 20,
-  PARK_PLACE = 21,
-  WATER_WORKS = 22,
-  ELECTRIC_COMPANY = 23,
-  SHORT_LINE = 24,
-  B_AND_O_RAILROAD = 25,
-  READING_RAILROAD = 26,
-  PENNSYLVANIA_RAILROAD = 27,
-  WILD_BROWN_SKY = 28,
-  WILD_SKY_RAILROAD = 29,
-  WILD_PINK_ORANGE = 30,
-  WILD_RED_YELLOW = 31,
-  WILD_GREEN_BLUE = 32,
-  WILD_GREEN_RAILROAD = 33,
-  WILD_UTILITY_RAILROAD = 34,
-  WILD_WILD = 35,
-  MONEY_10 = 36,
-  MONEY_5 = 37,
-  MONEY_4 = 38,
-  MONEY_3 = 39,
-  MONEY_2 = 40,
-  MONEY_1 = 41,
-  DEAL_BREAKER = 42,
-  JUST_SAY_NO = 43,
-  HOTEL = 44,
-  DEBT_COLLECTOR = 45,
-  FORCED_DEAL = 46,
-  SLY_DEAL = 47,
-  HOUSE = 48,
-  ITS_MY_BIRTHDAY = 49,
-  DOUBLE_THE_RENT = 50,
-  PASS_GO = 51,
-  RENT_WILD = 52,
-  RENT_BROWN_SKY = 53,
-  RENT_PINK_ORANGE = 54,
-  RENT_RED_YELLOW = 55,
-  RENT_GREEN_BLUE = 56,
-  RENT_UTILITY_RAILROAD = 57,
+  ASSET_KEY_UNSPECIFIED = 0,
+  ASSET_KEY_BALTIC_AVE = 1,
+  ASSET_KEY_MEDITERRANEAN_AVE = 2,
+  ASSET_KEY_CONNECTICUT_AVE = 3,
+  ASSET_KEY_ORIENTAL_AVE = 4,
+  ASSET_KEY_VERMONT_AVE = 5,
+  ASSET_KEY_ST_CHARLES_PLACE = 6,
+  ASSET_KEY_VIRGINIA_AVE = 7,
+  ASSET_KEY_STATES_AVE = 8,
+  ASSET_KEY_NEW_YORK_AVE = 9,
+  ASSET_KEY_ST_JAMES_PLACE = 10,
+  ASSET_KEY_TENNESSEE_AVE = 11,
+  ASSET_KEY_KENTUCKY_AVE = 12,
+  ASSET_KEY_INDIANA_AVE = 13,
+  ASSET_KEY_ILLINOIS_AVE = 14,
+  ASSET_KEY_VENTNOR_AVE = 15,
+  ASSET_KEY_MARVIN_GARDENS = 16,
+  ASSET_KEY_ATLANTIC_AVE = 17,
+  ASSET_KEY_NORTH_CAROLINA_AVE = 18,
+  ASSET_KEY_PACIFIC_AVE = 19,
+  ASSET_KEY_PENNSYLVANIA_AVE = 20,
+  ASSET_KEY_BOARDWALK = 21,
+  ASSET_KEY_PARK_PLACE = 22,
+  ASSET_KEY_WATER_WORKS = 23,
+  ASSET_KEY_ELECTRIC_COMPANY = 24,
+  ASSET_KEY_SHORT_LINE = 25,
+  ASSET_KEY_B_AND_O_RAILROAD = 26,
+  ASSET_KEY_READING_RAILROAD = 27,
+  ASSET_KEY_PENNSYLVANIA_RAILROAD = 28,
+  ASSET_KEY_WILD_BROWN_SKY = 29,
+  ASSET_KEY_WILD_SKY_RAILROAD = 30,
+  ASSET_KEY_WILD_PINK_ORANGE = 31,
+  ASSET_KEY_WILD_RED_YELLOW = 32,
+  ASSET_KEY_WILD_GREEN_BLUE = 33,
+  ASSET_KEY_WILD_GREEN_RAILROAD = 34,
+  ASSET_KEY_WILD_UTILITY_RAILROAD = 35,
+  ASSET_KEY_WILD_WILD = 36,
+  ASSET_KEY_MONEY_10 = 37,
+  ASSET_KEY_MONEY_5 = 38,
+  ASSET_KEY_MONEY_4 = 39,
+  ASSET_KEY_MONEY_3 = 40,
+  ASSET_KEY_MONEY_2 = 41,
+  ASSET_KEY_MONEY_1 = 42,
+  ASSET_KEY_DEAL_BREAKER = 43,
+  ASSET_KEY_JUST_SAY_NO = 44,
+  ASSET_KEY_HOTEL = 45,
+  ASSET_KEY_DEBT_COLLECTOR = 46,
+  ASSET_KEY_FORCED_DEAL = 47,
+  ASSET_KEY_SLY_DEAL = 48,
+  ASSET_KEY_HOUSE = 49,
+  ASSET_KEY_ITS_MY_BIRTHDAY = 50,
+  ASSET_KEY_DOUBLE_THE_RENT = 51,
+  ASSET_KEY_PASS_GO = 52,
+  ASSET_KEY_RENT_WILD = 53,
+  ASSET_KEY_RENT_BROWN_SKY = 54,
+  ASSET_KEY_RENT_PINK_ORANGE = 55,
+  ASSET_KEY_RENT_RED_YELLOW = 56,
+  ASSET_KEY_RENT_GREEN_BLUE = 57,
+  ASSET_KEY_RENT_UTILITY_RAILROAD = 58,
   UNRECOGNIZED = -1,
 }
 
 export function assetKeyFromJSON(object: any): AssetKey {
   switch (object) {
     case 0:
-    case "BALTIC_AVE":
-      return AssetKey.BALTIC_AVE;
+    case "ASSET_KEY_UNSPECIFIED":
+      return AssetKey.ASSET_KEY_UNSPECIFIED;
     case 1:
-    case "MEDITERRANEAN_AVE":
-      return AssetKey.MEDITERRANEAN_AVE;
+    case "ASSET_KEY_BALTIC_AVE":
+      return AssetKey.ASSET_KEY_BALTIC_AVE;
     case 2:
-    case "CONNECTICUT_AVE":
-      return AssetKey.CONNECTICUT_AVE;
+    case "ASSET_KEY_MEDITERRANEAN_AVE":
+      return AssetKey.ASSET_KEY_MEDITERRANEAN_AVE;
     case 3:
-    case "ORIENTAL_AVE":
-      return AssetKey.ORIENTAL_AVE;
+    case "ASSET_KEY_CONNECTICUT_AVE":
+      return AssetKey.ASSET_KEY_CONNECTICUT_AVE;
     case 4:
-    case "VERMONT_AVE":
-      return AssetKey.VERMONT_AVE;
+    case "ASSET_KEY_ORIENTAL_AVE":
+      return AssetKey.ASSET_KEY_ORIENTAL_AVE;
     case 5:
-    case "ST_CHARLES_PLACE":
-      return AssetKey.ST_CHARLES_PLACE;
+    case "ASSET_KEY_VERMONT_AVE":
+      return AssetKey.ASSET_KEY_VERMONT_AVE;
     case 6:
-    case "VIRGINIA_AVE":
-      return AssetKey.VIRGINIA_AVE;
+    case "ASSET_KEY_ST_CHARLES_PLACE":
+      return AssetKey.ASSET_KEY_ST_CHARLES_PLACE;
     case 7:
-    case "STATE_AVE":
-      return AssetKey.STATE_AVE;
+    case "ASSET_KEY_VIRGINIA_AVE":
+      return AssetKey.ASSET_KEY_VIRGINIA_AVE;
     case 8:
-    case "NEW_YORK_AVE":
-      return AssetKey.NEW_YORK_AVE;
+    case "ASSET_KEY_STATES_AVE":
+      return AssetKey.ASSET_KEY_STATES_AVE;
     case 9:
-    case "ST_JAMES_PLACE":
-      return AssetKey.ST_JAMES_PLACE;
+    case "ASSET_KEY_NEW_YORK_AVE":
+      return AssetKey.ASSET_KEY_NEW_YORK_AVE;
     case 10:
-    case "TENNESSEE_AVE":
-      return AssetKey.TENNESSEE_AVE;
+    case "ASSET_KEY_ST_JAMES_PLACE":
+      return AssetKey.ASSET_KEY_ST_JAMES_PLACE;
     case 11:
-    case "KENTUCKY_AVE":
-      return AssetKey.KENTUCKY_AVE;
+    case "ASSET_KEY_TENNESSEE_AVE":
+      return AssetKey.ASSET_KEY_TENNESSEE_AVE;
     case 12:
-    case "INDIANA_AVE":
-      return AssetKey.INDIANA_AVE;
+    case "ASSET_KEY_KENTUCKY_AVE":
+      return AssetKey.ASSET_KEY_KENTUCKY_AVE;
     case 13:
-    case "ILLINOIS_AVE":
-      return AssetKey.ILLINOIS_AVE;
+    case "ASSET_KEY_INDIANA_AVE":
+      return AssetKey.ASSET_KEY_INDIANA_AVE;
     case 14:
-    case "VENTNOR_AVE":
-      return AssetKey.VENTNOR_AVE;
+    case "ASSET_KEY_ILLINOIS_AVE":
+      return AssetKey.ASSET_KEY_ILLINOIS_AVE;
     case 15:
-    case "MARVIN_GARDENS":
-      return AssetKey.MARVIN_GARDENS;
+    case "ASSET_KEY_VENTNOR_AVE":
+      return AssetKey.ASSET_KEY_VENTNOR_AVE;
     case 16:
-    case "ATLANTIC_AVE":
-      return AssetKey.ATLANTIC_AVE;
+    case "ASSET_KEY_MARVIN_GARDENS":
+      return AssetKey.ASSET_KEY_MARVIN_GARDENS;
     case 17:
-    case "NORTH_CAROLINA_AVE":
-      return AssetKey.NORTH_CAROLINA_AVE;
+    case "ASSET_KEY_ATLANTIC_AVE":
+      return AssetKey.ASSET_KEY_ATLANTIC_AVE;
     case 18:
-    case "PACIFIC_AVE":
-      return AssetKey.PACIFIC_AVE;
+    case "ASSET_KEY_NORTH_CAROLINA_AVE":
+      return AssetKey.ASSET_KEY_NORTH_CAROLINA_AVE;
     case 19:
-    case "PENNSYLVANIA_AVE":
-      return AssetKey.PENNSYLVANIA_AVE;
+    case "ASSET_KEY_PACIFIC_AVE":
+      return AssetKey.ASSET_KEY_PACIFIC_AVE;
     case 20:
-    case "BOARDWALK":
-      return AssetKey.BOARDWALK;
+    case "ASSET_KEY_PENNSYLVANIA_AVE":
+      return AssetKey.ASSET_KEY_PENNSYLVANIA_AVE;
     case 21:
-    case "PARK_PLACE":
-      return AssetKey.PARK_PLACE;
+    case "ASSET_KEY_BOARDWALK":
+      return AssetKey.ASSET_KEY_BOARDWALK;
     case 22:
-    case "WATER_WORKS":
-      return AssetKey.WATER_WORKS;
+    case "ASSET_KEY_PARK_PLACE":
+      return AssetKey.ASSET_KEY_PARK_PLACE;
     case 23:
-    case "ELECTRIC_COMPANY":
-      return AssetKey.ELECTRIC_COMPANY;
+    case "ASSET_KEY_WATER_WORKS":
+      return AssetKey.ASSET_KEY_WATER_WORKS;
     case 24:
-    case "SHORT_LINE":
-      return AssetKey.SHORT_LINE;
+    case "ASSET_KEY_ELECTRIC_COMPANY":
+      return AssetKey.ASSET_KEY_ELECTRIC_COMPANY;
     case 25:
-    case "B_AND_O_RAILROAD":
-      return AssetKey.B_AND_O_RAILROAD;
+    case "ASSET_KEY_SHORT_LINE":
+      return AssetKey.ASSET_KEY_SHORT_LINE;
     case 26:
-    case "READING_RAILROAD":
-      return AssetKey.READING_RAILROAD;
+    case "ASSET_KEY_B_AND_O_RAILROAD":
+      return AssetKey.ASSET_KEY_B_AND_O_RAILROAD;
     case 27:
-    case "PENNSYLVANIA_RAILROAD":
-      return AssetKey.PENNSYLVANIA_RAILROAD;
+    case "ASSET_KEY_READING_RAILROAD":
+      return AssetKey.ASSET_KEY_READING_RAILROAD;
     case 28:
-    case "WILD_BROWN_SKY":
-      return AssetKey.WILD_BROWN_SKY;
+    case "ASSET_KEY_PENNSYLVANIA_RAILROAD":
+      return AssetKey.ASSET_KEY_PENNSYLVANIA_RAILROAD;
     case 29:
-    case "WILD_SKY_RAILROAD":
-      return AssetKey.WILD_SKY_RAILROAD;
+    case "ASSET_KEY_WILD_BROWN_SKY":
+      return AssetKey.ASSET_KEY_WILD_BROWN_SKY;
     case 30:
-    case "WILD_PINK_ORANGE":
-      return AssetKey.WILD_PINK_ORANGE;
+    case "ASSET_KEY_WILD_SKY_RAILROAD":
+      return AssetKey.ASSET_KEY_WILD_SKY_RAILROAD;
     case 31:
-    case "WILD_RED_YELLOW":
-      return AssetKey.WILD_RED_YELLOW;
+    case "ASSET_KEY_WILD_PINK_ORANGE":
+      return AssetKey.ASSET_KEY_WILD_PINK_ORANGE;
     case 32:
-    case "WILD_GREEN_BLUE":
-      return AssetKey.WILD_GREEN_BLUE;
+    case "ASSET_KEY_WILD_RED_YELLOW":
+      return AssetKey.ASSET_KEY_WILD_RED_YELLOW;
     case 33:
-    case "WILD_GREEN_RAILROAD":
-      return AssetKey.WILD_GREEN_RAILROAD;
+    case "ASSET_KEY_WILD_GREEN_BLUE":
+      return AssetKey.ASSET_KEY_WILD_GREEN_BLUE;
     case 34:
-    case "WILD_UTILITY_RAILROAD":
-      return AssetKey.WILD_UTILITY_RAILROAD;
+    case "ASSET_KEY_WILD_GREEN_RAILROAD":
+      return AssetKey.ASSET_KEY_WILD_GREEN_RAILROAD;
     case 35:
-    case "WILD_WILD":
-      return AssetKey.WILD_WILD;
+    case "ASSET_KEY_WILD_UTILITY_RAILROAD":
+      return AssetKey.ASSET_KEY_WILD_UTILITY_RAILROAD;
     case 36:
-    case "MONEY_10":
-      return AssetKey.MONEY_10;
+    case "ASSET_KEY_WILD_WILD":
+      return AssetKey.ASSET_KEY_WILD_WILD;
     case 37:
-    case "MONEY_5":
-      return AssetKey.MONEY_5;
+    case "ASSET_KEY_MONEY_10":
+      return AssetKey.ASSET_KEY_MONEY_10;
     case 38:
-    case "MONEY_4":
-      return AssetKey.MONEY_4;
+    case "ASSET_KEY_MONEY_5":
+      return AssetKey.ASSET_KEY_MONEY_5;
     case 39:
-    case "MONEY_3":
-      return AssetKey.MONEY_3;
+    case "ASSET_KEY_MONEY_4":
+      return AssetKey.ASSET_KEY_MONEY_4;
     case 40:
-    case "MONEY_2":
-      return AssetKey.MONEY_2;
+    case "ASSET_KEY_MONEY_3":
+      return AssetKey.ASSET_KEY_MONEY_3;
     case 41:
-    case "MONEY_1":
-      return AssetKey.MONEY_1;
+    case "ASSET_KEY_MONEY_2":
+      return AssetKey.ASSET_KEY_MONEY_2;
     case 42:
-    case "DEAL_BREAKER":
-      return AssetKey.DEAL_BREAKER;
+    case "ASSET_KEY_MONEY_1":
+      return AssetKey.ASSET_KEY_MONEY_1;
     case 43:
-    case "JUST_SAY_NO":
-      return AssetKey.JUST_SAY_NO;
+    case "ASSET_KEY_DEAL_BREAKER":
+      return AssetKey.ASSET_KEY_DEAL_BREAKER;
     case 44:
-    case "HOTEL":
-      return AssetKey.HOTEL;
+    case "ASSET_KEY_JUST_SAY_NO":
+      return AssetKey.ASSET_KEY_JUST_SAY_NO;
     case 45:
-    case "DEBT_COLLECTOR":
-      return AssetKey.DEBT_COLLECTOR;
+    case "ASSET_KEY_HOTEL":
+      return AssetKey.ASSET_KEY_HOTEL;
     case 46:
-    case "FORCED_DEAL":
-      return AssetKey.FORCED_DEAL;
+    case "ASSET_KEY_DEBT_COLLECTOR":
+      return AssetKey.ASSET_KEY_DEBT_COLLECTOR;
     case 47:
-    case "SLY_DEAL":
-      return AssetKey.SLY_DEAL;
+    case "ASSET_KEY_FORCED_DEAL":
+      return AssetKey.ASSET_KEY_FORCED_DEAL;
     case 48:
-    case "HOUSE":
-      return AssetKey.HOUSE;
+    case "ASSET_KEY_SLY_DEAL":
+      return AssetKey.ASSET_KEY_SLY_DEAL;
     case 49:
-    case "ITS_MY_BIRTHDAY":
-      return AssetKey.ITS_MY_BIRTHDAY;
+    case "ASSET_KEY_HOUSE":
+      return AssetKey.ASSET_KEY_HOUSE;
     case 50:
-    case "DOUBLE_THE_RENT":
-      return AssetKey.DOUBLE_THE_RENT;
+    case "ASSET_KEY_ITS_MY_BIRTHDAY":
+      return AssetKey.ASSET_KEY_ITS_MY_BIRTHDAY;
     case 51:
-    case "PASS_GO":
-      return AssetKey.PASS_GO;
+    case "ASSET_KEY_DOUBLE_THE_RENT":
+      return AssetKey.ASSET_KEY_DOUBLE_THE_RENT;
     case 52:
-    case "RENT_WILD":
-      return AssetKey.RENT_WILD;
+    case "ASSET_KEY_PASS_GO":
+      return AssetKey.ASSET_KEY_PASS_GO;
     case 53:
-    case "RENT_BROWN_SKY":
-      return AssetKey.RENT_BROWN_SKY;
+    case "ASSET_KEY_RENT_WILD":
+      return AssetKey.ASSET_KEY_RENT_WILD;
     case 54:
-    case "RENT_PINK_ORANGE":
-      return AssetKey.RENT_PINK_ORANGE;
+    case "ASSET_KEY_RENT_BROWN_SKY":
+      return AssetKey.ASSET_KEY_RENT_BROWN_SKY;
     case 55:
-    case "RENT_RED_YELLOW":
-      return AssetKey.RENT_RED_YELLOW;
+    case "ASSET_KEY_RENT_PINK_ORANGE":
+      return AssetKey.ASSET_KEY_RENT_PINK_ORANGE;
     case 56:
-    case "RENT_GREEN_BLUE":
-      return AssetKey.RENT_GREEN_BLUE;
+    case "ASSET_KEY_RENT_RED_YELLOW":
+      return AssetKey.ASSET_KEY_RENT_RED_YELLOW;
     case 57:
-    case "RENT_UTILITY_RAILROAD":
-      return AssetKey.RENT_UTILITY_RAILROAD;
+    case "ASSET_KEY_RENT_GREEN_BLUE":
+      return AssetKey.ASSET_KEY_RENT_GREEN_BLUE;
+    case 58:
+    case "ASSET_KEY_RENT_UTILITY_RAILROAD":
+      return AssetKey.ASSET_KEY_RENT_UTILITY_RAILROAD;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -256,122 +260,124 @@ export function assetKeyFromJSON(object: any): AssetKey {
 
 export function assetKeyToJSON(object: AssetKey): string {
   switch (object) {
-    case AssetKey.BALTIC_AVE:
-      return "BALTIC_AVE";
-    case AssetKey.MEDITERRANEAN_AVE:
-      return "MEDITERRANEAN_AVE";
-    case AssetKey.CONNECTICUT_AVE:
-      return "CONNECTICUT_AVE";
-    case AssetKey.ORIENTAL_AVE:
-      return "ORIENTAL_AVE";
-    case AssetKey.VERMONT_AVE:
-      return "VERMONT_AVE";
-    case AssetKey.ST_CHARLES_PLACE:
-      return "ST_CHARLES_PLACE";
-    case AssetKey.VIRGINIA_AVE:
-      return "VIRGINIA_AVE";
-    case AssetKey.STATE_AVE:
-      return "STATE_AVE";
-    case AssetKey.NEW_YORK_AVE:
-      return "NEW_YORK_AVE";
-    case AssetKey.ST_JAMES_PLACE:
-      return "ST_JAMES_PLACE";
-    case AssetKey.TENNESSEE_AVE:
-      return "TENNESSEE_AVE";
-    case AssetKey.KENTUCKY_AVE:
-      return "KENTUCKY_AVE";
-    case AssetKey.INDIANA_AVE:
-      return "INDIANA_AVE";
-    case AssetKey.ILLINOIS_AVE:
-      return "ILLINOIS_AVE";
-    case AssetKey.VENTNOR_AVE:
-      return "VENTNOR_AVE";
-    case AssetKey.MARVIN_GARDENS:
-      return "MARVIN_GARDENS";
-    case AssetKey.ATLANTIC_AVE:
-      return "ATLANTIC_AVE";
-    case AssetKey.NORTH_CAROLINA_AVE:
-      return "NORTH_CAROLINA_AVE";
-    case AssetKey.PACIFIC_AVE:
-      return "PACIFIC_AVE";
-    case AssetKey.PENNSYLVANIA_AVE:
-      return "PENNSYLVANIA_AVE";
-    case AssetKey.BOARDWALK:
-      return "BOARDWALK";
-    case AssetKey.PARK_PLACE:
-      return "PARK_PLACE";
-    case AssetKey.WATER_WORKS:
-      return "WATER_WORKS";
-    case AssetKey.ELECTRIC_COMPANY:
-      return "ELECTRIC_COMPANY";
-    case AssetKey.SHORT_LINE:
-      return "SHORT_LINE";
-    case AssetKey.B_AND_O_RAILROAD:
-      return "B_AND_O_RAILROAD";
-    case AssetKey.READING_RAILROAD:
-      return "READING_RAILROAD";
-    case AssetKey.PENNSYLVANIA_RAILROAD:
-      return "PENNSYLVANIA_RAILROAD";
-    case AssetKey.WILD_BROWN_SKY:
-      return "WILD_BROWN_SKY";
-    case AssetKey.WILD_SKY_RAILROAD:
-      return "WILD_SKY_RAILROAD";
-    case AssetKey.WILD_PINK_ORANGE:
-      return "WILD_PINK_ORANGE";
-    case AssetKey.WILD_RED_YELLOW:
-      return "WILD_RED_YELLOW";
-    case AssetKey.WILD_GREEN_BLUE:
-      return "WILD_GREEN_BLUE";
-    case AssetKey.WILD_GREEN_RAILROAD:
-      return "WILD_GREEN_RAILROAD";
-    case AssetKey.WILD_UTILITY_RAILROAD:
-      return "WILD_UTILITY_RAILROAD";
-    case AssetKey.WILD_WILD:
-      return "WILD_WILD";
-    case AssetKey.MONEY_10:
-      return "MONEY_10";
-    case AssetKey.MONEY_5:
-      return "MONEY_5";
-    case AssetKey.MONEY_4:
-      return "MONEY_4";
-    case AssetKey.MONEY_3:
-      return "MONEY_3";
-    case AssetKey.MONEY_2:
-      return "MONEY_2";
-    case AssetKey.MONEY_1:
-      return "MONEY_1";
-    case AssetKey.DEAL_BREAKER:
-      return "DEAL_BREAKER";
-    case AssetKey.JUST_SAY_NO:
-      return "JUST_SAY_NO";
-    case AssetKey.HOTEL:
-      return "HOTEL";
-    case AssetKey.DEBT_COLLECTOR:
-      return "DEBT_COLLECTOR";
-    case AssetKey.FORCED_DEAL:
-      return "FORCED_DEAL";
-    case AssetKey.SLY_DEAL:
-      return "SLY_DEAL";
-    case AssetKey.HOUSE:
-      return "HOUSE";
-    case AssetKey.ITS_MY_BIRTHDAY:
-      return "ITS_MY_BIRTHDAY";
-    case AssetKey.DOUBLE_THE_RENT:
-      return "DOUBLE_THE_RENT";
-    case AssetKey.PASS_GO:
-      return "PASS_GO";
-    case AssetKey.RENT_WILD:
-      return "RENT_WILD";
-    case AssetKey.RENT_BROWN_SKY:
-      return "RENT_BROWN_SKY";
-    case AssetKey.RENT_PINK_ORANGE:
-      return "RENT_PINK_ORANGE";
-    case AssetKey.RENT_RED_YELLOW:
-      return "RENT_RED_YELLOW";
-    case AssetKey.RENT_GREEN_BLUE:
-      return "RENT_GREEN_BLUE";
-    case AssetKey.RENT_UTILITY_RAILROAD:
-      return "RENT_UTILITY_RAILROAD";
+    case AssetKey.ASSET_KEY_UNSPECIFIED:
+      return "ASSET_KEY_UNSPECIFIED";
+    case AssetKey.ASSET_KEY_BALTIC_AVE:
+      return "ASSET_KEY_BALTIC_AVE";
+    case AssetKey.ASSET_KEY_MEDITERRANEAN_AVE:
+      return "ASSET_KEY_MEDITERRANEAN_AVE";
+    case AssetKey.ASSET_KEY_CONNECTICUT_AVE:
+      return "ASSET_KEY_CONNECTICUT_AVE";
+    case AssetKey.ASSET_KEY_ORIENTAL_AVE:
+      return "ASSET_KEY_ORIENTAL_AVE";
+    case AssetKey.ASSET_KEY_VERMONT_AVE:
+      return "ASSET_KEY_VERMONT_AVE";
+    case AssetKey.ASSET_KEY_ST_CHARLES_PLACE:
+      return "ASSET_KEY_ST_CHARLES_PLACE";
+    case AssetKey.ASSET_KEY_VIRGINIA_AVE:
+      return "ASSET_KEY_VIRGINIA_AVE";
+    case AssetKey.ASSET_KEY_STATES_AVE:
+      return "ASSET_KEY_STATES_AVE";
+    case AssetKey.ASSET_KEY_NEW_YORK_AVE:
+      return "ASSET_KEY_NEW_YORK_AVE";
+    case AssetKey.ASSET_KEY_ST_JAMES_PLACE:
+      return "ASSET_KEY_ST_JAMES_PLACE";
+    case AssetKey.ASSET_KEY_TENNESSEE_AVE:
+      return "ASSET_KEY_TENNESSEE_AVE";
+    case AssetKey.ASSET_KEY_KENTUCKY_AVE:
+      return "ASSET_KEY_KENTUCKY_AVE";
+    case AssetKey.ASSET_KEY_INDIANA_AVE:
+      return "ASSET_KEY_INDIANA_AVE";
+    case AssetKey.ASSET_KEY_ILLINOIS_AVE:
+      return "ASSET_KEY_ILLINOIS_AVE";
+    case AssetKey.ASSET_KEY_VENTNOR_AVE:
+      return "ASSET_KEY_VENTNOR_AVE";
+    case AssetKey.ASSET_KEY_MARVIN_GARDENS:
+      return "ASSET_KEY_MARVIN_GARDENS";
+    case AssetKey.ASSET_KEY_ATLANTIC_AVE:
+      return "ASSET_KEY_ATLANTIC_AVE";
+    case AssetKey.ASSET_KEY_NORTH_CAROLINA_AVE:
+      return "ASSET_KEY_NORTH_CAROLINA_AVE";
+    case AssetKey.ASSET_KEY_PACIFIC_AVE:
+      return "ASSET_KEY_PACIFIC_AVE";
+    case AssetKey.ASSET_KEY_PENNSYLVANIA_AVE:
+      return "ASSET_KEY_PENNSYLVANIA_AVE";
+    case AssetKey.ASSET_KEY_BOARDWALK:
+      return "ASSET_KEY_BOARDWALK";
+    case AssetKey.ASSET_KEY_PARK_PLACE:
+      return "ASSET_KEY_PARK_PLACE";
+    case AssetKey.ASSET_KEY_WATER_WORKS:
+      return "ASSET_KEY_WATER_WORKS";
+    case AssetKey.ASSET_KEY_ELECTRIC_COMPANY:
+      return "ASSET_KEY_ELECTRIC_COMPANY";
+    case AssetKey.ASSET_KEY_SHORT_LINE:
+      return "ASSET_KEY_SHORT_LINE";
+    case AssetKey.ASSET_KEY_B_AND_O_RAILROAD:
+      return "ASSET_KEY_B_AND_O_RAILROAD";
+    case AssetKey.ASSET_KEY_READING_RAILROAD:
+      return "ASSET_KEY_READING_RAILROAD";
+    case AssetKey.ASSET_KEY_PENNSYLVANIA_RAILROAD:
+      return "ASSET_KEY_PENNSYLVANIA_RAILROAD";
+    case AssetKey.ASSET_KEY_WILD_BROWN_SKY:
+      return "ASSET_KEY_WILD_BROWN_SKY";
+    case AssetKey.ASSET_KEY_WILD_SKY_RAILROAD:
+      return "ASSET_KEY_WILD_SKY_RAILROAD";
+    case AssetKey.ASSET_KEY_WILD_PINK_ORANGE:
+      return "ASSET_KEY_WILD_PINK_ORANGE";
+    case AssetKey.ASSET_KEY_WILD_RED_YELLOW:
+      return "ASSET_KEY_WILD_RED_YELLOW";
+    case AssetKey.ASSET_KEY_WILD_GREEN_BLUE:
+      return "ASSET_KEY_WILD_GREEN_BLUE";
+    case AssetKey.ASSET_KEY_WILD_GREEN_RAILROAD:
+      return "ASSET_KEY_WILD_GREEN_RAILROAD";
+    case AssetKey.ASSET_KEY_WILD_UTILITY_RAILROAD:
+      return "ASSET_KEY_WILD_UTILITY_RAILROAD";
+    case AssetKey.ASSET_KEY_WILD_WILD:
+      return "ASSET_KEY_WILD_WILD";
+    case AssetKey.ASSET_KEY_MONEY_10:
+      return "ASSET_KEY_MONEY_10";
+    case AssetKey.ASSET_KEY_MONEY_5:
+      return "ASSET_KEY_MONEY_5";
+    case AssetKey.ASSET_KEY_MONEY_4:
+      return "ASSET_KEY_MONEY_4";
+    case AssetKey.ASSET_KEY_MONEY_3:
+      return "ASSET_KEY_MONEY_3";
+    case AssetKey.ASSET_KEY_MONEY_2:
+      return "ASSET_KEY_MONEY_2";
+    case AssetKey.ASSET_KEY_MONEY_1:
+      return "ASSET_KEY_MONEY_1";
+    case AssetKey.ASSET_KEY_DEAL_BREAKER:
+      return "ASSET_KEY_DEAL_BREAKER";
+    case AssetKey.ASSET_KEY_JUST_SAY_NO:
+      return "ASSET_KEY_JUST_SAY_NO";
+    case AssetKey.ASSET_KEY_HOTEL:
+      return "ASSET_KEY_HOTEL";
+    case AssetKey.ASSET_KEY_DEBT_COLLECTOR:
+      return "ASSET_KEY_DEBT_COLLECTOR";
+    case AssetKey.ASSET_KEY_FORCED_DEAL:
+      return "ASSET_KEY_FORCED_DEAL";
+    case AssetKey.ASSET_KEY_SLY_DEAL:
+      return "ASSET_KEY_SLY_DEAL";
+    case AssetKey.ASSET_KEY_HOUSE:
+      return "ASSET_KEY_HOUSE";
+    case AssetKey.ASSET_KEY_ITS_MY_BIRTHDAY:
+      return "ASSET_KEY_ITS_MY_BIRTHDAY";
+    case AssetKey.ASSET_KEY_DOUBLE_THE_RENT:
+      return "ASSET_KEY_DOUBLE_THE_RENT";
+    case AssetKey.ASSET_KEY_PASS_GO:
+      return "ASSET_KEY_PASS_GO";
+    case AssetKey.ASSET_KEY_RENT_WILD:
+      return "ASSET_KEY_RENT_WILD";
+    case AssetKey.ASSET_KEY_RENT_BROWN_SKY:
+      return "ASSET_KEY_RENT_BROWN_SKY";
+    case AssetKey.ASSET_KEY_RENT_PINK_ORANGE:
+      return "ASSET_KEY_RENT_PINK_ORANGE";
+    case AssetKey.ASSET_KEY_RENT_RED_YELLOW:
+      return "ASSET_KEY_RENT_RED_YELLOW";
+    case AssetKey.ASSET_KEY_RENT_GREEN_BLUE:
+      return "ASSET_KEY_RENT_GREEN_BLUE";
+    case AssetKey.ASSET_KEY_RENT_UTILITY_RAILROAD:
+      return "ASSET_KEY_RENT_UTILITY_RAILROAD";
     case AssetKey.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
@@ -379,27 +385,31 @@ export function assetKeyToJSON(object: AssetKey): string {
 }
 
 export enum Category {
-  PURE_PROPERTY = 0,
-  WILD_PROPERTY = 1,
-  MONEY = 2,
-  ACTION = 3,
+  CATEGORY_UNSPECIFIED = 0,
+  CATEGORY_PURE_PROPERTY = 1,
+  CATEGORY_WILD_PROPERTY = 2,
+  CATEGORY_MONEY = 3,
+  CATEGORY_ACTION = 4,
   UNRECOGNIZED = -1,
 }
 
 export function categoryFromJSON(object: any): Category {
   switch (object) {
     case 0:
-    case "PURE_PROPERTY":
-      return Category.PURE_PROPERTY;
+    case "CATEGORY_UNSPECIFIED":
+      return Category.CATEGORY_UNSPECIFIED;
     case 1:
-    case "WILD_PROPERTY":
-      return Category.WILD_PROPERTY;
+    case "CATEGORY_PURE_PROPERTY":
+      return Category.CATEGORY_PURE_PROPERTY;
     case 2:
-    case "MONEY":
-      return Category.MONEY;
+    case "CATEGORY_WILD_PROPERTY":
+      return Category.CATEGORY_WILD_PROPERTY;
     case 3:
-    case "ACTION":
-      return Category.ACTION;
+    case "CATEGORY_MONEY":
+      return Category.CATEGORY_MONEY;
+    case 4:
+    case "CATEGORY_ACTION":
+      return Category.CATEGORY_ACTION;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -409,14 +419,16 @@ export function categoryFromJSON(object: any): Category {
 
 export function categoryToJSON(object: Category): string {
   switch (object) {
-    case Category.PURE_PROPERTY:
-      return "PURE_PROPERTY";
-    case Category.WILD_PROPERTY:
-      return "WILD_PROPERTY";
-    case Category.MONEY:
-      return "MONEY";
-    case Category.ACTION:
-      return "ACTION";
+    case Category.CATEGORY_UNSPECIFIED:
+      return "CATEGORY_UNSPECIFIED";
+    case Category.CATEGORY_PURE_PROPERTY:
+      return "CATEGORY_PURE_PROPERTY";
+    case Category.CATEGORY_WILD_PROPERTY:
+      return "CATEGORY_WILD_PROPERTY";
+    case Category.CATEGORY_MONEY:
+      return "CATEGORY_MONEY";
+    case Category.CATEGORY_ACTION:
+      return "CATEGORY_ACTION";
     case Category.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
@@ -424,55 +436,55 @@ export function categoryToJSON(object: Category): string {
 }
 
 export enum Color {
-  NONE = 0,
-  BROWN = 1,
-  SKY = 2,
-  PINK = 3,
-  ORANGE = 4,
-  RED = 5,
-  YELLOW = 6,
-  GREEN = 7,
-  BLUE = 8,
-  UTILITY = 9,
-  RAILROAD = 10,
+  COLOR_UNSPECIFIED = 0,
+  COLOR_BROWN = 1,
+  COLOR_SKY = 2,
+  COLOR_PINK = 3,
+  COLOR_ORANGE = 4,
+  COLOR_RED = 5,
+  COLOR_YELLOW = 6,
+  COLOR_GREEN = 7,
+  COLOR_BLUE = 8,
+  COLOR_UTILITY = 9,
+  COLOR_RAILROAD = 10,
   UNRECOGNIZED = -1,
 }
 
 export function colorFromJSON(object: any): Color {
   switch (object) {
     case 0:
-    case "NONE":
-      return Color.NONE;
+    case "COLOR_UNSPECIFIED":
+      return Color.COLOR_UNSPECIFIED;
     case 1:
-    case "BROWN":
-      return Color.BROWN;
+    case "COLOR_BROWN":
+      return Color.COLOR_BROWN;
     case 2:
-    case "SKY":
-      return Color.SKY;
+    case "COLOR_SKY":
+      return Color.COLOR_SKY;
     case 3:
-    case "PINK":
-      return Color.PINK;
+    case "COLOR_PINK":
+      return Color.COLOR_PINK;
     case 4:
-    case "ORANGE":
-      return Color.ORANGE;
+    case "COLOR_ORANGE":
+      return Color.COLOR_ORANGE;
     case 5:
-    case "RED":
-      return Color.RED;
+    case "COLOR_RED":
+      return Color.COLOR_RED;
     case 6:
-    case "YELLOW":
-      return Color.YELLOW;
+    case "COLOR_YELLOW":
+      return Color.COLOR_YELLOW;
     case 7:
-    case "GREEN":
-      return Color.GREEN;
+    case "COLOR_GREEN":
+      return Color.COLOR_GREEN;
     case 8:
-    case "BLUE":
-      return Color.BLUE;
+    case "COLOR_BLUE":
+      return Color.COLOR_BLUE;
     case 9:
-    case "UTILITY":
-      return Color.UTILITY;
+    case "COLOR_UTILITY":
+      return Color.COLOR_UTILITY;
     case 10:
-    case "RAILROAD":
-      return Color.RAILROAD;
+    case "COLOR_RAILROAD":
+      return Color.COLOR_RAILROAD;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -482,28 +494,28 @@ export function colorFromJSON(object: any): Color {
 
 export function colorToJSON(object: Color): string {
   switch (object) {
-    case Color.NONE:
-      return "NONE";
-    case Color.BROWN:
-      return "BROWN";
-    case Color.SKY:
-      return "SKY";
-    case Color.PINK:
-      return "PINK";
-    case Color.ORANGE:
-      return "ORANGE";
-    case Color.RED:
-      return "RED";
-    case Color.YELLOW:
-      return "YELLOW";
-    case Color.GREEN:
-      return "GREEN";
-    case Color.BLUE:
-      return "BLUE";
-    case Color.UTILITY:
-      return "UTILITY";
-    case Color.RAILROAD:
-      return "RAILROAD";
+    case Color.COLOR_UNSPECIFIED:
+      return "COLOR_UNSPECIFIED";
+    case Color.COLOR_BROWN:
+      return "COLOR_BROWN";
+    case Color.COLOR_SKY:
+      return "COLOR_SKY";
+    case Color.COLOR_PINK:
+      return "COLOR_PINK";
+    case Color.COLOR_ORANGE:
+      return "COLOR_ORANGE";
+    case Color.COLOR_RED:
+      return "COLOR_RED";
+    case Color.COLOR_YELLOW:
+      return "COLOR_YELLOW";
+    case Color.COLOR_GREEN:
+      return "COLOR_GREEN";
+    case Color.COLOR_BLUE:
+      return "COLOR_BLUE";
+    case Color.COLOR_UTILITY:
+      return "COLOR_UTILITY";
+    case Color.COLOR_RAILROAD:
+      return "COLOR_RAILROAD";
     case Color.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
@@ -511,23 +523,27 @@ export function colorToJSON(object: Color): string {
 }
 
 export enum DemandKind {
-  PAYMENT = 0,
-  PROPERTY = 1,
-  PROPERTY_SET = 2,
+  DEMAND_KIND_UNSPECIFIED = 0,
+  DEMAND_KIND_PAYMENT = 1,
+  DEMAND_KIND_PROPERTY = 2,
+  DEMAND_KIND_PROPERTY_SET = 3,
   UNRECOGNIZED = -1,
 }
 
 export function demandKindFromJSON(object: any): DemandKind {
   switch (object) {
     case 0:
-    case "PAYMENT":
-      return DemandKind.PAYMENT;
+    case "DEMAND_KIND_UNSPECIFIED":
+      return DemandKind.DEMAND_KIND_UNSPECIFIED;
     case 1:
-    case "PROPERTY":
-      return DemandKind.PROPERTY;
+    case "DEMAND_KIND_PAYMENT":
+      return DemandKind.DEMAND_KIND_PAYMENT;
     case 2:
-    case "PROPERTY_SET":
-      return DemandKind.PROPERTY_SET;
+    case "DEMAND_KIND_PROPERTY":
+      return DemandKind.DEMAND_KIND_PROPERTY;
+    case 3:
+    case "DEMAND_KIND_PROPERTY_SET":
+      return DemandKind.DEMAND_KIND_PROPERTY_SET;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -537,12 +553,14 @@ export function demandKindFromJSON(object: any): DemandKind {
 
 export function demandKindToJSON(object: DemandKind): string {
   switch (object) {
-    case DemandKind.PAYMENT:
-      return "PAYMENT";
-    case DemandKind.PROPERTY:
-      return "PROPERTY";
-    case DemandKind.PROPERTY_SET:
-      return "PROPERTY_SET";
+    case DemandKind.DEMAND_KIND_UNSPECIFIED:
+      return "DEMAND_KIND_UNSPECIFIED";
+    case DemandKind.DEMAND_KIND_PAYMENT:
+      return "DEMAND_KIND_PAYMENT";
+    case DemandKind.DEMAND_KIND_PROPERTY:
+      return "DEMAND_KIND_PROPERTY";
+    case DemandKind.DEMAND_KIND_PROPERTY_SET:
+      return "DEMAND_KIND_PROPERTY_SET";
     case DemandKind.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
@@ -553,6 +571,15 @@ export interface Error {
   message: string;
   status: number;
   code: string;
+}
+
+export interface Chat {
+  payload: string;
+}
+
+export interface ChatReceived {
+  playerId: string;
+  payload: string;
 }
 
 export interface Card {
@@ -568,15 +595,13 @@ export interface Player {
   playerId: string;
   displayName: string;
   avatarUrl: string;
+  money: number;
+  completedSets: number;
+  handCards: number;
 }
 
 export interface Hand {
   cards: Card[];
-}
-
-export interface MaskedHand {
-  playerId: string;
-  numCards: number;
 }
 
 export interface Money {
@@ -631,7 +656,6 @@ export interface GameState {
   currentPlayerId: string;
   movesLeft: number;
   yourHand: Hand | undefined;
-  otherHands: MaskedHand[];
   money: Money[];
   properties: PropertySet[];
   demand?: Demand | undefined;
@@ -640,13 +664,11 @@ export interface GameState {
   assetImages: AssetImage[];
 }
 
-export interface StartTurn {
-}
-
 export interface StartTurnRes {
   seqNum: number;
   playerId: string;
   cards: Card[];
+  movesLeft: number;
 }
 
 export interface StartTurnMaskedRes {
@@ -677,19 +699,45 @@ export interface PlayPropertyRes {
   propertySet: PropertySet | undefined;
 }
 
+export interface CompleteTurn {
+}
+
+export interface PlayPassGo {
+  cardId: string;
+}
+
+export interface PlayPassGoRes {
+  seqNum: number;
+  playerId: string;
+  cards: Card[];
+  lastPlayedCard: Card | undefined;
+}
+
+export interface PlayPassGoMaskedRes {
+  seqNum: number;
+  playerId: string;
+  numCards: number;
+  lastPlayedCard: Card | undefined;
+}
+
 export interface ClientMessage {
-  startTurn?: StartTurn | undefined;
+  chat?: Chat | undefined;
   playMoney?: PlayMoney | undefined;
   playProperty?: PlayProperty | undefined;
+  completeTurn?: CompleteTurn | undefined;
+  playPassGo?: PlayPassGo | undefined;
 }
 
 export interface ServerMessage {
   error?: Error | undefined;
+  chatReceived?: ChatReceived | undefined;
   gameState?: GameState | undefined;
   startTurnRes?: StartTurnRes | undefined;
   startTurnMaskedRes?: StartTurnMaskedRes | undefined;
   playMoneyRes?: PlayMoneyRes | undefined;
   playPropertyRes?: PlayPropertyRes | undefined;
+  playPassGoRes?: PlayPassGoRes | undefined;
+  playPassGoMaskedRes?: PlayPassGoMaskedRes | undefined;
 }
 
 function createBaseError(): Error {
@@ -780,6 +828,144 @@ export const Error: MessageFns<Error> = {
     message.message = object.message ?? "";
     message.status = object.status ?? 0;
     message.code = object.code ?? "";
+    return message;
+  },
+};
+
+function createBaseChat(): Chat {
+  return { payload: "" };
+}
+
+export const Chat: MessageFns<Chat> = {
+  encode(message: Chat, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.payload !== "") {
+      writer.uint32(10).string(message.payload);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Chat {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseChat();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.payload = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Chat {
+    return { payload: isSet(object.payload) ? globalThis.String(object.payload) : "" };
+  },
+
+  toJSON(message: Chat): unknown {
+    const obj: any = {};
+    if (message.payload !== "") {
+      obj.payload = message.payload;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Chat>, I>>(base?: I): Chat {
+    return Chat.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Chat>, I>>(object: I): Chat {
+    const message = createBaseChat();
+    message.payload = object.payload ?? "";
+    return message;
+  },
+};
+
+function createBaseChatReceived(): ChatReceived {
+  return { playerId: "", payload: "" };
+}
+
+export const ChatReceived: MessageFns<ChatReceived> = {
+  encode(message: ChatReceived, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.playerId !== "") {
+      writer.uint32(10).string(message.playerId);
+    }
+    if (message.payload !== "") {
+      writer.uint32(18).string(message.payload);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ChatReceived {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseChatReceived();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.payload = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ChatReceived {
+    return {
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      payload: isSet(object.payload) ? globalThis.String(object.payload) : "",
+    };
+  },
+
+  toJSON(message: ChatReceived): unknown {
+    const obj: any = {};
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.payload !== "") {
+      obj.payload = message.payload;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ChatReceived>, I>>(base?: I): ChatReceived {
+    return ChatReceived.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ChatReceived>, I>>(object: I): ChatReceived {
+    const message = createBaseChatReceived();
+    message.playerId = object.playerId ?? "";
+    message.payload = object.payload ?? "";
     return message;
   },
 };
@@ -949,7 +1135,7 @@ export const Card: MessageFns<Card> = {
 };
 
 function createBasePlayer(): Player {
-  return { playerId: "", displayName: "", avatarUrl: "" };
+  return { playerId: "", displayName: "", avatarUrl: "", money: 0, completedSets: 0, handCards: 0 };
 }
 
 export const Player: MessageFns<Player> = {
@@ -962,6 +1148,15 @@ export const Player: MessageFns<Player> = {
     }
     if (message.avatarUrl !== "") {
       writer.uint32(26).string(message.avatarUrl);
+    }
+    if (message.money !== 0) {
+      writer.uint32(32).int32(message.money);
+    }
+    if (message.completedSets !== 0) {
+      writer.uint32(40).int32(message.completedSets);
+    }
+    if (message.handCards !== 0) {
+      writer.uint32(48).int32(message.handCards);
     }
     return writer;
   },
@@ -997,6 +1192,30 @@ export const Player: MessageFns<Player> = {
           message.avatarUrl = reader.string();
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.money = reader.int32();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.completedSets = reader.int32();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.handCards = reader.int32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1023,6 +1242,17 @@ export const Player: MessageFns<Player> = {
         : isSet(object.avatar_url)
         ? globalThis.String(object.avatar_url)
         : "",
+      money: isSet(object.money) ? globalThis.Number(object.money) : 0,
+      completedSets: isSet(object.completedSets)
+        ? globalThis.Number(object.completedSets)
+        : isSet(object.completed_sets)
+        ? globalThis.Number(object.completed_sets)
+        : 0,
+      handCards: isSet(object.handCards)
+        ? globalThis.Number(object.handCards)
+        : isSet(object.hand_cards)
+        ? globalThis.Number(object.hand_cards)
+        : 0,
     };
   },
 
@@ -1037,6 +1267,15 @@ export const Player: MessageFns<Player> = {
     if (message.avatarUrl !== "") {
       obj.avatarUrl = message.avatarUrl;
     }
+    if (message.money !== 0) {
+      obj.money = Math.round(message.money);
+    }
+    if (message.completedSets !== 0) {
+      obj.completedSets = Math.round(message.completedSets);
+    }
+    if (message.handCards !== 0) {
+      obj.handCards = Math.round(message.handCards);
+    }
     return obj;
   },
 
@@ -1048,6 +1287,9 @@ export const Player: MessageFns<Player> = {
     message.playerId = object.playerId ?? "";
     message.displayName = object.displayName ?? "";
     message.avatarUrl = object.avatarUrl ?? "";
+    message.money = object.money ?? 0;
+    message.completedSets = object.completedSets ?? 0;
+    message.handCards = object.handCards ?? 0;
     return message;
   },
 };
@@ -1106,90 +1348,6 @@ export const Hand: MessageFns<Hand> = {
   fromPartial<I extends Exact<DeepPartial<Hand>, I>>(object: I): Hand {
     const message = createBaseHand();
     message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
-    return message;
-  },
-};
-
-function createBaseMaskedHand(): MaskedHand {
-  return { playerId: "", numCards: 0 };
-}
-
-export const MaskedHand: MessageFns<MaskedHand> = {
-  encode(message: MaskedHand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.playerId !== "") {
-      writer.uint32(10).string(message.playerId);
-    }
-    if (message.numCards !== 0) {
-      writer.uint32(16).int32(message.numCards);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): MaskedHand {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMaskedHand();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.playerId = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 16) {
-            break;
-          }
-
-          message.numCards = reader.int32();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): MaskedHand {
-    return {
-      playerId: isSet(object.playerId)
-        ? globalThis.String(object.playerId)
-        : isSet(object.player_id)
-        ? globalThis.String(object.player_id)
-        : "",
-      numCards: isSet(object.numCards)
-        ? globalThis.Number(object.numCards)
-        : isSet(object.num_cards)
-        ? globalThis.Number(object.num_cards)
-        : 0,
-    };
-  },
-
-  toJSON(message: MaskedHand): unknown {
-    const obj: any = {};
-    if (message.playerId !== "") {
-      obj.playerId = message.playerId;
-    }
-    if (message.numCards !== 0) {
-      obj.numCards = Math.round(message.numCards);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<MaskedHand>, I>>(base?: I): MaskedHand {
-    return MaskedHand.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<MaskedHand>, I>>(object: I): MaskedHand {
-    const message = createBaseMaskedHand();
-    message.playerId = object.playerId ?? "";
-    message.numCards = object.numCards ?? 0;
     return message;
   },
 };
@@ -1984,7 +2142,6 @@ function createBaseGameState(): GameState {
     currentPlayerId: "",
     movesLeft: 0,
     yourHand: undefined,
-    otherHands: [],
     money: [],
     properties: [],
     demand: undefined,
@@ -2011,26 +2168,23 @@ export const GameState: MessageFns<GameState> = {
     if (message.yourHand !== undefined) {
       Hand.encode(message.yourHand, writer.uint32(42).fork()).join();
     }
-    for (const v of message.otherHands) {
-      MaskedHand.encode(v!, writer.uint32(50).fork()).join();
-    }
     for (const v of message.money) {
-      Money.encode(v!, writer.uint32(58).fork()).join();
+      Money.encode(v!, writer.uint32(50).fork()).join();
     }
     for (const v of message.properties) {
-      PropertySet.encode(v!, writer.uint32(66).fork()).join();
+      PropertySet.encode(v!, writer.uint32(58).fork()).join();
     }
     if (message.demand !== undefined) {
-      Demand.encode(message.demand, writer.uint32(74).fork()).join();
+      Demand.encode(message.demand, writer.uint32(66).fork()).join();
     }
     if (message.pendingRent !== undefined) {
-      PendingRent.encode(message.pendingRent, writer.uint32(82).fork()).join();
+      PendingRent.encode(message.pendingRent, writer.uint32(74).fork()).join();
     }
     if (message.lastAction !== undefined) {
-      Card.encode(message.lastAction, writer.uint32(90).fork()).join();
+      Card.encode(message.lastAction, writer.uint32(82).fork()).join();
     }
     for (const v of message.assetImages) {
-      AssetImage.encode(v!, writer.uint32(98).fork()).join();
+      AssetImage.encode(v!, writer.uint32(90).fork()).join();
     }
     return writer;
   },
@@ -2087,7 +2241,7 @@ export const GameState: MessageFns<GameState> = {
             break;
           }
 
-          message.otherHands.push(MaskedHand.decode(reader, reader.uint32()));
+          message.money.push(Money.decode(reader, reader.uint32()));
           continue;
         }
         case 7: {
@@ -2095,7 +2249,7 @@ export const GameState: MessageFns<GameState> = {
             break;
           }
 
-          message.money.push(Money.decode(reader, reader.uint32()));
+          message.properties.push(PropertySet.decode(reader, reader.uint32()));
           continue;
         }
         case 8: {
@@ -2103,7 +2257,7 @@ export const GameState: MessageFns<GameState> = {
             break;
           }
 
-          message.properties.push(PropertySet.decode(reader, reader.uint32()));
+          message.demand = Demand.decode(reader, reader.uint32());
           continue;
         }
         case 9: {
@@ -2111,7 +2265,7 @@ export const GameState: MessageFns<GameState> = {
             break;
           }
 
-          message.demand = Demand.decode(reader, reader.uint32());
+          message.pendingRent = PendingRent.decode(reader, reader.uint32());
           continue;
         }
         case 10: {
@@ -2119,19 +2273,11 @@ export const GameState: MessageFns<GameState> = {
             break;
           }
 
-          message.pendingRent = PendingRent.decode(reader, reader.uint32());
+          message.lastAction = Card.decode(reader, reader.uint32());
           continue;
         }
         case 11: {
           if (tag !== 90) {
-            break;
-          }
-
-          message.lastAction = Card.decode(reader, reader.uint32());
-          continue;
-        }
-        case 12: {
-          if (tag !== 98) {
             break;
           }
 
@@ -2170,12 +2316,9 @@ export const GameState: MessageFns<GameState> = {
         : isSet(object.your_hand)
         ? Hand.fromJSON(object.your_hand)
         : undefined,
-      otherHands: globalThis.Array.isArray(object?.otherHands)
-        ? object.otherHands.map((e: any) => MaskedHand.fromJSON(e))
-        : globalThis.Array.isArray(object?.other_hands)
-        ? object.other_hands.map((e: any) => MaskedHand.fromJSON(e))
+      money: globalThis.Array.isArray(object?.money)
+        ? object.money.map((e: any) => Money.fromJSON(e))
         : [],
-      money: globalThis.Array.isArray(object?.money) ? object.money.map((e: any) => Money.fromJSON(e)) : [],
       properties: globalThis.Array.isArray(object?.properties)
         ? object.properties.map((e: any) => PropertySet.fromJSON(e))
         : [],
@@ -2215,9 +2358,6 @@ export const GameState: MessageFns<GameState> = {
     if (message.yourHand !== undefined) {
       obj.yourHand = Hand.toJSON(message.yourHand);
     }
-    if (message.otherHands?.length) {
-      obj.otherHands = message.otherHands.map((e) => MaskedHand.toJSON(e));
-    }
     if (message.money?.length) {
       obj.money = message.money.map((e) => Money.toJSON(e));
     }
@@ -2251,7 +2391,6 @@ export const GameState: MessageFns<GameState> = {
     message.yourHand = (object.yourHand !== undefined && object.yourHand !== null)
       ? Hand.fromPartial(object.yourHand)
       : undefined;
-    message.otherHands = object.otherHands?.map((e) => MaskedHand.fromPartial(e)) || [];
     message.money = object.money?.map((e) => Money.fromPartial(e)) || [];
     message.properties = object.properties?.map((e) => PropertySet.fromPartial(e)) || [];
     message.demand = (object.demand !== undefined && object.demand !== null)
@@ -2268,51 +2407,8 @@ export const GameState: MessageFns<GameState> = {
   },
 };
 
-function createBaseStartTurn(): StartTurn {
-  return {};
-}
-
-export const StartTurn: MessageFns<StartTurn> = {
-  encode(_: StartTurn, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): StartTurn {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseStartTurn();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(_: any): StartTurn {
-    return {};
-  },
-
-  toJSON(_: StartTurn): unknown {
-    const obj: any = {};
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<StartTurn>, I>>(base?: I): StartTurn {
-    return StartTurn.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<StartTurn>, I>>(_: I): StartTurn {
-    const message = createBaseStartTurn();
-    return message;
-  },
-};
-
 function createBaseStartTurnRes(): StartTurnRes {
-  return { seqNum: 0, playerId: "", cards: [] };
+  return { seqNum: 0, playerId: "", cards: [], movesLeft: 0 };
 }
 
 export const StartTurnRes: MessageFns<StartTurnRes> = {
@@ -2325,6 +2421,9 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
     }
     for (const v of message.cards) {
       Card.encode(v!, writer.uint32(26).fork()).join();
+    }
+    if (message.movesLeft !== 0) {
+      writer.uint32(32).int32(message.movesLeft);
     }
     return writer;
   },
@@ -2360,6 +2459,14 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
           message.cards.push(Card.decode(reader, reader.uint32()));
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.movesLeft = reader.int32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2382,6 +2489,11 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
         ? globalThis.String(object.player_id)
         : "",
       cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => Card.fromJSON(e)) : [],
+      movesLeft: isSet(object.movesLeft)
+        ? globalThis.Number(object.movesLeft)
+        : isSet(object.moves_left)
+        ? globalThis.Number(object.moves_left)
+        : 0,
     };
   },
 
@@ -2396,6 +2508,9 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
     if (message.cards?.length) {
       obj.cards = message.cards.map((e) => Card.toJSON(e));
     }
+    if (message.movesLeft !== 0) {
+      obj.movesLeft = Math.round(message.movesLeft);
+    }
     return obj;
   },
 
@@ -2407,6 +2522,7 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
     message.seqNum = object.seqNum ?? 0;
     message.playerId = object.playerId ?? "";
     message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
+    message.movesLeft = object.movesLeft ?? 0;
     return message;
   },
 };
@@ -2889,20 +3005,387 @@ export const PlayPropertyRes: MessageFns<PlayPropertyRes> = {
   },
 };
 
+function createBaseCompleteTurn(): CompleteTurn {
+  return {};
+}
+
+export const CompleteTurn: MessageFns<CompleteTurn> = {
+  encode(_: CompleteTurn, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CompleteTurn {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCompleteTurn();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): CompleteTurn {
+    return {};
+  },
+
+  toJSON(_: CompleteTurn): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CompleteTurn>, I>>(base?: I): CompleteTurn {
+    return CompleteTurn.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CompleteTurn>, I>>(_: I): CompleteTurn {
+    const message = createBaseCompleteTurn();
+    return message;
+  },
+};
+
+function createBasePlayPassGo(): PlayPassGo {
+  return { cardId: "" };
+}
+
+export const PlayPassGo: MessageFns<PlayPassGo> = {
+  encode(message: PlayPassGo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayPassGo {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayPassGo();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayPassGo {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayPassGo): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayPassGo>, I>>(base?: I): PlayPassGo {
+    return PlayPassGo.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayPassGo>, I>>(object: I): PlayPassGo {
+    const message = createBasePlayPassGo();
+    message.cardId = object.cardId ?? "";
+    return message;
+  },
+};
+
+function createBasePlayPassGoRes(): PlayPassGoRes {
+  return { seqNum: 0, playerId: "", cards: [], lastPlayedCard: undefined };
+}
+
+export const PlayPassGoRes: MessageFns<PlayPassGoRes> = {
+  encode(message: PlayPassGoRes, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
+    for (const v of message.cards) {
+      Card.encode(v!, writer.uint32(26).fork()).join();
+    }
+    if (message.lastPlayedCard !== undefined) {
+      Card.encode(message.lastPlayedCard, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayPassGoRes {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayPassGoRes();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.cards.push(Card.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.lastPlayedCard = Card.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayPassGoRes {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => Card.fromJSON(e)) : [],
+      lastPlayedCard: isSet(object.lastPlayedCard)
+        ? Card.fromJSON(object.lastPlayedCard)
+        : isSet(object.last_played_card)
+        ? Card.fromJSON(object.last_played_card)
+        : undefined,
+    };
+  },
+
+  toJSON(message: PlayPassGoRes): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.cards?.length) {
+      obj.cards = message.cards.map((e) => Card.toJSON(e));
+    }
+    if (message.lastPlayedCard !== undefined) {
+      obj.lastPlayedCard = Card.toJSON(message.lastPlayedCard);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayPassGoRes>, I>>(base?: I): PlayPassGoRes {
+    return PlayPassGoRes.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayPassGoRes>, I>>(object: I): PlayPassGoRes {
+    const message = createBasePlayPassGoRes();
+    message.seqNum = object.seqNum ?? 0;
+    message.playerId = object.playerId ?? "";
+    message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
+    message.lastPlayedCard = (object.lastPlayedCard !== undefined && object.lastPlayedCard !== null)
+      ? Card.fromPartial(object.lastPlayedCard)
+      : undefined;
+    return message;
+  },
+};
+
+function createBasePlayPassGoMaskedRes(): PlayPassGoMaskedRes {
+  return { seqNum: 0, playerId: "", numCards: 0, lastPlayedCard: undefined };
+}
+
+export const PlayPassGoMaskedRes: MessageFns<PlayPassGoMaskedRes> = {
+  encode(message: PlayPassGoMaskedRes, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
+    if (message.numCards !== 0) {
+      writer.uint32(24).int32(message.numCards);
+    }
+    if (message.lastPlayedCard !== undefined) {
+      Card.encode(message.lastPlayedCard, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayPassGoMaskedRes {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayPassGoMaskedRes();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.numCards = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.lastPlayedCard = Card.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayPassGoMaskedRes {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      numCards: isSet(object.numCards)
+        ? globalThis.Number(object.numCards)
+        : isSet(object.num_cards)
+        ? globalThis.Number(object.num_cards)
+        : 0,
+      lastPlayedCard: isSet(object.lastPlayedCard)
+        ? Card.fromJSON(object.lastPlayedCard)
+        : isSet(object.last_played_card)
+        ? Card.fromJSON(object.last_played_card)
+        : undefined,
+    };
+  },
+
+  toJSON(message: PlayPassGoMaskedRes): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.numCards !== 0) {
+      obj.numCards = Math.round(message.numCards);
+    }
+    if (message.lastPlayedCard !== undefined) {
+      obj.lastPlayedCard = Card.toJSON(message.lastPlayedCard);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayPassGoMaskedRes>, I>>(base?: I): PlayPassGoMaskedRes {
+    return PlayPassGoMaskedRes.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayPassGoMaskedRes>, I>>(object: I): PlayPassGoMaskedRes {
+    const message = createBasePlayPassGoMaskedRes();
+    message.seqNum = object.seqNum ?? 0;
+    message.playerId = object.playerId ?? "";
+    message.numCards = object.numCards ?? 0;
+    message.lastPlayedCard = (object.lastPlayedCard !== undefined && object.lastPlayedCard !== null)
+      ? Card.fromPartial(object.lastPlayedCard)
+      : undefined;
+    return message;
+  },
+};
+
 function createBaseClientMessage(): ClientMessage {
-  return { startTurn: undefined, playMoney: undefined, playProperty: undefined };
+  return {
+    chat: undefined,
+    playMoney: undefined,
+    playProperty: undefined,
+    completeTurn: undefined,
+    playPassGo: undefined,
+  };
 }
 
 export const ClientMessage: MessageFns<ClientMessage> = {
   encode(message: ClientMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.startTurn !== undefined) {
-      StartTurn.encode(message.startTurn, writer.uint32(10).fork()).join();
+    if (message.chat !== undefined) {
+      Chat.encode(message.chat, writer.uint32(10).fork()).join();
     }
     if (message.playMoney !== undefined) {
       PlayMoney.encode(message.playMoney, writer.uint32(18).fork()).join();
     }
     if (message.playProperty !== undefined) {
       PlayProperty.encode(message.playProperty, writer.uint32(26).fork()).join();
+    }
+    if (message.completeTurn !== undefined) {
+      CompleteTurn.encode(message.completeTurn, writer.uint32(34).fork()).join();
+    }
+    if (message.playPassGo !== undefined) {
+      PlayPassGo.encode(message.playPassGo, writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -2919,7 +3402,7 @@ export const ClientMessage: MessageFns<ClientMessage> = {
             break;
           }
 
-          message.startTurn = StartTurn.decode(reader, reader.uint32());
+          message.chat = Chat.decode(reader, reader.uint32());
           continue;
         }
         case 2: {
@@ -2938,6 +3421,22 @@ export const ClientMessage: MessageFns<ClientMessage> = {
           message.playProperty = PlayProperty.decode(reader, reader.uint32());
           continue;
         }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.completeTurn = CompleteTurn.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.playPassGo = PlayPassGo.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2949,11 +3448,7 @@ export const ClientMessage: MessageFns<ClientMessage> = {
 
   fromJSON(object: any): ClientMessage {
     return {
-      startTurn: isSet(object.startTurn)
-        ? StartTurn.fromJSON(object.startTurn)
-        : isSet(object.start_turn)
-        ? StartTurn.fromJSON(object.start_turn)
-        : undefined,
+      chat: isSet(object.chat) ? Chat.fromJSON(object.chat) : undefined,
       playMoney: isSet(object.playMoney)
         ? PlayMoney.fromJSON(object.playMoney)
         : isSet(object.play_money)
@@ -2964,19 +3459,35 @@ export const ClientMessage: MessageFns<ClientMessage> = {
         : isSet(object.play_property)
         ? PlayProperty.fromJSON(object.play_property)
         : undefined,
+      completeTurn: isSet(object.completeTurn)
+        ? CompleteTurn.fromJSON(object.completeTurn)
+        : isSet(object.complete_turn)
+        ? CompleteTurn.fromJSON(object.complete_turn)
+        : undefined,
+      playPassGo: isSet(object.playPassGo)
+        ? PlayPassGo.fromJSON(object.playPassGo)
+        : isSet(object.play_pass_go)
+        ? PlayPassGo.fromJSON(object.play_pass_go)
+        : undefined,
     };
   },
 
   toJSON(message: ClientMessage): unknown {
     const obj: any = {};
-    if (message.startTurn !== undefined) {
-      obj.startTurn = StartTurn.toJSON(message.startTurn);
+    if (message.chat !== undefined) {
+      obj.chat = Chat.toJSON(message.chat);
     }
     if (message.playMoney !== undefined) {
       obj.playMoney = PlayMoney.toJSON(message.playMoney);
     }
     if (message.playProperty !== undefined) {
       obj.playProperty = PlayProperty.toJSON(message.playProperty);
+    }
+    if (message.completeTurn !== undefined) {
+      obj.completeTurn = CompleteTurn.toJSON(message.completeTurn);
+    }
+    if (message.playPassGo !== undefined) {
+      obj.playPassGo = PlayPassGo.toJSON(message.playPassGo);
     }
     return obj;
   },
@@ -2986,14 +3497,18 @@ export const ClientMessage: MessageFns<ClientMessage> = {
   },
   fromPartial<I extends Exact<DeepPartial<ClientMessage>, I>>(object: I): ClientMessage {
     const message = createBaseClientMessage();
-    message.startTurn = (object.startTurn !== undefined && object.startTurn !== null)
-      ? StartTurn.fromPartial(object.startTurn)
-      : undefined;
+    message.chat = (object.chat !== undefined && object.chat !== null) ? Chat.fromPartial(object.chat) : undefined;
     message.playMoney = (object.playMoney !== undefined && object.playMoney !== null)
       ? PlayMoney.fromPartial(object.playMoney)
       : undefined;
     message.playProperty = (object.playProperty !== undefined && object.playProperty !== null)
       ? PlayProperty.fromPartial(object.playProperty)
+      : undefined;
+    message.completeTurn = (object.completeTurn !== undefined && object.completeTurn !== null)
+      ? CompleteTurn.fromPartial(object.completeTurn)
+      : undefined;
+    message.playPassGo = (object.playPassGo !== undefined && object.playPassGo !== null)
+      ? PlayPassGo.fromPartial(object.playPassGo)
       : undefined;
     return message;
   },
@@ -3002,11 +3517,14 @@ export const ClientMessage: MessageFns<ClientMessage> = {
 function createBaseServerMessage(): ServerMessage {
   return {
     error: undefined,
+    chatReceived: undefined,
     gameState: undefined,
     startTurnRes: undefined,
     startTurnMaskedRes: undefined,
     playMoneyRes: undefined,
     playPropertyRes: undefined,
+    playPassGoRes: undefined,
+    playPassGoMaskedRes: undefined,
   };
 }
 
@@ -3015,20 +3533,29 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     if (message.error !== undefined) {
       Error.encode(message.error, writer.uint32(10).fork()).join();
     }
+    if (message.chatReceived !== undefined) {
+      ChatReceived.encode(message.chatReceived, writer.uint32(18).fork()).join();
+    }
     if (message.gameState !== undefined) {
-      GameState.encode(message.gameState, writer.uint32(18).fork()).join();
+      GameState.encode(message.gameState, writer.uint32(26).fork()).join();
     }
     if (message.startTurnRes !== undefined) {
-      StartTurnRes.encode(message.startTurnRes, writer.uint32(26).fork()).join();
+      StartTurnRes.encode(message.startTurnRes, writer.uint32(34).fork()).join();
     }
     if (message.startTurnMaskedRes !== undefined) {
-      StartTurnMaskedRes.encode(message.startTurnMaskedRes, writer.uint32(34).fork()).join();
+      StartTurnMaskedRes.encode(message.startTurnMaskedRes, writer.uint32(42).fork()).join();
     }
     if (message.playMoneyRes !== undefined) {
-      PlayMoneyRes.encode(message.playMoneyRes, writer.uint32(42).fork()).join();
+      PlayMoneyRes.encode(message.playMoneyRes, writer.uint32(50).fork()).join();
     }
     if (message.playPropertyRes !== undefined) {
-      PlayPropertyRes.encode(message.playPropertyRes, writer.uint32(50).fork()).join();
+      PlayPropertyRes.encode(message.playPropertyRes, writer.uint32(58).fork()).join();
+    }
+    if (message.playPassGoRes !== undefined) {
+      PlayPassGoRes.encode(message.playPassGoRes, writer.uint32(66).fork()).join();
+    }
+    if (message.playPassGoMaskedRes !== undefined) {
+      PlayPassGoMaskedRes.encode(message.playPassGoMaskedRes, writer.uint32(74).fork()).join();
     }
     return writer;
   },
@@ -3053,7 +3580,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.gameState = GameState.decode(reader, reader.uint32());
+          message.chatReceived = ChatReceived.decode(reader, reader.uint32());
           continue;
         }
         case 3: {
@@ -3061,7 +3588,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.startTurnRes = StartTurnRes.decode(reader, reader.uint32());
+          message.gameState = GameState.decode(reader, reader.uint32());
           continue;
         }
         case 4: {
@@ -3069,7 +3596,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.startTurnMaskedRes = StartTurnMaskedRes.decode(reader, reader.uint32());
+          message.startTurnRes = StartTurnRes.decode(reader, reader.uint32());
           continue;
         }
         case 5: {
@@ -3077,7 +3604,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.playMoneyRes = PlayMoneyRes.decode(reader, reader.uint32());
+          message.startTurnMaskedRes = StartTurnMaskedRes.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
@@ -3085,7 +3612,31 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
+          message.playMoneyRes = PlayMoneyRes.decode(reader, reader.uint32());
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
           message.playPropertyRes = PlayPropertyRes.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.playPassGoRes = PlayPassGoRes.decode(reader, reader.uint32());
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.playPassGoMaskedRes = PlayPassGoMaskedRes.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -3100,6 +3651,11 @@ export const ServerMessage: MessageFns<ServerMessage> = {
   fromJSON(object: any): ServerMessage {
     return {
       error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
+      chatReceived: isSet(object.chatReceived)
+        ? ChatReceived.fromJSON(object.chatReceived)
+        : isSet(object.chat_received)
+        ? ChatReceived.fromJSON(object.chat_received)
+        : undefined,
       gameState: isSet(object.gameState)
         ? GameState.fromJSON(object.gameState)
         : isSet(object.game_state)
@@ -3125,6 +3681,16 @@ export const ServerMessage: MessageFns<ServerMessage> = {
         : isSet(object.play_property_res)
         ? PlayPropertyRes.fromJSON(object.play_property_res)
         : undefined,
+      playPassGoRes: isSet(object.playPassGoRes)
+        ? PlayPassGoRes.fromJSON(object.playPassGoRes)
+        : isSet(object.play_pass_go_res)
+        ? PlayPassGoRes.fromJSON(object.play_pass_go_res)
+        : undefined,
+      playPassGoMaskedRes: isSet(object.playPassGoMaskedRes)
+        ? PlayPassGoMaskedRes.fromJSON(object.playPassGoMaskedRes)
+        : isSet(object.play_pass_go_masked_res)
+        ? PlayPassGoMaskedRes.fromJSON(object.play_pass_go_masked_res)
+        : undefined,
     };
   },
 
@@ -3132,6 +3698,9 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     const obj: any = {};
     if (message.error !== undefined) {
       obj.error = Error.toJSON(message.error);
+    }
+    if (message.chatReceived !== undefined) {
+      obj.chatReceived = ChatReceived.toJSON(message.chatReceived);
     }
     if (message.gameState !== undefined) {
       obj.gameState = GameState.toJSON(message.gameState);
@@ -3148,6 +3717,12 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     if (message.playPropertyRes !== undefined) {
       obj.playPropertyRes = PlayPropertyRes.toJSON(message.playPropertyRes);
     }
+    if (message.playPassGoRes !== undefined) {
+      obj.playPassGoRes = PlayPassGoRes.toJSON(message.playPassGoRes);
+    }
+    if (message.playPassGoMaskedRes !== undefined) {
+      obj.playPassGoMaskedRes = PlayPassGoMaskedRes.toJSON(message.playPassGoMaskedRes);
+    }
     return obj;
   },
 
@@ -3157,6 +3732,9 @@ export const ServerMessage: MessageFns<ServerMessage> = {
   fromPartial<I extends Exact<DeepPartial<ServerMessage>, I>>(object: I): ServerMessage {
     const message = createBaseServerMessage();
     message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
+    message.chatReceived = (object.chatReceived !== undefined && object.chatReceived !== null)
+      ? ChatReceived.fromPartial(object.chatReceived)
+      : undefined;
     message.gameState = (object.gameState !== undefined && object.gameState !== null)
       ? GameState.fromPartial(object.gameState)
       : undefined;
@@ -3171,6 +3749,12 @@ export const ServerMessage: MessageFns<ServerMessage> = {
       : undefined;
     message.playPropertyRes = (object.playPropertyRes !== undefined && object.playPropertyRes !== null)
       ? PlayPropertyRes.fromPartial(object.playPropertyRes)
+      : undefined;
+    message.playPassGoRes = (object.playPassGoRes !== undefined && object.playPassGoRes !== null)
+      ? PlayPassGoRes.fromPartial(object.playPassGoRes)
+      : undefined;
+    message.playPassGoMaskedRes = (object.playPassGoMaskedRes !== undefined && object.playPassGoMaskedRes !== null)
+      ? PlayPassGoMaskedRes.fromPartial(object.playPassGoMaskedRes)
       : undefined;
     return message;
   },

@@ -55,7 +55,8 @@ const ProfilePage = () => {
             ? payload.display_name
             : "Unknown Player",
         email: typeof payload.email === "string" ? payload.email : "-",
-        imageUrl: typeof payload.image_url === "string" ? payload.image_url : "",
+        imageUrl:
+          typeof payload.image_url === "string" ? payload.image_url : "",
       });
 
       setNameDraft(
@@ -129,7 +130,9 @@ const ProfilePage = () => {
             </form>
           ) : (
             <div className="profile-name-row">
-              <h1 className="profile-card__name">{profile?.displayName ?? "Loading..."}</h1>
+              <h1 className="profile-card__name">
+                {profile?.displayName ?? "Loading..."}
+              </h1>
               <button
                 type="button"
                 className="profile-name-edit"

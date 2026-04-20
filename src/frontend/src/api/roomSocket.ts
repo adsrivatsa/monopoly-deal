@@ -1,5 +1,5 @@
 import { appConfig } from "../config";
-import { ClientMessage, ServerMessage } from "../generated/message";
+import { ClientMessage, ServerMessage } from "../generated/gateway";
 
 export const connectRoomSocket = () => {
   const socket = new WebSocket(appConfig.room.socketUrl);
