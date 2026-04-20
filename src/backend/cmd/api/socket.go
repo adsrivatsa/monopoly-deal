@@ -114,3 +114,10 @@ func (s *socket) error(err error) {
 	}
 	s.close(intErr)
 }
+
+func (s *socket) sendError(err error) {
+	var intErr errors.Error
+	if !stderrors.As(err, &intErr) {
+		intErr = errors.Internal(err)
+	}
+}

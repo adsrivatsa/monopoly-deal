@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS game
         display_name text NOT NULL,
         game game_type NOT NULL,
         game_state bytea NOT NULL,
-        sequence_num int2 NOT NULL DEFAULT 0,
         completed bool NOT NULL DEFAULT FALSE,
         created_at timestamptz NOT NULL DEFAULT NOW()
     );

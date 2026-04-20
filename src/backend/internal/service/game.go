@@ -16,7 +16,7 @@ import (
 )
 
 func (c *Controller) ListenGameEvents(ctx context.Context, tp token.Payload, callback func(message *schema.ServerMessage)) error {
-	gp, err := c.store.GetGameByPlayer(ctx, tp.PlayerID)
+	g, err := c.store.GetGameByPlayer(ctx, tp.PlayerID)
 	if err != nil {
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return errors.EntityNotFound(errors.EntityGame, err)
@@ -24,7 +24,7 @@ func (c *Controller) ListenGameEvents(ctx context.Context, tp token.Payload, cal
 		return err
 	}
 
-	ch, err := c.bus.Subscribe(ctx, event.GameChannelPre+gp.GameID.String())
+	ch, err := c.bus.Subscribe(ctx, event.GameChannelPre+g.GameID.String())
 	if err != nil {
 		return err
 	}
@@ -42,6 +42,16 @@ func (c *Controller) ListenGameEvents(ctx context.Context, tp token.Payload, cal
 					return err
 				}
 
+			case event.KindMonopolyDealEvent:
+				err = proto.Unmarshal(e.Message, &msg)
+				if err != nil {
+					return err
+				}
+
+				mdMsg := c.maskMonopolyDealPrivateEvents(tp, msg.GetMonopolyDealMessage())
+				msg.Payload = &schema.ServerMessage_MonopolyDealMessage{
+					MonopolyDealMessage: mdMsg,
+				}
 			default:
 			}
 

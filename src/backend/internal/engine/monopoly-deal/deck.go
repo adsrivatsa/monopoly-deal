@@ -3,6 +3,7 @@ package monopoly_deal
 import (
 	"math/rand"
 	"slices"
+	"time"
 )
 
 type Deck struct {
@@ -36,7 +37,7 @@ func NewDeck(cfg Settings, gen *IdentifierGenerator) (Deck, map[Identifier]Card)
 	addCopies(AssetKeyVermontAve, 1)
 	addCopies(AssetKeyStCharlesPlace, 1)
 	addCopies(AssetKeyVirginiaAve, 1)
-	addCopies(AssetKeyStateAve, 1)
+	addCopies(AssetKeyStatesAve, 1)
 	addCopies(AssetKeyNewYorkAve, 1)
 	addCopies(AssetKeyStJamesPlace, 1)
 	addCopies(AssetKeyTennesseeAve, 1)
@@ -104,8 +105,8 @@ func NewDeck(cfg Settings, gen *IdentifierGenerator) (Deck, map[Identifier]Card)
 }
 
 func (d *Deck) Shuffle() {
-	//r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	r := rand.New(rand.NewSource(5))
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	//r := rand.New(rand.NewSource(5))
 	r.Shuffle(len(d.Cards), func(i, j int) {
 		d.Cards[i], d.Cards[j] = d.Cards[j], d.Cards[i]
 	})

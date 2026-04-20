@@ -3,7 +3,6 @@ package monopoly_deal
 import (
 	"fmt"
 	"fun-kames/internal/schema/monopoly_deal_schema"
-	"slices"
 )
 
 type AssetKey string
@@ -17,7 +16,7 @@ const (
 	AssetKeyVermontAve           AssetKey = "vermont_ave"
 	AssetKeyStCharlesPlace       AssetKey = "st_charles_place"
 	AssetKeyVirginiaAve          AssetKey = "virginia_ave"
-	AssetKeyStateAve             AssetKey = "state_ave"
+	AssetKeyStatesAve            AssetKey = "states_ave"
 	AssetKeyNewYorkAve           AssetKey = "new_york_ave"
 	AssetKeyStJamesPlace         AssetKey = "st_james_place"
 	AssetKeyTennesseeAve         AssetKey = "tennessee_ave"
@@ -79,7 +78,7 @@ var AssetKeyProtoMap = map[AssetKey]monopoly_deal_schema.AssetKey{
 	AssetKeyVermontAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_VERMONT_AVE,
 	AssetKeyStCharlesPlace:       monopoly_deal_schema.AssetKey_ASSET_KEY_ST_CHARLES_PLACE,
 	AssetKeyVirginiaAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_VIRGINIA_AVE,
-	AssetKeyStateAve:             monopoly_deal_schema.AssetKey_ASSET_KEY_STATE_AVE,
+	AssetKeyStatesAve:            monopoly_deal_schema.AssetKey_ASSET_KEY_STATES_AVE,
 	AssetKeyNewYorkAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_NEW_YORK_AVE,
 	AssetKeyStJamesPlace:         monopoly_deal_schema.AssetKey_ASSET_KEY_ST_JAMES_PLACE,
 	AssetKeyTennesseeAve:         monopoly_deal_schema.AssetKey_ASSET_KEY_TENNESSEE_AVE,
@@ -133,7 +132,7 @@ var AssetKeyProtoMap = map[AssetKey]monopoly_deal_schema.AssetKey{
 }
 
 func AllAssetKeys() []AssetKey {
-	return []AssetKey{AssetKeyBalticAve, AssetKeyMediterraneanAve, AssetKeyConnecticutAve, AssetKeyOrientalAve, AssetKeyVermontAve, AssetKeyStCharlesPlace, AssetKeyVirginiaAve, AssetKeyStateAve, AssetKeyNewYorkAve, AssetKeyStJamesPlace, AssetKeyTennesseeAve, AssetKeyKentuckyAve, AssetKeyIndianaAve, AssetKeyIllinoisAve, AssetKeyVentnorAve, AssetKeyMarvinGardens, AssetKeyAtlanticAve, AssetKeyNorthCarolinaAve, AssetKeyPacificAve, AssetKeyPennsylvaniaAve, AssetKeyBoardwalk, AssetKeyParkPlace, AssetKeyWaterWorks, AssetKeyElectricCompany, AssetKeyShortLine, AssetKeyBandORailRoad, AssetKeyReadingRailroad, AssetKeyPennsylvaniaRailroad, AssetKeyWildBrownSky, AssetKeyWildSkyRailroad, AssetKeyWildPinkOrange, AssetKeyWildRedYellow, AssetKeyWildGreenBlue, AssetKeyWildGreenRailroad, AssetKeyWildUtilityRailroad, AssetKeyWildWild, AssetKeyMoney10, AssetKeyMoney5, AssetKeyMoney4, AssetKeyMoney3, AssetKeyMoney2, AssetKeyMoney1, AssetKeyDealBreaker, AssetKeyJustSayNo, AssetKeyHotel, AssetKeyDebtCollector, AssetKeyForcedDeal, AssetKeySlyDeal, AssetKeyHouse, AssetKeyItsMyBirthday, AssetKeyDoubleTheRent, AssetKeyPassGo, AssetKeyRentWild, AssetKeyRentBrownSky, AssetKeyRentPinkOrange, AssetKeyRentRedYellow, AssetKeyRentGreenBlue, AssetKeyRentUtilityRailroad}
+	return []AssetKey{AssetKeyBalticAve, AssetKeyMediterraneanAve, AssetKeyConnecticutAve, AssetKeyOrientalAve, AssetKeyVermontAve, AssetKeyStCharlesPlace, AssetKeyVirginiaAve, AssetKeyStatesAve, AssetKeyNewYorkAve, AssetKeyStJamesPlace, AssetKeyTennesseeAve, AssetKeyKentuckyAve, AssetKeyIndianaAve, AssetKeyIllinoisAve, AssetKeyVentnorAve, AssetKeyMarvinGardens, AssetKeyAtlanticAve, AssetKeyNorthCarolinaAve, AssetKeyPacificAve, AssetKeyPennsylvaniaAve, AssetKeyBoardwalk, AssetKeyParkPlace, AssetKeyWaterWorks, AssetKeyElectricCompany, AssetKeyShortLine, AssetKeyBandORailRoad, AssetKeyReadingRailroad, AssetKeyPennsylvaniaRailroad, AssetKeyWildBrownSky, AssetKeyWildSkyRailroad, AssetKeyWildPinkOrange, AssetKeyWildRedYellow, AssetKeyWildGreenBlue, AssetKeyWildGreenRailroad, AssetKeyWildUtilityRailroad, AssetKeyWildWild, AssetKeyMoney10, AssetKeyMoney5, AssetKeyMoney4, AssetKeyMoney3, AssetKeyMoney2, AssetKeyMoney1, AssetKeyDealBreaker, AssetKeyJustSayNo, AssetKeyHotel, AssetKeyDebtCollector, AssetKeyForcedDeal, AssetKeySlyDeal, AssetKeyHouse, AssetKeyItsMyBirthday, AssetKeyDoubleTheRent, AssetKeyPassGo, AssetKeyRentWild, AssetKeyRentBrownSky, AssetKeyRentPinkOrange, AssetKeyRentRedYellow, AssetKeyRentGreenBlue, AssetKeyRentUtilityRailroad}
 }
 
 func (a AssetKey) Proto() monopoly_deal_schema.AssetKey {
@@ -241,6 +240,24 @@ const (
 	ColorRailroad
 )
 
+var ProtoColorMap = map[monopoly_deal_schema.Color]Color{
+	monopoly_deal_schema.Color_COLOR_UNSPECIFIED: ColorUnspecified,
+	monopoly_deal_schema.Color_COLOR_BROWN:       ColorBrown,
+	monopoly_deal_schema.Color_COLOR_SKY:         ColorSky,
+	monopoly_deal_schema.Color_COLOR_PINK:        ColorPink,
+	monopoly_deal_schema.Color_COLOR_ORANGE:      ColorOrange,
+	monopoly_deal_schema.Color_COLOR_RED:         ColorRed,
+	monopoly_deal_schema.Color_COLOR_YELLOW:      ColorYellow,
+	monopoly_deal_schema.Color_COLOR_GREEN:       ColorGreen,
+	monopoly_deal_schema.Color_COLOR_BLUE:        ColorBlue,
+	monopoly_deal_schema.Color_COLOR_UTILITY:     ColorUtility,
+	monopoly_deal_schema.Color_COLOR_RAILROAD:    ColorRailroad,
+}
+
+func ColorFromProto(c monopoly_deal_schema.Color) Color {
+	return ProtoColorMap[c]
+}
+
 var ColorProtoMap = map[Color]monopoly_deal_schema.Color{
 	ColorUnspecified: monopoly_deal_schema.Color_COLOR_UNSPECIFIED,
 	ColorBrown:       monopoly_deal_schema.Color_COLOR_BROWN,
@@ -269,8 +286,6 @@ type Card struct {
 }
 
 func NewCard(id Identifier, c Category, ak AssetKey, v int, colors ...Color) Card {
-	slices.Sort(colors)
-
 	activeColor := ColorUnspecified
 	if len(colors) > 0 {
 		activeColor = colors[0]
@@ -312,7 +327,7 @@ var CardByAssetKey = map[AssetKey]Card{
 	AssetKeyVermontAve:           NewCard("", CategoryPureProperty, AssetKeyVermontAve, 1, ColorSky),
 	AssetKeyStCharlesPlace:       NewCard("", CategoryPureProperty, AssetKeyStCharlesPlace, 2, ColorPink),
 	AssetKeyVirginiaAve:          NewCard("", CategoryPureProperty, AssetKeyVirginiaAve, 2, ColorPink),
-	AssetKeyStateAve:             NewCard("", CategoryPureProperty, AssetKeyStateAve, 2, ColorPink),
+	AssetKeyStatesAve:            NewCard("", CategoryPureProperty, AssetKeyStatesAve, 2, ColorPink),
 	AssetKeyNewYorkAve:           NewCard("", CategoryPureProperty, AssetKeyNewYorkAve, 2, ColorOrange),
 	AssetKeyStJamesPlace:         NewCard("", CategoryPureProperty, AssetKeyStJamesPlace, 2, ColorOrange),
 	AssetKeyTennesseeAve:         NewCard("", CategoryPureProperty, AssetKeyTennesseeAve, 2, ColorOrange),
@@ -373,8 +388,12 @@ func (c Card) String() string {
 }
 
 func (c Card) HasColor(color Color) bool {
-	_, ok := slices.BinarySearch(c.Colors, color)
-	return ok
+	for _, col := range c.Colors {
+		if col == color {
+			return true
+		}
+	}
+	return false
 }
 
 type Cards []Card
@@ -424,4 +443,12 @@ func (c *Cards) RemoveByIdx(idx int) (Card, bool) {
 	card := cards[idx]
 	*c = append(cards[:idx], cards[idx+1:]...)
 	return card, true
+}
+
+func (c *Cards) Value() int {
+	value := 0
+	for _, card := range *c {
+		value += card.Value
+	}
+	return value
 }

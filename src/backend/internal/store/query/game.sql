@@ -13,7 +13,6 @@ SELECT g.*
 
 -- name: UpdateGameState :one
    UPDATE game
-      SET game_state = $1,
-          sequence_num = sequence_num + 1
+      SET game_state = $1
     WHERE game_id = $2
 RETURNING *;

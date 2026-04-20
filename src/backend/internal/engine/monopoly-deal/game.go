@@ -56,7 +56,7 @@ func NewGame(cfg Settings, playerUUIDs []uuid.UUID) *Game {
 		properties[playerID] = PropertySets{}
 	}
 
-	return &Game{
+	g := &Game{
 		IDGenerator:   ig,
 		IDTranslator:  it,
 		Deck:          d,
@@ -70,6 +70,12 @@ func NewGame(cfg Settings, playerUUIDs []uuid.UUID) *Game {
 		Demands:       nil,
 		Config:        cfg,
 	}
+
+	firstPlayerID := g.Players[g.CurrPlayerIdx]
+	firstPlayerUUID, _ := g.IDTranslator.GetUUID(firstPlayerID)
+	_, _ = g.StartTurn(firstPlayerUUID)
+
+	return g
 }
 
 func (g *Game) Proto(playerUUID uuid.UUID, allPlayerUUIDs []uuid.UUID) *monopoly_deal_schema.GameState {
@@ -83,20 +89,10 @@ func (g *Game) Proto(playerUUID uuid.UUID, allPlayerUUIDs []uuid.UUID) *monopoly
 		Cards: hand.Proto(),
 	}
 
-	otherHands := make([]*monopoly_deal_schema.MaskedHand, 0, len(allPlayerUUIDs)-1)
 	monies := make([]*monopoly_deal_schema.Money, 0, len(allPlayerUUIDs))
 	var properties []*monopoly_deal_schema.PropertySet
 	for _, u := range allPlayerUUIDs {
 		id, _ := g.IDTranslator.GetIdentifier(u)
-
-		if u != playerUUID {
-			hand = g.Hands[id]
-
-			otherHands = append(otherHands, &monopoly_deal_schema.MaskedHand{
-				PlayerId: u.String(),
-				NumCards: int32(hand.Len()),
-			})
-		}
 
 		money := g.Money[id]
 		monies = append(monies, &monopoly_deal_schema.Money{
@@ -142,7 +138,6 @@ func (g *Game) Proto(playerUUID uuid.UUID, allPlayerUUIDs []uuid.UUID) *monopoly
 		CurrentPlayerId: currPlayerUUID.String(),
 		MovesLeft:       int32(g.MovesLeft),
 		YourHand:        handProto,
-		OtherHands:      otherHands,
 		Money:           monies,
 		Properties:      properties,
 		Demand:          demandProto,
@@ -152,8 +147,44 @@ func (g *Game) Proto(playerUUID uuid.UUID, allPlayerUUIDs []uuid.UUID) *monopoly
 	}
 }
 
-func (g *Game) checkPlayer(playerID uuid.UUID) (Identifier, error) {
-	id, ok := g.IDTranslator.GetIdentifier(playerID)
+func (g *Game) CountMoney(playerUUID uuid.UUID) (int, error) {
+	playerID, err := g.checkPlayer(playerUUID)
+	if err != nil {
+		return 0, err
+	}
+
+	money := g.Money[playerID]
+	return money.Value(), nil
+}
+
+func (g *Game) CountCompletedSets(playerUUID uuid.UUID) (int, error) {
+	playerID, err := g.checkPlayer(playerUUID)
+	if err != nil {
+		return 0, err
+	}
+
+	propertySets := g.Properties[playerID]
+	complete := 0
+	for _, propertySet := range propertySets {
+		if propertySet.IsComplete() {
+			complete++
+		}
+	}
+	return complete, nil
+}
+
+func (g *Game) CountHands(playerUUID uuid.UUID) (int, error) {
+	playerID, err := g.checkPlayer(playerUUID)
+	if err != nil {
+		return 0, err
+	}
+
+	hand := g.Hands[playerID]
+	return hand.Len(), nil
+}
+
+func (g *Game) checkPlayer(playerUUID uuid.UUID) (Identifier, error) {
+	id, ok := g.IDTranslator.GetIdentifier(playerUUID)
 	if !ok {
 		return id, errors.PlayerNotInGame
 	}
@@ -314,44 +345,59 @@ func (g *Game) getPayableCards(playerID Identifier) Cards {
 	return payable
 }
 
-func (g *Game) CompleteTurn(playerUUID uuid.UUID) error {
+func (g *Game) CompleteTurn(playerUUID uuid.UUID) (Cards, uuid.UUID, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return err
+		return nil, uuid.UUID{}, err
 	}
 
 	err = g.checkTurn(playerID)
 	if err != nil {
-		return err
+		return nil, uuid.UUID{}, err
 	}
 
 	err = g.checkDemands()
 	if err != nil {
-		return err
+		return nil, uuid.UUID{}, err
 	}
 
 	err = g.checkPendingRent()
 	if err != nil {
-		return err
+		return nil, uuid.UUID{}, err
 	}
 
 	hand := g.Hands[playerID]
 	if hand.Len() > g.Config.MaxHandSize {
-		return errors.PlayerHandHasTooManyCards
+		return nil, uuid.UUID{}, errors.PlayerHandHasTooManyCards
 	}
 
 	properties := g.Properties[playerID]
 	if !properties.Valid() {
-		return errors.InvalidPropertySets
+		return nil, uuid.UUID{}, errors.InvalidPropertySets
 	}
 
 	n := len(g.Players)
 	g.CurrPlayerIdx = (g.CurrPlayerIdx + 1) % n
 	g.MovesLeft = g.Config.MovesPerTurn
 
+	nextPlayerID := g.Players[g.CurrPlayerIdx]
+	nextPlayerUUID, _ := g.IDTranslator.GetUUID(nextPlayerID)
+	drawn := g.startTurn(nextPlayerID)
+
 	g.SequenceNum++
 
-	return nil
+	return drawn, nextPlayerUUID, nil
+}
+
+func (g *Game) startTurn(playerID Identifier) Cards {
+	hand := g.Hands[playerID]
+	drawCount := g.Config.PassGoDraw
+	if hand.Len() == 0 {
+		drawCount = g.Config.StartNumCards
+	}
+
+	drawn := g.drawCards(playerID, drawCount)
+	return drawn
 }
 
 func (g *Game) StartTurn(playerUUID uuid.UUID) (Cards, error) {
@@ -375,13 +421,7 @@ func (g *Game) StartTurn(playerUUID uuid.UUID) (Cards, error) {
 		return nil, err
 	}
 
-	hand := g.Hands[playerID]
-	drawCount := g.Config.PassGoDraw
-	if hand.Len() == 0 {
-		drawCount = g.Config.StartNumCards
-	}
-
-	drawn := g.drawCards(playerID, drawCount)
+	drawn := g.startTurn(playerID)
 
 	g.SequenceNum++
 
@@ -441,35 +481,35 @@ func (g *Game) DiscardCards(playerUUID uuid.UUID, cardIDs ...Identifier) error {
 	return nil
 }
 
-func (g *Game) PlayMoney(playerUUID uuid.UUID, cardID Identifier) error {
+func (g *Game) PlayMoney(playerUUID uuid.UUID, cardID Identifier) (Card, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return err
+		return Card{}, err
 	}
 
 	err = g.checkTurn(playerID)
 	if err != nil {
-		return err
+		return Card{}, err
 	}
 
 	card, err := g.checkCard(cardID, CategoryMoney, CategoryAction)
 	if err != nil {
-		return err
+		return Card{}, err
 	}
 
 	err = g.checkDemands()
 	if err != nil {
-		return err
+		return Card{}, err
 	}
 
 	err = g.checkPendingRent()
 	if err != nil {
-		return err
+		return Card{}, err
 	}
 
 	err = g.discardHand(playerID, cardID)
 	if err != nil {
-		return err
+		return Card{}, err
 	}
 
 	money := g.Money[playerID]
@@ -479,7 +519,7 @@ func (g *Game) PlayMoney(playerUUID uuid.UUID, cardID Identifier) error {
 	g.CompleteMove()
 	g.SequenceNum++
 
-	return nil
+	return card, nil
 }
 
 func (g *Game) PlayProperty(playerUUID uuid.UUID, cardID Identifier, propSetIDPtr *Identifier, activeColorPtr *Color) (PropertySet, error) {
@@ -529,10 +569,6 @@ func (g *Game) PlayProperty(playerUUID uuid.UUID, cardID Identifier, propSetIDPt
 		}
 
 		if !card.HasColor(propSet.Color) {
-			return PropertySet{}, errors.CardCannotBeAssignedToSet
-		}
-
-		if activeColorPtr != nil && *activeColorPtr != propSet.Color {
 			return PropertySet{}, errors.CardCannotBeAssignedToSet
 		}
 

@@ -14,7 +14,7 @@ import (
 const createGame = `-- name: CreateGame :one
    INSERT INTO game (display_name, game, game_state)
    VALUES ($1, $2, $3)
-RETURNING game_id, display_name, game, game_state, sequence_num, completed, created_at
+RETURNING game_id, display_name, game, game_state, completed, created_at
 `
 
 type CreateGameParams struct {
@@ -31,7 +31,6 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 		&i.DisplayName,
 		&i.Game,
 		&i.GameState,
-		&i.SequenceNum,
 		&i.Completed,
 		&i.CreatedAt,
 	)
@@ -39,7 +38,7 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 }
 
 const getGameByPlayer = `-- name: GetGameByPlayer :one
-SELECT g.game_id, g.display_name, g.game, g.game_state, g.sequence_num, g.completed, g.created_at
+SELECT g.game_id, g.display_name, g.game, g.game_state, g.completed, g.created_at
   FROM game g
            INNER JOIN game_player gp
            ON gp.game_id = g.game_id
@@ -55,7 +54,6 @@ func (q *Queries) GetGameByPlayer(ctx context.Context, playerID uuid.UUID) (Game
 		&i.DisplayName,
 		&i.Game,
 		&i.GameState,
-		&i.SequenceNum,
 		&i.Completed,
 		&i.CreatedAt,
 	)
@@ -64,10 +62,9 @@ func (q *Queries) GetGameByPlayer(ctx context.Context, playerID uuid.UUID) (Game
 
 const updateGameState = `-- name: UpdateGameState :one
    UPDATE game
-      SET game_state = $1,
-          sequence_num = sequence_num + 1
+      SET game_state = $1
     WHERE game_id = $2
-RETURNING game_id, display_name, game, game_state, sequence_num, completed, created_at
+RETURNING game_id, display_name, game, game_state, completed, created_at
 `
 
 type UpdateGameStateParams struct {
@@ -83,7 +80,6 @@ func (q *Queries) UpdateGameState(ctx context.Context, arg UpdateGameStateParams
 		&i.DisplayName,
 		&i.Game,
 		&i.GameState,
-		&i.SequenceNum,
 		&i.Completed,
 		&i.CreatedAt,
 	)

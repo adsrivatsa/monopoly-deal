@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
+	stderrors "errors"
 	"fun-kames/internal/errors"
 	"fun-kames/internal/schema"
+	"fun-kames/internal/schema/monopoly_deal_schema"
 	"fun-kames/internal/token"
 	"net/http"
 )
@@ -71,17 +72,32 @@ func (s *Server) handleClientMonopolyDealMessages(ctx context.Context, sock *soc
 			return
 		}
 
-		fmt.Println(msg)
+		switch p := msg.GetPayload().(type) {
+		case *schema.ClientMessage_MonopolyDealMessage:
+			err := s.services.HandleMonopolyDealEvent(ctx, tp, p)
+			if err != nil {
+				var intErr errors.Error
+				if !stderrors.As(err, &intErr) {
+					intErr = errors.Internal(err)
+				}
 
-		//switch p := msg.GetPayload().(type) {
-		//case *schema.ClientMessage_RoomMessage:
-		//	err := s.services.HandleRoomEvent(ctx, tp, p)
-		//	if err != nil {
-		//		fmt.Println(err)
-		//	}
-		//default:
-		//	sock.error(errors.InvalidMessageType[schema.ClientMessage]())
-		//	return
-		//}
+				sock.send(&schema.ServerMessage{
+					Payload: &schema.ServerMessage_MonopolyDealMessage{
+						MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
+							Payload: &monopoly_deal_schema.ServerMessage_Error{
+								Error: &monopoly_deal_schema.Error{
+									Message: intErr.Message,
+									Status:  int32(intErr.Status),
+									Code:    intErr.Code,
+								},
+							},
+						},
+					},
+				})
+			}
+		default:
+			sock.error(errors.InvalidMessageType[schema.ClientMessage_MonopolyDealMessage]())
+			return
+		}
 	}
 }

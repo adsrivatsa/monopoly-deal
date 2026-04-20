@@ -10,6 +10,15 @@ message Error {
   string code = 3;
 }
 
+message Chat {
+  string payload = 1;
+}
+
+message ChatReceived {
+  string player_id = 1;
+  string payload = 2;
+}
+
 enum AssetKey {
   ASSET_KEY_UNSPECIFIED = 0;
 
@@ -20,7 +29,7 @@ enum AssetKey {
   ASSET_KEY_VERMONT_AVE = 5;
   ASSET_KEY_ST_CHARLES_PLACE = 6;
   ASSET_KEY_VIRGINIA_AVE = 7;
-  ASSET_KEY_STATE_AVE = 8;
+  ASSET_KEY_STATES_AVE = 8;
   ASSET_KEY_NEW_YORK_AVE = 9;
   ASSET_KEY_ST_JAMES_PLACE = 10;
   ASSET_KEY_TENNESSEE_AVE = 11;
@@ -88,7 +97,7 @@ enum Category {
 
 enum Color {
   COLOR_UNSPECIFIED = 0;
-  
+
   COLOR_BROWN = 1;
   COLOR_SKY = 2;
   COLOR_PINK = 3;
@@ -114,15 +123,13 @@ message Player {
   string player_id = 1;
   string display_name = 2;
   string avatar_url = 3;
+  int32 money = 4;
+  int32 completed_sets = 5;
+  int32 hand_cards = 6;
 }
 
 message Hand {
   repeated Card cards = 1;
-}
-
-message MaskedHand {
-  string player_id = 1;
-  int32 num_cards = 2;
 }
 
 message Money {
@@ -187,23 +194,19 @@ message GameState {
   string current_player_id = 3;
   int32 moves_left = 4;
   Hand your_hand = 5;
-  repeated MaskedHand other_hands = 6;
-  repeated Money money = 7;
-  repeated PropertySet properties = 8;
-  optional Demand demand = 9;
-  optional PendingRent pending_rent = 10;
-  Card last_action = 11;
-  repeated AssetImage asset_images = 12;
-}
-
-message StartTurn {
-
+  repeated Money money = 6;
+  repeated PropertySet properties = 7;
+  optional Demand demand = 8;
+  optional PendingRent pending_rent = 9;
+  Card last_action = 10;
+  repeated AssetImage asset_images = 11;
 }
 
 message StartTurnRes {
   int32 seq_num = 1;
   string player_id = 2;
   repeated Card cards = 3;
+  int32 moves_left = 4;
 }
 
 message StartTurnMaskedRes {
@@ -242,64 +245,48 @@ message PlayPropertyRes {
   PropertySet property_set = 3;
 }
 
+message CompleteTurn {
+
+}
+
+message PlayPassGo {
+  string card_id = 1;
+}
+
+message PlayPassGoRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  repeated Card cards = 3;
+  Card last_played_card = 4;
+}
+
+message PlayPassGoMaskedRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  int32 num_cards = 3;
+  Card last_played_card = 4;
+}
+
 message ClientMessage {
   oneof payload {
-    StartTurn start_turn = 1;
+    Chat chat = 1;
     PlayMoney play_money = 2;
     PlayProperty play_property = 3;
+    CompleteTurn complete_turn = 4;
+    PlayPassGo play_pass_go = 5;
   }
 }
 
 message ServerMessage {
   oneof payload {
     Error error = 1;
-    GameState game_state = 2;
-    StartTurnRes start_turn_res = 3;
-    StartTurnMaskedRes start_turn_masked_res = 4;
-    PlayMoneyRes play_money_res = 5;
-    PlayPropertyRes play_property_res = 6;
+    ChatReceived chat_received = 2;
+    GameState game_state = 3;
+    StartTurnRes start_turn_res = 4;
+    StartTurnMaskedRes start_turn_masked_res = 5;
+    PlayMoneyRes play_money_res = 6;
+    PlayPropertyRes play_property_res = 7;
+    PlayPassGoRes play_pass_go_res = 8;
+    PlayPassGoMaskedRes play_pass_go_masked_res = 9;
   }
 }
-
-//
-//message GameMessage {
-//  oneof payload {
-//    Ping ping = 1;
-//    Error error = 2;
-//
-//    PlayProperty play_property = 10;
-//    PlayMoney play_money = 11;
-//
-//    PassGo pass_go = 15;
-//    PassGoResponse pass_go_res = 16;
-//
-//    DoubleTheRent double_the_rent = 20;
-//
-//    ItsMyBirthday its_my_birthday = 25;
-//    ItsMyBirthdayResponse its_my_birthday_res = 26;
-//
-//    House house = 30;
-//
-//    SlyDeal sly_deal = 35;
-//    SlyDealResponse sly_deal_res = 36;
-//
-//    ForcedDeal forced_deal = 40;
-//    ForcedDealResponse forced_deal_res = 41;
-//
-//    DebtCollector debt_collector = 45;
-//    DebtCollectorResponse debt_collector_res = 46;
-//
-//    Hotel hotel = 50;
-//
-//    JustSayNoResponse just_say_no_res = 55;
-//
-//    DealBreaker deal_breaker = 60;
-//    DealBreakerResponse deal_breaker_res = 61;
-//
-//    Rent rent = 65;
-//    RentResponse rent_res = 66;
-//
-//    WildRent wild_rent = 70;
-//    WildRentResponse wild_rent_res = 71;
-//  }
-//}

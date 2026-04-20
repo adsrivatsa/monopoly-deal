@@ -72,7 +72,6 @@ type Game struct {
 	DisplayName string    `json:"display_name"`
 	Game        GameType  `json:"game"`
 	GameState   []byte    `json:"game_state"`
-	SequenceNum int16     `json:"sequence_num"`
 	Completed   bool      `json:"completed"`
 	CreatedAt   time.Time `json:"created_at"`
 }

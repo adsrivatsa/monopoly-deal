@@ -294,7 +294,7 @@ func (s *Server) handleClientRoomMessages(ctx context.Context, sock *socket, tp 
 				fmt.Println(err)
 			}
 		default:
-			sock.error(errors.InvalidMessageType[schema.ClientMessage]())
+			sock.error(errors.InvalidMessageType[schema.ClientMessage_RoomMessage]())
 			return
 		}
 	}
