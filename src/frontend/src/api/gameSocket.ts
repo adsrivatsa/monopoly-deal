@@ -104,3 +104,226 @@ export const sendGamePlayPassGoMessage = (socket: WebSocket, cardId: string) => 
 
   socket.send(message);
 };
+
+export const sendGamePlayItsMyBirthdayMessage = (
+  socket: WebSocket,
+  cardId: string,
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playItsMyBirthday: {
+        cardId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGamePlayDebtCollectorMessage = (
+  socket: WebSocket,
+  payload: {
+    cardId: string;
+    targetId: string;
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playDebtCollector: {
+        cardId: payload.cardId,
+        targetId: payload.targetId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGamePlayRentMessage = (socket: WebSocket, cardId: string) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playRent: {
+        cardId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGamePlayWildRentMessage = (
+  socket: WebSocket,
+  payload: {
+    cardId: string;
+    targetId: string;
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playWildRent: {
+        cardId: payload.cardId,
+        targetId: payload.targetId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGamePlaySlyDealMessage = (
+  socket: WebSocket,
+  payload: {
+    cardId: string;
+    targetId: string;
+    targetCardId: string;
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playSlyDeal: {
+        cardId: payload.cardId,
+        targetId: payload.targetId,
+        targetCardId: payload.targetCardId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGamePlayForcedDealMessage = (
+  socket: WebSocket,
+  payload: {
+    cardId: string;
+    targetId: string;
+    sourceCardId: string;
+    targetCardId: string;
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playForcedDeal: {
+        cardId: payload.cardId,
+        targetId: payload.targetId,
+        sourceCardId: payload.sourceCardId,
+        targetCardId: payload.targetCardId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGamePlayDoubleTheRentMessage = (
+  socket: WebSocket,
+  cardId: string,
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playDoubleTheRent: {
+        cardId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGameResolvePendingRentMessage = (socket: WebSocket) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      resolvePendingRent: {},
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGameRearrangeCardMessage = (
+  socket: WebSocket,
+  payload: {
+    cardId: string;
+    propertySetId?: string;
+    color?: number;
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      rearrangeCard: {
+        cardId: payload.cardId,
+        propertySetId: payload.propertySetId,
+        color: payload.color,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGameDiscardCardsMessage = (
+  socket: WebSocket,
+  cardIds: string[],
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      discardCards: {
+        cardIds,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGameDenyDemandMessage = (
+  socket: WebSocket,
+  payload: {
+    demandId: string;
+    cardId: string;
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      denyDemand: {
+        demandId: payload.demandId,
+        cardId: payload.cardId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGameComplyPaymentDemandMessage = (
+  socket: WebSocket,
+  payload: {
+    demandId: string;
+    cardIds: string[];
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      complyPaymentDemand: {
+        demandId: payload.demandId,
+        cardIds: payload.cardIds,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGameComplyPropertyDemandMessage = (
+  socket: WebSocket,
+  demandId: string,
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      complyPropertyDemand: {
+        demandId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};

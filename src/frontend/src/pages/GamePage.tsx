@@ -4,9 +4,22 @@ import {
   connectGameSocket,
   decodeGameServerMessage,
   sendGameChatMessage,
+  sendGameComplyPaymentDemandMessage,
   sendGameCompleteTurnMessage,
   sendGamePlayMoneyMessage,
+  sendGamePlayItsMyBirthdayMessage,
+  sendGamePlayDebtCollectorMessage,
+  sendGamePlayDoubleTheRentMessage,
   sendGamePlayPassGoMessage,
+  sendGamePlayRentMessage,
+  sendGamePlaySlyDealMessage,
+  sendGamePlayForcedDealMessage,
+  sendGamePlayWildRentMessage,
+  sendGameComplyPropertyDemandMessage,
+  sendGameRearrangeCardMessage,
+  sendGameDiscardCardsMessage,
+  sendGameDenyDemandMessage,
+  sendGameResolvePendingRentMessage,
   sendGamePlayPropertyMessage,
   toGameServerMessageJson,
 } from "../api/gameSocket";
@@ -23,6 +36,7 @@ import {
   type AssetImage,
   type Card,
   type GameState,
+  type PropertySet,
   type Player,
 } from "../generated/monopoly_deal";
 
@@ -42,9 +56,51 @@ const toAssetImageMap = (assetImages: AssetImage[]): Record<number, string> => {
   }, {});
 };
 
+const toClientGameError = (error: unknown, code: string): GameError => {
+  if (error && typeof error === "object" && "message" in error) {
+    const message = String((error as { message: unknown }).message);
+    return {
+      message,
+      code,
+      status: 0,
+    };
+  }
+
+  return {
+    message: "Unexpected client-side error.",
+    code,
+    status: 0,
+  };
+};
+
+const toCardIdSet = (cards: Card[]): Set<string> => {
+  return new Set(cards.map((card) => card.cardId));
+};
+
+const toPropertySetCardIdSet = (propertySets: PropertySet[]): Set<string> => {
+  const cardIds = new Set<string>();
+  for (const propertySet of propertySets) {
+    for (const card of propertySet.cards) {
+      cardIds.add(card.cardId);
+    }
+  }
+  return cardIds;
+};
+
+const isNormalRentAssetKey = (assetKey: AssetKey): boolean => {
+  return (
+    assetKey === AssetKey.ASSET_KEY_RENT_BROWN_SKY ||
+    assetKey === AssetKey.ASSET_KEY_RENT_PINK_ORANGE ||
+    assetKey === AssetKey.ASSET_KEY_RENT_RED_YELLOW ||
+    assetKey === AssetKey.ASSET_KEY_RENT_GREEN_BLUE ||
+    assetKey === AssetKey.ASSET_KEY_RENT_UTILITY_RAILROAD
+  );
+};
+
 const GamePage = () => {
   const { game_id: gameId } = useParams();
   const socketRef = useRef<WebSocket | null>(null);
+  const lastAutoCompletedTurnKeyRef = useRef<string | null>(null);
   const [initialGameState, setInitialGameState] = useState<GameState | null>(
     null,
   );
@@ -62,16 +118,76 @@ const GamePage = () => {
   );
   const [chatMessages, setChatMessages] = useState<GameChatMessage[]>([]);
   const [modalError, setModalError] = useState<GameError | null>(null);
+  const [selectedDiscardCardIds, setSelectedDiscardCardIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  const handCards = initialGameState?.yourHand?.cards ?? [];
+  const handCardIdsKey = handCards.map((card) => card.cardId).join("|");
+  const maxHandSize = initialGameState?.maxHandSize ?? 0;
+  const discardRequiredCount = Math.max(0, handCards.length - maxHandSize);
+  const isSelfTurn = !!selfPlayerId && selfPlayerId === currentTurnPlayerId;
+  const isDiscardRequired =
+    isSelfTurn &&
+    movesLeft <= 0 &&
+    discardRequiredCount > 0;
+
+  useEffect(() => {
+    if (!isSelfTurn) {
+      lastAutoCompletedTurnKeyRef.current = null;
+      return;
+    }
+
+    if (movesLeft > 0 || isDiscardRequired) {
+      return;
+    }
+
+    const seqNum = initialGameState?.seqNum ?? -1;
+    const turnKey = `${currentTurnPlayerId ?? ""}:${seqNum}`;
+    if (lastAutoCompletedTurnKeyRef.current === turnKey) {
+      return;
+    }
+
+    const socket = socketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.log("[game-ws] auto complete turn skipped; socket not open");
+      return;
+    }
+
+    lastAutoCompletedTurnKeyRef.current = turnKey;
+    console.log("[game-ui] auto complete turn sent", {
+      movesLeft,
+      discardRequiredCount,
+      seqNum,
+    });
+    sendGameCompleteTurnMessage(socket);
+  }, [
+    currentTurnPlayerId,
+    discardRequiredCount,
+    initialGameState?.seqNum,
+    isDiscardRequired,
+    isSelfTurn,
+    movesLeft,
+  ]);
 
   useEffect(() => {
     void (async () => {
-      const response = await getPlayer();
-      if (!response.ok) {
-        return;
-      }
+      try {
+        const response = await getPlayer();
+        if (!response.ok) {
+          setModalError({
+            message: "Could not load current player details.",
+            code: "PLAYER_LOOKUP_FAILED",
+            status: response.status,
+          });
+          return;
+        }
 
-      const data = (await response.json()) as { player_id: string };
-      setSelfPlayerId(data.player_id);
+        const data = (await response.json()) as { player_id: string };
+        setSelfPlayerId(data.player_id);
+      } catch (error) {
+        setModalError(toClientGameError(error, "PLAYER_LOOKUP_CRASH"));
+      }
     })();
   }, []);
 
@@ -299,6 +415,7 @@ const GamePage = () => {
           }
 
           if (playMoneyRes?.card) {
+            const playedMoneyCard = playMoneyRes.card;
             setInitialGameState((current) => {
               if (!current) {
                 return current;
@@ -312,13 +429,13 @@ const GamePage = () => {
               if (moneyIndex === -1) {
                 nextMoney.push({
                   playerId: playMoneyRes.playerId,
-                  cards: [playMoneyRes.card],
+                  cards: [playedMoneyCard],
                 });
               } else {
                 const existingPile = nextMoney[moneyIndex];
                 nextMoney[moneyIndex] = {
                   ...existingPile,
-                  cards: [...existingPile.cards, playMoneyRes.card],
+                  cards: [...existingPile.cards, playedMoneyCard],
                 };
               }
 
@@ -328,7 +445,7 @@ const GamePage = () => {
                     ...current.yourHand,
                     cards:
                       current.yourHand?.cards.filter(
-                        (card) => card.cardId !== playMoneyRes.card?.cardId,
+                        (card) => card.cardId !== playedMoneyCard.cardId,
                       ) ?? [],
                   }
                 : current.yourHand;
@@ -377,26 +494,27 @@ const GamePage = () => {
           }
 
           if (playPropertyRes?.propertySet) {
+            const playedPropertySet = playPropertyRes.propertySet;
             setInitialGameState((current) => {
               if (!current) {
                 return current;
               }
 
               const playedCardId =
-                playPropertyRes.propertySet.cards.at(-1)?.cardId;
+                playedPropertySet.cards.at(-1)?.cardId;
 
               const nextProperties = [...current.properties];
               const propertyIndex = nextProperties.findIndex((propertySet) => {
                 return (
                   propertySet.propertySetId ===
-                  playPropertyRes.propertySet?.propertySetId
+                  playedPropertySet.propertySetId
                 );
               });
 
               if (propertyIndex === -1) {
-                nextProperties.push(playPropertyRes.propertySet);
+                nextProperties.push(playedPropertySet);
               } else {
-                nextProperties[propertyIndex] = playPropertyRes.propertySet;
+                nextProperties[propertyIndex] = playedPropertySet;
               }
 
               const isSelfPlay = selfPlayerId === playPropertyRes.playerId;
@@ -545,15 +663,497 @@ const GamePage = () => {
             });
           }
 
+          const playActionRes = message.monopolyDealMessage?.playActionRes;
+          if (playActionRes) {
+            const isSelfPlay =
+              !!selfPlayerId && playActionRes.playerId === selfPlayerId;
+            if (isSelfPlay) {
+              setMovesLeft((current) => Math.max(0, current - 1));
+            }
+
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const playedCardId = playActionRes.lastPlayedCard?.cardId;
+              const nextPlayers = current.players.map((player) => {
+                if (!isSelfPlay || player.playerId !== playActionRes.playerId) {
+                  return player;
+                }
+
+                return {
+                  ...player,
+                  handCards: Math.max(0, player.handCards - 1),
+                };
+              });
+
+              const nextYourHand =
+                isSelfPlay && playedCardId
+                  ? {
+                      ...current.yourHand,
+                      cards:
+                        current.yourHand?.cards.filter((card) => {
+                          return card.cardId !== playedCardId;
+                        }) ?? [],
+                    }
+                  : current.yourHand;
+
+              return {
+                ...current,
+                seqNum: playActionRes.seqNum,
+                players: nextPlayers,
+                yourHand: nextYourHand,
+                lastAction: playActionRes.lastPlayedCard,
+              };
+            });
+
+            if (isSelfPlay) {
+              setPlayers((currentPlayers) => {
+                return currentPlayers.map((player) => {
+                  if (player.playerId !== playActionRes.playerId) {
+                    return player;
+                  }
+
+                  return {
+                    ...player,
+                    handCards: Math.max(0, player.handCards - 1),
+                  };
+                });
+              });
+            }
+          }
+
+          const demandCreated = message.monopolyDealMessage?.demandCreated;
+          if (demandCreated) {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const incomingDemand = demandCreated.demand;
+              if (!incomingDemand) {
+                return {
+                  ...current,
+                  pendingRent: undefined,
+                };
+              }
+
+              const nextDemands = current.demands.some((demand) => {
+                return demand.id === incomingDemand.id;
+              })
+                ? current.demands.map((demand) => {
+                    return demand.id === incomingDemand.id ? incomingDemand : demand;
+                  })
+                : [...current.demands, incomingDemand];
+
+              return {
+                ...current,
+                demands: nextDemands,
+                pendingRent: undefined,
+              };
+            });
+          }
+
+          const demandDenied = message.monopolyDealMessage?.demandDenied;
+          if (demandDenied) {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const hasMatchingDemand = current.demands.some((demand) => {
+                return demand.id === demandDenied.demandId;
+              });
+              if (!hasMatchingDemand) {
+                return current;
+              }
+
+              return {
+                ...current,
+                seqNum: demandDenied.seqNum,
+                demands: current.demands.filter((demand) => {
+                  return demand.id !== demandDenied.demandId;
+                }),
+              };
+            });
+          }
+
+          const compliedDemand = message.monopolyDealMessage?.compliedDemand;
+          if (compliedDemand) {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              return {
+                ...current,
+                seqNum: compliedDemand.seqNum,
+                demands: current.demands.filter((demand) => {
+                  return demand.id !== compliedDemand.demandId;
+                }),
+              };
+            });
+          }
+
+          const transferProperty = message.monopolyDealMessage?.transferProperty;
+          if (transferProperty) {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const sourceId = transferProperty.sourceId;
+              const targetId = transferProperty.targetId;
+              const nextSourceSets = transferProperty.sourcePropertySets.map((propertySet) => {
+                return {
+                  ...propertySet,
+                  playerId: sourceId,
+                };
+              });
+              const nextTargetSets = transferProperty.targetPropertySets.map((propertySet) => {
+                return {
+                  ...propertySet,
+                  playerId: targetId,
+                };
+              });
+
+              const sourceTransferredCardIds = new Set<string>();
+              for (const propertySet of nextSourceSets) {
+                for (const card of propertySet.cards) {
+                  sourceTransferredCardIds.add(card.cardId);
+                }
+              }
+
+              const targetTransferredCardIds = new Set<string>();
+              for (const propertySet of nextTargetSets) {
+                for (const card of propertySet.cards) {
+                  targetTransferredCardIds.add(card.cardId);
+                }
+              }
+
+              const prunedProperties = current.properties
+                .map((propertySet) => {
+                  if (propertySet.playerId === targetId && sourceTransferredCardIds.size > 0) {
+                    return {
+                      ...propertySet,
+                      cards: propertySet.cards.filter(
+                        (card) => !sourceTransferredCardIds.has(card.cardId),
+                      ),
+                    };
+                  }
+
+                  if (propertySet.playerId === sourceId && targetTransferredCardIds.size > 0) {
+                    return {
+                      ...propertySet,
+                      cards: propertySet.cards.filter(
+                        (card) => !targetTransferredCardIds.has(card.cardId),
+                      ),
+                    };
+                  }
+
+                  return propertySet;
+                })
+                .filter((propertySet) => propertySet.cards.length > 0);
+
+              const upsertSetMap = new Map<string, (typeof prunedProperties)[number]>();
+              for (const propertySet of prunedProperties) {
+                upsertSetMap.set(propertySet.propertySetId, propertySet);
+              }
+              for (const propertySet of nextSourceSets) {
+                upsertSetMap.set(propertySet.propertySetId, propertySet);
+              }
+              for (const propertySet of nextTargetSets) {
+                upsertSetMap.set(propertySet.propertySetId, propertySet);
+              }
+
+              return {
+                ...current,
+                seqNum: transferProperty.seqNum,
+                properties: Array.from(upsertSetMap.values()),
+              };
+            });
+          }
+
+          const pendingRentCreated =
+            message.monopolyDealMessage?.pendingRentCreated;
+          if (pendingRentCreated) {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              return {
+                ...current,
+                pendingRent: pendingRentCreated.pendingRent,
+                demands: [],
+              };
+            });
+          }
+
+          const pendingRentResolved =
+            message.monopolyDealMessage?.pendingRentResolved;
+          if (pendingRentResolved) {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              return {
+                ...current,
+                seqNum: pendingRentResolved.seqNum,
+                pendingRent: undefined,
+              };
+            });
+          }
+
+          const discardCardsRes = message.monopolyDealMessage?.discardCardsRes;
+          if (discardCardsRes) {
+            const discardedCardIds = new Set(
+              discardCardsRes.cards.map((card) => card.cardId),
+            );
+            const discardedCount = discardCardsRes.cards.length;
+
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const nextPlayers = current.players.map((player) => {
+                if (player.playerId !== discardCardsRes.playerId) {
+                  return player;
+                }
+
+                return {
+                  ...player,
+                  handCards: Math.max(0, player.handCards - discardedCount),
+                };
+              });
+
+              const nextYourHand =
+                discardCardsRes.playerId === selfPlayerId
+                  ? {
+                      ...current.yourHand,
+                      cards:
+                        current.yourHand?.cards.filter((card) => {
+                          return !discardedCardIds.has(card.cardId);
+                        }) ?? [],
+                    }
+                  : current.yourHand;
+
+              return {
+                ...current,
+                seqNum: discardCardsRes.seqNum,
+                players: nextPlayers,
+                yourHand: nextYourHand,
+              };
+            });
+
+            setPlayers((currentPlayers) => {
+              return currentPlayers.map((player) => {
+                if (player.playerId !== discardCardsRes.playerId) {
+                  return player;
+                }
+
+                return {
+                  ...player,
+                  handCards: Math.max(0, player.handCards - discardedCount),
+                };
+              });
+            });
+
+            if (discardCardsRes.playerId === selfPlayerId) {
+              setSelectedDiscardCardIds(new Set());
+            }
+          }
+
+          const discardCardsMaskedRes =
+            message.monopolyDealMessage?.discardCardsMaskedRes;
+          if (discardCardsMaskedRes) {
+            const discardedCount = discardCardsMaskedRes.numCards;
+
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const nextPlayers = current.players.map((player) => {
+                if (player.playerId !== discardCardsMaskedRes.playerId) {
+                  return player;
+                }
+
+                return {
+                  ...player,
+                  handCards: Math.max(0, player.handCards - discardedCount),
+                };
+              });
+
+              return {
+                ...current,
+                seqNum: discardCardsMaskedRes.seqNum,
+                players: nextPlayers,
+              };
+            });
+
+            setPlayers((currentPlayers) => {
+              return currentPlayers.map((player) => {
+                if (player.playerId !== discardCardsMaskedRes.playerId) {
+                  return player;
+                }
+
+                return {
+                  ...player,
+                  handCards: Math.max(0, player.handCards - discardedCount),
+                };
+              });
+            });
+          }
+
+          const rearrangeCardRes = message.monopolyDealMessage?.rearrangeCardRes;
+          if (rearrangeCardRes?.propertySet) {
+            const movedCardId = rearrangeCardRes.card?.cardId;
+            const targetPropertySet = rearrangeCardRes.propertySet;
+
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const nextProperties = current.properties
+                .map((propertySet) => {
+                  if (propertySet.playerId !== rearrangeCardRes.playerId) {
+                    return propertySet;
+                  }
+
+                  return {
+                    ...propertySet,
+                    cards: movedCardId
+                      ? propertySet.cards.filter((card) => card.cardId !== movedCardId)
+                      : propertySet.cards,
+                  };
+                })
+                .filter((propertySet) => {
+                  return (
+                    propertySet.playerId !== rearrangeCardRes.playerId ||
+                    propertySet.cards.length > 0
+                  );
+                });
+
+              const targetIndex = nextProperties.findIndex((propertySet) => {
+                return propertySet.propertySetId === targetPropertySet.propertySetId;
+              });
+
+              if (targetIndex === -1) {
+                nextProperties.push(targetPropertySet);
+              } else {
+                nextProperties[targetIndex] = targetPropertySet;
+              }
+
+              return {
+                ...current,
+                seqNum: rearrangeCardRes.seqNum,
+                properties: nextProperties,
+              };
+            });
+          }
+
+          const transferCards = message.monopolyDealMessage?.transferCards;
+          if (transferCards) {
+            const sourceId = transferCards.sourceId;
+            const targetId = transferCards.targetId;
+            const isSelfSource = !!selfPlayerId && selfPlayerId === sourceId;
+            const transferredMoneyCards = transferCards.cards;
+            const transferredPropertySets = transferCards.propertySets;
+            const moneyCardIds = toCardIdSet(transferredMoneyCards);
+            const propertySetCardIds = toPropertySetCardIdSet(transferredPropertySets);
+            const sourcePropertyCardIdsToRemove = new Set<string>([
+              ...moneyCardIds,
+              ...propertySetCardIds,
+            ]);
+
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const nextMoney = current.money.map((moneyPile) => {
+                if (moneyPile.playerId === sourceId) {
+                  return {
+                    ...moneyPile,
+                    cards: moneyPile.cards.filter(
+                      (card) => !moneyCardIds.has(card.cardId),
+                    ),
+                  };
+                }
+
+                if (moneyPile.playerId === targetId) {
+                  return {
+                    ...moneyPile,
+                    cards: [...moneyPile.cards, ...transferredMoneyCards],
+                  };
+                }
+
+                return moneyPile;
+              });
+
+              const hasTargetMoneyPile = nextMoney.some(
+                (moneyPile) => moneyPile.playerId === targetId,
+              );
+              if (!hasTargetMoneyPile && transferredMoneyCards.length > 0) {
+                nextMoney.push({
+                  playerId: targetId,
+                  cards: transferredMoneyCards,
+                });
+              }
+
+              const nextProperties = current.properties
+                .map((propertySet) => {
+                  if (propertySet.playerId !== sourceId) {
+                    return propertySet;
+                  }
+
+                  return {
+                    ...propertySet,
+                    cards: propertySet.cards.filter(
+                      (card) => !sourcePropertyCardIdsToRemove.has(card.cardId),
+                    ),
+                  };
+                })
+                .filter((propertySet) => propertySet.cards.length > 0);
+
+              const targetPropertySets = transferredPropertySets.map((propertySet) => {
+                return {
+                  ...propertySet,
+                  playerId: targetId,
+                };
+              });
+
+              return {
+                ...current,
+                money: nextMoney,
+                properties: [...nextProperties, ...targetPropertySets],
+                demands: isSelfSource
+                  ? current.demands.filter((demand) => demand.sourceId !== sourceId)
+                  : current.demands,
+              };
+            });
+          }
+
           console.log("[game-ws] message", toGameServerMessageJson(message));
         } catch (error) {
           console.error("[game-ws] failed to decode message", error);
+          setModalError(toClientGameError(error, "WS_MESSAGE_DECODE_FAILED"));
         }
       })();
     };
 
     socket.onerror = (event) => {
       console.log("[game-ws] error", event);
+      setModalError({
+        message: "Game connection encountered an error. Reconnect to continue.",
+        code: "WS_CONNECTION_ERROR",
+        status: 0,
+      });
     };
 
     socket.onclose = (event) => {
@@ -569,6 +1169,45 @@ const GamePage = () => {
       socket.close();
     };
   }, [gameId, selfPlayerId]);
+
+  useEffect(() => {
+    if (!isDiscardRequired) {
+      setSelectedDiscardCardIds((current) => {
+        if (current.size === 0) {
+          return current;
+        }
+
+        return new Set();
+      });
+      return;
+    }
+
+    setSelectedDiscardCardIds((current) => {
+      const validCardIds = new Set(handCards.map((card) => card.cardId));
+      const next = new Set<string>();
+      for (const cardId of current) {
+        if (validCardIds.has(cardId)) {
+          next.add(cardId);
+        }
+      }
+
+       if (next.size === current.size) {
+        let hasDifference = false;
+        for (const cardId of next) {
+          if (!current.has(cardId)) {
+            hasDifference = true;
+            break;
+          }
+        }
+
+        if (!hasDifference) {
+          return current;
+        }
+      }
+
+      return next;
+    });
+  }, [handCardIdsKey, handCards, isDiscardRequired]);
 
   const handleSendChatMessage = useCallback((payload: string) => {
     const socket = socketRef.current;
@@ -633,7 +1272,21 @@ const GamePage = () => {
       });
 
       if (!card || card.category !== Category.CATEGORY_ACTION) {
-        console.log("[game-ui] play pass-go blocked by frontend checks", {
+        console.log("[game-ui] action-pile play blocked by frontend checks", {
+          cardId,
+        });
+        return;
+      }
+
+      if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
+        console.log("[game-ui] action-pile play blocked; not your turn", {
+          cardId,
+        });
+        return;
+      }
+
+      if (movesLeft <= 0) {
+        console.log("[game-ui] action-pile play blocked; no moves left", {
           cardId,
         });
         return;
@@ -641,14 +1294,34 @@ const GamePage = () => {
 
       const socket = socketRef.current;
       if (!socket || socket.readyState !== WebSocket.OPEN) {
-        console.log("[game-ws] play pass-go skipped; socket not open");
+        console.log("[game-ws] action-pile play skipped; socket not open");
         return;
       }
 
-      console.log("[game-ui] play pass-go sent", { cardId });
-      sendGamePlayPassGoMessage(socket, cardId);
+      if (card.assetKey === AssetKey.ASSET_KEY_PASS_GO) {
+        console.log("[game-ui] play pass-go sent", { cardId });
+        sendGamePlayPassGoMessage(socket, cardId);
+        return;
+      }
+
+      if (card.assetKey === AssetKey.ASSET_KEY_ITS_MY_BIRTHDAY) {
+        console.log("[game-ui] play-its-my-birthday sent", { cardId });
+        sendGamePlayItsMyBirthdayMessage(socket, cardId);
+        return;
+      }
+
+      if (isNormalRentAssetKey(card.assetKey)) {
+        console.log("[game-ui] play-rent sent", { cardId });
+        sendGamePlayRentMessage(socket, cardId);
+        return;
+      }
+
+      console.log("[game-ui] action-pile play blocked; unsupported action", {
+        cardId,
+        assetKey: card.assetKey,
+      });
     },
-    [initialGameState],
+    [currentTurnPlayerId, initialGameState, movesLeft, selfPlayerId],
   );
 
   const canPlayPropertyCard = useCallback(
@@ -711,6 +1384,310 @@ const GamePage = () => {
     [canPlayPropertyCard, initialGameState],
   );
 
+  const handleRearrangeCard = useCallback(
+    (cardId: string, propertySetId?: string, color?: Color) => {
+      if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
+        console.log("[game-ui] rearrange blocked; not your turn", {
+          cardId,
+        });
+        return;
+      }
+
+      const ownPropertySets = initialGameState?.properties.filter((propertySet) => {
+        return propertySet.playerId === selfPlayerId;
+      });
+      const card = ownPropertySets
+        ?.flatMap((propertySet) => propertySet.cards)
+        .find((candidate) => candidate.cardId === cardId);
+
+      if (
+        !card ||
+        (card.category !== Category.CATEGORY_PURE_PROPERTY &&
+          card.category !== Category.CATEGORY_WILD_PROPERTY)
+      ) {
+        console.log("[game-ui] rearrange blocked; invalid card", {
+          cardId,
+        });
+        return;
+      }
+
+      const socket = socketRef.current;
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        console.log("[game-ws] rearrange skipped; socket not open");
+        return;
+      }
+
+      sendGameRearrangeCardMessage(socket, {
+        cardId,
+        propertySetId,
+        color,
+      });
+    },
+    [currentTurnPlayerId, initialGameState, selfPlayerId],
+  );
+
+  const handlePlayDebtCollectorCard = useCallback(
+    (cardId: string, targetPlayerId: string) => {
+      const card = initialGameState?.yourHand?.cards.find((candidate) => {
+        return candidate.cardId === cardId;
+      });
+
+      if (!card || card.category !== Category.CATEGORY_ACTION) {
+        console.log("[game-ui] play debt collector blocked by frontend checks", {
+          cardId,
+          targetPlayerId,
+        });
+        return;
+      }
+
+      if (card.assetKey !== AssetKey.ASSET_KEY_DEBT_COLLECTOR) {
+        console.log("[game-ui] play debt collector blocked; wrong card", {
+          cardId,
+          assetKey: card.assetKey,
+        });
+        return;
+      }
+
+      if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
+        console.log("[game-ui] play debt collector blocked; not your turn", {
+          cardId,
+        });
+        return;
+      }
+
+      if (movesLeft <= 0) {
+        console.log("[game-ui] play debt collector blocked; no moves left", {
+          cardId,
+        });
+        return;
+      }
+
+      if (!targetPlayerId || targetPlayerId === selfPlayerId) {
+        console.log("[game-ui] play debt collector blocked; invalid target", {
+          cardId,
+          targetPlayerId,
+        });
+        return;
+      }
+
+      const socket = socketRef.current;
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        console.log("[game-ws] play debt collector skipped; socket not open");
+        return;
+      }
+
+      console.log("[game-ui] play debt collector sent", {
+        cardId,
+        targetPlayerId,
+      });
+      sendGamePlayDebtCollectorMessage(socket, {
+        cardId,
+        targetId: targetPlayerId,
+      });
+    },
+    [currentTurnPlayerId, initialGameState, movesLeft, selfPlayerId],
+  );
+
+  const handlePlayWildRentCard = useCallback(
+    (cardId: string, targetPlayerId: string) => {
+      const card = initialGameState?.yourHand?.cards.find((candidate) => {
+        return candidate.cardId === cardId;
+      });
+
+      if (!card || card.category !== Category.CATEGORY_ACTION) {
+        console.log("[game-ui] play wild rent blocked by frontend checks", {
+          cardId,
+          targetPlayerId,
+        });
+        return;
+      }
+
+      if (card.assetKey !== AssetKey.ASSET_KEY_RENT_WILD) {
+        console.log("[game-ui] play wild rent blocked; wrong card", {
+          cardId,
+          assetKey: card.assetKey,
+        });
+        return;
+      }
+
+      if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
+        console.log("[game-ui] play wild rent blocked; not your turn", {
+          cardId,
+        });
+        return;
+      }
+
+      if (movesLeft <= 0) {
+        console.log("[game-ui] play wild rent blocked; no moves left", {
+          cardId,
+        });
+        return;
+      }
+
+      if (!targetPlayerId || targetPlayerId === selfPlayerId) {
+        console.log("[game-ui] play wild rent blocked; invalid target", {
+          cardId,
+          targetPlayerId,
+        });
+        return;
+      }
+
+      const socket = socketRef.current;
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        console.log("[game-ws] play wild rent skipped; socket not open");
+        return;
+      }
+
+      console.log("[game-ui] play wild rent sent", {
+        cardId,
+        targetPlayerId,
+      });
+      sendGamePlayWildRentMessage(socket, {
+        cardId,
+        targetId: targetPlayerId,
+      });
+    },
+    [currentTurnPlayerId, initialGameState, movesLeft, selfPlayerId],
+  );
+
+  const handlePlaySlyDealCard = useCallback(
+    (cardId: string, targetPlayerId: string, targetCardId: string) => {
+      const card = initialGameState?.yourHand?.cards.find((candidate) => {
+        return candidate.cardId === cardId;
+      });
+
+      if (!card || card.category !== Category.CATEGORY_ACTION) {
+        console.log("[game-ui] play sly deal blocked by frontend checks", {
+          cardId,
+          targetPlayerId,
+          targetCardId,
+        });
+        return;
+      }
+
+      if (card.assetKey !== AssetKey.ASSET_KEY_SLY_DEAL) {
+        console.log("[game-ui] play sly deal blocked; wrong card", {
+          cardId,
+          assetKey: card.assetKey,
+        });
+        return;
+      }
+
+      if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
+        console.log("[game-ui] play sly deal blocked; not your turn", { cardId });
+        return;
+      }
+
+      if (movesLeft <= 0) {
+        console.log("[game-ui] play sly deal blocked; no moves left", { cardId });
+        return;
+      }
+
+      if (!targetPlayerId || targetPlayerId === selfPlayerId || !targetCardId) {
+        console.log("[game-ui] play sly deal blocked; invalid target", {
+          cardId,
+          targetPlayerId,
+          targetCardId,
+        });
+        return;
+      }
+
+      const socket = socketRef.current;
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        console.log("[game-ws] play sly deal skipped; socket not open");
+        return;
+      }
+
+      console.log("[game-ui] play sly deal sent", {
+        cardId,
+        targetPlayerId,
+        targetCardId,
+      });
+      sendGamePlaySlyDealMessage(socket, {
+        cardId,
+        targetId: targetPlayerId,
+        targetCardId,
+      });
+    },
+    [currentTurnPlayerId, initialGameState, movesLeft, selfPlayerId],
+  );
+
+  const handlePlayForcedDealCard = useCallback(
+    (
+      cardId: string,
+      targetPlayerId: string,
+      sourceCardId: string,
+      targetCardId: string,
+    ) => {
+      const card = initialGameState?.yourHand?.cards.find((candidate) => {
+        return candidate.cardId === cardId;
+      });
+
+      if (!card || card.category !== Category.CATEGORY_ACTION) {
+        console.log("[game-ui] play forced deal blocked by frontend checks", {
+          cardId,
+          targetPlayerId,
+          sourceCardId,
+          targetCardId,
+        });
+        return;
+      }
+
+      if (card.assetKey !== AssetKey.ASSET_KEY_FORCED_DEAL) {
+        console.log("[game-ui] play forced deal blocked; wrong card", {
+          cardId,
+          assetKey: card.assetKey,
+        });
+        return;
+      }
+
+      if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
+        console.log("[game-ui] play forced deal blocked; not your turn", { cardId });
+        return;
+      }
+
+      if (movesLeft <= 0) {
+        console.log("[game-ui] play forced deal blocked; no moves left", { cardId });
+        return;
+      }
+
+      if (
+        !targetPlayerId ||
+        targetPlayerId === selfPlayerId ||
+        !sourceCardId ||
+        !targetCardId
+      ) {
+        console.log("[game-ui] play forced deal blocked; invalid selection", {
+          cardId,
+          targetPlayerId,
+          sourceCardId,
+          targetCardId,
+        });
+        return;
+      }
+
+      const socket = socketRef.current;
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        console.log("[game-ws] play forced deal skipped; socket not open");
+        return;
+      }
+
+      console.log("[game-ui] play forced deal sent", {
+        cardId,
+        targetPlayerId,
+        sourceCardId,
+        targetCardId,
+      });
+      sendGamePlayForcedDealMessage(socket, {
+        cardId,
+        targetId: targetPlayerId,
+        sourceCardId,
+        targetCardId,
+      });
+    },
+    [currentTurnPlayerId, initialGameState, movesLeft, selfPlayerId],
+  );
+
   const handlePassTurn = useCallback(() => {
     const socket = socketRef.current;
     if (!socket || socket.readyState !== WebSocket.OPEN) {
@@ -721,6 +1698,138 @@ const GamePage = () => {
     sendGameCompleteTurnMessage(socket);
   }, []);
 
+  const handleComplyPaymentDemand = useCallback((demandId: string, cardIds: string[]) => {
+    const socket = socketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.log("[game-ws] comply payment demand skipped; socket not open");
+      return;
+    }
+
+    console.log("[game-ui] comply payment demand sent", { demandId, cardIds });
+    sendGameComplyPaymentDemandMessage(socket, {
+      demandId,
+      cardIds,
+    });
+  }, []);
+
+  const handleComplyPropertyDemand = useCallback((demandId: string) => {
+    const socket = socketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.log("[game-ws] comply property demand skipped; socket not open");
+      return;
+    }
+
+    console.log("[game-ui] comply property demand sent", { demandId });
+    sendGameComplyPropertyDemandMessage(socket, demandId);
+  }, []);
+
+  const handleToggleDiscardCard = useCallback(
+    (cardId: string) => {
+      if (!isDiscardRequired) {
+        return;
+      }
+
+      setSelectedDiscardCardIds((current) => {
+        const next = new Set(current);
+        if (next.has(cardId)) {
+          next.delete(cardId);
+        } else {
+          next.add(cardId);
+        }
+        return next;
+      });
+    },
+    [isDiscardRequired],
+  );
+
+  const handleSubmitDiscard = useCallback(() => {
+    if (!isDiscardRequired) {
+      return;
+    }
+
+    if (selectedDiscardCardIds.size !== discardRequiredCount) {
+      console.log("[game-ui] discard blocked; invalid selected count", {
+        selected: selectedDiscardCardIds.size,
+        required: discardRequiredCount,
+      });
+      return;
+    }
+
+    const socket = socketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.log("[game-ws] discard skipped; socket not open");
+      return;
+    }
+
+    sendGameDiscardCardsMessage(socket, Array.from(selectedDiscardCardIds));
+  }, [discardRequiredCount, isDiscardRequired, selectedDiscardCardIds]);
+
+  const handleDenyDemand = useCallback((demandId: string) => {
+    const justSayNoCard = initialGameState?.yourHand?.cards.find((card) => {
+      return card.assetKey === AssetKey.ASSET_KEY_JUST_SAY_NO;
+    });
+    if (!justSayNoCard) {
+      console.log("[game-ui] deny demand blocked; no JUST_SAY_NO in hand");
+      return;
+    }
+
+    const socket = socketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.log("[game-ws] deny demand skipped; socket not open");
+      return;
+    }
+
+    sendGameDenyDemandMessage(socket, {
+      demandId,
+      cardId: justSayNoCard.cardId,
+    });
+  }, [initialGameState]);
+
+  const handlePlayDoubleTheRentCard = useCallback(() => {
+    const card = initialGameState?.yourHand?.cards.find((candidate) => {
+      return candidate.assetKey === AssetKey.ASSET_KEY_DOUBLE_THE_RENT;
+    });
+
+    if (!card) {
+      console.log("[game-ui] play double-the-rent blocked; card not in hand");
+      return;
+    }
+
+    if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
+      console.log("[game-ui] play double-the-rent blocked; not your turn", {
+        cardId: card.cardId,
+      });
+      return;
+    }
+
+    if (movesLeft <= 0) {
+      console.log("[game-ui] play double-the-rent blocked; no moves left", {
+        cardId: card.cardId,
+      });
+      return;
+    }
+
+    const socket = socketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.log("[game-ws] play double-the-rent skipped; socket not open");
+      return;
+    }
+
+    console.log("[game-ui] play double-the-rent sent", { cardId: card.cardId });
+    sendGamePlayDoubleTheRentMessage(socket, card.cardId);
+  }, [currentTurnPlayerId, initialGameState, movesLeft, selfPlayerId]);
+
+  const handleResolvePendingRent = useCallback(() => {
+    const socket = socketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.log("[game-ws] resolve pending rent skipped; socket not open");
+      return;
+    }
+
+    console.log("[game-ui] resolve pending rent sent");
+    sendGameResolvePendingRentMessage(socket);
+  }, []);
+
   return (
     <>
       <main className="page game-page">
@@ -728,9 +1837,27 @@ const GamePage = () => {
           <MonopolyDealGameMount
             initialGameState={initialGameState}
             assetImageByKey={assetImageByKey}
+            selfPlayerId={selfPlayerId ?? undefined}
             onPlayMoneyCard={handlePlayMoneyCard}
             onPlayPassGoCard={handlePlayPassGoCard}
+            onPlayDebtCollectorCard={handlePlayDebtCollectorCard}
+            onPlayWildRentCard={handlePlayWildRentCard}
+            onPlaySlyDealCard={handlePlaySlyDealCard}
+            onPlayForcedDealCard={handlePlayForcedDealCard}
+            onPlayDoubleTheRentCard={handlePlayDoubleTheRentCard}
+            onResolvePendingRent={handleResolvePendingRent}
+            onRearrangeCard={handleRearrangeCard}
+            onDenyDemand={handleDenyDemand}
+            isDiscardRequired={isDiscardRequired}
+            requiredDiscardCount={discardRequiredCount}
+            selectedDiscardCardIds={selectedDiscardCardIds}
+            onToggleDiscardCard={handleToggleDiscardCard}
             onPlayPropertyCard={handlePlayPropertyCard}
+            onComplyPaymentDemand={handleComplyPaymentDemand}
+            onComplyPropertyDemand={handleComplyPropertyDemand}
+            onClientError={(error) => {
+              setModalError(toClientGameError(error, "GAME_BOARD_RUNTIME"));
+            }}
           />
         </section>
 
@@ -745,10 +1872,10 @@ const GamePage = () => {
               const author =
                 playerNameById[message.playerId] ?? message.playerId;
               return (
-                <p className="chat-message">
-                  <span className="chat-message__author">{author}:</span>{" "}
-                  {message.text}
-                </p>
+                <article className="game-chat-line">
+                  <p className="game-chat-line__author">{author}</p>
+                  <p className="chat-message game-chat-line__message">{message.text}</p>
+                </article>
               );
             }}
             className="game-chat-panel"
@@ -774,10 +1901,14 @@ const GamePage = () => {
                       referrerPolicy="no-referrer"
                     />
                     <div className="game-player-meta">
-                      <p className="game-player-name">{player.displayName}</p>
+                      <p className="game-player-name">
+                        {player.displayName}
+                        {player.playerId === currentTurnPlayerId ? (
+                          <span className="game-player-pill">Current turn</span>
+                        ) : null}
+                      </p>
                       <p className="game-player-stats">
-                        Money: {player.money} | Sets: {player.completedSets} |
-                        Cards: {player.handCards}
+                        ${player.money} · {player.completedSets} sets · {player.handCards} cards
                       </p>
                     </div>
                   </article>
@@ -788,8 +1919,12 @@ const GamePage = () => {
 
           <TurnControlsCard
             onPassTurn={handlePassTurn}
+            onSubmitDiscard={handleSubmitDiscard}
             movesLeft={movesLeft}
             showMovesLeft={selfPlayerId === currentTurnPlayerId}
+            isDiscardRequired={isDiscardRequired}
+            selectedDiscardCount={selectedDiscardCardIds.size}
+            requiredDiscardCount={discardRequiredCount}
           />
         </aside>
       </main>
