@@ -13,8 +13,8 @@ type PendingRent struct {
 	Multiplier int          `json:"multiplier" msgpack:"d"`
 }
 
-func NewPendingRent(sourceID Identifier, targetIDs []Identifier, baseAmount int) *PendingRent {
-	return &PendingRent{
+func NewPendingRent(sourceID Identifier, targetIDs []Identifier, baseAmount int) PendingRent {
+	return PendingRent{
 		SourceID:   sourceID,
 		TargetIDs:  targetIDs,
 		BaseAmount: baseAmount,

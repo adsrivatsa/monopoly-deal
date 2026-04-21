@@ -15,6 +15,17 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func (c *Controller) getGameLock(gameID uuid.UUID) *sync.RWMutex {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	lock, ok := c.gameLocks[gameID]
+	if !ok {
+		lock = &sync.RWMutex{}
+		c.gameLocks[gameID] = lock
+	}
+	return lock
+}
+
 func (c *Controller) ListenGameEvents(ctx context.Context, tp token.Payload, callback func(message *schema.ServerMessage)) error {
 	g, err := c.store.GetGameByPlayer(ctx, tp.PlayerID)
 	if err != nil {
@@ -34,28 +45,27 @@ func (c *Controller) ListenGameEvents(ctx context.Context, tp token.Payload, cal
 		case <-ctx.Done():
 			return nil
 		case e := <-ch:
-			var msg schema.ServerMessage
+			msg := new(schema.ServerMessage)
 			switch e.Kind {
 			case event.KindServerMessage:
-				err = proto.Unmarshal(e.Message, &msg)
+				err = proto.Unmarshal(e.Message, msg)
 				if err != nil {
 					return err
 				}
 
 			case event.KindMonopolyDealEvent:
-				err = proto.Unmarshal(e.Message, &msg)
+				err = proto.Unmarshal(e.Message, msg)
 				if err != nil {
 					return err
 				}
 
-				mdMsg := c.maskMonopolyDealPrivateEvents(tp, msg.GetMonopolyDealMessage())
-				msg.Payload = &schema.ServerMessage_MonopolyDealMessage{
-					MonopolyDealMessage: mdMsg,
-				}
+				msg = c.maskMonopolyDealPrivateEvents(tp, msg.GetMonopolyDealMessage())
 			default:
 			}
 
-			callback(&msg)
+			if msg != nil {
+				callback(msg)
+			}
 		}
 	}
 }

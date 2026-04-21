@@ -630,6 +630,8 @@ export interface PropertySetDemand {
 }
 
 export interface Demand {
+  id: string;
+  playerId: string;
   sourceId: string;
   demandKind: DemandKind;
   paymentDemand?: PaymentDemand | undefined;
@@ -658,10 +660,11 @@ export interface GameState {
   yourHand: Hand | undefined;
   money: Money[];
   properties: PropertySet[];
-  demand?: Demand | undefined;
+  demands: Demand[];
   pendingRent?: PendingRent | undefined;
   lastAction: Card | undefined;
   assetImages: AssetImage[];
+  maxHandSize: number;
 }
 
 export interface StartTurnRes {
@@ -720,12 +723,151 @@ export interface PlayPassGoMaskedRes {
   lastPlayedCard: Card | undefined;
 }
 
+export interface PlayItsMyBirthday {
+  cardId: string;
+}
+
+export interface PlayDebtCollector {
+  cardId: string;
+  targetId: string;
+}
+
+export interface PlayRent {
+  cardId: string;
+}
+
+export interface PlayWildRent {
+  cardId: string;
+  targetId: string;
+}
+
+export interface PlayDoubleTheRent {
+  cardId: string;
+}
+
+export interface PlayActionRes {
+  seqNum: number;
+  playerId: string;
+  lastPlayedCard: Card | undefined;
+}
+
+export interface DemandCreated {
+  demand: Demand | undefined;
+}
+
+export interface ComplyPaymentDemand {
+  demandId: string;
+  cardIds: string[];
+}
+
+export interface CompliedDemand {
+  seqNum: number;
+  demandId: string;
+  playerId: string;
+}
+
+export interface PendingRentCreated {
+  pendingRent: PendingRent | undefined;
+}
+
+export interface ResolvePendingRent {
+}
+
+export interface PendingRentResolved {
+  seqNum: number;
+  playerId: string;
+}
+
+export interface TransferCards {
+  sourceId: string;
+  targetId: string;
+  cards: Card[];
+  propertySets: PropertySet[];
+}
+
+export interface RearrangeCard {
+  cardId: string;
+  propertySetId?: string | undefined;
+  color?: Color | undefined;
+}
+
+export interface RearrangeCardRes {
+  seqNum: number;
+  playerId: string;
+  card: Card | undefined;
+  propertySet: PropertySet | undefined;
+}
+
+export interface DiscardCards {
+  cardIds: string[];
+}
+
+export interface DiscardCardsRes {
+  seqNum: number;
+  playerId: string;
+  cards: Card[];
+}
+
+export interface DiscardCardsMaskedRes {
+  seqNum: number;
+  playerId: string;
+  numCards: number;
+}
+
+export interface DenyDemand {
+  demandId: string;
+  cardId: string;
+}
+
+export interface DemandDenied {
+  seqNum: number;
+  demandId: string;
+}
+
+export interface PlaySlyDeal {
+  cardId: string;
+  targetId: string;
+  targetCardId: string;
+}
+
+export interface PlayForcedDeal {
+  cardId: string;
+  targetId: string;
+  sourceCardId: string;
+  targetCardId: string;
+}
+
+export interface ComplyPropertyDemand {
+  demandId: string;
+}
+
+export interface TransferProperty {
+  seqNum: number;
+  sourceId: string;
+  targetId: string;
+  sourcePropertySets: PropertySet[];
+  targetPropertySets: PropertySet[];
+}
+
 export interface ClientMessage {
   chat?: Chat | undefined;
   playMoney?: PlayMoney | undefined;
   playProperty?: PlayProperty | undefined;
   completeTurn?: CompleteTurn | undefined;
   playPassGo?: PlayPassGo | undefined;
+  playItsMyBirthday?: PlayItsMyBirthday | undefined;
+  playDebtCollector?: PlayDebtCollector | undefined;
+  playRent?: PlayRent | undefined;
+  playWildRent?: PlayWildRent | undefined;
+  playDoubleTheRent?: PlayDoubleTheRent | undefined;
+  resolvePendingRent?: ResolvePendingRent | undefined;
+  rearrangeCard?: RearrangeCard | undefined;
+  discardCards?: DiscardCards | undefined;
+  denyDemand?: DenyDemand | undefined;
+  playSlyDeal?: PlaySlyDeal | undefined;
+  complyPropertyDemand?: ComplyPropertyDemand | undefined;
+  playForcedDeal?: PlayForcedDeal | undefined;
+  complyPaymentDemand?: ComplyPaymentDemand | undefined;
 }
 
 export interface ServerMessage {
@@ -738,6 +880,17 @@ export interface ServerMessage {
   playPropertyRes?: PlayPropertyRes | undefined;
   playPassGoRes?: PlayPassGoRes | undefined;
   playPassGoMaskedRes?: PlayPassGoMaskedRes | undefined;
+  pendingRentResolved?: PendingRentResolved | undefined;
+  rearrangeCardRes?: RearrangeCardRes | undefined;
+  discardCardsRes?: DiscardCardsRes | undefined;
+  discardCardsMaskedRes?: DiscardCardsMaskedRes | undefined;
+  demandDenied?: DemandDenied | undefined;
+  compliedDemand?: CompliedDemand | undefined;
+  transferProperty?: TransferProperty | undefined;
+  playActionRes?: PlayActionRes | undefined;
+  demandCreated?: DemandCreated | undefined;
+  pendingRentCreated?: PendingRentCreated | undefined;
+  transferCards?: TransferCards | undefined;
 }
 
 function createBaseError(): Error {
@@ -1756,6 +1909,8 @@ export const PropertySetDemand: MessageFns<PropertySetDemand> = {
 
 function createBaseDemand(): Demand {
   return {
+    id: "",
+    playerId: "",
     sourceId: "",
     demandKind: 0,
     paymentDemand: undefined,
@@ -1767,23 +1922,29 @@ function createBaseDemand(): Demand {
 
 export const Demand: MessageFns<Demand> = {
   encode(message: Demand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
     if (message.sourceId !== "") {
-      writer.uint32(10).string(message.sourceId);
+      writer.uint32(26).string(message.sourceId);
     }
     if (message.demandKind !== 0) {
-      writer.uint32(16).int32(message.demandKind);
+      writer.uint32(32).int32(message.demandKind);
     }
     if (message.paymentDemand !== undefined) {
-      PaymentDemand.encode(message.paymentDemand, writer.uint32(26).fork()).join();
+      PaymentDemand.encode(message.paymentDemand, writer.uint32(42).fork()).join();
     }
     if (message.propertyDemand !== undefined) {
-      PropertyDemand.encode(message.propertyDemand, writer.uint32(34).fork()).join();
+      PropertyDemand.encode(message.propertyDemand, writer.uint32(50).fork()).join();
     }
     if (message.propertySetDemand !== undefined) {
-      PropertySetDemand.encode(message.propertySetDemand, writer.uint32(42).fork()).join();
+      PropertySetDemand.encode(message.propertySetDemand, writer.uint32(58).fork()).join();
     }
     if (message.isActive !== false) {
-      writer.uint32(48).bool(message.isActive);
+      writer.uint32(64).bool(message.isActive);
     }
     return writer;
   },
@@ -1800,15 +1961,15 @@ export const Demand: MessageFns<Demand> = {
             break;
           }
 
-          message.sourceId = reader.string();
+          message.id = reader.string();
           continue;
         }
         case 2: {
-          if (tag !== 16) {
+          if (tag !== 18) {
             break;
           }
 
-          message.demandKind = reader.int32() as any;
+          message.playerId = reader.string();
           continue;
         }
         case 3: {
@@ -1816,15 +1977,15 @@ export const Demand: MessageFns<Demand> = {
             break;
           }
 
-          message.paymentDemand = PaymentDemand.decode(reader, reader.uint32());
+          message.sourceId = reader.string();
           continue;
         }
         case 4: {
-          if (tag !== 34) {
+          if (tag !== 32) {
             break;
           }
 
-          message.propertyDemand = PropertyDemand.decode(reader, reader.uint32());
+          message.demandKind = reader.int32() as any;
           continue;
         }
         case 5: {
@@ -1832,11 +1993,27 @@ export const Demand: MessageFns<Demand> = {
             break;
           }
 
-          message.propertySetDemand = PropertySetDemand.decode(reader, reader.uint32());
+          message.paymentDemand = PaymentDemand.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
-          if (tag !== 48) {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.propertyDemand = PropertyDemand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.propertySetDemand = PropertySetDemand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
             break;
           }
 
@@ -1854,6 +2031,12 @@ export const Demand: MessageFns<Demand> = {
 
   fromJSON(object: any): Demand {
     return {
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
       sourceId: isSet(object.sourceId)
         ? globalThis.String(object.sourceId)
         : isSet(object.source_id)
@@ -1889,6 +2072,12 @@ export const Demand: MessageFns<Demand> = {
 
   toJSON(message: Demand): unknown {
     const obj: any = {};
+    if (message.id !== "") {
+      obj.id = message.id;
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
     if (message.sourceId !== "") {
       obj.sourceId = message.sourceId;
     }
@@ -1915,6 +2104,8 @@ export const Demand: MessageFns<Demand> = {
   },
   fromPartial<I extends Exact<DeepPartial<Demand>, I>>(object: I): Demand {
     const message = createBaseDemand();
+    message.id = object.id ?? "";
+    message.playerId = object.playerId ?? "";
     message.sourceId = object.sourceId ?? "";
     message.demandKind = object.demandKind ?? 0;
     message.paymentDemand = (object.paymentDemand !== undefined && object.paymentDemand !== null)
@@ -2144,10 +2335,11 @@ function createBaseGameState(): GameState {
     yourHand: undefined,
     money: [],
     properties: [],
-    demand: undefined,
+    demands: [],
     pendingRent: undefined,
     lastAction: undefined,
     assetImages: [],
+    maxHandSize: 0,
   };
 }
 
@@ -2174,8 +2366,8 @@ export const GameState: MessageFns<GameState> = {
     for (const v of message.properties) {
       PropertySet.encode(v!, writer.uint32(58).fork()).join();
     }
-    if (message.demand !== undefined) {
-      Demand.encode(message.demand, writer.uint32(66).fork()).join();
+    for (const v of message.demands) {
+      Demand.encode(v!, writer.uint32(66).fork()).join();
     }
     if (message.pendingRent !== undefined) {
       PendingRent.encode(message.pendingRent, writer.uint32(74).fork()).join();
@@ -2185,6 +2377,9 @@ export const GameState: MessageFns<GameState> = {
     }
     for (const v of message.assetImages) {
       AssetImage.encode(v!, writer.uint32(90).fork()).join();
+    }
+    if (message.maxHandSize !== 0) {
+      writer.uint32(96).int32(message.maxHandSize);
     }
     return writer;
   },
@@ -2257,7 +2452,7 @@ export const GameState: MessageFns<GameState> = {
             break;
           }
 
-          message.demand = Demand.decode(reader, reader.uint32());
+          message.demands.push(Demand.decode(reader, reader.uint32()));
           continue;
         }
         case 9: {
@@ -2282,6 +2477,14 @@ export const GameState: MessageFns<GameState> = {
           }
 
           message.assetImages.push(AssetImage.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 12: {
+          if (tag !== 96) {
+            break;
+          }
+
+          message.maxHandSize = reader.int32();
           continue;
         }
       }
@@ -2322,7 +2525,9 @@ export const GameState: MessageFns<GameState> = {
       properties: globalThis.Array.isArray(object?.properties)
         ? object.properties.map((e: any) => PropertySet.fromJSON(e))
         : [],
-      demand: isSet(object.demand) ? Demand.fromJSON(object.demand) : undefined,
+      demands: globalThis.Array.isArray(object?.demands)
+        ? object.demands.map((e: any) => Demand.fromJSON(e))
+        : [],
       pendingRent: isSet(object.pendingRent)
         ? PendingRent.fromJSON(object.pendingRent)
         : isSet(object.pending_rent)
@@ -2338,6 +2543,11 @@ export const GameState: MessageFns<GameState> = {
         : globalThis.Array.isArray(object?.asset_images)
         ? object.asset_images.map((e: any) => AssetImage.fromJSON(e))
         : [],
+      maxHandSize: isSet(object.maxHandSize)
+        ? globalThis.Number(object.maxHandSize)
+        : isSet(object.max_hand_size)
+        ? globalThis.Number(object.max_hand_size)
+        : 0,
     };
   },
 
@@ -2364,8 +2574,8 @@ export const GameState: MessageFns<GameState> = {
     if (message.properties?.length) {
       obj.properties = message.properties.map((e) => PropertySet.toJSON(e));
     }
-    if (message.demand !== undefined) {
-      obj.demand = Demand.toJSON(message.demand);
+    if (message.demands?.length) {
+      obj.demands = message.demands.map((e) => Demand.toJSON(e));
     }
     if (message.pendingRent !== undefined) {
       obj.pendingRent = PendingRent.toJSON(message.pendingRent);
@@ -2375,6 +2585,9 @@ export const GameState: MessageFns<GameState> = {
     }
     if (message.assetImages?.length) {
       obj.assetImages = message.assetImages.map((e) => AssetImage.toJSON(e));
+    }
+    if (message.maxHandSize !== 0) {
+      obj.maxHandSize = Math.round(message.maxHandSize);
     }
     return obj;
   },
@@ -2393,9 +2606,7 @@ export const GameState: MessageFns<GameState> = {
       : undefined;
     message.money = object.money?.map((e) => Money.fromPartial(e)) || [];
     message.properties = object.properties?.map((e) => PropertySet.fromPartial(e)) || [];
-    message.demand = (object.demand !== undefined && object.demand !== null)
-      ? Demand.fromPartial(object.demand)
-      : undefined;
+    message.demands = object.demands?.map((e) => Demand.fromPartial(e)) || [];
     message.pendingRent = (object.pendingRent !== undefined && object.pendingRent !== null)
       ? PendingRent.fromPartial(object.pendingRent)
       : undefined;
@@ -2403,6 +2614,7 @@ export const GameState: MessageFns<GameState> = {
       ? Card.fromPartial(object.lastAction)
       : undefined;
     message.assetImages = object.assetImages?.map((e) => AssetImage.fromPartial(e)) || [];
+    message.maxHandSize = object.maxHandSize ?? 0;
     return message;
   },
 };
@@ -3360,6 +3572,2127 @@ export const PlayPassGoMaskedRes: MessageFns<PlayPassGoMaskedRes> = {
   },
 };
 
+function createBasePlayItsMyBirthday(): PlayItsMyBirthday {
+  return { cardId: "" };
+}
+
+export const PlayItsMyBirthday: MessageFns<PlayItsMyBirthday> = {
+  encode(message: PlayItsMyBirthday, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayItsMyBirthday {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayItsMyBirthday();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayItsMyBirthday {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayItsMyBirthday): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayItsMyBirthday>, I>>(base?: I): PlayItsMyBirthday {
+    return PlayItsMyBirthday.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayItsMyBirthday>, I>>(object: I): PlayItsMyBirthday {
+    const message = createBasePlayItsMyBirthday();
+    message.cardId = object.cardId ?? "";
+    return message;
+  },
+};
+
+function createBasePlayDebtCollector(): PlayDebtCollector {
+  return { cardId: "", targetId: "" };
+}
+
+export const PlayDebtCollector: MessageFns<PlayDebtCollector> = {
+  encode(message: PlayDebtCollector, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    if (message.targetId !== "") {
+      writer.uint32(18).string(message.targetId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayDebtCollector {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayDebtCollector();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.targetId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayDebtCollector {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+      targetId: isSet(object.targetId)
+        ? globalThis.String(object.targetId)
+        : isSet(object.target_id)
+        ? globalThis.String(object.target_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayDebtCollector): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    if (message.targetId !== "") {
+      obj.targetId = message.targetId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayDebtCollector>, I>>(base?: I): PlayDebtCollector {
+    return PlayDebtCollector.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayDebtCollector>, I>>(object: I): PlayDebtCollector {
+    const message = createBasePlayDebtCollector();
+    message.cardId = object.cardId ?? "";
+    message.targetId = object.targetId ?? "";
+    return message;
+  },
+};
+
+function createBasePlayRent(): PlayRent {
+  return { cardId: "" };
+}
+
+export const PlayRent: MessageFns<PlayRent> = {
+  encode(message: PlayRent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayRent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayRent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayRent {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayRent): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayRent>, I>>(base?: I): PlayRent {
+    return PlayRent.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayRent>, I>>(object: I): PlayRent {
+    const message = createBasePlayRent();
+    message.cardId = object.cardId ?? "";
+    return message;
+  },
+};
+
+function createBasePlayWildRent(): PlayWildRent {
+  return { cardId: "", targetId: "" };
+}
+
+export const PlayWildRent: MessageFns<PlayWildRent> = {
+  encode(message: PlayWildRent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    if (message.targetId !== "") {
+      writer.uint32(18).string(message.targetId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayWildRent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayWildRent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.targetId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayWildRent {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+      targetId: isSet(object.targetId)
+        ? globalThis.String(object.targetId)
+        : isSet(object.target_id)
+        ? globalThis.String(object.target_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayWildRent): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    if (message.targetId !== "") {
+      obj.targetId = message.targetId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayWildRent>, I>>(base?: I): PlayWildRent {
+    return PlayWildRent.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayWildRent>, I>>(object: I): PlayWildRent {
+    const message = createBasePlayWildRent();
+    message.cardId = object.cardId ?? "";
+    message.targetId = object.targetId ?? "";
+    return message;
+  },
+};
+
+function createBasePlayDoubleTheRent(): PlayDoubleTheRent {
+  return { cardId: "" };
+}
+
+export const PlayDoubleTheRent: MessageFns<PlayDoubleTheRent> = {
+  encode(message: PlayDoubleTheRent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayDoubleTheRent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayDoubleTheRent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayDoubleTheRent {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayDoubleTheRent): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayDoubleTheRent>, I>>(base?: I): PlayDoubleTheRent {
+    return PlayDoubleTheRent.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayDoubleTheRent>, I>>(object: I): PlayDoubleTheRent {
+    const message = createBasePlayDoubleTheRent();
+    message.cardId = object.cardId ?? "";
+    return message;
+  },
+};
+
+function createBasePlayActionRes(): PlayActionRes {
+  return { seqNum: 0, playerId: "", lastPlayedCard: undefined };
+}
+
+export const PlayActionRes: MessageFns<PlayActionRes> = {
+  encode(message: PlayActionRes, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
+    if (message.lastPlayedCard !== undefined) {
+      Card.encode(message.lastPlayedCard, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayActionRes {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayActionRes();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.lastPlayedCard = Card.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayActionRes {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      lastPlayedCard: isSet(object.lastPlayedCard)
+        ? Card.fromJSON(object.lastPlayedCard)
+        : isSet(object.last_played_card)
+        ? Card.fromJSON(object.last_played_card)
+        : undefined,
+    };
+  },
+
+  toJSON(message: PlayActionRes): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.lastPlayedCard !== undefined) {
+      obj.lastPlayedCard = Card.toJSON(message.lastPlayedCard);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayActionRes>, I>>(base?: I): PlayActionRes {
+    return PlayActionRes.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayActionRes>, I>>(object: I): PlayActionRes {
+    const message = createBasePlayActionRes();
+    message.seqNum = object.seqNum ?? 0;
+    message.playerId = object.playerId ?? "";
+    message.lastPlayedCard = (object.lastPlayedCard !== undefined && object.lastPlayedCard !== null)
+      ? Card.fromPartial(object.lastPlayedCard)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseDemandCreated(): DemandCreated {
+  return { demand: undefined };
+}
+
+export const DemandCreated: MessageFns<DemandCreated> = {
+  encode(message: DemandCreated, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.demand !== undefined) {
+      Demand.encode(message.demand, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DemandCreated {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDemandCreated();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.demand = Demand.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DemandCreated {
+    return { demand: isSet(object.demand) ? Demand.fromJSON(object.demand) : undefined };
+  },
+
+  toJSON(message: DemandCreated): unknown {
+    const obj: any = {};
+    if (message.demand !== undefined) {
+      obj.demand = Demand.toJSON(message.demand);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DemandCreated>, I>>(base?: I): DemandCreated {
+    return DemandCreated.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DemandCreated>, I>>(object: I): DemandCreated {
+    const message = createBaseDemandCreated();
+    message.demand = (object.demand !== undefined && object.demand !== null)
+      ? Demand.fromPartial(object.demand)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseComplyPaymentDemand(): ComplyPaymentDemand {
+  return { demandId: "", cardIds: [] };
+}
+
+export const ComplyPaymentDemand: MessageFns<ComplyPaymentDemand> = {
+  encode(message: ComplyPaymentDemand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.demandId !== "") {
+      writer.uint32(10).string(message.demandId);
+    }
+    for (const v of message.cardIds) {
+      writer.uint32(18).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ComplyPaymentDemand {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseComplyPaymentDemand();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.demandId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.cardIds.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ComplyPaymentDemand {
+    return {
+      demandId: isSet(object.demandId)
+        ? globalThis.String(object.demandId)
+        : isSet(object.demand_id)
+        ? globalThis.String(object.demand_id)
+        : "",
+      cardIds: globalThis.Array.isArray(object?.cardIds)
+        ? object.cardIds.map((e: any) => globalThis.String(e))
+        : globalThis.Array.isArray(object?.card_ids)
+        ? object.card_ids.map((e: any) => globalThis.String(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ComplyPaymentDemand): unknown {
+    const obj: any = {};
+    if (message.demandId !== "") {
+      obj.demandId = message.demandId;
+    }
+    if (message.cardIds?.length) {
+      obj.cardIds = message.cardIds;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ComplyPaymentDemand>, I>>(base?: I): ComplyPaymentDemand {
+    return ComplyPaymentDemand.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ComplyPaymentDemand>, I>>(object: I): ComplyPaymentDemand {
+    const message = createBaseComplyPaymentDemand();
+    message.demandId = object.demandId ?? "";
+    message.cardIds = object.cardIds?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseCompliedDemand(): CompliedDemand {
+  return { seqNum: 0, demandId: "", playerId: "" };
+}
+
+export const CompliedDemand: MessageFns<CompliedDemand> = {
+  encode(message: CompliedDemand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.demandId !== "") {
+      writer.uint32(18).string(message.demandId);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(26).string(message.playerId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CompliedDemand {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCompliedDemand();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.demandId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CompliedDemand {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      demandId: isSet(object.demandId)
+        ? globalThis.String(object.demandId)
+        : isSet(object.demand_id)
+        ? globalThis.String(object.demand_id)
+        : "",
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+    };
+  },
+
+  toJSON(message: CompliedDemand): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.demandId !== "") {
+      obj.demandId = message.demandId;
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CompliedDemand>, I>>(base?: I): CompliedDemand {
+    return CompliedDemand.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CompliedDemand>, I>>(object: I): CompliedDemand {
+    const message = createBaseCompliedDemand();
+    message.seqNum = object.seqNum ?? 0;
+    message.demandId = object.demandId ?? "";
+    message.playerId = object.playerId ?? "";
+    return message;
+  },
+};
+
+function createBasePendingRentCreated(): PendingRentCreated {
+  return { pendingRent: undefined };
+}
+
+export const PendingRentCreated: MessageFns<PendingRentCreated> = {
+  encode(message: PendingRentCreated, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.pendingRent !== undefined) {
+      PendingRent.encode(message.pendingRent, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PendingRentCreated {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePendingRentCreated();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.pendingRent = PendingRent.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PendingRentCreated {
+    return {
+      pendingRent: isSet(object.pendingRent)
+        ? PendingRent.fromJSON(object.pendingRent)
+        : isSet(object.pending_rent)
+        ? PendingRent.fromJSON(object.pending_rent)
+        : undefined,
+    };
+  },
+
+  toJSON(message: PendingRentCreated): unknown {
+    const obj: any = {};
+    if (message.pendingRent !== undefined) {
+      obj.pendingRent = PendingRent.toJSON(message.pendingRent);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PendingRentCreated>, I>>(base?: I): PendingRentCreated {
+    return PendingRentCreated.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PendingRentCreated>, I>>(object: I): PendingRentCreated {
+    const message = createBasePendingRentCreated();
+    message.pendingRent = (object.pendingRent !== undefined && object.pendingRent !== null)
+      ? PendingRent.fromPartial(object.pendingRent)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseResolvePendingRent(): ResolvePendingRent {
+  return {};
+}
+
+export const ResolvePendingRent: MessageFns<ResolvePendingRent> = {
+  encode(_: ResolvePendingRent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ResolvePendingRent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseResolvePendingRent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): ResolvePendingRent {
+    return {};
+  },
+
+  toJSON(_: ResolvePendingRent): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ResolvePendingRent>, I>>(base?: I): ResolvePendingRent {
+    return ResolvePendingRent.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ResolvePendingRent>, I>>(_: I): ResolvePendingRent {
+    const message = createBaseResolvePendingRent();
+    return message;
+  },
+};
+
+function createBasePendingRentResolved(): PendingRentResolved {
+  return { seqNum: 0, playerId: "" };
+}
+
+export const PendingRentResolved: MessageFns<PendingRentResolved> = {
+  encode(message: PendingRentResolved, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PendingRentResolved {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePendingRentResolved();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PendingRentResolved {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PendingRentResolved): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PendingRentResolved>, I>>(base?: I): PendingRentResolved {
+    return PendingRentResolved.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PendingRentResolved>, I>>(object: I): PendingRentResolved {
+    const message = createBasePendingRentResolved();
+    message.seqNum = object.seqNum ?? 0;
+    message.playerId = object.playerId ?? "";
+    return message;
+  },
+};
+
+function createBaseTransferCards(): TransferCards {
+  return { sourceId: "", targetId: "", cards: [], propertySets: [] };
+}
+
+export const TransferCards: MessageFns<TransferCards> = {
+  encode(message: TransferCards, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.sourceId !== "") {
+      writer.uint32(10).string(message.sourceId);
+    }
+    if (message.targetId !== "") {
+      writer.uint32(18).string(message.targetId);
+    }
+    for (const v of message.cards) {
+      Card.encode(v!, writer.uint32(26).fork()).join();
+    }
+    for (const v of message.propertySets) {
+      PropertySet.encode(v!, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TransferCards {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTransferCards();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sourceId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.targetId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.cards.push(Card.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.propertySets.push(PropertySet.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TransferCards {
+    return {
+      sourceId: isSet(object.sourceId)
+        ? globalThis.String(object.sourceId)
+        : isSet(object.source_id)
+        ? globalThis.String(object.source_id)
+        : "",
+      targetId: isSet(object.targetId)
+        ? globalThis.String(object.targetId)
+        : isSet(object.target_id)
+        ? globalThis.String(object.target_id)
+        : "",
+      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => Card.fromJSON(e)) : [],
+      propertySets: globalThis.Array.isArray(object?.propertySets)
+        ? object.propertySets.map((e: any) => PropertySet.fromJSON(e))
+        : globalThis.Array.isArray(object?.property_sets)
+        ? object.property_sets.map((e: any) => PropertySet.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: TransferCards): unknown {
+    const obj: any = {};
+    if (message.sourceId !== "") {
+      obj.sourceId = message.sourceId;
+    }
+    if (message.targetId !== "") {
+      obj.targetId = message.targetId;
+    }
+    if (message.cards?.length) {
+      obj.cards = message.cards.map((e) => Card.toJSON(e));
+    }
+    if (message.propertySets?.length) {
+      obj.propertySets = message.propertySets.map((e) => PropertySet.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<TransferCards>, I>>(base?: I): TransferCards {
+    return TransferCards.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<TransferCards>, I>>(object: I): TransferCards {
+    const message = createBaseTransferCards();
+    message.sourceId = object.sourceId ?? "";
+    message.targetId = object.targetId ?? "";
+    message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
+    message.propertySets = object.propertySets?.map((e) => PropertySet.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseRearrangeCard(): RearrangeCard {
+  return { cardId: "", propertySetId: undefined, color: undefined };
+}
+
+export const RearrangeCard: MessageFns<RearrangeCard> = {
+  encode(message: RearrangeCard, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    if (message.propertySetId !== undefined) {
+      writer.uint32(18).string(message.propertySetId);
+    }
+    if (message.color !== undefined) {
+      writer.uint32(24).int32(message.color);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RearrangeCard {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRearrangeCard();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.propertySetId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.color = reader.int32() as any;
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RearrangeCard {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+      propertySetId: isSet(object.propertySetId)
+        ? globalThis.String(object.propertySetId)
+        : isSet(object.property_set_id)
+        ? globalThis.String(object.property_set_id)
+        : undefined,
+      color: isSet(object.color) ? colorFromJSON(object.color) : undefined,
+    };
+  },
+
+  toJSON(message: RearrangeCard): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    if (message.propertySetId !== undefined) {
+      obj.propertySetId = message.propertySetId;
+    }
+    if (message.color !== undefined) {
+      obj.color = colorToJSON(message.color);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RearrangeCard>, I>>(base?: I): RearrangeCard {
+    return RearrangeCard.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RearrangeCard>, I>>(object: I): RearrangeCard {
+    const message = createBaseRearrangeCard();
+    message.cardId = object.cardId ?? "";
+    message.propertySetId = object.propertySetId ?? undefined;
+    message.color = object.color ?? undefined;
+    return message;
+  },
+};
+
+function createBaseRearrangeCardRes(): RearrangeCardRes {
+  return { seqNum: 0, playerId: "", card: undefined, propertySet: undefined };
+}
+
+export const RearrangeCardRes: MessageFns<RearrangeCardRes> = {
+  encode(message: RearrangeCardRes, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
+    if (message.card !== undefined) {
+      Card.encode(message.card, writer.uint32(26).fork()).join();
+    }
+    if (message.propertySet !== undefined) {
+      PropertySet.encode(message.propertySet, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RearrangeCardRes {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRearrangeCardRes();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.card = Card.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.propertySet = PropertySet.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RearrangeCardRes {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      card: isSet(object.card) ? Card.fromJSON(object.card) : undefined,
+      propertySet: isSet(object.propertySet)
+        ? PropertySet.fromJSON(object.propertySet)
+        : isSet(object.property_set)
+        ? PropertySet.fromJSON(object.property_set)
+        : undefined,
+    };
+  },
+
+  toJSON(message: RearrangeCardRes): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.card !== undefined) {
+      obj.card = Card.toJSON(message.card);
+    }
+    if (message.propertySet !== undefined) {
+      obj.propertySet = PropertySet.toJSON(message.propertySet);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RearrangeCardRes>, I>>(base?: I): RearrangeCardRes {
+    return RearrangeCardRes.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RearrangeCardRes>, I>>(object: I): RearrangeCardRes {
+    const message = createBaseRearrangeCardRes();
+    message.seqNum = object.seqNum ?? 0;
+    message.playerId = object.playerId ?? "";
+    message.card = (object.card !== undefined && object.card !== null) ? Card.fromPartial(object.card) : undefined;
+    message.propertySet = (object.propertySet !== undefined && object.propertySet !== null)
+      ? PropertySet.fromPartial(object.propertySet)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseDiscardCards(): DiscardCards {
+  return { cardIds: [] };
+}
+
+export const DiscardCards: MessageFns<DiscardCards> = {
+  encode(message: DiscardCards, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.cardIds) {
+      writer.uint32(10).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DiscardCards {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDiscardCards();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardIds.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DiscardCards {
+    return {
+      cardIds: globalThis.Array.isArray(object?.cardIds)
+        ? object.cardIds.map((e: any) => globalThis.String(e))
+        : globalThis.Array.isArray(object?.card_ids)
+        ? object.card_ids.map((e: any) => globalThis.String(e))
+        : [],
+    };
+  },
+
+  toJSON(message: DiscardCards): unknown {
+    const obj: any = {};
+    if (message.cardIds?.length) {
+      obj.cardIds = message.cardIds;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DiscardCards>, I>>(base?: I): DiscardCards {
+    return DiscardCards.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DiscardCards>, I>>(object: I): DiscardCards {
+    const message = createBaseDiscardCards();
+    message.cardIds = object.cardIds?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseDiscardCardsRes(): DiscardCardsRes {
+  return { seqNum: 0, playerId: "", cards: [] };
+}
+
+export const DiscardCardsRes: MessageFns<DiscardCardsRes> = {
+  encode(message: DiscardCardsRes, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
+    for (const v of message.cards) {
+      Card.encode(v!, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DiscardCardsRes {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDiscardCardsRes();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.cards.push(Card.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DiscardCardsRes {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      cards: globalThis.Array.isArray(object?.cards) ? object.cards.map((e: any) => Card.fromJSON(e)) : [],
+    };
+  },
+
+  toJSON(message: DiscardCardsRes): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.cards?.length) {
+      obj.cards = message.cards.map((e) => Card.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DiscardCardsRes>, I>>(base?: I): DiscardCardsRes {
+    return DiscardCardsRes.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DiscardCardsRes>, I>>(object: I): DiscardCardsRes {
+    const message = createBaseDiscardCardsRes();
+    message.seqNum = object.seqNum ?? 0;
+    message.playerId = object.playerId ?? "";
+    message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseDiscardCardsMaskedRes(): DiscardCardsMaskedRes {
+  return { seqNum: 0, playerId: "", numCards: 0 };
+}
+
+export const DiscardCardsMaskedRes: MessageFns<DiscardCardsMaskedRes> = {
+  encode(message: DiscardCardsMaskedRes, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
+    if (message.numCards !== 0) {
+      writer.uint32(24).int32(message.numCards);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DiscardCardsMaskedRes {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDiscardCardsMaskedRes();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.numCards = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DiscardCardsMaskedRes {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      numCards: isSet(object.numCards)
+        ? globalThis.Number(object.numCards)
+        : isSet(object.num_cards)
+        ? globalThis.Number(object.num_cards)
+        : 0,
+    };
+  },
+
+  toJSON(message: DiscardCardsMaskedRes): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.numCards !== 0) {
+      obj.numCards = Math.round(message.numCards);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DiscardCardsMaskedRes>, I>>(base?: I): DiscardCardsMaskedRes {
+    return DiscardCardsMaskedRes.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DiscardCardsMaskedRes>, I>>(object: I): DiscardCardsMaskedRes {
+    const message = createBaseDiscardCardsMaskedRes();
+    message.seqNum = object.seqNum ?? 0;
+    message.playerId = object.playerId ?? "";
+    message.numCards = object.numCards ?? 0;
+    return message;
+  },
+};
+
+function createBaseDenyDemand(): DenyDemand {
+  return { demandId: "", cardId: "" };
+}
+
+export const DenyDemand: MessageFns<DenyDemand> = {
+  encode(message: DenyDemand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.demandId !== "") {
+      writer.uint32(10).string(message.demandId);
+    }
+    if (message.cardId !== "") {
+      writer.uint32(18).string(message.cardId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DenyDemand {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDenyDemand();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.demandId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DenyDemand {
+    return {
+      demandId: isSet(object.demandId)
+        ? globalThis.String(object.demandId)
+        : isSet(object.demand_id)
+        ? globalThis.String(object.demand_id)
+        : "",
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+    };
+  },
+
+  toJSON(message: DenyDemand): unknown {
+    const obj: any = {};
+    if (message.demandId !== "") {
+      obj.demandId = message.demandId;
+    }
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DenyDemand>, I>>(base?: I): DenyDemand {
+    return DenyDemand.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DenyDemand>, I>>(object: I): DenyDemand {
+    const message = createBaseDenyDemand();
+    message.demandId = object.demandId ?? "";
+    message.cardId = object.cardId ?? "";
+    return message;
+  },
+};
+
+function createBaseDemandDenied(): DemandDenied {
+  return { seqNum: 0, demandId: "" };
+}
+
+export const DemandDenied: MessageFns<DemandDenied> = {
+  encode(message: DemandDenied, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.demandId !== "") {
+      writer.uint32(18).string(message.demandId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DemandDenied {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDemandDenied();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.demandId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DemandDenied {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      demandId: isSet(object.demandId)
+        ? globalThis.String(object.demandId)
+        : isSet(object.demand_id)
+        ? globalThis.String(object.demand_id)
+        : "",
+    };
+  },
+
+  toJSON(message: DemandDenied): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.demandId !== "") {
+      obj.demandId = message.demandId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DemandDenied>, I>>(base?: I): DemandDenied {
+    return DemandDenied.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DemandDenied>, I>>(object: I): DemandDenied {
+    const message = createBaseDemandDenied();
+    message.seqNum = object.seqNum ?? 0;
+    message.demandId = object.demandId ?? "";
+    return message;
+  },
+};
+
+function createBasePlaySlyDeal(): PlaySlyDeal {
+  return { cardId: "", targetId: "", targetCardId: "" };
+}
+
+export const PlaySlyDeal: MessageFns<PlaySlyDeal> = {
+  encode(message: PlaySlyDeal, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    if (message.targetId !== "") {
+      writer.uint32(18).string(message.targetId);
+    }
+    if (message.targetCardId !== "") {
+      writer.uint32(26).string(message.targetCardId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlaySlyDeal {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlaySlyDeal();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.targetId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.targetCardId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlaySlyDeal {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+      targetId: isSet(object.targetId)
+        ? globalThis.String(object.targetId)
+        : isSet(object.target_id)
+        ? globalThis.String(object.target_id)
+        : "",
+      targetCardId: isSet(object.targetCardId)
+        ? globalThis.String(object.targetCardId)
+        : isSet(object.target_card_id)
+        ? globalThis.String(object.target_card_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlaySlyDeal): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    if (message.targetId !== "") {
+      obj.targetId = message.targetId;
+    }
+    if (message.targetCardId !== "") {
+      obj.targetCardId = message.targetCardId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlaySlyDeal>, I>>(base?: I): PlaySlyDeal {
+    return PlaySlyDeal.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlaySlyDeal>, I>>(object: I): PlaySlyDeal {
+    const message = createBasePlaySlyDeal();
+    message.cardId = object.cardId ?? "";
+    message.targetId = object.targetId ?? "";
+    message.targetCardId = object.targetCardId ?? "";
+    return message;
+  },
+};
+
+function createBasePlayForcedDeal(): PlayForcedDeal {
+  return { cardId: "", targetId: "", sourceCardId: "", targetCardId: "" };
+}
+
+export const PlayForcedDeal: MessageFns<PlayForcedDeal> = {
+  encode(message: PlayForcedDeal, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    if (message.targetId !== "") {
+      writer.uint32(18).string(message.targetId);
+    }
+    if (message.sourceCardId !== "") {
+      writer.uint32(26).string(message.sourceCardId);
+    }
+    if (message.targetCardId !== "") {
+      writer.uint32(34).string(message.targetCardId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayForcedDeal {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayForcedDeal();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.targetId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.sourceCardId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.targetCardId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayForcedDeal {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+      targetId: isSet(object.targetId)
+        ? globalThis.String(object.targetId)
+        : isSet(object.target_id)
+        ? globalThis.String(object.target_id)
+        : "",
+      sourceCardId: isSet(object.sourceCardId)
+        ? globalThis.String(object.sourceCardId)
+        : isSet(object.source_card_id)
+        ? globalThis.String(object.source_card_id)
+        : "",
+      targetCardId: isSet(object.targetCardId)
+        ? globalThis.String(object.targetCardId)
+        : isSet(object.target_card_id)
+        ? globalThis.String(object.target_card_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayForcedDeal): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    if (message.targetId !== "") {
+      obj.targetId = message.targetId;
+    }
+    if (message.sourceCardId !== "") {
+      obj.sourceCardId = message.sourceCardId;
+    }
+    if (message.targetCardId !== "") {
+      obj.targetCardId = message.targetCardId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayForcedDeal>, I>>(base?: I): PlayForcedDeal {
+    return PlayForcedDeal.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayForcedDeal>, I>>(object: I): PlayForcedDeal {
+    const message = createBasePlayForcedDeal();
+    message.cardId = object.cardId ?? "";
+    message.targetId = object.targetId ?? "";
+    message.sourceCardId = object.sourceCardId ?? "";
+    message.targetCardId = object.targetCardId ?? "";
+    return message;
+  },
+};
+
+function createBaseComplyPropertyDemand(): ComplyPropertyDemand {
+  return { demandId: "" };
+}
+
+export const ComplyPropertyDemand: MessageFns<ComplyPropertyDemand> = {
+  encode(message: ComplyPropertyDemand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.demandId !== "") {
+      writer.uint32(10).string(message.demandId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ComplyPropertyDemand {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseComplyPropertyDemand();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.demandId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ComplyPropertyDemand {
+    return {
+      demandId: isSet(object.demandId)
+        ? globalThis.String(object.demandId)
+        : isSet(object.demand_id)
+        ? globalThis.String(object.demand_id)
+        : "",
+    };
+  },
+
+  toJSON(message: ComplyPropertyDemand): unknown {
+    const obj: any = {};
+    if (message.demandId !== "") {
+      obj.demandId = message.demandId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ComplyPropertyDemand>, I>>(base?: I): ComplyPropertyDemand {
+    return ComplyPropertyDemand.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ComplyPropertyDemand>, I>>(object: I): ComplyPropertyDemand {
+    const message = createBaseComplyPropertyDemand();
+    message.demandId = object.demandId ?? "";
+    return message;
+  },
+};
+
+function createBaseTransferProperty(): TransferProperty {
+  return { seqNum: 0, sourceId: "", targetId: "", sourcePropertySets: [], targetPropertySets: [] };
+}
+
+export const TransferProperty: MessageFns<TransferProperty> = {
+  encode(message: TransferProperty, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.sourceId !== "") {
+      writer.uint32(18).string(message.sourceId);
+    }
+    if (message.targetId !== "") {
+      writer.uint32(26).string(message.targetId);
+    }
+    for (const v of message.sourcePropertySets) {
+      PropertySet.encode(v!, writer.uint32(34).fork()).join();
+    }
+    for (const v of message.targetPropertySets) {
+      PropertySet.encode(v!, writer.uint32(42).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TransferProperty {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTransferProperty();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.sourceId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.targetId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.sourcePropertySets.push(PropertySet.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.targetPropertySets.push(PropertySet.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TransferProperty {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      sourceId: isSet(object.sourceId)
+        ? globalThis.String(object.sourceId)
+        : isSet(object.source_id)
+        ? globalThis.String(object.source_id)
+        : "",
+      targetId: isSet(object.targetId)
+        ? globalThis.String(object.targetId)
+        : isSet(object.target_id)
+        ? globalThis.String(object.target_id)
+        : "",
+      sourcePropertySets: globalThis.Array.isArray(object?.sourcePropertySets)
+        ? object.sourcePropertySets.map((e: any) => PropertySet.fromJSON(e))
+        : globalThis.Array.isArray(object?.source_property_sets)
+        ? object.source_property_sets.map((e: any) => PropertySet.fromJSON(e))
+        : [],
+      targetPropertySets: globalThis.Array.isArray(object?.targetPropertySets)
+        ? object.targetPropertySets.map((e: any) => PropertySet.fromJSON(e))
+        : globalThis.Array.isArray(object?.target_property_sets)
+        ? object.target_property_sets.map((e: any) => PropertySet.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: TransferProperty): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.sourceId !== "") {
+      obj.sourceId = message.sourceId;
+    }
+    if (message.targetId !== "") {
+      obj.targetId = message.targetId;
+    }
+    if (message.sourcePropertySets?.length) {
+      obj.sourcePropertySets = message.sourcePropertySets.map((e) => PropertySet.toJSON(e));
+    }
+    if (message.targetPropertySets?.length) {
+      obj.targetPropertySets = message.targetPropertySets.map((e) => PropertySet.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<TransferProperty>, I>>(base?: I): TransferProperty {
+    return TransferProperty.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<TransferProperty>, I>>(object: I): TransferProperty {
+    const message = createBaseTransferProperty();
+    message.seqNum = object.seqNum ?? 0;
+    message.sourceId = object.sourceId ?? "";
+    message.targetId = object.targetId ?? "";
+    message.sourcePropertySets = object.sourcePropertySets?.map((e) => PropertySet.fromPartial(e)) || [];
+    message.targetPropertySets = object.targetPropertySets?.map((e) => PropertySet.fromPartial(e)) || [];
+    return message;
+  },
+};
+
 function createBaseClientMessage(): ClientMessage {
   return {
     chat: undefined,
@@ -3367,6 +5700,19 @@ function createBaseClientMessage(): ClientMessage {
     playProperty: undefined,
     completeTurn: undefined,
     playPassGo: undefined,
+    playItsMyBirthday: undefined,
+    playDebtCollector: undefined,
+    playRent: undefined,
+    playWildRent: undefined,
+    playDoubleTheRent: undefined,
+    resolvePendingRent: undefined,
+    rearrangeCard: undefined,
+    discardCards: undefined,
+    denyDemand: undefined,
+    playSlyDeal: undefined,
+    complyPropertyDemand: undefined,
+    playForcedDeal: undefined,
+    complyPaymentDemand: undefined,
   };
 }
 
@@ -3386,6 +5732,45 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     }
     if (message.playPassGo !== undefined) {
       PlayPassGo.encode(message.playPassGo, writer.uint32(42).fork()).join();
+    }
+    if (message.playItsMyBirthday !== undefined) {
+      PlayItsMyBirthday.encode(message.playItsMyBirthday, writer.uint32(50).fork()).join();
+    }
+    if (message.playDebtCollector !== undefined) {
+      PlayDebtCollector.encode(message.playDebtCollector, writer.uint32(58).fork()).join();
+    }
+    if (message.playRent !== undefined) {
+      PlayRent.encode(message.playRent, writer.uint32(66).fork()).join();
+    }
+    if (message.playWildRent !== undefined) {
+      PlayWildRent.encode(message.playWildRent, writer.uint32(74).fork()).join();
+    }
+    if (message.playDoubleTheRent !== undefined) {
+      PlayDoubleTheRent.encode(message.playDoubleTheRent, writer.uint32(82).fork()).join();
+    }
+    if (message.resolvePendingRent !== undefined) {
+      ResolvePendingRent.encode(message.resolvePendingRent, writer.uint32(90).fork()).join();
+    }
+    if (message.rearrangeCard !== undefined) {
+      RearrangeCard.encode(message.rearrangeCard, writer.uint32(98).fork()).join();
+    }
+    if (message.discardCards !== undefined) {
+      DiscardCards.encode(message.discardCards, writer.uint32(106).fork()).join();
+    }
+    if (message.denyDemand !== undefined) {
+      DenyDemand.encode(message.denyDemand, writer.uint32(114).fork()).join();
+    }
+    if (message.playSlyDeal !== undefined) {
+      PlaySlyDeal.encode(message.playSlyDeal, writer.uint32(122).fork()).join();
+    }
+    if (message.complyPropertyDemand !== undefined) {
+      ComplyPropertyDemand.encode(message.complyPropertyDemand, writer.uint32(130).fork()).join();
+    }
+    if (message.playForcedDeal !== undefined) {
+      PlayForcedDeal.encode(message.playForcedDeal, writer.uint32(138).fork()).join();
+    }
+    if (message.complyPaymentDemand !== undefined) {
+      ComplyPaymentDemand.encode(message.complyPaymentDemand, writer.uint32(162).fork()).join();
     }
     return writer;
   },
@@ -3437,6 +5822,110 @@ export const ClientMessage: MessageFns<ClientMessage> = {
           message.playPassGo = PlayPassGo.decode(reader, reader.uint32());
           continue;
         }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.playItsMyBirthday = PlayItsMyBirthday.decode(reader, reader.uint32());
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.playDebtCollector = PlayDebtCollector.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.playRent = PlayRent.decode(reader, reader.uint32());
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.playWildRent = PlayWildRent.decode(reader, reader.uint32());
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.playDoubleTheRent = PlayDoubleTheRent.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.resolvePendingRent = ResolvePendingRent.decode(reader, reader.uint32());
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.rearrangeCard = RearrangeCard.decode(reader, reader.uint32());
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.discardCards = DiscardCards.decode(reader, reader.uint32());
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.denyDemand = DenyDemand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.playSlyDeal = PlaySlyDeal.decode(reader, reader.uint32());
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.complyPropertyDemand = ComplyPropertyDemand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.playForcedDeal = PlayForcedDeal.decode(reader, reader.uint32());
+          continue;
+        }
+        case 20: {
+          if (tag !== 162) {
+            break;
+          }
+
+          message.complyPaymentDemand = ComplyPaymentDemand.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3469,6 +5958,71 @@ export const ClientMessage: MessageFns<ClientMessage> = {
         : isSet(object.play_pass_go)
         ? PlayPassGo.fromJSON(object.play_pass_go)
         : undefined,
+      playItsMyBirthday: isSet(object.playItsMyBirthday)
+        ? PlayItsMyBirthday.fromJSON(object.playItsMyBirthday)
+        : isSet(object.play_its_my_birthday)
+        ? PlayItsMyBirthday.fromJSON(object.play_its_my_birthday)
+        : undefined,
+      playDebtCollector: isSet(object.playDebtCollector)
+        ? PlayDebtCollector.fromJSON(object.playDebtCollector)
+        : isSet(object.play_debt_collector)
+        ? PlayDebtCollector.fromJSON(object.play_debt_collector)
+        : undefined,
+      playRent: isSet(object.playRent)
+        ? PlayRent.fromJSON(object.playRent)
+        : isSet(object.play_rent)
+        ? PlayRent.fromJSON(object.play_rent)
+        : undefined,
+      playWildRent: isSet(object.playWildRent)
+        ? PlayWildRent.fromJSON(object.playWildRent)
+        : isSet(object.play_wild_rent)
+        ? PlayWildRent.fromJSON(object.play_wild_rent)
+        : undefined,
+      playDoubleTheRent: isSet(object.playDoubleTheRent)
+        ? PlayDoubleTheRent.fromJSON(object.playDoubleTheRent)
+        : isSet(object.play_double_the_rent)
+        ? PlayDoubleTheRent.fromJSON(object.play_double_the_rent)
+        : undefined,
+      resolvePendingRent: isSet(object.resolvePendingRent)
+        ? ResolvePendingRent.fromJSON(object.resolvePendingRent)
+        : isSet(object.resolve_pending_rent)
+        ? ResolvePendingRent.fromJSON(object.resolve_pending_rent)
+        : undefined,
+      rearrangeCard: isSet(object.rearrangeCard)
+        ? RearrangeCard.fromJSON(object.rearrangeCard)
+        : isSet(object.rearrange_card)
+        ? RearrangeCard.fromJSON(object.rearrange_card)
+        : undefined,
+      discardCards: isSet(object.discardCards)
+        ? DiscardCards.fromJSON(object.discardCards)
+        : isSet(object.discard_cards)
+        ? DiscardCards.fromJSON(object.discard_cards)
+        : undefined,
+      denyDemand: isSet(object.denyDemand)
+        ? DenyDemand.fromJSON(object.denyDemand)
+        : isSet(object.deny_demand)
+        ? DenyDemand.fromJSON(object.deny_demand)
+        : undefined,
+      playSlyDeal: isSet(object.playSlyDeal)
+        ? PlaySlyDeal.fromJSON(object.playSlyDeal)
+        : isSet(object.play_sly_deal)
+        ? PlaySlyDeal.fromJSON(object.play_sly_deal)
+        : undefined,
+      complyPropertyDemand: isSet(object.complyPropertyDemand)
+        ? ComplyPropertyDemand.fromJSON(object.complyPropertyDemand)
+        : isSet(object.comply_property_demand)
+        ? ComplyPropertyDemand.fromJSON(object.comply_property_demand)
+        : undefined,
+      playForcedDeal: isSet(object.playForcedDeal)
+        ? PlayForcedDeal.fromJSON(object.playForcedDeal)
+        : isSet(object.play_forced_deal)
+        ? PlayForcedDeal.fromJSON(object.play_forced_deal)
+        : undefined,
+      complyPaymentDemand: isSet(object.complyPaymentDemand)
+        ? ComplyPaymentDemand.fromJSON(object.complyPaymentDemand)
+        : isSet(object.comply_payment_demand)
+        ? ComplyPaymentDemand.fromJSON(object.comply_payment_demand)
+        : undefined,
     };
   },
 
@@ -3488,6 +6042,45 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     }
     if (message.playPassGo !== undefined) {
       obj.playPassGo = PlayPassGo.toJSON(message.playPassGo);
+    }
+    if (message.playItsMyBirthday !== undefined) {
+      obj.playItsMyBirthday = PlayItsMyBirthday.toJSON(message.playItsMyBirthday);
+    }
+    if (message.playDebtCollector !== undefined) {
+      obj.playDebtCollector = PlayDebtCollector.toJSON(message.playDebtCollector);
+    }
+    if (message.playRent !== undefined) {
+      obj.playRent = PlayRent.toJSON(message.playRent);
+    }
+    if (message.playWildRent !== undefined) {
+      obj.playWildRent = PlayWildRent.toJSON(message.playWildRent);
+    }
+    if (message.playDoubleTheRent !== undefined) {
+      obj.playDoubleTheRent = PlayDoubleTheRent.toJSON(message.playDoubleTheRent);
+    }
+    if (message.resolvePendingRent !== undefined) {
+      obj.resolvePendingRent = ResolvePendingRent.toJSON(message.resolvePendingRent);
+    }
+    if (message.rearrangeCard !== undefined) {
+      obj.rearrangeCard = RearrangeCard.toJSON(message.rearrangeCard);
+    }
+    if (message.discardCards !== undefined) {
+      obj.discardCards = DiscardCards.toJSON(message.discardCards);
+    }
+    if (message.denyDemand !== undefined) {
+      obj.denyDemand = DenyDemand.toJSON(message.denyDemand);
+    }
+    if (message.playSlyDeal !== undefined) {
+      obj.playSlyDeal = PlaySlyDeal.toJSON(message.playSlyDeal);
+    }
+    if (message.complyPropertyDemand !== undefined) {
+      obj.complyPropertyDemand = ComplyPropertyDemand.toJSON(message.complyPropertyDemand);
+    }
+    if (message.playForcedDeal !== undefined) {
+      obj.playForcedDeal = PlayForcedDeal.toJSON(message.playForcedDeal);
+    }
+    if (message.complyPaymentDemand !== undefined) {
+      obj.complyPaymentDemand = ComplyPaymentDemand.toJSON(message.complyPaymentDemand);
     }
     return obj;
   },
@@ -3510,6 +6103,45 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     message.playPassGo = (object.playPassGo !== undefined && object.playPassGo !== null)
       ? PlayPassGo.fromPartial(object.playPassGo)
       : undefined;
+    message.playItsMyBirthday = (object.playItsMyBirthday !== undefined && object.playItsMyBirthday !== null)
+      ? PlayItsMyBirthday.fromPartial(object.playItsMyBirthday)
+      : undefined;
+    message.playDebtCollector = (object.playDebtCollector !== undefined && object.playDebtCollector !== null)
+      ? PlayDebtCollector.fromPartial(object.playDebtCollector)
+      : undefined;
+    message.playRent = (object.playRent !== undefined && object.playRent !== null)
+      ? PlayRent.fromPartial(object.playRent)
+      : undefined;
+    message.playWildRent = (object.playWildRent !== undefined && object.playWildRent !== null)
+      ? PlayWildRent.fromPartial(object.playWildRent)
+      : undefined;
+    message.playDoubleTheRent = (object.playDoubleTheRent !== undefined && object.playDoubleTheRent !== null)
+      ? PlayDoubleTheRent.fromPartial(object.playDoubleTheRent)
+      : undefined;
+    message.resolvePendingRent = (object.resolvePendingRent !== undefined && object.resolvePendingRent !== null)
+      ? ResolvePendingRent.fromPartial(object.resolvePendingRent)
+      : undefined;
+    message.rearrangeCard = (object.rearrangeCard !== undefined && object.rearrangeCard !== null)
+      ? RearrangeCard.fromPartial(object.rearrangeCard)
+      : undefined;
+    message.discardCards = (object.discardCards !== undefined && object.discardCards !== null)
+      ? DiscardCards.fromPartial(object.discardCards)
+      : undefined;
+    message.denyDemand = (object.denyDemand !== undefined && object.denyDemand !== null)
+      ? DenyDemand.fromPartial(object.denyDemand)
+      : undefined;
+    message.playSlyDeal = (object.playSlyDeal !== undefined && object.playSlyDeal !== null)
+      ? PlaySlyDeal.fromPartial(object.playSlyDeal)
+      : undefined;
+    message.complyPropertyDemand = (object.complyPropertyDemand !== undefined && object.complyPropertyDemand !== null)
+      ? ComplyPropertyDemand.fromPartial(object.complyPropertyDemand)
+      : undefined;
+    message.playForcedDeal = (object.playForcedDeal !== undefined && object.playForcedDeal !== null)
+      ? PlayForcedDeal.fromPartial(object.playForcedDeal)
+      : undefined;
+    message.complyPaymentDemand = (object.complyPaymentDemand !== undefined && object.complyPaymentDemand !== null)
+      ? ComplyPaymentDemand.fromPartial(object.complyPaymentDemand)
+      : undefined;
     return message;
   },
 };
@@ -3525,6 +6157,17 @@ function createBaseServerMessage(): ServerMessage {
     playPropertyRes: undefined,
     playPassGoRes: undefined,
     playPassGoMaskedRes: undefined,
+    pendingRentResolved: undefined,
+    rearrangeCardRes: undefined,
+    discardCardsRes: undefined,
+    discardCardsMaskedRes: undefined,
+    demandDenied: undefined,
+    compliedDemand: undefined,
+    transferProperty: undefined,
+    playActionRes: undefined,
+    demandCreated: undefined,
+    pendingRentCreated: undefined,
+    transferCards: undefined,
   };
 }
 
@@ -3556,6 +6199,39 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     }
     if (message.playPassGoMaskedRes !== undefined) {
       PlayPassGoMaskedRes.encode(message.playPassGoMaskedRes, writer.uint32(74).fork()).join();
+    }
+    if (message.pendingRentResolved !== undefined) {
+      PendingRentResolved.encode(message.pendingRentResolved, writer.uint32(82).fork()).join();
+    }
+    if (message.rearrangeCardRes !== undefined) {
+      RearrangeCardRes.encode(message.rearrangeCardRes, writer.uint32(90).fork()).join();
+    }
+    if (message.discardCardsRes !== undefined) {
+      DiscardCardsRes.encode(message.discardCardsRes, writer.uint32(98).fork()).join();
+    }
+    if (message.discardCardsMaskedRes !== undefined) {
+      DiscardCardsMaskedRes.encode(message.discardCardsMaskedRes, writer.uint32(106).fork()).join();
+    }
+    if (message.demandDenied !== undefined) {
+      DemandDenied.encode(message.demandDenied, writer.uint32(114).fork()).join();
+    }
+    if (message.compliedDemand !== undefined) {
+      CompliedDemand.encode(message.compliedDemand, writer.uint32(122).fork()).join();
+    }
+    if (message.transferProperty !== undefined) {
+      TransferProperty.encode(message.transferProperty, writer.uint32(130).fork()).join();
+    }
+    if (message.playActionRes !== undefined) {
+      PlayActionRes.encode(message.playActionRes, writer.uint32(154).fork()).join();
+    }
+    if (message.demandCreated !== undefined) {
+      DemandCreated.encode(message.demandCreated, writer.uint32(162).fork()).join();
+    }
+    if (message.pendingRentCreated !== undefined) {
+      PendingRentCreated.encode(message.pendingRentCreated, writer.uint32(170).fork()).join();
+    }
+    if (message.transferCards !== undefined) {
+      TransferCards.encode(message.transferCards, writer.uint32(178).fork()).join();
     }
     return writer;
   },
@@ -3639,6 +6315,94 @@ export const ServerMessage: MessageFns<ServerMessage> = {
           message.playPassGoMaskedRes = PlayPassGoMaskedRes.decode(reader, reader.uint32());
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.pendingRentResolved = PendingRentResolved.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.rearrangeCardRes = RearrangeCardRes.decode(reader, reader.uint32());
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.discardCardsRes = DiscardCardsRes.decode(reader, reader.uint32());
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.discardCardsMaskedRes = DiscardCardsMaskedRes.decode(reader, reader.uint32());
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.demandDenied = DemandDenied.decode(reader, reader.uint32());
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.compliedDemand = CompliedDemand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.transferProperty = TransferProperty.decode(reader, reader.uint32());
+          continue;
+        }
+        case 19: {
+          if (tag !== 154) {
+            break;
+          }
+
+          message.playActionRes = PlayActionRes.decode(reader, reader.uint32());
+          continue;
+        }
+        case 20: {
+          if (tag !== 162) {
+            break;
+          }
+
+          message.demandCreated = DemandCreated.decode(reader, reader.uint32());
+          continue;
+        }
+        case 21: {
+          if (tag !== 170) {
+            break;
+          }
+
+          message.pendingRentCreated = PendingRentCreated.decode(reader, reader.uint32());
+          continue;
+        }
+        case 22: {
+          if (tag !== 178) {
+            break;
+          }
+
+          message.transferCards = TransferCards.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3691,6 +6455,61 @@ export const ServerMessage: MessageFns<ServerMessage> = {
         : isSet(object.play_pass_go_masked_res)
         ? PlayPassGoMaskedRes.fromJSON(object.play_pass_go_masked_res)
         : undefined,
+      pendingRentResolved: isSet(object.pendingRentResolved)
+        ? PendingRentResolved.fromJSON(object.pendingRentResolved)
+        : isSet(object.pending_rent_resolved)
+        ? PendingRentResolved.fromJSON(object.pending_rent_resolved)
+        : undefined,
+      rearrangeCardRes: isSet(object.rearrangeCardRes)
+        ? RearrangeCardRes.fromJSON(object.rearrangeCardRes)
+        : isSet(object.rearrange_card_res)
+        ? RearrangeCardRes.fromJSON(object.rearrange_card_res)
+        : undefined,
+      discardCardsRes: isSet(object.discardCardsRes)
+        ? DiscardCardsRes.fromJSON(object.discardCardsRes)
+        : isSet(object.discard_cards_res)
+        ? DiscardCardsRes.fromJSON(object.discard_cards_res)
+        : undefined,
+      discardCardsMaskedRes: isSet(object.discardCardsMaskedRes)
+        ? DiscardCardsMaskedRes.fromJSON(object.discardCardsMaskedRes)
+        : isSet(object.discard_cards_masked_res)
+        ? DiscardCardsMaskedRes.fromJSON(object.discard_cards_masked_res)
+        : undefined,
+      demandDenied: isSet(object.demandDenied)
+        ? DemandDenied.fromJSON(object.demandDenied)
+        : isSet(object.demand_denied)
+        ? DemandDenied.fromJSON(object.demand_denied)
+        : undefined,
+      compliedDemand: isSet(object.compliedDemand)
+        ? CompliedDemand.fromJSON(object.compliedDemand)
+        : isSet(object.complied_demand)
+        ? CompliedDemand.fromJSON(object.complied_demand)
+        : undefined,
+      transferProperty: isSet(object.transferProperty)
+        ? TransferProperty.fromJSON(object.transferProperty)
+        : isSet(object.transfer_property)
+        ? TransferProperty.fromJSON(object.transfer_property)
+        : undefined,
+      playActionRes: isSet(object.playActionRes)
+        ? PlayActionRes.fromJSON(object.playActionRes)
+        : isSet(object.play_action_res)
+        ? PlayActionRes.fromJSON(object.play_action_res)
+        : undefined,
+      demandCreated: isSet(object.demandCreated)
+        ? DemandCreated.fromJSON(object.demandCreated)
+        : isSet(object.demand_created)
+        ? DemandCreated.fromJSON(object.demand_created)
+        : undefined,
+      pendingRentCreated: isSet(object.pendingRentCreated)
+        ? PendingRentCreated.fromJSON(object.pendingRentCreated)
+        : isSet(object.pending_rent_created)
+        ? PendingRentCreated.fromJSON(object.pending_rent_created)
+        : undefined,
+      transferCards: isSet(object.transferCards)
+        ? TransferCards.fromJSON(object.transferCards)
+        : isSet(object.transfer_cards)
+        ? TransferCards.fromJSON(object.transfer_cards)
+        : undefined,
     };
   },
 
@@ -3722,6 +6541,39 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     }
     if (message.playPassGoMaskedRes !== undefined) {
       obj.playPassGoMaskedRes = PlayPassGoMaskedRes.toJSON(message.playPassGoMaskedRes);
+    }
+    if (message.pendingRentResolved !== undefined) {
+      obj.pendingRentResolved = PendingRentResolved.toJSON(message.pendingRentResolved);
+    }
+    if (message.rearrangeCardRes !== undefined) {
+      obj.rearrangeCardRes = RearrangeCardRes.toJSON(message.rearrangeCardRes);
+    }
+    if (message.discardCardsRes !== undefined) {
+      obj.discardCardsRes = DiscardCardsRes.toJSON(message.discardCardsRes);
+    }
+    if (message.discardCardsMaskedRes !== undefined) {
+      obj.discardCardsMaskedRes = DiscardCardsMaskedRes.toJSON(message.discardCardsMaskedRes);
+    }
+    if (message.demandDenied !== undefined) {
+      obj.demandDenied = DemandDenied.toJSON(message.demandDenied);
+    }
+    if (message.compliedDemand !== undefined) {
+      obj.compliedDemand = CompliedDemand.toJSON(message.compliedDemand);
+    }
+    if (message.transferProperty !== undefined) {
+      obj.transferProperty = TransferProperty.toJSON(message.transferProperty);
+    }
+    if (message.playActionRes !== undefined) {
+      obj.playActionRes = PlayActionRes.toJSON(message.playActionRes);
+    }
+    if (message.demandCreated !== undefined) {
+      obj.demandCreated = DemandCreated.toJSON(message.demandCreated);
+    }
+    if (message.pendingRentCreated !== undefined) {
+      obj.pendingRentCreated = PendingRentCreated.toJSON(message.pendingRentCreated);
+    }
+    if (message.transferCards !== undefined) {
+      obj.transferCards = TransferCards.toJSON(message.transferCards);
     }
     return obj;
   },
@@ -3755,6 +6607,40 @@ export const ServerMessage: MessageFns<ServerMessage> = {
       : undefined;
     message.playPassGoMaskedRes = (object.playPassGoMaskedRes !== undefined && object.playPassGoMaskedRes !== null)
       ? PlayPassGoMaskedRes.fromPartial(object.playPassGoMaskedRes)
+      : undefined;
+    message.pendingRentResolved = (object.pendingRentResolved !== undefined && object.pendingRentResolved !== null)
+      ? PendingRentResolved.fromPartial(object.pendingRentResolved)
+      : undefined;
+    message.rearrangeCardRes = (object.rearrangeCardRes !== undefined && object.rearrangeCardRes !== null)
+      ? RearrangeCardRes.fromPartial(object.rearrangeCardRes)
+      : undefined;
+    message.discardCardsRes = (object.discardCardsRes !== undefined && object.discardCardsRes !== null)
+      ? DiscardCardsRes.fromPartial(object.discardCardsRes)
+      : undefined;
+    message.discardCardsMaskedRes =
+      (object.discardCardsMaskedRes !== undefined && object.discardCardsMaskedRes !== null)
+        ? DiscardCardsMaskedRes.fromPartial(object.discardCardsMaskedRes)
+        : undefined;
+    message.demandDenied = (object.demandDenied !== undefined && object.demandDenied !== null)
+      ? DemandDenied.fromPartial(object.demandDenied)
+      : undefined;
+    message.compliedDemand = (object.compliedDemand !== undefined && object.compliedDemand !== null)
+      ? CompliedDemand.fromPartial(object.compliedDemand)
+      : undefined;
+    message.transferProperty = (object.transferProperty !== undefined && object.transferProperty !== null)
+      ? TransferProperty.fromPartial(object.transferProperty)
+      : undefined;
+    message.playActionRes = (object.playActionRes !== undefined && object.playActionRes !== null)
+      ? PlayActionRes.fromPartial(object.playActionRes)
+      : undefined;
+    message.demandCreated = (object.demandCreated !== undefined && object.demandCreated !== null)
+      ? DemandCreated.fromPartial(object.demandCreated)
+      : undefined;
+    message.pendingRentCreated = (object.pendingRentCreated !== undefined && object.pendingRentCreated !== null)
+      ? PendingRentCreated.fromPartial(object.pendingRentCreated)
+      : undefined;
+    message.transferCards = (object.transferCards !== undefined && object.transferCards !== null)
+      ? TransferCards.fromPartial(object.transferCards)
       : undefined;
     return message;
   },

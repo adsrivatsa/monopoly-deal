@@ -399,6 +399,10 @@ func (c Card) HasColor(color Color) bool {
 type Cards []Card
 
 func (c *Cards) Proto() []*monopoly_deal_schema.Card {
+	if c == nil {
+		return nil
+	}
+
 	cards := make([]*monopoly_deal_schema.Card, len(*c))
 	for i, card := range *c {
 		cards[i] = card.Proto()

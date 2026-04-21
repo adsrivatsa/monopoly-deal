@@ -166,14 +166,16 @@ message PropertySetDemand {
 }
 
 message Demand {
-  string source_id = 1;
-  DemandKind demand_kind = 2;
+  string id = 1;
+  string player_id = 2;
+  string source_id = 3;
+  DemandKind demand_kind = 4;
   oneof demand {
-    PaymentDemand payment_demand = 3;
-    PropertyDemand property_demand = 4;
-    PropertySetDemand property_set_demand = 5;
+    PaymentDemand payment_demand = 5;
+    PropertyDemand property_demand = 6;
+    PropertySetDemand property_set_demand = 7;
   }
-  bool is_active = 6;
+  bool is_active = 8;
 }
 
 message PendingRent {
@@ -196,10 +198,11 @@ message GameState {
   Hand your_hand = 5;
   repeated Money money = 6;
   repeated PropertySet properties = 7;
-  optional Demand demand = 8;
+  repeated Demand demands = 8;
   optional PendingRent pending_rent = 9;
   Card last_action = 10;
   repeated AssetImage asset_images = 11;
+  int32 max_hand_size = 12;
 }
 
 message StartTurnRes {
@@ -267,6 +270,133 @@ message PlayPassGoMaskedRes {
   Card last_played_card = 4;
 }
 
+message PlayItsMyBirthday {
+  string card_id = 1;
+}
+
+message PlayDebtCollector {
+  string card_id = 1;
+  string target_id = 2;
+}
+
+message PlayRent {
+  string card_id = 1;
+}
+
+message PlayWildRent {
+  string card_id = 1;
+  string target_id = 2;
+}
+
+message PlayDoubleTheRent {
+  string card_id = 1;
+}
+
+message PlayActionRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  Card last_played_card = 3;
+}
+
+message DemandCreated {
+  Demand demand = 1;
+}
+
+message ComplyPaymentDemand {
+  string demand_id = 1;
+  repeated string card_ids = 2;
+}
+
+message CompliedDemand {
+  int32 seq_num = 1;
+  string demand_id = 2;
+  string player_id = 3;
+}
+
+message PendingRentCreated {
+  PendingRent pending_rent = 1;
+}
+
+message ResolvePendingRent {
+
+}
+
+message PendingRentResolved {
+  int32 seq_num = 1;
+  string player_id = 2;
+}
+
+message TransferCards {
+  string source_id = 1;
+  string target_id = 2;
+  repeated Card cards = 3;
+  repeated PropertySet property_sets = 4;
+}
+
+message RearrangeCard {
+  string card_id = 1;
+  optional string property_set_id = 2;
+  optional Color color = 3;
+}
+
+message RearrangeCardRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  Card card = 3;
+  PropertySet property_set = 4;
+}
+
+message DiscardCards {
+  repeated string card_ids = 1;
+}
+
+message DiscardCardsRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  repeated Card cards = 3;
+}
+
+message DiscardCardsMaskedRes {
+  int32 seq_num = 1;
+  string player_id = 2;
+  int32 num_cards = 3;
+}
+
+message DenyDemand {
+  string demand_id = 1;
+  string card_id = 2;
+}
+
+message DemandDenied {
+  int32 seq_num = 1;
+  string demand_id = 2;
+}
+
+message PlaySlyDeal {
+  string card_id = 1;
+  string target_id = 2;
+  string target_card_id = 3;
+}
+
+message PlayForcedDeal {
+  string card_id = 1;
+  string target_id = 2;
+  string source_card_id = 3;
+  string target_card_id = 4;
+}
+
+message ComplyPropertyDemand {
+  string demand_id = 1;
+}
+
+message TransferProperty {
+  int32 seq_num = 1;
+  string source_id = 2;
+  string target_id = 3;
+  repeated PropertySet source_property_sets = 4;
+  repeated PropertySet target_property_sets = 5;
+}
+
 message ClientMessage {
   oneof payload {
     Chat chat = 1;
@@ -274,6 +404,20 @@ message ClientMessage {
     PlayProperty play_property = 3;
     CompleteTurn complete_turn = 4;
     PlayPassGo play_pass_go = 5;
+    PlayItsMyBirthday play_its_my_birthday = 6;
+    PlayDebtCollector play_debt_collector = 7;
+    PlayRent play_rent = 8;
+    PlayWildRent play_wild_rent = 9;
+    PlayDoubleTheRent play_double_the_rent = 10;
+    ResolvePendingRent resolve_pending_rent = 11;
+    RearrangeCard rearrange_card = 12;
+    DiscardCards discard_cards = 13;
+    DenyDemand deny_demand = 14;
+    PlaySlyDeal play_sly_deal = 15;
+    ComplyPropertyDemand comply_property_demand = 16;
+    PlayForcedDeal play_forced_deal = 17;
+
+    ComplyPaymentDemand comply_payment_demand = 20;
   }
 }
 
@@ -288,5 +432,17 @@ message ServerMessage {
     PlayPropertyRes play_property_res = 7;
     PlayPassGoRes play_pass_go_res = 8;
     PlayPassGoMaskedRes play_pass_go_masked_res = 9;
+    PendingRentResolved pending_rent_resolved = 10;
+    RearrangeCardRes rearrange_card_res = 11;
+    DiscardCardsRes discard_cards_res = 12;
+    DiscardCardsMaskedRes discard_cards_masked_res = 13;
+    DemandDenied demand_denied = 14;
+    CompliedDemand complied_demand = 15;
+    TransferProperty transfer_property = 16;
+
+    PlayActionRes play_action_res = 19;
+    DemandCreated demand_created = 20;
+    PendingRentCreated pending_rent_created = 21;
+    TransferCards transfer_cards = 22;
   }
 }

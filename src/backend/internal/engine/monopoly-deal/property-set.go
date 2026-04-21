@@ -109,6 +109,10 @@ func (ps *PropertySet) Index(cardID Identifier) int {
 type PropertySets []PropertySet
 
 func (ps *PropertySets) Proto(playerUUID uuid.UUID) []*monopoly_deal_schema.PropertySet {
+	if ps == nil {
+		return nil
+	}
+
 	sets := make([]*monopoly_deal_schema.PropertySet, len(*ps))
 	for i, p := range *ps {
 		sets[i] = p.Proto(playerUUID)
