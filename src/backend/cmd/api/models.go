@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fun-kames/internal/store"
+	"the-deal/internal/store"
 
 	"github.com/google/uuid"
 )

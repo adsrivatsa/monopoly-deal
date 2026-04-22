@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	stderrors "errors"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/schema"
-	"fun-kames/internal/schema/monopoly_deal_schema"
-	"fun-kames/internal/token"
 	"net/http"
+	"the-deal/internal/errors"
+	"the-deal/internal/schema"
+	"the-deal/internal/schema/monopoly_deal_schema"
+	"the-deal/internal/token"
 )
 
 func (s *Server) MonopolyDealSocket(w http.ResponseWriter, r *http.Request) {

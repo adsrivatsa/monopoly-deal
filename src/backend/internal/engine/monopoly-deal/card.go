@@ -2,7 +2,7 @@ package monopoly_deal
 
 import (
 	"fmt"
-	"fun-kames/internal/schema/monopoly_deal_schema"
+	"the-deal/internal/schema/monopoly_deal_schema"
 )
 
 type AssetKey string

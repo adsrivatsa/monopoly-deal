@@ -1,9 +1,9 @@
 package monopoly_deal
 
 import (
-	"fun-kames/internal/schema"
-	"fun-kames/internal/schema/monopoly_deal_schema"
-	"fun-kames/internal/token"
+	"the-deal/internal/schema"
+	"the-deal/internal/schema/monopoly_deal_schema"
+	"the-deal/internal/token"
 )
 
 func (c *Controller) MaskEvents(tp token.Payload, msg *monopoly_deal_schema.ServerMessage) *schema.ServerMessage {

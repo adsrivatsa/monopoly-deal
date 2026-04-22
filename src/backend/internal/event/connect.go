@@ -3,7 +3,7 @@ package event
 import (
 	"context"
 	"fmt"
-	"fun-kames/internal/config"
+	"the-deal/internal/config"
 	"time"
 
 	"github.com/go-redis/redis/v8"

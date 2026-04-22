@@ -1,7 +1,7 @@
 package store
 
 import (
-	"fun-kames/internal/schema/room_schema"
+	"the-deal/internal/schema/room_schema"
 )
 
 func (g GameType) Proto() room_schema.Game {

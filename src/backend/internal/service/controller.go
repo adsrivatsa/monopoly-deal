@@ -1,10 +1,10 @@
 package service
 
 import (
-	"fun-kames/internal/config"
-	"fun-kames/internal/event"
-	monopoly_deal "fun-kames/internal/service/monopoly-deal"
-	"fun-kames/internal/store"
+	"the-deal/internal/config"
+	"the-deal/internal/event"
+	monopoly_deal "the-deal/internal/service/monopoly-deal"
+	"the-deal/internal/store"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5/pgxpool"

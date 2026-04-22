@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
-	monopoly_deal "fun-kames/internal/engine/monopoly-deal"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/event"
-	"fun-kames/internal/schema"
-	"fun-kames/internal/schema/room_schema"
-	"fun-kames/internal/store"
-	"fun-kames/internal/token"
+	monopoly_deal "the-deal/internal/engine/monopoly-deal"
+	"the-deal/internal/errors"
+	"the-deal/internal/event"
+	"the-deal/internal/schema"
+	"the-deal/internal/schema/room_schema"
+	"the-deal/internal/store"
+	"the-deal/internal/token"
 
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"

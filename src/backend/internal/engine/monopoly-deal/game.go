@@ -2,9 +2,9 @@ package monopoly_deal
 
 import (
 	"fmt"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/schema/monopoly_deal_schema"
 	"slices"
+	"the-deal/internal/errors"
+	"the-deal/internal/schema/monopoly_deal_schema"
 
 	"github.com/google/uuid"
 )

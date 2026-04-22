@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"fun-kames/internal/config"
-	"fun-kames/internal/service"
-	"fun-kames/internal/token"
 	"log/slog"
 	"net/http"
 	"path/filepath"
 	"sync"
+	"the-deal/internal/config"
+	"the-deal/internal/service"
+	"the-deal/internal/token"
 	"time"
 
 	"github.com/go-chi/chi/v5"

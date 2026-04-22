@@ -3,3 +3,4 @@
 src/frontend/node_modules
 src/frontend/dist
 .idea
+tmp

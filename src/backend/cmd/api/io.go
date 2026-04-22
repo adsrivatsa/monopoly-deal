@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/store"
 	"io"
 	"net/http"
 	"reflect"
 	"strings"
+	"the-deal/internal/errors"
+	"the-deal/internal/store"
 
 	"github.com/go-playground/validator/v10"
 )

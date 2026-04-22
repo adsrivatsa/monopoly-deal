@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package fun_kames.schema.monopoly_deal;
+package the_deal.schema.monopoly_deal;
 
-option go_package = "fun-kames/internal/schema/monopoly_deal_schema;monopoly_deal_schema";
+option go_package = "the-deal/internal/schema/monopoly_deal_schema;monopoly_deal_schema";
 
 message Error {
   string message = 1;

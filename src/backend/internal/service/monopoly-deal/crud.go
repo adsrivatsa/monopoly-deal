@@ -3,11 +3,11 @@ package monopoly_deal
 import (
 	"context"
 	stderrors "errors"
-	monopoly_deal "fun-kames/internal/engine/monopoly-deal"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/schema"
-	"fun-kames/internal/schema/monopoly_deal_schema"
-	"fun-kames/internal/token"
+	monopoly_deal "the-deal/internal/engine/monopoly-deal"
+	"the-deal/internal/errors"
+	"the-deal/internal/schema"
+	"the-deal/internal/schema/monopoly_deal_schema"
+	"the-deal/internal/token"
 
 	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack/v5"

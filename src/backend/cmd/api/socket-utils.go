@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"fun-kames/internal/schema"
+	"fmt"
+	"the-deal/internal/schema"
 	"time"
 )
 
@@ -23,6 +24,7 @@ func (s *Server) ping(ctx context.Context, sock *socket) {
 				},
 			}
 			sock.send(msg)
+			fmt.Println("hi")
 		}
 	}
 }

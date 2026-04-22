@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/token"
 	"net/http"
+	"the-deal/internal/errors"
+	"the-deal/internal/token"
 
 	"github.com/gorilla/sessions"
 )

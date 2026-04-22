@@ -4,9 +4,9 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/schema"
 	"sync"
+	"the-deal/internal/errors"
+	"the-deal/internal/schema"
 	"time"
 
 	"github.com/gorilla/websocket"

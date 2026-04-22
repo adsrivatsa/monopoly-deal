@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/service"
-	"fun-kames/internal/token"
 	"net/http"
 	"net/url"
+	"the-deal/internal/errors"
+	"the-deal/internal/service"
+	"the-deal/internal/token"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"

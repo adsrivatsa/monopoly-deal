@@ -9,7 +9,7 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import { ClientMessage as ClientMessage2, ServerMessage as ServerMessage4 } from "./monopoly_deal";
 import { ClientMessage as ClientMessage1, ServerMessage as ServerMessage3 } from "./room";
 
-export const protobufPackage = "fun_kames.schema";
+export const protobufPackage = "the_deal.schema";
 
 export interface Ping {
   timeUnixMs: number;

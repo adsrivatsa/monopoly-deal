@@ -7,7 +7,7 @@
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 
-export const protobufPackage = "fun_kames.schema.monopoly_deal";
+export const protobufPackage = "the_deal.schema.monopoly_deal";
 
 export enum AssetKey {
   ASSET_KEY_UNSPECIFIED = 0,

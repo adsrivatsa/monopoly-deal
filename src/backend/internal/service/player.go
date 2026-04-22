@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/store"
-	"fun-kames/internal/token"
+	"the-deal/internal/errors"
+	"the-deal/internal/store"
+	"the-deal/internal/token"
 )
 
 func (c *Controller) CreatePlayer(ctx context.Context, args CreatePlayerParams) (Player, error) {

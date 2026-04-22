@@ -1,4 +1,4 @@
-module fun-kames
+module the-deal
 
 go 1.25.4
 

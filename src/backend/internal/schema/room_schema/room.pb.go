@@ -155,7 +155,7 @@ type Room struct {
 	Players       []*Player              `protobuf:"bytes,3,rep,name=players,proto3" json:"players,omitempty"`
 	Capacity      int32                  `protobuf:"varint,4,opt,name=capacity,proto3" json:"capacity,omitempty"`
 	Occupied      int32                  `protobuf:"varint,5,opt,name=occupied,proto3" json:"occupied,omitempty"`
-	Game          Game                   `protobuf:"varint,6,opt,name=game,proto3,enum=fun_kames.schema.room.Game" json:"game,omitempty"`
+	Game          Game                   `protobuf:"varint,6,opt,name=game,proto3,enum=the_deal.schema.room.Game" json:"game,omitempty"`
 	Settings      []byte                 `protobuf:"bytes,7,opt,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -591,7 +591,7 @@ func (x *PlayerToggledReady) GetIsReady() bool {
 type SettingsUpdated struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Capacity      int32                  `protobuf:"varint,1,opt,name=capacity,proto3" json:"capacity,omitempty"`
-	Game          Game                   `protobuf:"varint,2,opt,name=game,proto3,enum=fun_kames.schema.room.Game" json:"game,omitempty"`
+	Game          Game                   `protobuf:"varint,2,opt,name=game,proto3,enum=the_deal.schema.room.Game" json:"game,omitempty"`
 	Settings      []byte                 `protobuf:"bytes,3,opt,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -925,7 +925,7 @@ var File_room_proto protoreflect.FileDescriptor
 const file_room_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"room.proto\x12\x15fun_kames.schema.room\"\xb8\x01\n" +
+	"room.proto\x12\x14the_deal.schema.room\"\xb8\x01\n" +
 	"\x06Player\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x1d\n" +
@@ -933,20 +933,20 @@ const file_room_proto_rawDesc = "" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x19\n" +
 	"\bis_ready\x18\x04 \x01(\bR\aisReady\x12\x17\n" +
 	"\ais_host\x18\x05 \x01(\bR\x06isHost\x12\x1b\n" +
-	"\tjoined_at\x18\x06 \x01(\x03R\bjoinedAt\"\x80\x02\n" +
+	"\tjoined_at\x18\x06 \x01(\x03R\bjoinedAt\"\xfe\x01\n" +
 	"\x04Room\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x127\n" +
-	"\aplayers\x18\x03 \x03(\v2\x1d.fun_kames.schema.room.PlayerR\aplayers\x12\x1a\n" +
+	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x126\n" +
+	"\aplayers\x18\x03 \x03(\v2\x1c.the_deal.schema.room.PlayerR\aplayers\x12\x1a\n" +
 	"\bcapacity\x18\x04 \x01(\x05R\bcapacity\x12\x1a\n" +
-	"\boccupied\x18\x05 \x01(\x05R\boccupied\x12/\n" +
-	"\x04game\x18\x06 \x01(\x0e2\x1b.fun_kames.schema.room.GameR\x04game\x12\x1a\n" +
-	"\bsettings\x18\a \x01(\fR\bsettings\">\n" +
-	"\vRoomCreated\x12/\n" +
-	"\x04room\x18\x01 \x01(\v2\x1b.fun_kames.schema.room.RoomR\x04room\"b\n" +
+	"\boccupied\x18\x05 \x01(\x05R\boccupied\x12.\n" +
+	"\x04game\x18\x06 \x01(\x0e2\x1a.the_deal.schema.room.GameR\x04game\x12\x1a\n" +
+	"\bsettings\x18\a \x01(\fR\bsettings\"=\n" +
+	"\vRoomCreated\x12.\n" +
+	"\x04room\x18\x01 \x01(\v2\x1a.the_deal.schema.room.RoomR\x04room\"a\n" +
 	"\x10PlayerJoinedRoom\x12\x17\n" +
-	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x125\n" +
-	"\x06player\x18\x02 \x01(\v2\x1d.fun_kames.schema.room.PlayerR\x06player\"\x8f\x01\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x124\n" +
+	"\x06player\x18\x02 \x01(\v2\x1c.the_deal.schema.room.PlayerR\x06player\"\x8f\x01\n" +
 	"\x0ePlayerLeftRoom\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1b\n" +
 	"\tplayed_id\x18\x02 \x01(\tR\bplayedId\x120\n" +
@@ -961,27 +961,27 @@ const file_room_proto_rawDesc = "" +
 	"\apayload\x18\x02 \x01(\tR\apayload\"L\n" +
 	"\x12PlayerToggledReady\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12\x19\n" +
-	"\bis_ready\x18\x02 \x01(\bR\aisReady\"z\n" +
+	"\bis_ready\x18\x02 \x01(\bR\aisReady\"y\n" +
 	"\x0fSettingsUpdated\x12\x1a\n" +
-	"\bcapacity\x18\x01 \x01(\x05R\bcapacity\x12/\n" +
-	"\x04game\x18\x02 \x01(\x0e2\x1b.fun_kames.schema.room.GameR\x04game\x12\x1a\n" +
+	"\bcapacity\x18\x01 \x01(\x05R\bcapacity\x12.\n" +
+	"\x04game\x18\x02 \x01(\x0e2\x1a.the_deal.schema.room.GameR\x04game\x12\x1a\n" +
 	"\bsettings\x18\x03 \x01(\fR\bsettings\"&\n" +
 	"\vGameStarted\x12\x17\n" +
-	"\agame_id\x18\x01 \x01(\tR\x06gameId\"\xd8\x04\n" +
-	"\rServerMessage\x12G\n" +
-	"\froom_created\x18\x01 \x01(\v2\".fun_kames.schema.room.RoomCreatedH\x00R\vroomCreated\x12W\n" +
-	"\x12player_joined_room\x18\x02 \x01(\v2'.fun_kames.schema.room.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12Q\n" +
-	"\x10player_left_room\x18\x03 \x01(\v2%.fun_kames.schema.room.PlayerLeftRoomH\x00R\x0eplayerLeftRoom\x12J\n" +
-	"\rchat_received\x18\x04 \x01(\v2#.fun_kames.schema.room.ChatReceivedH\x00R\fchatReceived\x12]\n" +
-	"\x14player_toggled_ready\x18\x05 \x01(\v2).fun_kames.schema.room.PlayerToggledReadyH\x00R\x12playerToggledReady\x12S\n" +
-	"\x10settings_updated\x18\x06 \x01(\v2&.fun_kames.schema.room.SettingsUpdatedH\x00R\x0fsettingsUpdated\x12G\n" +
-	"\fgame_started\x18\a \x01(\v2\".fun_kames.schema.room.GameStartedH\x00R\vgameStartedB\t\n" +
-	"\apayload\"M\n" +
-	"\rClientMessage\x121\n" +
-	"\x04chat\x18\x01 \x01(\v2\x1b.fun_kames.schema.room.ChatH\x00R\x04chatB\t\n" +
+	"\agame_id\x18\x01 \x01(\tR\x06gameId\"\xd1\x04\n" +
+	"\rServerMessage\x12F\n" +
+	"\froom_created\x18\x01 \x01(\v2!.the_deal.schema.room.RoomCreatedH\x00R\vroomCreated\x12V\n" +
+	"\x12player_joined_room\x18\x02 \x01(\v2&.the_deal.schema.room.PlayerJoinedRoomH\x00R\x10playerJoinedRoom\x12P\n" +
+	"\x10player_left_room\x18\x03 \x01(\v2$.the_deal.schema.room.PlayerLeftRoomH\x00R\x0eplayerLeftRoom\x12I\n" +
+	"\rchat_received\x18\x04 \x01(\v2\".the_deal.schema.room.ChatReceivedH\x00R\fchatReceived\x12\\\n" +
+	"\x14player_toggled_ready\x18\x05 \x01(\v2(.the_deal.schema.room.PlayerToggledReadyH\x00R\x12playerToggledReady\x12R\n" +
+	"\x10settings_updated\x18\x06 \x01(\v2%.the_deal.schema.room.SettingsUpdatedH\x00R\x0fsettingsUpdated\x12F\n" +
+	"\fgame_started\x18\a \x01(\v2!.the_deal.schema.room.GameStartedH\x00R\vgameStartedB\t\n" +
+	"\apayload\"L\n" +
+	"\rClientMessage\x120\n" +
+	"\x04chat\x18\x01 \x01(\v2\x1a.the_deal.schema.room.ChatH\x00R\x04chatB\t\n" +
 	"\apayload*\x18\n" +
 	"\x04Game\x12\x10\n" +
-	"\fMonopolyDeal\x10\x00B3Z1fun-kames/internal/schema/room_schema;room_schemab\x06proto3"
+	"\fMonopolyDeal\x10\x00B2Z0the-deal/internal/schema/room_schema;room_schemab\x06proto3"
 
 var (
 	file_room_proto_rawDescOnce sync.Once
@@ -998,35 +998,35 @@ func file_room_proto_rawDescGZIP() []byte {
 var file_room_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_room_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_room_proto_goTypes = []any{
-	(Game)(0),                  // 0: fun_kames.schema.room.Game
-	(*Player)(nil),             // 1: fun_kames.schema.room.Player
-	(*Room)(nil),               // 2: fun_kames.schema.room.Room
-	(*RoomCreated)(nil),        // 3: fun_kames.schema.room.RoomCreated
-	(*PlayerJoinedRoom)(nil),   // 4: fun_kames.schema.room.PlayerJoinedRoom
-	(*PlayerLeftRoom)(nil),     // 5: fun_kames.schema.room.PlayerLeftRoom
-	(*RoomDeleted)(nil),        // 6: fun_kames.schema.room.RoomDeleted
-	(*Chat)(nil),               // 7: fun_kames.schema.room.Chat
-	(*ChatReceived)(nil),       // 8: fun_kames.schema.room.ChatReceived
-	(*PlayerToggledReady)(nil), // 9: fun_kames.schema.room.PlayerToggledReady
-	(*SettingsUpdated)(nil),    // 10: fun_kames.schema.room.SettingsUpdated
-	(*GameStarted)(nil),        // 11: fun_kames.schema.room.GameStarted
-	(*ServerMessage)(nil),      // 12: fun_kames.schema.room.ServerMessage
-	(*ClientMessage)(nil),      // 13: fun_kames.schema.room.ClientMessage
+	(Game)(0),                  // 0: the_deal.schema.room.Game
+	(*Player)(nil),             // 1: the_deal.schema.room.Player
+	(*Room)(nil),               // 2: the_deal.schema.room.Room
+	(*RoomCreated)(nil),        // 3: the_deal.schema.room.RoomCreated
+	(*PlayerJoinedRoom)(nil),   // 4: the_deal.schema.room.PlayerJoinedRoom
+	(*PlayerLeftRoom)(nil),     // 5: the_deal.schema.room.PlayerLeftRoom
+	(*RoomDeleted)(nil),        // 6: the_deal.schema.room.RoomDeleted
+	(*Chat)(nil),               // 7: the_deal.schema.room.Chat
+	(*ChatReceived)(nil),       // 8: the_deal.schema.room.ChatReceived
+	(*PlayerToggledReady)(nil), // 9: the_deal.schema.room.PlayerToggledReady
+	(*SettingsUpdated)(nil),    // 10: the_deal.schema.room.SettingsUpdated
+	(*GameStarted)(nil),        // 11: the_deal.schema.room.GameStarted
+	(*ServerMessage)(nil),      // 12: the_deal.schema.room.ServerMessage
+	(*ClientMessage)(nil),      // 13: the_deal.schema.room.ClientMessage
 }
 var file_room_proto_depIdxs = []int32{
-	1,  // 0: fun_kames.schema.room.Room.players:type_name -> fun_kames.schema.room.Player
-	0,  // 1: fun_kames.schema.room.Room.game:type_name -> fun_kames.schema.room.Game
-	2,  // 2: fun_kames.schema.room.RoomCreated.room:type_name -> fun_kames.schema.room.Room
-	1,  // 3: fun_kames.schema.room.PlayerJoinedRoom.player:type_name -> fun_kames.schema.room.Player
-	0,  // 4: fun_kames.schema.room.SettingsUpdated.game:type_name -> fun_kames.schema.room.Game
-	3,  // 5: fun_kames.schema.room.ServerMessage.room_created:type_name -> fun_kames.schema.room.RoomCreated
-	4,  // 6: fun_kames.schema.room.ServerMessage.player_joined_room:type_name -> fun_kames.schema.room.PlayerJoinedRoom
-	5,  // 7: fun_kames.schema.room.ServerMessage.player_left_room:type_name -> fun_kames.schema.room.PlayerLeftRoom
-	8,  // 8: fun_kames.schema.room.ServerMessage.chat_received:type_name -> fun_kames.schema.room.ChatReceived
-	9,  // 9: fun_kames.schema.room.ServerMessage.player_toggled_ready:type_name -> fun_kames.schema.room.PlayerToggledReady
-	10, // 10: fun_kames.schema.room.ServerMessage.settings_updated:type_name -> fun_kames.schema.room.SettingsUpdated
-	11, // 11: fun_kames.schema.room.ServerMessage.game_started:type_name -> fun_kames.schema.room.GameStarted
-	7,  // 12: fun_kames.schema.room.ClientMessage.chat:type_name -> fun_kames.schema.room.Chat
+	1,  // 0: the_deal.schema.room.Room.players:type_name -> the_deal.schema.room.Player
+	0,  // 1: the_deal.schema.room.Room.game:type_name -> the_deal.schema.room.Game
+	2,  // 2: the_deal.schema.room.RoomCreated.room:type_name -> the_deal.schema.room.Room
+	1,  // 3: the_deal.schema.room.PlayerJoinedRoom.player:type_name -> the_deal.schema.room.Player
+	0,  // 4: the_deal.schema.room.SettingsUpdated.game:type_name -> the_deal.schema.room.Game
+	3,  // 5: the_deal.schema.room.ServerMessage.room_created:type_name -> the_deal.schema.room.RoomCreated
+	4,  // 6: the_deal.schema.room.ServerMessage.player_joined_room:type_name -> the_deal.schema.room.PlayerJoinedRoom
+	5,  // 7: the_deal.schema.room.ServerMessage.player_left_room:type_name -> the_deal.schema.room.PlayerLeftRoom
+	8,  // 8: the_deal.schema.room.ServerMessage.chat_received:type_name -> the_deal.schema.room.ChatReceived
+	9,  // 9: the_deal.schema.room.ServerMessage.player_toggled_ready:type_name -> the_deal.schema.room.PlayerToggledReady
+	10, // 10: the_deal.schema.room.ServerMessage.settings_updated:type_name -> the_deal.schema.room.SettingsUpdated
+	11, // 11: the_deal.schema.room.ServerMessage.game_started:type_name -> the_deal.schema.room.GameStarted
+	7,  // 12: the_deal.schema.room.ClientMessage.chat:type_name -> the_deal.schema.room.Chat
 	13, // [13:13] is the sub-list for method output_type
 	13, // [13:13] is the sub-list for method input_type
 	13, // [13:13] is the sub-list for extension type_name

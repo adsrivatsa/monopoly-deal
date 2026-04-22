@@ -7,12 +7,12 @@
 package schema
 
 import (
-	monopoly_deal_schema "fun-kames/internal/schema/monopoly_deal_schema"
-	room_schema "fun-kames/internal/schema/room_schema"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+	monopoly_deal_schema "the-deal/internal/schema/monopoly_deal_schema"
+	room_schema "the-deal/internal/schema/room_schema"
 	unsafe "unsafe"
 )
 
@@ -267,23 +267,23 @@ var File_gateway_proto protoreflect.FileDescriptor
 
 const file_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\rgateway.proto\x12\x10fun_kames.schema\x1a\x13monopoly_deal.proto\x1a\n" +
+	"\rgateway.proto\x12\x0fthe_deal.schema\x1a\x13monopoly_deal.proto\x1a\n" +
 	"room.proto\"(\n" +
 	"\x04Ping\x12 \n" +
 	"\ftime_unix_ms\x18\x01 \x01(\x03R\n" +
-	"timeUnixMs\"\xf8\x01\n" +
-	"\rClientMessage\x12,\n" +
-	"\x04ping\x18\x01 \x01(\v2\x16.fun_kames.schema.PingH\x00R\x04ping\x12I\n" +
+	"timeUnixMs\"\xf5\x01\n" +
+	"\rClientMessage\x12+\n" +
+	"\x04ping\x18\x01 \x01(\v2\x15.the_deal.schema.PingH\x00R\x04ping\x12H\n" +
 	"\froom_message\x18\n" +
-	" \x01(\v2$.fun_kames.schema.room.ClientMessageH\x00R\vroomMessage\x12c\n" +
-	"\x15monopoly_deal_message\x18\v \x01(\v2-.fun_kames.schema.monopoly_deal.ClientMessageH\x00R\x13monopolyDealMessageB\t\n" +
-	"\apayload\"\xf8\x01\n" +
-	"\rServerMessage\x12,\n" +
-	"\x04ping\x18\x01 \x01(\v2\x16.fun_kames.schema.PingH\x00R\x04ping\x12I\n" +
+	" \x01(\v2#.the_deal.schema.room.ClientMessageH\x00R\vroomMessage\x12b\n" +
+	"\x15monopoly_deal_message\x18\v \x01(\v2,.the_deal.schema.monopoly_deal.ClientMessageH\x00R\x13monopolyDealMessageB\t\n" +
+	"\apayload\"\xf5\x01\n" +
+	"\rServerMessage\x12+\n" +
+	"\x04ping\x18\x01 \x01(\v2\x15.the_deal.schema.PingH\x00R\x04ping\x12H\n" +
 	"\froom_message\x18\n" +
-	" \x01(\v2$.fun_kames.schema.room.ServerMessageH\x00R\vroomMessage\x12c\n" +
-	"\x15monopoly_deal_message\x18\v \x01(\v2-.fun_kames.schema.monopoly_deal.ServerMessageH\x00R\x13monopolyDealMessageB\t\n" +
-	"\apayloadB\"Z fun-kames/internal/schema;schemab\x06proto3"
+	" \x01(\v2#.the_deal.schema.room.ServerMessageH\x00R\vroomMessage\x12b\n" +
+	"\x15monopoly_deal_message\x18\v \x01(\v2,.the_deal.schema.monopoly_deal.ServerMessageH\x00R\x13monopolyDealMessageB\t\n" +
+	"\apayloadB!Z\x1fthe-deal/internal/schema;schemab\x06proto3"
 
 var (
 	file_gateway_proto_rawDescOnce sync.Once
@@ -299,21 +299,21 @@ func file_gateway_proto_rawDescGZIP() []byte {
 
 var file_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_gateway_proto_goTypes = []any{
-	(*Ping)(nil),                               // 0: fun_kames.schema.Ping
-	(*ClientMessage)(nil),                      // 1: fun_kames.schema.ClientMessage
-	(*ServerMessage)(nil),                      // 2: fun_kames.schema.ServerMessage
-	(*room_schema.ClientMessage)(nil),          // 3: fun_kames.schema.room.ClientMessage
-	(*monopoly_deal_schema.ClientMessage)(nil), // 4: fun_kames.schema.monopoly_deal.ClientMessage
-	(*room_schema.ServerMessage)(nil),          // 5: fun_kames.schema.room.ServerMessage
-	(*monopoly_deal_schema.ServerMessage)(nil), // 6: fun_kames.schema.monopoly_deal.ServerMessage
+	(*Ping)(nil),                               // 0: the_deal.schema.Ping
+	(*ClientMessage)(nil),                      // 1: the_deal.schema.ClientMessage
+	(*ServerMessage)(nil),                      // 2: the_deal.schema.ServerMessage
+	(*room_schema.ClientMessage)(nil),          // 3: the_deal.schema.room.ClientMessage
+	(*monopoly_deal_schema.ClientMessage)(nil), // 4: the_deal.schema.monopoly_deal.ClientMessage
+	(*room_schema.ServerMessage)(nil),          // 5: the_deal.schema.room.ServerMessage
+	(*monopoly_deal_schema.ServerMessage)(nil), // 6: the_deal.schema.monopoly_deal.ServerMessage
 }
 var file_gateway_proto_depIdxs = []int32{
-	0, // 0: fun_kames.schema.ClientMessage.ping:type_name -> fun_kames.schema.Ping
-	3, // 1: fun_kames.schema.ClientMessage.room_message:type_name -> fun_kames.schema.room.ClientMessage
-	4, // 2: fun_kames.schema.ClientMessage.monopoly_deal_message:type_name -> fun_kames.schema.monopoly_deal.ClientMessage
-	0, // 3: fun_kames.schema.ServerMessage.ping:type_name -> fun_kames.schema.Ping
-	5, // 4: fun_kames.schema.ServerMessage.room_message:type_name -> fun_kames.schema.room.ServerMessage
-	6, // 5: fun_kames.schema.ServerMessage.monopoly_deal_message:type_name -> fun_kames.schema.monopoly_deal.ServerMessage
+	0, // 0: the_deal.schema.ClientMessage.ping:type_name -> the_deal.schema.Ping
+	3, // 1: the_deal.schema.ClientMessage.room_message:type_name -> the_deal.schema.room.ClientMessage
+	4, // 2: the_deal.schema.ClientMessage.monopoly_deal_message:type_name -> the_deal.schema.monopoly_deal.ClientMessage
+	0, // 3: the_deal.schema.ServerMessage.ping:type_name -> the_deal.schema.Ping
+	5, // 4: the_deal.schema.ServerMessage.room_message:type_name -> the_deal.schema.room.ServerMessage
+	6, // 5: the_deal.schema.ServerMessage.monopoly_deal_message:type_name -> the_deal.schema.monopoly_deal.ServerMessage
 	6, // [6:6] is the sub-list for method output_type
 	6, // [6:6] is the sub-list for method input_type
 	6, // [6:6] is the sub-list for extension type_name

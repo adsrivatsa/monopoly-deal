@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fun-kames/internal/config"
-	"fun-kames/internal/event"
-	"fun-kames/internal/store"
 	"log/slog"
 	"os"
+	"the-deal/internal/config"
+	"the-deal/internal/event"
+	"the-deal/internal/store"
 	"time"
 )
 

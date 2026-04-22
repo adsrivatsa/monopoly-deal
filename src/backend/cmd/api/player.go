@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fun-kames/internal/service"
-	"fun-kames/internal/token"
 	"net/http"
+	"the-deal/internal/service"
+	"the-deal/internal/token"
 
 	"github.com/go-chi/chi/v5"
 )

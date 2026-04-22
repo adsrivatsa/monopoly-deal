@@ -2,15 +2,15 @@ package monopoly_deal
 
 import (
 	"context"
-	"fun-kames/internal/config"
-	monopoly_deal "fun-kames/internal/engine/monopoly-deal"
-	"fun-kames/internal/errors"
-	"fun-kames/internal/event"
-	"fun-kames/internal/schema"
-	"fun-kames/internal/schema/monopoly_deal_schema"
-	"fun-kames/internal/store"
-	"fun-kames/internal/token"
 	"sync"
+	"the-deal/internal/config"
+	monopoly_deal "the-deal/internal/engine/monopoly-deal"
+	"the-deal/internal/errors"
+	"the-deal/internal/event"
+	"the-deal/internal/schema"
+	"the-deal/internal/schema/monopoly_deal_schema"
+	"the-deal/internal/store"
+	"the-deal/internal/token"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"

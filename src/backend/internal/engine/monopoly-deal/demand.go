@@ -1,7 +1,7 @@
 package monopoly_deal
 
 import (
-	"fun-kames/internal/schema/monopoly_deal_schema"
+	"the-deal/internal/schema/monopoly_deal_schema"
 
 	"github.com/google/uuid"
 )
