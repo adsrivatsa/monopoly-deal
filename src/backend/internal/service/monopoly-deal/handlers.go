@@ -483,7 +483,7 @@ func (c *Controller) handleComplyPaymentDemand(game *monopoly_deal.Game, tp toke
 	for _, cardID := range msg.ComplyPaymentDemand.CardIds {
 		cardIDs = append(cardIDs, monopoly_deal.Identifier(cardID))
 	}
-	demandSourceID, cards, propSets, err := game.ComplyPaymentDemand(tp.PlayerID, demandID, cardIDs...)
+	demandSourceID, cards, propSets, sourceSets, sourceMoney, targetSets, targetMoney, err := game.ComplyPaymentDemand(tp.PlayerID, demandID, cardIDs...)
 	if err != nil {
 		return nil, err
 	}
@@ -505,6 +505,10 @@ func (c *Controller) handleComplyPaymentDemand(game *monopoly_deal.Game, tp toke
 					TargetId:     demandSourceID.String(),
 					Cards:        cards.Proto(),
 					PropertySets: propSets.Proto(demandSourceID),
+					SourceSets:   int32(targetSets),
+					SourceMoney:  int32(targetMoney),
+					TargetSets:   int32(sourceSets),
+					TargetMoney:  int32(sourceMoney),
 				},
 			},
 		},
@@ -523,7 +527,7 @@ func (c *Controller) handleRearrangeCard(game *monopoly_deal.Game, tp token.Payl
 		id := monopoly_deal.ColorFromProto(*msg.RearrangeCard.Color)
 		color = &id
 	}
-	propertySet, card, err := game.RearrangeProperty(tp.PlayerID, cardID, targetSetID, color)
+	propertySet, sets, card, err := game.RearrangeProperty(tp.PlayerID, cardID, targetSetID, color)
 	if err != nil {
 		return nil, err
 	}
@@ -535,6 +539,7 @@ func (c *Controller) handleRearrangeCard(game *monopoly_deal.Game, tp token.Payl
 				PlayerId:    tp.PlayerID.String(),
 				Card:        card.Proto(),
 				PropertySet: propertySet.Proto(tp.PlayerID),
+				Sets:        int32(sets),
 			},
 		},
 	},

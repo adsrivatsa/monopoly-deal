@@ -331,6 +331,10 @@ message TransferCards {
   string target_id = 2;
   repeated Card cards = 3;
   repeated PropertySet property_sets = 4;
+  int32 source_sets = 5;
+  int32 source_money = 6;
+  int32 target_sets = 7;
+  int32 target_money = 8;
 }
 
 message RearrangeCard {
@@ -344,6 +348,7 @@ message RearrangeCardRes {
   string player_id = 2;
   Card card = 3;
   PropertySet property_set = 4;
+  int32 sets = 5;
 }
 
 message DiscardCards {

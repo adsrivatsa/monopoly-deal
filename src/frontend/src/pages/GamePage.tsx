@@ -41,8 +41,10 @@ import {
   type AssetImage,
   type Card,
   type GameState,
+  type Money,
   type PropertySet,
   type Player,
+  type TransferCards,
   type WonGame,
 } from "../generated/monopoly_deal";
 
@@ -199,6 +201,89 @@ const isPropertySetCompleteForBuilding = (propertySet: PropertySet): boolean => 
   }).length;
 
   return propertyCardCount >= requiredCount;
+};
+
+const sumCardValues = (cards: Card[]): number => {
+  return cards.reduce((total, card) => total + (card.value ?? 0), 0);
+};
+
+const recalculatePlayerStatsFromBoard = (
+  players: Player[],
+  moneyPiles: Money[],
+  propertySets: PropertySet[],
+): Player[] => {
+  return players.map((player) => {
+    const moneyValue = moneyPiles
+      .filter((pile) => pile.playerId === player.playerId)
+      .reduce((total, pile) => total + sumCardValues(pile.cards), 0);
+    const propertyValue = propertySets
+      .filter((set) => set.playerId === player.playerId)
+      .reduce((total, set) => total + sumCardValues(set.cards), 0);
+    const completedSets = propertySets.filter((set) => {
+      return (
+        set.playerId === player.playerId && isPropertySetCompleteForBuilding(set)
+      );
+    }).length;
+
+    return {
+      ...player,
+      money: moneyValue + propertyValue,
+      completedSets,
+    };
+  });
+};
+
+const getTransferCardsPlayerStats = (transferCards: TransferCards) => {
+  const stats = transferCards as TransferCards & {
+    sourceProperties?: number;
+    targetProperties?: number;
+  };
+
+  const sourceCompletedSets =
+    typeof stats.sourceProperties === "number"
+      ? stats.sourceProperties
+      : stats.sourceSets;
+  const targetCompletedSets =
+    typeof stats.targetProperties === "number"
+      ? stats.targetProperties
+      : stats.targetSets;
+
+  return {
+    sourceCompletedSets,
+    targetCompletedSets,
+    sourceMoney: stats.sourceMoney,
+    targetMoney: stats.targetMoney,
+  };
+};
+
+const applyTransferCardsPlayerStats = (
+  players: Player[],
+  sourceId: string,
+  targetId: string,
+  sourceCompletedSets: number,
+  targetCompletedSets: number,
+  sourceMoney: number,
+  targetMoney: number,
+): Player[] => {
+  return players.map((player) => {
+    if (player.playerId === sourceId) {
+      return {
+        ...player,
+        completedSets: sourceCompletedSets,
+        money: sourceMoney,
+      };
+    }
+
+    if (player.playerId === targetId) {
+      return {
+        ...player,
+        completedSets: targetCompletedSets,
+        money: targetMoney,
+      };
+    }
+
+    return player;
+  });
 };
 
 let globalSocketSessionId = 0;
@@ -721,6 +806,7 @@ const GamePage = () => {
 
           if (playPropertyRes?.propertySet) {
             const playedPropertySet = playPropertyRes.propertySet;
+            let nextCompletedSetsForPlayer: number | null = null;
             setInitialGameState((current) => {
               if (!current) {
                 return current;
@@ -760,9 +846,18 @@ const GamePage = () => {
                   return player;
                 }
 
+                const completedSets = nextProperties.filter((propertySet) => {
+                  return (
+                    propertySet.playerId === player.playerId &&
+                    isPropertySetCompleteForBuilding(propertySet)
+                  );
+                }).length;
+                nextCompletedSetsForPlayer = completedSets;
+
                 return {
                   ...player,
                   handCards: Math.max(0, player.handCards - 1),
+                  completedSets,
                 };
               });
 
@@ -784,6 +879,8 @@ const GamePage = () => {
                 return {
                   ...player,
                   handCards: Math.max(0, player.handCards - 1),
+                  completedSets:
+                    nextCompletedSetsForPlayer ?? player.completedSets,
                 };
               });
             });
@@ -1229,16 +1326,30 @@ const GamePage = () => {
                 upsertSetMap.set(propertySet.propertySetId, propertySet);
               }
 
+              const nextProperties = Array.from(upsertSetMap.values());
+              const nextPlayers = recalculatePlayerStatsFromBoard(
+                current.players,
+                current.money,
+                nextProperties,
+              );
+              nextPlayersSnapshot = nextPlayers;
+
               return {
                 ...current,
                 seqNum: transferProperty.seqNum,
-                properties: Array.from(upsertSetMap.values()),
+                properties: nextProperties,
+                players: nextPlayers,
               };
             });
+
+            if (nextPlayersSnapshot) {
+              setPlayers(nextPlayersSnapshot);
+            }
           }
 
           const transferPropertySet = message.monopolyDealMessage?.transferPropertySet;
           if (transferPropertySet) {
+            let nextPlayersSnapshot: Player[] | null = null;
             setInitialGameState((current) => {
               if (!current || !transferPropertySet.propertySet) {
                 return current;
@@ -1251,7 +1362,7 @@ const GamePage = () => {
 
               const nextProperties = current.properties
                 .filter((propertySet) => {
-                  return propertySet.propertySetId !== transferPropertySet.oldPropertySetId;
+                  return propertySet.propertySetId !== transferPropertySet.propertySet?.propertySetId;
                 })
                 .filter((propertySet) => {
                   return propertySet.propertySetId !== nextTransferredSet.propertySetId;
@@ -1259,12 +1370,24 @@ const GamePage = () => {
 
               nextProperties.push(nextTransferredSet);
 
+              const nextPlayers = recalculatePlayerStatsFromBoard(
+                current.players,
+                current.money,
+                nextProperties,
+              );
+              nextPlayersSnapshot = nextPlayers;
+
               return {
                 ...current,
                 seqNum: transferPropertySet.seqNum,
                 properties: nextProperties,
+                players: nextPlayers,
               };
             });
+
+            if (nextPlayersSnapshot) {
+              setPlayers(nextPlayersSnapshot);
+            }
           }
 
           const pendingRentCreated =
@@ -1445,7 +1568,30 @@ const GamePage = () => {
                 ...current,
                 seqNum: rearrangeCardRes.seqNum,
                 properties: nextProperties,
+                players: current.players.map((player) => {
+                  if (player.playerId !== rearrangeCardRes.playerId) {
+                    return player;
+                  }
+
+                  return {
+                    ...player,
+                    completedSets: rearrangeCardRes.sets,
+                  };
+                }),
               };
+            });
+
+            setPlayers((currentPlayers) => {
+              return currentPlayers.map((player) => {
+                if (player.playerId !== rearrangeCardRes.playerId) {
+                  return player;
+                }
+
+                return {
+                  ...player,
+                  completedSets: rearrangeCardRes.sets,
+                };
+              });
             });
           }
 
@@ -1454,6 +1600,12 @@ const GamePage = () => {
             const sourceId = transferCards.sourceId;
             const targetId = transferCards.targetId;
             const isSelfSource = !!selfPlayerId && selfPlayerId === sourceId;
+            const {
+              sourceCompletedSets,
+              targetCompletedSets,
+              sourceMoney,
+              targetMoney,
+            } = getTransferCardsPlayerStats(transferCards);
             const transferredMoneyCards = transferCards.cards;
             const transferredPropertySets = transferCards.propertySets;
             const moneyCardIds = toCardIdSet(transferredMoneyCards);
@@ -1498,7 +1650,7 @@ const GamePage = () => {
                 });
               }
 
-              const nextProperties = current.properties
+              const baseProperties = current.properties
                 .map((propertySet) => {
                   if (propertySet.playerId !== sourceId) {
                     return propertySet;
@@ -1520,14 +1672,38 @@ const GamePage = () => {
                 };
               });
 
+              const nextProperties = [...baseProperties, ...targetPropertySets];
+              const nextPlayers = applyTransferCardsPlayerStats(
+                current.players,
+                sourceId,
+                targetId,
+                sourceCompletedSets,
+                targetCompletedSets,
+                sourceMoney,
+                targetMoney,
+              );
+
               return {
                 ...current,
                 money: nextMoney,
-                properties: [...nextProperties, ...targetPropertySets],
+                properties: nextProperties,
+                players: nextPlayers,
                 demands: isSelfSource
                   ? current.demands.filter((demand) => demand.sourceId !== sourceId)
                   : current.demands,
               };
+            });
+
+            setPlayers((currentPlayers) => {
+              return applyTransferCardsPlayerStats(
+                currentPlayers,
+                sourceId,
+                targetId,
+                sourceCompletedSets,
+                targetCompletedSets,
+                sourceMoney,
+                targetMoney,
+              );
             });
           }
 

@@ -16,6 +16,7 @@ import {
 } from "../api/models";
 import {
   getRoom,
+  joinRoom,
   leaveRoom,
   readyRoom,
   startGame,
@@ -59,6 +60,7 @@ const RoomPage = () => {
   const [players, setPlayers] = useState<ShortPlayer[]>([]);
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [modalError, setModalError] = useState<ApiErrorPayload | null>(null);
+  const [isBootstrappingRoom, setIsBootstrappingRoom] = useState(true);
   const [chatMessages, setChatMessages] = useState<
     (
       | {
@@ -134,10 +136,195 @@ const RoomPage = () => {
 
   useEffect(() => {
     let active = true;
-    const socket = connectRoomSocket();
-    socketRef.current = socket;
+    let socket: WebSocket | null = null;
+
+    if (!roomId) {
+      navigate("/lobby", { replace: true });
+      return () => {
+        active = false;
+      };
+    }
+
+    setIsBootstrappingRoom(true);
 
     void (async () => {
+      const joinResult = await joinRoom(roomId);
+      if (!active) {
+        return;
+      }
+
+      if (!joinResult.ok) {
+        if (joinResult.error?.code === "SER002") {
+          // Already joined this room; continue loading the room page.
+        } else if (joinResult.isTokenError) {
+          navigate("/login", { replace: true });
+          return;
+        } else {
+          setModalError(
+            joinResult.error ?? {
+              message: "Could not join room.",
+              status: 500,
+              code: "UNKNOWN",
+            },
+          );
+          setIsBootstrappingRoom(false);
+          return;
+        }
+      }
+
+      socket = connectRoomSocket();
+      socketRef.current = socket;
+      console.log("[room-ws] connecting", socket.url);
+
+      socket.onopen = () => {
+        console.log("[room-ws] open");
+      };
+
+      socket.onmessage = (event) => {
+        void (async () => {
+          const message = await decodeRoomServerMessage(event.data);
+
+          const joinedPlayer = message?.roomMessage?.playerJoinedRoom?.player;
+          if (joinedPlayer) {
+            setPlayers((currentPlayers) => {
+              const nextPlayer: ShortPlayer = {
+                id: joinedPlayer.playerId,
+                name: joinedPlayer.displayName,
+                imageUrl: joinedPlayer.avatarUrl,
+                isHost: joinedPlayer.isHost,
+                isReady: joinedPlayer.isReady,
+              };
+
+              const existingIndex = currentPlayers.findIndex(
+                (player) => player.id === nextPlayer.id,
+              );
+              if (existingIndex === -1) {
+                return [...currentPlayers, nextPlayer];
+              }
+
+              const updatedPlayers = [...currentPlayers];
+              updatedPlayers[existingIndex] = nextPlayer;
+              return updatedPlayers;
+            });
+
+            setChatMessages((currentMessages) => {
+              return [
+                ...currentMessages,
+                {
+                  id: `join-${joinedPlayer.playerId}-${Date.now()}`,
+                  kind: "system",
+                  text: `${joinedPlayer.displayName} joined the room`,
+                  playerName: joinedPlayer.displayName,
+                  playerImageUrl: joinedPlayer.avatarUrl,
+                },
+              ];
+            });
+          }
+
+          const leftPlayer = message?.roomMessage?.playerLeftRoom;
+          if (leftPlayer) {
+            const leavingPlayer = players.find(
+              (player) => player.id === leftPlayer.playedId,
+            );
+
+            setPlayers((currentPlayers) => {
+              const remainingPlayers = currentPlayers.filter(
+                (player) => player.id !== leftPlayer.playedId,
+              );
+
+              if (!leftPlayer.newHostPlayerId) {
+                return remainingPlayers;
+              }
+
+              return remainingPlayers.map((player) => {
+                return {
+                  ...player,
+                  isHost: player.id === leftPlayer.newHostPlayerId,
+                };
+              });
+            });
+
+            setChatMessages((currentMessages) => {
+              return [
+                ...currentMessages,
+                {
+                  id: `leave-${leftPlayer.playedId}-${Date.now()}`,
+                  kind: "system",
+                  text: `${leavingPlayer?.name ?? "A player"} left the room`,
+                  playerName: leavingPlayer?.name ?? "Player",
+                  playerImageUrl: leavingPlayer?.imageUrl,
+                },
+              ];
+            });
+          }
+
+          const chatReceived = message?.roomMessage?.chatReceived;
+          if (chatReceived) {
+            setChatMessages((currentMessages) => {
+              return [
+                ...currentMessages,
+                {
+                  id: `chat-${chatReceived.playerId}-${Date.now()}`,
+                  kind: "chat",
+                  text: chatReceived.payload,
+                  playerId: chatReceived.playerId,
+                },
+              ];
+            });
+          }
+
+          const playerToggledReady = message?.roomMessage?.playerToggledReady;
+          if (playerToggledReady) {
+            setPlayers((currentPlayers) => {
+              return currentPlayers.map((player) => {
+                if (player.id !== playerToggledReady.playerId) {
+                  return player;
+                }
+
+                return {
+                  ...player,
+                  isReady: playerToggledReady.isReady,
+                };
+              });
+            });
+          }
+
+          const settingsUpdated = message?.roomMessage?.settingsUpdated;
+          if (settingsUpdated) {
+            const nextGame =
+              settingsUpdated.game === 0 ? Game.MonopolyDeal : roomGame;
+
+            if (nextGame) {
+              setRoomGame(nextGame);
+              setRoomCapacity(settingsUpdated.capacity);
+              setRoomSettingSelectValues(
+                getGameSettingSelectValues(nextGame, settingsUpdated.settings),
+              );
+            }
+          }
+
+          const gameStarted = message?.roomMessage?.gameStarted;
+          if (gameStarted?.gameId) {
+            navigate(`/game/${gameStarted.gameId}`);
+            return;
+          }
+
+          console.log("[room-ws] message", message ?? event.data);
+        })();
+      };
+
+      socket.onerror = (event) => {
+        console.log("[room-ws] error", event);
+      };
+
+      socket.onclose = (event) => {
+        console.log("[room-ws] close", {
+          code: event.code,
+          reason: event.reason,
+          wasClean: event.wasClean,
+        });
+      };
+
       const [roomResult, playerResponse] = await Promise.all([
         getRoom(),
         getPlayer(),
@@ -157,6 +344,14 @@ const RoomPage = () => {
       }
 
       if (!roomResult.ok) {
+        setModalError(
+          roomResult.error ?? {
+            message: "Could not load room details.",
+            status: 500,
+            code: "UNKNOWN",
+          },
+        );
+        setIsBootstrappingRoom(false);
         return;
       }
 
@@ -181,163 +376,13 @@ const RoomPage = () => {
           : [],
       );
       setPlayers(nextPlayers);
+      setIsBootstrappingRoom(false);
     })();
-
-    console.log("[room-ws] connecting", socket.url);
-
-    socket.onopen = () => {
-      console.log("[room-ws] open");
-    };
-
-    socket.onmessage = (event) => {
-      void (async () => {
-        const message = await decodeRoomServerMessage(event.data);
-
-        const joinedPlayer = message?.roomMessage?.playerJoinedRoom?.player;
-        if (joinedPlayer) {
-          setPlayers((currentPlayers) => {
-            const nextPlayer: ShortPlayer = {
-              id: joinedPlayer.playerId,
-              name: joinedPlayer.displayName,
-              imageUrl: joinedPlayer.avatarUrl,
-              isHost: joinedPlayer.isHost,
-              isReady: joinedPlayer.isReady,
-            };
-
-            const existingIndex = currentPlayers.findIndex(
-              (player) => player.id === nextPlayer.id,
-            );
-            if (existingIndex === -1) {
-              return [...currentPlayers, nextPlayer];
-            }
-
-            const updatedPlayers = [...currentPlayers];
-            updatedPlayers[existingIndex] = nextPlayer;
-            return updatedPlayers;
-          });
-
-          setChatMessages((currentMessages) => {
-            return [
-              ...currentMessages,
-              {
-                id: `join-${joinedPlayer.playerId}-${Date.now()}`,
-                kind: "system",
-                text: `${joinedPlayer.displayName} joined the room`,
-                playerName: joinedPlayer.displayName,
-                playerImageUrl: joinedPlayer.avatarUrl,
-              },
-            ];
-          });
-        }
-
-        const leftPlayer = message?.roomMessage?.playerLeftRoom;
-        if (leftPlayer) {
-          const leavingPlayer = players.find(
-            (player) => player.id === leftPlayer.playedId,
-          );
-
-          setPlayers((currentPlayers) => {
-            const remainingPlayers = currentPlayers.filter(
-              (player) => player.id !== leftPlayer.playedId,
-            );
-
-            if (!leftPlayer.newHostPlayerId) {
-              return remainingPlayers;
-            }
-
-            return remainingPlayers.map((player) => {
-              return {
-                ...player,
-                isHost: player.id === leftPlayer.newHostPlayerId,
-              };
-            });
-          });
-
-          setChatMessages((currentMessages) => {
-            return [
-              ...currentMessages,
-              {
-                id: `leave-${leftPlayer.playedId}-${Date.now()}`,
-                kind: "system",
-                text: `${leavingPlayer?.name ?? "A player"} left the room`,
-                playerName: leavingPlayer?.name ?? "Player",
-                playerImageUrl: leavingPlayer?.imageUrl,
-              },
-            ];
-          });
-        }
-
-        const chatReceived = message?.roomMessage?.chatReceived;
-        if (chatReceived) {
-          setChatMessages((currentMessages) => {
-            return [
-              ...currentMessages,
-              {
-                id: `chat-${chatReceived.playerId}-${Date.now()}`,
-                kind: "chat",
-                text: chatReceived.payload,
-                playerId: chatReceived.playerId,
-              },
-            ];
-          });
-        }
-
-        const playerToggledReady = message?.roomMessage?.playerToggledReady;
-        if (playerToggledReady) {
-          setPlayers((currentPlayers) => {
-            return currentPlayers.map((player) => {
-              if (player.id !== playerToggledReady.playerId) {
-                return player;
-              }
-
-              return {
-                ...player,
-                isReady: playerToggledReady.isReady,
-              };
-            });
-          });
-        }
-
-        const settingsUpdated = message?.roomMessage?.settingsUpdated;
-        if (settingsUpdated) {
-          const nextGame =
-            settingsUpdated.game === 0 ? Game.MonopolyDeal : roomGame;
-
-          if (nextGame) {
-            setRoomGame(nextGame);
-            setRoomCapacity(settingsUpdated.capacity);
-            setRoomSettingSelectValues(
-              getGameSettingSelectValues(nextGame, settingsUpdated.settings),
-            );
-          }
-        }
-
-        const gameStarted = message?.roomMessage?.gameStarted;
-        if (gameStarted?.gameId) {
-          navigate(`/game/${gameStarted.gameId}`);
-          return;
-        }
-
-        console.log("[room-ws] message", message ?? event.data);
-      })();
-    };
-
-    socket.onerror = (event) => {
-      console.log("[room-ws] error", event);
-    };
-
-    socket.onclose = (event) => {
-      console.log("[room-ws] close", {
-        code: event.code,
-        reason: event.reason,
-        wasClean: event.wasClean,
-      });
-    };
 
     return () => {
       active = false;
       socketRef.current = null;
-      socket.close();
+      socket?.close();
     };
   }, [navigate, roomId]);
 
@@ -405,6 +450,23 @@ const RoomPage = () => {
   const everyoneReady =
     players.length > 0 &&
     players.every((player) => player.isHost || player.isReady);
+
+  if (isBootstrappingRoom) {
+    return (
+      <main className="page room-page">
+        <section className="room-layout">
+          <Card className="room-left-card">
+            <CardHeader>
+              <CardTitle>Joining room...</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Please wait while we connect you to this room.</p>
+            </CardContent>
+          </Card>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="page room-page">

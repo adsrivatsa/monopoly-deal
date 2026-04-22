@@ -402,7 +402,8 @@ const MonopolyDealHtmlBoard = ({
     !!pendingRent &&
     (!selfPlayerId || pendingRent.playerId === selfPlayerId) &&
     !hasDoubleTheRent;
-  const shouldShowPendingRentOverlay = hasPendingRent && !shouldAutoResolvePendingRent;
+  const shouldShowPendingRentOverlay =
+    hasPendingRent && !shouldAutoResolvePendingRent;
   const hasMovesLeft = (gameState?.movesLeft ?? 0) > 0;
   const lastActionCards =
     gameState?.lastAction &&
@@ -682,7 +683,9 @@ const MonopolyDealHtmlBoard = ({
   }, []);
 
   const boardMinWidth = useMemo(() => {
-    return columns * boardColumnWidth + Math.max(0, columns - 1) * boardColumnGapPx;
+    return (
+      columns * boardColumnWidth + Math.max(0, columns - 1) * boardColumnGapPx
+    );
   }, [boardColumnGapPx, boardColumnWidth, columns]);
 
   const playerColumns = useMemo(() => {
@@ -846,7 +849,9 @@ const MonopolyDealHtmlBoard = ({
       }
 
       if (activeTouchPointsRef.current.size >= 2) {
-        const [first, second] = Array.from(activeTouchPointsRef.current.values());
+        const [first, second] = Array.from(
+          activeTouchPointsRef.current.values(),
+        );
         if (!first || !second) {
           return;
         }
@@ -908,7 +913,9 @@ const MonopolyDealHtmlBoard = ({
         withErrorHandling(() => {
           event.preventDefault();
 
-          const [first, second] = Array.from(activeTouchPointsRef.current.values());
+          const [first, second] = Array.from(
+            activeTouchPointsRef.current.values(),
+          );
           if (!first || !second) {
             return;
           }
@@ -917,7 +924,10 @@ const MonopolyDealHtmlBoard = ({
           const currentDistance = distanceBetweenPoints(first, second);
           const scale = currentDistance / pinchStartDistanceRef.current;
           const candidateZoom = pinchStartZoomRef.current * scale;
-          const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, candidateZoom));
+          const nextZoom = Math.min(
+            MAX_ZOOM,
+            Math.max(MIN_ZOOM, candidateZoom),
+          );
           const rect = event.currentTarget.getBoundingClientRect();
           const localCenter = {
             x: center.x - rect.left,
@@ -1127,7 +1137,8 @@ const MonopolyDealHtmlBoard = ({
               "[game-ui] forced deal blocked; no opponent property available",
             );
             onGameError?.({
-              message: "No opponent has any property cards down. You cannot play Forced Deal.",
+              message:
+                "No opponent has any property cards down. You cannot play Forced Deal.",
               code: "FORCED_DEAL_NO_OPPONENT_PROPERTY",
             });
             return;
@@ -1138,7 +1149,8 @@ const MonopolyDealHtmlBoard = ({
               "[game-ui] forced deal blocked; no own property available",
             );
             onGameError?.({
-              message: "You have no property cards down. You cannot play Forced Deal.",
+              message:
+                "You have no property cards down. You cannot play Forced Deal.",
               code: "FORCED_DEAL_NO_OWN_PROPERTY",
             });
             return;
@@ -1245,11 +1257,7 @@ const MonopolyDealHtmlBoard = ({
         submitPropertyPlay(card, propertySetId);
       });
     },
-    [
-      getCardById,
-      submitPropertyPlay,
-      withErrorHandling,
-    ],
+    [getCardById, submitPropertyPlay, withErrorHandling],
   );
 
   const onDemandComply = useCallback(
@@ -1431,7 +1439,9 @@ const MonopolyDealHtmlBoard = ({
     }
 
     autoResolvedPendingRentKeyRef.current = pendingRentKey;
-    console.log("[game-ui] pending rent action: auto-rent (missing DOUBLE_THE_RENT)");
+    console.log(
+      "[game-ui] pending rent action: auto-rent (missing DOUBLE_THE_RENT)",
+    );
     onResolvePendingRent();
   }, [onResolvePendingRent, pendingRent, shouldAutoResolvePendingRent]);
 
@@ -1575,7 +1585,10 @@ const MonopolyDealHtmlBoard = ({
       }
 
       const sourcePropertySet = selfPropertySets.find((propertySet) => {
-        return propertySet.propertySetId === selectedRearrangeCard.sourcePropertySetId;
+        return (
+          propertySet.propertySetId ===
+          selectedRearrangeCard.sourcePropertySetId
+        );
       });
       if (!sourcePropertySet || isPropertySetLocked(sourcePropertySet)) {
         setSelectedRearrangeCard(null);
@@ -1732,7 +1745,9 @@ const MonopolyDealHtmlBoard = ({
     }
 
     const sourcePropertySet = selfPropertySets.find((propertySet) => {
-      return propertySet.propertySetId === selectedRearrangeCard.sourcePropertySetId;
+      return (
+        propertySet.propertySetId === selectedRearrangeCard.sourcePropertySetId
+      );
     });
     const stillExists = sourcePropertySet?.cards.some((card) => {
       return card.cardId === selectedRearrangeCard.cardId;
@@ -1841,7 +1856,7 @@ const MonopolyDealHtmlBoard = ({
                   ? selectedPaymentCardIds
                   : canClickRearrangeDestination
                     ? selectedRearrangeCardIds
-                  : selectedDealCardIds
+                    : selectedDealCardIds
               }
               onCardClick={(card) => {
                 if (canClickRearrangeDestination) {
@@ -1913,14 +1928,16 @@ const MonopolyDealHtmlBoard = ({
                 color={propertySet.color}
                 emptyLabel="Empty"
                 selectableCards={
-                  canSelectBoardCards || canSelectDealCards || canRearrangeFromBoard
+                  canSelectBoardCards ||
+                  canSelectDealCards ||
+                  canRearrangeFromBoard
                 }
                 selectedCardIds={
                   canSelectBoardCards
                     ? selectedPaymentCardIds
                     : selectedRearrangeCard
                       ? selectedRearrangeCardIds
-                    : selectedDealCardIds
+                      : selectedDealCardIds
                 }
                 onCardClick={(card) => {
                   if (canClickRearrangeDestination) {
@@ -1962,7 +1979,10 @@ const MonopolyDealHtmlBoard = ({
                     !isPropertySetLocked(propertySet) &&
                     isPropertyCard(card)
                   ) {
-                    onToggleSelectedRearrangeCard(card, propertySet.propertySetId);
+                    onToggleSelectedRearrangeCard(
+                      card,
+                      propertySet.propertySetId,
+                    );
                   }
                 }}
               />
@@ -1984,11 +2004,11 @@ const MonopolyDealHtmlBoard = ({
               placeCardOnProperty(selectedHandPlacementCardId, undefined);
               setSelectedHandPlacementCardId(null);
             }}
-            >
-              <div className="md-property-empty">
-                Select a card, then tap here to start a new set
-              </div>
+          >
+            <div className="md-property-empty">
+              Select a card, then tap here to start a new set
             </div>
+          </div>
         </div>
       </article>
     );
@@ -1996,6 +2016,83 @@ const MonopolyDealHtmlBoard = ({
 
   return (
     <div className="md-html-board">
+      <div className="md-demand-overlay-wrap">
+        {dealPicker ? (
+          <aside
+            className="md-demand md-demand--payment"
+            aria-live="polite"
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <p className="md-demand__eyebrow">
+              {dealPicker.mode === "forced_deal"
+                ? "Forced Deal"
+                : dealPicker.mode === "deal_breaker"
+                  ? "Deal Breaker"
+                  : "Sly Deal"}
+            </p>
+            <h3 className="md-demand__title">
+              {dealPicker.mode === "deal_breaker"
+                ? "Choose an opponent complete set"
+                : dealPicker.mode === "forced_deal"
+                  ? "Choose an opponent property and one of your properties"
+                  : "Choose an opponent property"}
+            </h3>
+            <p className="md-demand__line">
+              {dealPicker.mode === "deal_breaker"
+                ? "Select one complete set, then confirm."
+                : dealPicker.mode === "forced_deal"
+                  ? `Target: ${selectedForcedDealTargetPlayerName ?? "Opponent"}. Select one opponent card and one of your cards, then confirm.`
+                  : "Select one opponent card, then confirm."}
+            </p>
+            <div className="md-demand__actions">
+              <button
+                type="button"
+                className="md-demand__button"
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={onConfirmDealSelection}
+                disabled={!canConfirmDealSelection}
+              >
+                Confirm
+              </button>
+              <button
+                type="button"
+                className="md-demand__button md-demand__button--secondary"
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={onCancelDealPicker}
+              >
+                Cancel
+              </button>
+            </div>
+          </aside>
+        ) : shouldShowPendingRentOverlay && pendingRent ? (
+          <PendingRentOverlay
+            pendingRent={pendingRent}
+            players={players}
+            canDouble={hasDoubleTheRent && hasMovesLeft}
+            onDouble={onPendingRentDouble}
+            onRent={onPendingRentRent}
+          />
+        ) : isDiscardRequired ? (
+          <DiscardPromptOverlay
+            requiredDiscardCount={requiredDiscardCount}
+            selectedDiscardCount={selectedDiscardCardIds.size}
+          />
+        ) : (
+          <DemandOverlay
+            demands={visibleDemands}
+            players={players}
+            targetCardImageById={propertyCardImageById}
+            propertySetCardsById={propertySetCardsById}
+            canDeny={hasJustSayNo}
+            isSelectingCards={isSelectingPaymentCards}
+            selectingDemandId={activePaymentDemandId ?? undefined}
+            canConfirmSelection={canConfirmPaymentSelection}
+            onComply={onDemandComply}
+            onDeny={onDemandDeny}
+          />
+        )}
+      </div>
+
       <section
         className={[
           "md-board-viewport",
@@ -2011,82 +2108,6 @@ const MonopolyDealHtmlBoard = ({
         onPointerCancelCapture={stopPan}
         onClickCapture={onBoardClickCapture}
       >
-        <div className="md-demand-overlay-wrap">
-          {dealPicker ? (
-            <aside
-              className="md-demand md-demand--payment"
-              aria-live="polite"
-              onPointerDown={(event) => event.stopPropagation()}
-            >
-              <p className="md-demand__eyebrow">
-                {dealPicker.mode === "forced_deal"
-                  ? "Forced Deal"
-                  : dealPicker.mode === "deal_breaker"
-                    ? "Deal Breaker"
-                    : "Sly Deal"}
-              </p>
-              <h3 className="md-demand__title">
-                {dealPicker.mode === "deal_breaker"
-                  ? "Choose an opponent complete set"
-                  : dealPicker.mode === "forced_deal"
-                    ? "Choose an opponent property and one of your properties"
-                    : "Choose an opponent property"}
-              </h3>
-              <p className="md-demand__line">
-                {dealPicker.mode === "deal_breaker"
-                  ? "Select one complete set, then confirm."
-                  : dealPicker.mode === "forced_deal"
-                    ? `Target: ${selectedForcedDealTargetPlayerName ?? "Opponent"}. Select one opponent card and one of your cards, then confirm.`
-                    : "Select one opponent card, then confirm."}
-              </p>
-              <div className="md-demand__actions">
-                <button
-                  type="button"
-                  className="md-demand__button"
-                  onPointerDown={(event) => event.stopPropagation()}
-                  onClick={onConfirmDealSelection}
-                  disabled={!canConfirmDealSelection}
-                >
-                  Confirm
-                </button>
-                <button
-                  type="button"
-                  className="md-demand__button md-demand__button--secondary"
-                  onPointerDown={(event) => event.stopPropagation()}
-                  onClick={onCancelDealPicker}
-                >
-                  Cancel
-                </button>
-              </div>
-            </aside>
-          ) : shouldShowPendingRentOverlay && pendingRent ? (
-            <PendingRentOverlay
-              pendingRent={pendingRent}
-              players={players}
-              canDouble={hasDoubleTheRent && hasMovesLeft}
-              onDouble={onPendingRentDouble}
-              onRent={onPendingRentRent}
-            />
-          ) : isDiscardRequired ? (
-            <DiscardPromptOverlay
-              requiredDiscardCount={requiredDiscardCount}
-              selectedDiscardCount={selectedDiscardCardIds.size}
-            />
-          ) : (
-            <DemandOverlay
-              demands={visibleDemands}
-              players={players}
-              targetCardImageById={propertyCardImageById}
-              propertySetCardsById={propertySetCardsById}
-              canDeny={hasJustSayNo}
-              isSelectingCards={isSelectingPaymentCards}
-              selectingDemandId={activePaymentDemandId ?? undefined}
-              canConfirmSelection={canConfirmPaymentSelection}
-              onComply={onDemandComply}
-              onDeny={onDemandDeny}
-            />
-          )}
-        </div>
         <div
           className={
             shouldDimBoard

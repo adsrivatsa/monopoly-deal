@@ -748,46 +748,46 @@ func (g *Game) PlayHotel(playerUUID uuid.UUID, cardID, propSetID Identifier) (Pr
 	return propSet, card, nil
 }
 
-func (g *Game) RearrangeProperty(playerUUID uuid.UUID, cardID Identifier, targetSetIDPtr *Identifier, activeColorPtr *Color) (PropertySet, Card, error) {
+func (g *Game) RearrangeProperty(playerUUID uuid.UUID, cardID Identifier, targetSetIDPtr *Identifier, activeColorPtr *Color) (PropertySet, int, Card, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return PropertySet{}, 0, Card{}, err
 	}
 
 	err = g.checkTurn(playerID)
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return PropertySet{}, 0, Card{}, err
 	}
 
 	err = g.checkDemands()
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return PropertySet{}, 0, Card{}, err
 	}
 
 	err = g.checkPendingRent()
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return PropertySet{}, 0, Card{}, err
 	}
 
 	properties := g.Properties[playerID]
 	sourceSetIdx, sourceCardIdx := properties.IndexByCardID(cardID)
 	if sourceSetIdx == -1 || sourceCardIdx == -1 {
-		return PropertySet{}, Card{}, errors.PlayerDoesNotHaveCard
+		return PropertySet{}, 0, Card{}, errors.PlayerDoesNotHaveCard
 	}
 
 	sourceSet := properties[sourceSetIdx]
 
 	if sourceSet.IsLocked() && sourceCardIdx != sourceSet.Cards.Len()-1 {
-		return PropertySet{}, Card{}, errors.InvalidCardForAction
+		return PropertySet{}, 0, Card{}, errors.InvalidCardForAction
 	}
 
 	card := sourceSet.Cards[sourceCardIdx]
 	if card.Category != CategoryPureProperty && card.Category != CategoryWildProperty {
-		return PropertySet{}, Card{}, errors.InvalidCardForAction
+		return PropertySet{}, 0, Card{}, errors.InvalidCardForAction
 	}
 
 	if activeColorPtr != nil && !card.HasColor(*activeColorPtr) {
-		return PropertySet{}, Card{}, errors.CardCannotBeAssignedToSet
+		return PropertySet{}, 0, Card{}, errors.CardCannotBeAssignedToSet
 	}
 
 	var targetSetIdx int
@@ -797,16 +797,16 @@ func (g *Game) RearrangeProperty(playerUUID uuid.UUID, cardID Identifier, target
 		targetSetID := *targetSetIDPtr
 		targetSetIdx = properties.IndexBySetID(targetSetID)
 		if targetSetIdx == -1 {
-			return PropertySet{}, Card{}, errors.PropertySetDoesntExist
+			return PropertySet{}, 0, Card{}, errors.PropertySetDoesntExist
 		}
 
 		if sourceSetIdx == targetSetIdx {
 			if activeColorPtr == nil {
-				return properties[targetSetIdx], Card{}, nil
+				return properties[targetSetIdx], properties.CompleteCount(), Card{}, nil
 			}
 
 			if sourceSet.Cards.Len() != 1 {
-				return PropertySet{}, Card{}, errors.InvalidCardForAction
+				return PropertySet{}, 0, Card{}, errors.InvalidCardForAction
 			}
 
 			sourceSet.Color = *activeColorPtr
@@ -814,22 +814,22 @@ func (g *Game) RearrangeProperty(playerUUID uuid.UUID, cardID Identifier, target
 			properties[sourceSetIdx] = sourceSet
 			g.Properties[playerID] = properties
 
-			return sourceSet, Card{}, nil
+			return sourceSet, properties.CompleteCount(), Card{}, nil
 		}
 
 		targetSet = properties[targetSetIdx]
 		if targetSet.IsComplete() {
-			return PropertySet{}, Card{}, errors.PropertySetIsComplete
+			return PropertySet{}, 0, Card{}, errors.PropertySetIsComplete
 		}
 
 		if !card.HasColor(targetSet.Color) {
-			return PropertySet{}, Card{}, errors.CardCannotBeAssignedToSet
+			return PropertySet{}, 0, Card{}, errors.CardCannotBeAssignedToSet
 		}
 	}
 
 	card, ok := sourceSet.Cards.RemoveByIdx(sourceCardIdx)
 	if !ok {
-		return PropertySet{}, Card{}, errors.PlayerDoesNotHaveCard
+		return PropertySet{}, 0, Card{}, errors.PlayerDoesNotHaveCard
 	}
 
 	properties[sourceSetIdx] = sourceSet
@@ -856,7 +856,7 @@ func (g *Game) RearrangeProperty(playerUUID uuid.UUID, cardID Identifier, target
 
 	g.SequenceNum++
 
-	return targetSet, card, nil
+	return targetSet, properties.CompleteCount(), card, nil
 }
 
 func (g *Game) PlayPassGo(playerUUID uuid.UUID, cardID Identifier) (Cards, error) {
@@ -1632,33 +1632,36 @@ func (g *Game) transferCards(sourceID Identifier, targetID Identifier, cardIDs .
 	return transferredCards, transferredSets, nil
 }
 
-func (g *Game) ComplyPaymentDemand(playerUUID uuid.UUID, demandID Identifier, cardIDs ...Identifier) (uuid.UUID, Cards, PropertySets, error) {
+func (g *Game) ComplyPaymentDemand(playerUUID uuid.UUID, demandID Identifier, cardIDs ...Identifier) (sourceUUID uuid.UUID, transferredCards Cards, transferredSets PropertySets, sourceSets int, sourceMoney int, targetSets int, targetMoney int, err error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return uuid.UUID{}, nil, nil, err
+		return
 	}
 
 	demand, ok := g.Demands[demandID]
 	if !ok {
-		return uuid.UUID{}, nil, nil, errors.DemandDoesNotExist
+		err = errors.DemandDoesNotExist
+		return
 	}
 
 	if demand.Kind != DemandKindPayment {
-		return uuid.UUID{}, nil, nil, errors.DemandDoesNotExist
+		err = errors.DemandDoesNotExist
+		return
 	}
 
-	sourceUUID, _ := g.IDTranslator.GetUUID(demand.SourceID)
+	sourceUUID, _ = g.IDTranslator.GetUUID(demand.SourceID)
 
 	if !demand.IsActive {
 		delete(g.Demands, demandID)
-		return sourceUUID, nil, nil, nil
+		return
 	}
 
 	cards := make(Cards, 0, len(cardIDs))
 	for _, cardID := range cardIDs {
 		card, ok := g.Cards[cardID]
 		if !ok {
-			return uuid.UUID{}, nil, nil, errors.CardDoesNotExist
+			err = errors.CardDoesNotExist
+			return
 		}
 		cards = append(cards, card)
 	}
@@ -1683,20 +1686,33 @@ func (g *Game) ComplyPaymentDemand(playerUUID uuid.UUID, demandID Identifier, ca
 		slices.Sort(selectedIDs)
 		slices.Sort(payableIDs)
 		if !slices.Equal(selectedIDs, payableIDs) {
-			return uuid.UUID{}, nil, nil, errors.PaymentDoesNotCoverAmount
+			err = errors.PaymentDoesNotCoverAmount
+			return
 		}
 	}
 
-	transferredCards, transferredSets, err := g.transferCards(playerID, demand.SourceID, cardIDs...)
+	transferredCards, transferredSets, err = g.transferCards(playerID, demand.SourceID, cardIDs...)
 	if err != nil {
-		return uuid.UUID{}, nil, nil, err
+		return
 	}
+
+	sourceProperty := g.Properties[demand.SourceID]
+	sourceSets = sourceProperty.CompleteCount()
+
+	sourceMonies := g.Money[demand.SourceID]
+	sourceMoney = sourceMonies.Value()
+
+	targetProperty := g.Properties[demand.TargetID]
+	targetSets = targetProperty.CompleteCount()
+
+	targetMonies := g.Money[demand.TargetID]
+	targetMoney = targetMonies.Value()
 
 	delete(g.Demands, demandID)
 
 	g.SequenceNum++
 
-	return sourceUUID, transferredCards, transferredSets, nil
+	return
 }
 
 func (g *Game) ComplyPropertyDemand(playerUUID uuid.UUID, demandID Identifier) (uuid.UUID, PropertySets, PropertySets, error) {
@@ -1834,21 +1850,23 @@ func (g *Game) ResolvePendingRent(playerUUID uuid.UUID) (map[Identifier]Demand, 
 	return g.Demands, nil
 }
 
-func (g *Game) CheckWinConditions(playerUUID uuid.UUID) (bool, error) {
+func (g *Game) CheckWinConditions(playerUUID uuid.UUID) (int, int, bool, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return false, err
+		return 0, 0, false, err
 	}
 
 	properties := g.Properties[playerID]
-	if properties.CompleteCount() < g.Config.WinSetAmount {
-		return false, nil
+	completeCount := properties.CompleteCount()
+	if completeCount < g.Config.WinSetAmount {
+		return 0, 0, false, nil
 	}
 
 	money := g.Money[playerID]
+	value := money.Value()
 	if money.Value() < g.Config.WinMoneyAmount {
-		return false, nil
+		return 0, 0, false, nil
 	}
 
-	return true, nil
+	return completeCount, value, true, nil
 }

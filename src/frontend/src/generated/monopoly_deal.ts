@@ -783,6 +783,10 @@ export interface TransferCards {
   targetId: string;
   cards: Card[];
   propertySets: PropertySet[];
+  sourceSets: number;
+  sourceMoney: number;
+  targetSets: number;
+  targetMoney: number;
 }
 
 export interface RearrangeCard {
@@ -796,6 +800,7 @@ export interface RearrangeCardRes {
   playerId: string;
   card: Card | undefined;
   propertySet: PropertySet | undefined;
+  sets: number;
 }
 
 export interface DiscardCards {
@@ -4535,7 +4540,16 @@ export const PendingRentResolved: MessageFns<PendingRentResolved> = {
 };
 
 function createBaseTransferCards(): TransferCards {
-  return { sourceId: "", targetId: "", cards: [], propertySets: [] };
+  return {
+    sourceId: "",
+    targetId: "",
+    cards: [],
+    propertySets: [],
+    sourceSets: 0,
+    sourceMoney: 0,
+    targetSets: 0,
+    targetMoney: 0,
+  };
 }
 
 export const TransferCards: MessageFns<TransferCards> = {
@@ -4551,6 +4565,18 @@ export const TransferCards: MessageFns<TransferCards> = {
     }
     for (const v of message.propertySets) {
       PropertySet.encode(v!, writer.uint32(34).fork()).join();
+    }
+    if (message.sourceSets !== 0) {
+      writer.uint32(40).int32(message.sourceSets);
+    }
+    if (message.sourceMoney !== 0) {
+      writer.uint32(48).int32(message.sourceMoney);
+    }
+    if (message.targetSets !== 0) {
+      writer.uint32(56).int32(message.targetSets);
+    }
+    if (message.targetMoney !== 0) {
+      writer.uint32(64).int32(message.targetMoney);
     }
     return writer;
   },
@@ -4594,6 +4620,38 @@ export const TransferCards: MessageFns<TransferCards> = {
           message.propertySets.push(PropertySet.decode(reader, reader.uint32()));
           continue;
         }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.sourceSets = reader.int32();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.sourceMoney = reader.int32();
+          continue;
+        }
+        case 7: {
+          if (tag !== 56) {
+            break;
+          }
+
+          message.targetSets = reader.int32();
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.targetMoney = reader.int32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4621,6 +4679,26 @@ export const TransferCards: MessageFns<TransferCards> = {
         : globalThis.Array.isArray(object?.property_sets)
         ? object.property_sets.map((e: any) => PropertySet.fromJSON(e))
         : [],
+      sourceSets: isSet(object.sourceSets)
+        ? globalThis.Number(object.sourceSets)
+        : isSet(object.source_sets)
+        ? globalThis.Number(object.source_sets)
+        : 0,
+      sourceMoney: isSet(object.sourceMoney)
+        ? globalThis.Number(object.sourceMoney)
+        : isSet(object.source_money)
+        ? globalThis.Number(object.source_money)
+        : 0,
+      targetSets: isSet(object.targetSets)
+        ? globalThis.Number(object.targetSets)
+        : isSet(object.target_sets)
+        ? globalThis.Number(object.target_sets)
+        : 0,
+      targetMoney: isSet(object.targetMoney)
+        ? globalThis.Number(object.targetMoney)
+        : isSet(object.target_money)
+        ? globalThis.Number(object.target_money)
+        : 0,
     };
   },
 
@@ -4638,6 +4716,18 @@ export const TransferCards: MessageFns<TransferCards> = {
     if (message.propertySets?.length) {
       obj.propertySets = message.propertySets.map((e) => PropertySet.toJSON(e));
     }
+    if (message.sourceSets !== 0) {
+      obj.sourceSets = Math.round(message.sourceSets);
+    }
+    if (message.sourceMoney !== 0) {
+      obj.sourceMoney = Math.round(message.sourceMoney);
+    }
+    if (message.targetSets !== 0) {
+      obj.targetSets = Math.round(message.targetSets);
+    }
+    if (message.targetMoney !== 0) {
+      obj.targetMoney = Math.round(message.targetMoney);
+    }
     return obj;
   },
 
@@ -4650,6 +4740,10 @@ export const TransferCards: MessageFns<TransferCards> = {
     message.targetId = object.targetId ?? "";
     message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
     message.propertySets = object.propertySets?.map((e) => PropertySet.fromPartial(e)) || [];
+    message.sourceSets = object.sourceSets ?? 0;
+    message.sourceMoney = object.sourceMoney ?? 0;
+    message.targetSets = object.targetSets ?? 0;
+    message.targetMoney = object.targetMoney ?? 0;
     return message;
   },
 };
@@ -4755,7 +4849,7 @@ export const RearrangeCard: MessageFns<RearrangeCard> = {
 };
 
 function createBaseRearrangeCardRes(): RearrangeCardRes {
-  return { seqNum: 0, playerId: "", card: undefined, propertySet: undefined };
+  return { seqNum: 0, playerId: "", card: undefined, propertySet: undefined, sets: 0 };
 }
 
 export const RearrangeCardRes: MessageFns<RearrangeCardRes> = {
@@ -4771,6 +4865,9 @@ export const RearrangeCardRes: MessageFns<RearrangeCardRes> = {
     }
     if (message.propertySet !== undefined) {
       PropertySet.encode(message.propertySet, writer.uint32(34).fork()).join();
+    }
+    if (message.sets !== 0) {
+      writer.uint32(40).int32(message.sets);
     }
     return writer;
   },
@@ -4814,6 +4911,14 @@ export const RearrangeCardRes: MessageFns<RearrangeCardRes> = {
           message.propertySet = PropertySet.decode(reader, reader.uint32());
           continue;
         }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.sets = reader.int32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4841,6 +4946,7 @@ export const RearrangeCardRes: MessageFns<RearrangeCardRes> = {
         : isSet(object.property_set)
         ? PropertySet.fromJSON(object.property_set)
         : undefined,
+      sets: isSet(object.sets) ? globalThis.Number(object.sets) : 0,
     };
   },
 
@@ -4858,6 +4964,9 @@ export const RearrangeCardRes: MessageFns<RearrangeCardRes> = {
     if (message.propertySet !== undefined) {
       obj.propertySet = PropertySet.toJSON(message.propertySet);
     }
+    if (message.sets !== 0) {
+      obj.sets = Math.round(message.sets);
+    }
     return obj;
   },
 
@@ -4872,6 +4981,7 @@ export const RearrangeCardRes: MessageFns<RearrangeCardRes> = {
     message.propertySet = (object.propertySet !== undefined && object.propertySet !== null)
       ? PropertySet.fromPartial(object.propertySet)
       : undefined;
+    message.sets = object.sets ?? 0;
     return message;
   },
 };

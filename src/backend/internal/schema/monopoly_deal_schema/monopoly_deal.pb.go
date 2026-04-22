@@ -2594,6 +2594,10 @@ type TransferCards struct {
 	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 	Cards         []*Card                `protobuf:"bytes,3,rep,name=cards,proto3" json:"cards,omitempty"`
 	PropertySets  []*PropertySet         `protobuf:"bytes,4,rep,name=property_sets,json=propertySets,proto3" json:"property_sets,omitempty"`
+	SourceSets    int32                  `protobuf:"varint,5,opt,name=source_sets,json=sourceSets,proto3" json:"source_sets,omitempty"`
+	SourceMoney   int32                  `protobuf:"varint,6,opt,name=source_money,json=sourceMoney,proto3" json:"source_money,omitempty"`
+	TargetSets    int32                  `protobuf:"varint,7,opt,name=target_sets,json=targetSets,proto3" json:"target_sets,omitempty"`
+	TargetMoney   int32                  `protobuf:"varint,8,opt,name=target_money,json=targetMoney,proto3" json:"target_money,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2654,6 +2658,34 @@ func (x *TransferCards) GetPropertySets() []*PropertySet {
 		return x.PropertySets
 	}
 	return nil
+}
+
+func (x *TransferCards) GetSourceSets() int32 {
+	if x != nil {
+		return x.SourceSets
+	}
+	return 0
+}
+
+func (x *TransferCards) GetSourceMoney() int32 {
+	if x != nil {
+		return x.SourceMoney
+	}
+	return 0
+}
+
+func (x *TransferCards) GetTargetSets() int32 {
+	if x != nil {
+		return x.TargetSets
+	}
+	return 0
+}
+
+func (x *TransferCards) GetTargetMoney() int32 {
+	if x != nil {
+		return x.TargetMoney
+	}
+	return 0
 }
 
 type RearrangeCard struct {
@@ -2722,6 +2754,7 @@ type RearrangeCardRes struct {
 	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
 	Card          *Card                  `protobuf:"bytes,3,opt,name=card,proto3" json:"card,omitempty"`
 	PropertySet   *PropertySet           `protobuf:"bytes,4,opt,name=property_set,json=propertySet,proto3" json:"property_set,omitempty"`
+	Sets          int32                  `protobuf:"varint,5,opt,name=sets,proto3" json:"sets,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2782,6 +2815,13 @@ func (x *RearrangeCardRes) GetPropertySet() *PropertySet {
 		return x.PropertySet
 	}
 	return nil
+}
+
+func (x *RearrangeCardRes) GetSets() int32 {
+	if x != nil {
+		return x.Sets
+	}
+	return 0
 }
 
 type DiscardCards struct {
@@ -4769,23 +4809,30 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\x12ResolvePendingRent\"K\n" +
 	"\x13PendingRentResolved\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\"\xd7\x01\n" +
+	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\"\xdf\x02\n" +
 	"\rTransferCards\x12\x1b\n" +
 	"\tsource_id\x18\x01 \x01(\tR\bsourceId\x12\x1b\n" +
 	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x12:\n" +
 	"\x05cards\x18\x03 \x03(\v2$.fun_kames.schema.monopoly_deal.CardR\x05cards\x12P\n" +
-	"\rproperty_sets\x18\x04 \x03(\v2+.fun_kames.schema.monopoly_deal.PropertySetR\fpropertySets\"\xb5\x01\n" +
+	"\rproperty_sets\x18\x04 \x03(\v2+.fun_kames.schema.monopoly_deal.PropertySetR\fpropertySets\x12\x1f\n" +
+	"\vsource_sets\x18\x05 \x01(\x05R\n" +
+	"sourceSets\x12!\n" +
+	"\fsource_money\x18\x06 \x01(\x05R\vsourceMoney\x12\x1f\n" +
+	"\vtarget_sets\x18\a \x01(\x05R\n" +
+	"targetSets\x12!\n" +
+	"\ftarget_money\x18\b \x01(\x05R\vtargetMoney\"\xb5\x01\n" +
 	"\rRearrangeCard\x12\x17\n" +
 	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12+\n" +
 	"\x0fproperty_set_id\x18\x02 \x01(\tH\x00R\rpropertySetId\x88\x01\x01\x12@\n" +
 	"\x05color\x18\x03 \x01(\x0e2%.fun_kames.schema.monopoly_deal.ColorH\x01R\x05color\x88\x01\x01B\x12\n" +
 	"\x10_property_set_idB\b\n" +
-	"\x06_color\"\xd2\x01\n" +
+	"\x06_color\"\xe6\x01\n" +
 	"\x10RearrangeCardRes\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x128\n" +
 	"\x04card\x18\x03 \x01(\v2$.fun_kames.schema.monopoly_deal.CardR\x04card\x12N\n" +
-	"\fproperty_set\x18\x04 \x01(\v2+.fun_kames.schema.monopoly_deal.PropertySetR\vpropertySet\")\n" +
+	"\fproperty_set\x18\x04 \x01(\v2+.fun_kames.schema.monopoly_deal.PropertySetR\vpropertySet\x12\x12\n" +
+	"\x04sets\x18\x05 \x01(\x05R\x04sets\")\n" +
 	"\fDiscardCards\x12\x19\n" +
 	"\bcard_ids\x18\x01 \x03(\tR\acardIds\"\x83\x01\n" +
 	"\x0fDiscardCardsRes\x12\x17\n" +

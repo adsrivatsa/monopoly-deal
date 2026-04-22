@@ -4,7 +4,6 @@ import {
   createRoom,
   CreateRoomParams,
   getRoom,
-  joinRoom,
   leaveRoom,
   listRooms,
   RoomListItem,
@@ -162,25 +161,7 @@ const LobbyPage = () => {
   const canGoPrevious = offset > 0;
   const canGoNext = offset + PAGE_SIZE < totalCount;
 
-  const handleJoinRoom = async (roomId: string) => {
-    const result = await joinRoom(roomId);
-
-    if (!result.ok) {
-      if (result.isTokenError) {
-        navigate("/login", { replace: true });
-        return;
-      }
-
-      setApiError(
-        result.error ?? {
-          message: "Could not join room.",
-          status: 500,
-          code: "UNKNOWN",
-        },
-      );
-      return;
-    }
-
+  const handleJoinRoom = (roomId: string) => {
     navigate(`/room/${roomId}`);
   };
 
@@ -336,7 +317,7 @@ const LobbyPage = () => {
                         return;
                       }
 
-                      void handleJoinRoom(room.room_id);
+                      handleJoinRoom(room.room_id);
                     }}
                   >
                     <TableCell>{room.display_name}</TableCell>
