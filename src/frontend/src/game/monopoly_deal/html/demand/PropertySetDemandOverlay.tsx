@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import {
   assetKeyToJSON,
   type Card,
@@ -27,16 +26,13 @@ const PropertySetDemandOverlay = ({
 }: PropertySetDemandOverlayProps) => {
   const sourcePlayer = players.find((player) => player.playerId === demand.sourceId);
   const targetPlayer = players.find((player) => player.playerId === demand.playerId);
-  const imageStripWidthPx = Math.max(requestedCards.length * 62, 170);
-  const demandContentWidthPx = Math.min(imageStripWidthPx, 360);
-  const demandStyle = {
-    ["--md-demand-content-width" as string]: `${demandContentWidthPx}px`,
-  } as CSSProperties;
+  const demandActorName = demand.isActive
+    ? sourcePlayer?.displayName ?? demand.sourceId
+    : targetPlayer?.displayName ?? demand.playerId;
 
   return (
     <aside
-      className="md-demand md-demand--payment md-demand--property-set"
-      style={demandStyle}
+      className="md-demand md-demand--payment"
       aria-live="polite"
       onPointerDown={(event) => event.stopPropagation()}
     >
@@ -57,17 +53,13 @@ const PropertySetDemandOverlay = ({
           loading="lazy"
           referrerPolicy="no-referrer"
         />
-        <p className="md-demand__line md-demand-source__name">
+        <p className="md-demand__line md-demand-source__message">
+          <span className="md-demand-source__name">{demandActorName}</span>{" "}
           {demand.isActive
-            ? sourcePlayer?.displayName ?? demand.sourceId
-            : targetPlayer?.displayName ?? demand.playerId}
+            ? "is trying to snatch your set:"
+            : "blocked you from snatching their set:"}
         </p>
       </div>
-      <p className="md-demand__line">
-        {demand.isActive
-          ? "wants your property set:"
-          : "said no to your deal breaker for set:"}
-      </p>
       {requestedCards.length > 0 ? (
         <div className="md-demand-property-card">
           <div className="md-stack-box__cards" role="list" aria-label="Requested properties">

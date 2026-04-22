@@ -567,6 +567,75 @@ export function demandKindToJSON(object: DemandKind): string {
   }
 }
 
+export enum DemandSource {
+  DEMAND_SOURCE_UNSPECIFIED = 0,
+  DEMAND_SOURCE_RENT = 1,
+  DEMAND_SOURCE_ITS_MY_BIRTHDAY = 2,
+  DEMAND_SOURCE_FORCED_DEAL = 3,
+  DEMAND_SOURCE_SLY_DEAL = 4,
+  DEMAND_SOURCE_DEAL_BREAKER = 5,
+  DEMAND_SOURCE_JUST_SAY_NO = 6,
+  DEMAND_SOURCE_DEBT_COLLECTOR = 7,
+  UNRECOGNIZED = -1,
+}
+
+export function demandSourceFromJSON(object: any): DemandSource {
+  switch (object) {
+    case 0:
+    case "DEMAND_SOURCE_UNSPECIFIED":
+      return DemandSource.DEMAND_SOURCE_UNSPECIFIED;
+    case 1:
+    case "DEMAND_SOURCE_RENT":
+      return DemandSource.DEMAND_SOURCE_RENT;
+    case 2:
+    case "DEMAND_SOURCE_ITS_MY_BIRTHDAY":
+      return DemandSource.DEMAND_SOURCE_ITS_MY_BIRTHDAY;
+    case 3:
+    case "DEMAND_SOURCE_FORCED_DEAL":
+      return DemandSource.DEMAND_SOURCE_FORCED_DEAL;
+    case 4:
+    case "DEMAND_SOURCE_SLY_DEAL":
+      return DemandSource.DEMAND_SOURCE_SLY_DEAL;
+    case 5:
+    case "DEMAND_SOURCE_DEAL_BREAKER":
+      return DemandSource.DEMAND_SOURCE_DEAL_BREAKER;
+    case 6:
+    case "DEMAND_SOURCE_JUST_SAY_NO":
+      return DemandSource.DEMAND_SOURCE_JUST_SAY_NO;
+    case 7:
+    case "DEMAND_SOURCE_DEBT_COLLECTOR":
+      return DemandSource.DEMAND_SOURCE_DEBT_COLLECTOR;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return DemandSource.UNRECOGNIZED;
+  }
+}
+
+export function demandSourceToJSON(object: DemandSource): string {
+  switch (object) {
+    case DemandSource.DEMAND_SOURCE_UNSPECIFIED:
+      return "DEMAND_SOURCE_UNSPECIFIED";
+    case DemandSource.DEMAND_SOURCE_RENT:
+      return "DEMAND_SOURCE_RENT";
+    case DemandSource.DEMAND_SOURCE_ITS_MY_BIRTHDAY:
+      return "DEMAND_SOURCE_ITS_MY_BIRTHDAY";
+    case DemandSource.DEMAND_SOURCE_FORCED_DEAL:
+      return "DEMAND_SOURCE_FORCED_DEAL";
+    case DemandSource.DEMAND_SOURCE_SLY_DEAL:
+      return "DEMAND_SOURCE_SLY_DEAL";
+    case DemandSource.DEMAND_SOURCE_DEAL_BREAKER:
+      return "DEMAND_SOURCE_DEAL_BREAKER";
+    case DemandSource.DEMAND_SOURCE_JUST_SAY_NO:
+      return "DEMAND_SOURCE_JUST_SAY_NO";
+    case DemandSource.DEMAND_SOURCE_DEBT_COLLECTOR:
+      return "DEMAND_SOURCE_DEBT_COLLECTOR";
+    case DemandSource.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export interface Error {
   message: string;
   status: number;
@@ -638,6 +707,7 @@ export interface Demand {
   propertyDemand?: PropertyDemand | undefined;
   propertySetDemand?: PropertySetDemand | undefined;
   isActive: boolean;
+  demandSource: DemandSource;
 }
 
 export interface PendingRent {
@@ -1977,6 +2047,7 @@ function createBaseDemand(): Demand {
     propertyDemand: undefined,
     propertySetDemand: undefined,
     isActive: false,
+    demandSource: 0,
   };
 }
 
@@ -2005,6 +2076,9 @@ export const Demand: MessageFns<Demand> = {
     }
     if (message.isActive !== false) {
       writer.uint32(64).bool(message.isActive);
+    }
+    if (message.demandSource !== 0) {
+      writer.uint32(72).int32(message.demandSource);
     }
     return writer;
   },
@@ -2080,6 +2154,14 @@ export const Demand: MessageFns<Demand> = {
           message.isActive = reader.bool();
           continue;
         }
+        case 9: {
+          if (tag !== 72) {
+            break;
+          }
+
+          message.demandSource = reader.int32() as any;
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2127,6 +2209,11 @@ export const Demand: MessageFns<Demand> = {
         : isSet(object.is_active)
         ? globalThis.Boolean(object.is_active)
         : false,
+      demandSource: isSet(object.demandSource)
+        ? demandSourceFromJSON(object.demandSource)
+        : isSet(object.demand_source)
+        ? demandSourceFromJSON(object.demand_source)
+        : 0,
     };
   },
 
@@ -2156,6 +2243,9 @@ export const Demand: MessageFns<Demand> = {
     if (message.isActive !== false) {
       obj.isActive = message.isActive;
     }
+    if (message.demandSource !== 0) {
+      obj.demandSource = demandSourceToJSON(message.demandSource);
+    }
     return obj;
   },
 
@@ -2178,6 +2268,7 @@ export const Demand: MessageFns<Demand> = {
       ? PropertySetDemand.fromPartial(object.propertySetDemand)
       : undefined;
     message.isActive = object.isActive ?? false;
+    message.demandSource = object.demandSource ?? 0;
     return message;
   },
 };

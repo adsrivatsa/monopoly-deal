@@ -348,7 +348,7 @@ const GamePage = () => {
     (message: string, code: string) => {
       pushErrorNotice(
         { message, code },
-        { title: "Action blocked", eyebrow: "Frontend rule" },
+        { title: "Action blocked", eyebrow: "Action blocked" },
       );
     },
     [pushErrorNotice],
@@ -1257,6 +1257,7 @@ const GamePage = () => {
 
           const transferProperty = message.monopolyDealMessage?.transferProperty;
           if (transferProperty) {
+            let nextPlayersSnapshot: Player[] | null = null;
             setInitialGameState((current) => {
               if (!current) {
                 return current;
@@ -2005,7 +2006,7 @@ const GamePage = () => {
               message: "Choose one of your complete sets before playing this card.",
               code: "HOUSE_HOTEL_REQUIRES_SET",
             },
-            { title: "Cannot play card", eyebrow: "Frontend rule" },
+            { title: "Cannot play card", eyebrow: "Cannot play card" },
           );
           return;
         }
@@ -2020,7 +2021,7 @@ const GamePage = () => {
               message: "You can only play this card on one of your own complete sets.",
               code: "HOUSE_HOTEL_INVALID_TARGET_SET",
             },
-            { title: "Cannot play card", eyebrow: "Frontend rule" },
+            { title: "Cannot play card", eyebrow: "Cannot play card" },
           );
           return;
         }
@@ -2034,7 +2035,7 @@ const GamePage = () => {
               message: "House and Hotel cards cannot be played on Utility or Railroad sets.",
               code: "HOUSE_HOTEL_INVALID_SET_COLOR",
             },
-            { title: "Cannot play card", eyebrow: "Frontend rule" },
+            { title: "Cannot play card", eyebrow: "Cannot play card" },
           );
           return;
         }
@@ -2053,7 +2054,7 @@ const GamePage = () => {
               message: "House and Hotel cards can only be played on complete sets.",
               code: "HOUSE_HOTEL_REQUIRES_COMPLETE_SET",
             },
-            { title: "Cannot play card", eyebrow: "Frontend rule" },
+            { title: "Cannot play card", eyebrow: "Cannot play card" },
           );
           return;
         }
@@ -2064,7 +2065,7 @@ const GamePage = () => {
               message: "This set already has a House.",
               code: "HOUSE_ALREADY_PRESENT",
             },
-            { title: "Cannot play card", eyebrow: "Frontend rule" },
+            { title: "Cannot play card", eyebrow: "Cannot play card" },
           );
           return;
         }
@@ -2075,7 +2076,7 @@ const GamePage = () => {
               message: "Hotel can only be played on a complete set that already has a House.",
               code: "HOTEL_REQUIRES_HOUSE",
             },
-            { title: "Cannot play card", eyebrow: "Frontend rule" },
+            { title: "Cannot play card", eyebrow: "Cannot play card" },
           );
           return;
         }
@@ -2086,7 +2087,7 @@ const GamePage = () => {
               message: "This set already has a Hotel.",
               code: "HOTEL_ALREADY_PRESENT",
             },
-            { title: "Cannot play card", eyebrow: "Frontend rule" },
+            { title: "Cannot play card", eyebrow: "Cannot play card" },
           );
           return;
         }
@@ -2575,6 +2576,14 @@ const GamePage = () => {
   );
 
   const handlePassTurn = useCallback(() => {
+    if (discardRequiredCount > 0) {
+      notifyFrontendRule(
+        `You have too many cards in your hand. Play ${discardRequiredCount} more to pass your turn.`,
+        "DISCARD_REQUIRED_BEFORE_PASS",
+      );
+      return;
+    }
+
     if (selfPlayerId) {
       const selfPropertySets = (initialGameState?.properties ?? []).filter(
         (propertySet) => propertySet.playerId === selfPlayerId,
@@ -2616,7 +2625,13 @@ const GamePage = () => {
     }
 
     sendGameCompleteTurnMessage(socket);
-  }, [initialGameState?.properties, notifyFrontendRule, notifySocketUnavailable, selfPlayerId]);
+  }, [
+    discardRequiredCount,
+    initialGameState?.properties,
+    notifyFrontendRule,
+    notifySocketUnavailable,
+    selfPlayerId,
+  ]);
 
   const handleComplyPaymentDemand = useCallback((demandId: string, cardIds: string[]) => {
     const socket = socketRef.current;
@@ -2836,7 +2851,7 @@ const GamePage = () => {
             onGameError={(error) => {
               pushErrorNotice(error, {
                 title: "Cannot play card",
-                eyebrow: "Frontend rule",
+                eyebrow: "Cannot play card",
               });
             }}
           />

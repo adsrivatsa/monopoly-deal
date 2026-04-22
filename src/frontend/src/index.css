@@ -664,7 +664,16 @@ h1 {
   z-index: 1200;
   display: grid;
   gap: 0.55rem;
-  width: min(92vw, 360px);
+  width: min(50vw, 360px);
+}
+
+@media (max-width: 840px) {
+  .error-toast-stack {
+    left: auto;
+    right: 0.6rem;
+    width: min(50vw, 360px);
+    transform: none;
+  }
 }
 
 .error-toast {
@@ -674,6 +683,8 @@ h1 {
   color: #7f1d1d;
   box-shadow: var(--shadow);
   padding: 0.62rem 0.68rem;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .error-toast__eyebrow,
@@ -699,12 +710,14 @@ h1 {
 .error-toast__message {
   margin-top: 0.25rem;
   font-size: 0.76rem;
+  overflow-wrap: anywhere;
 }
 
 .error-toast__code {
   margin-top: 0.26rem;
   color: #b91c1c;
   font-size: 0.68rem;
+  overflow-wrap: anywhere;
 }
 
 .error-toast__close {
@@ -1451,17 +1464,21 @@ h1 {
   .game-page {
     padding: calc(var(--game-nav-offset, 3.85rem) + 0.55rem) 0.6rem 0.6rem;
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(260px, 45dvh) 1fr;
+    grid-template-rows: minmax(300px, 58dvh) 1fr;
     height: auto;
     min-height: calc(100dvh - var(--game-nav-offset, 3.85rem));
   }
 
   .game-mount {
     height: 100%;
-    min-height: 260px;
+    min-height: 300px;
   }
 
   .game-sidebar {
     height: min(70dvh, 680px);
+  }
+
+  .game-turn-controls-card {
+    order: -1;
   }
 }

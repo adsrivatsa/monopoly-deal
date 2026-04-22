@@ -165,6 +165,17 @@ message PropertySetDemand {
   string property_set_id = 1;
 }
 
+enum DemandSource {
+  DEMAND_SOURCE_UNSPECIFIED = 0;
+  DEMAND_SOURCE_RENT = 1;
+  DEMAND_SOURCE_ITS_MY_BIRTHDAY = 2;
+  DEMAND_SOURCE_FORCED_DEAL = 3;
+  DEMAND_SOURCE_SLY_DEAL = 4;
+  DEMAND_SOURCE_DEAL_BREAKER = 5;
+  DEMAND_SOURCE_JUST_SAY_NO = 6;
+  DEMAND_SOURCE_DEBT_COLLECTOR = 7;
+}
+
 message Demand {
   string id = 1;
   string player_id = 2;
@@ -176,6 +187,7 @@ message Demand {
     PropertySetDemand property_set_demand = 7;
   }
   bool is_active = 8;
+  DemandSource demand_source = 9;
 }
 
 message PendingRent {

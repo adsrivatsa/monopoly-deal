@@ -654,16 +654,6 @@ const MonopolyDealHtmlBoard = ({
     return selectedIds;
   }, [dealPicker?.selectedTargetPropertySetId]);
 
-  const selectedForcedDealTargetPlayerName = useMemo(() => {
-    if (!dealPicker?.selectedOpponentPlayerId) {
-      return undefined;
-    }
-
-    return players.find(
-      (player) => player.playerId === dealPicker.selectedOpponentPlayerId,
-    )?.displayName;
-  }, [dealPicker?.selectedOpponentPlayerId, players]);
-
   const { columns } = useMemo(
     () => computeBoardGrid(orderedPlayers.length),
     [orderedPlayers.length],
@@ -1512,14 +1502,14 @@ const MonopolyDealHtmlBoard = ({
   const onSelectCardFromCompletedSet = useCallback(() => {
     onGameError?.({
       message:
-        "Cards in completed property sets cannot be targeted by Sly Deal or Forced Deal.",
+        "Cards in completed property sets cannot be targeted by Property Swap or Snatch.",
       code: "DEAL_CARD_IN_COMPLETED_SET",
     });
   }, [onGameError]);
 
   const onSelectIncompleteSetForDealBreaker = useCallback(() => {
     onGameError?.({
-      message: "Deal Breaker can only target complete property sets.",
+      message: "Set Snatcher can only snatch complete sets.",
       code: "DEAL_BREAKER_REQUIRES_COMPLETE_SET",
     });
   }, [onGameError]);
@@ -2025,25 +2015,18 @@ const MonopolyDealHtmlBoard = ({
           >
             <p className="md-demand__eyebrow">
               {dealPicker.mode === "forced_deal"
-                ? "Forced Deal"
+                ? "Property Swap"
                 : dealPicker.mode === "deal_breaker"
-                  ? "Deal Breaker"
-                  : "Sly Deal"}
+                  ? "Set Snatcher"
+                  : "Property Steal"}
             </p>
             <h3 className="md-demand__title">
               {dealPicker.mode === "deal_breaker"
-                ? "Choose an opponent complete set"
+                ? "Select an opponenets complete set to steal."
                 : dealPicker.mode === "forced_deal"
-                  ? "Choose an opponent property and one of your properties"
-                  : "Choose an opponent property"}
+                  ? "Choose one of your opponents properties and one of yours to swap."
+                  : "Choose one of your opponents properties to steal."}
             </h3>
-            <p className="md-demand__line">
-              {dealPicker.mode === "deal_breaker"
-                ? "Select one complete set, then confirm."
-                : dealPicker.mode === "forced_deal"
-                  ? `Target: ${selectedForcedDealTargetPlayerName ?? "Opponent"}. Select one opponent card and one of your cards, then confirm.`
-                  : "Select one opponent card, then confirm."}
-            </p>
             <div className="md-demand__actions">
               <button
                 type="button"
@@ -2087,6 +2070,7 @@ const MonopolyDealHtmlBoard = ({
             isSelectingCards={isSelectingPaymentCards}
             selectingDemandId={activePaymentDemandId ?? undefined}
             canConfirmSelection={canConfirmPaymentSelection}
+            selectedPaymentTotal={selectedPaymentTotal}
             onComply={onDemandComply}
             onDeny={onDemandDeny}
           />

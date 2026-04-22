@@ -17,6 +17,7 @@ type DemandOverlayProps = {
   isSelectingCards: boolean;
   selectingDemandId?: string;
   canConfirmSelection: boolean;
+  selectedPaymentTotal: number;
   onComply: (demandId: string) => void;
   onDeny: (demandId: string) => void;
 };
@@ -30,6 +31,7 @@ const DemandOverlay = ({
   isSelectingCards,
   selectingDemandId,
   canConfirmSelection,
+  selectedPaymentTotal,
   onComply,
   onDeny,
 }: DemandOverlayProps) => {
@@ -51,6 +53,7 @@ const DemandOverlay = ({
               isDemandActive={demand.isActive}
               isSelectingCards={isThisDemandSelecting}
               canConfirmSelection={canConfirmSelection}
+              selectedPaymentTotal={selectedPaymentTotal}
               onComply={onComply}
               onDeny={onDeny}
             />

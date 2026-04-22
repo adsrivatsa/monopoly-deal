@@ -62,6 +62,8 @@
   overflow: hidden;
   padding: 0.55rem 0.7rem;
   min-width: 170px;
+  width: fit-content;
+  max-width: 50vw;
   box-shadow: 0 8px 20px color-mix(in oklab, black 24%, transparent);
 }
 
@@ -70,7 +72,8 @@
 }
 
 .md-demand--property-set {
-  width: min(92vw, var(--md-demand-content-width, 22rem));
+  width: fit-content;
+  max-width: min(50vw, var(--md-demand-content-width, 22rem));
 }
 
 .md-demand--property-set .md-demand-source__name {
@@ -115,7 +118,7 @@
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr);
   gap: 0.35rem;
-  align-items: center;
+  align-items: start;
 }
 
 .md-demand-source__avatar {
@@ -128,10 +131,23 @@
 
 .md-demand-source__name {
   margin-top: 0;
+  font-weight: 700;
+}
+
+.md-demand-source__details {
+  min-width: 0;
+}
+
+.md-demand-source__message {
+  margin-top: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .md-demand-property-card {
   margin-top: 0.35rem;
+  display: flex;
+  justify-content: center;
 }
 
 .md-demand-property-card .md-stack-box__cards {

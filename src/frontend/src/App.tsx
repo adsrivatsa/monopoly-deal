@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import AppNavbar from "./components/layout/app-navbar";
 import GamePage from "./pages/GamePage";
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import LobbyPage from "./pages/LobbyPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -13,9 +14,9 @@ const App = () => {
       <AppNavbar />
       <div className="app-shell__content">
         <Routes>
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedLobbyRoute />}>
-            <Route path="/" element={<LobbyPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/room/:room_id" element={<RoomPage />} />

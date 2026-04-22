@@ -1,4 +1,20 @@
-import { type Demand, type Player } from "../../../../generated/monopoly_deal";
+import {
+  DemandSource,
+  type Demand,
+  type Player,
+} from "../../../../generated/monopoly_deal";
+
+const isItsMyBirthdayDemand = (demand: Demand): boolean => {
+  return demand.demandSource === DemandSource.DEMAND_SOURCE_ITS_MY_BIRTHDAY;
+};
+
+const isDebtCollectorDemand = (demand: Demand): boolean => {
+  return demand.demandSource === DemandSource.DEMAND_SOURCE_DEBT_COLLECTOR;
+};
+
+const isRentDemand = (demand: Demand): boolean => {
+  return demand.demandSource === DemandSource.DEMAND_SOURCE_RENT;
+};
 
 type PaymentDemandOverlayProps = {
   demand: Demand;
@@ -7,6 +23,7 @@ type PaymentDemandOverlayProps = {
   isDemandActive: boolean;
   isSelectingCards: boolean;
   canConfirmSelection: boolean;
+  selectedPaymentTotal?: number;
   onComply: (demandId: string) => void;
   onDeny: (demandId: string) => void;
 };
@@ -18,11 +35,35 @@ const PaymentDemandOverlay = ({
   isDemandActive,
   isSelectingCards,
   canConfirmSelection,
+  selectedPaymentTotal,
   onComply,
   onDeny,
 }: PaymentDemandOverlayProps) => {
   const sourcePlayer = players.find((player) => player.playerId === demand.sourceId);
   const amount = demand.paymentDemand?.amount;
+  const isBirthdayDemand = isItsMyBirthdayDemand(demand);
+  const isDebtCollector = isDebtCollectorDemand(demand);
+  const isRent = isRentDemand(demand);
+  const sourceName = sourcePlayer?.displayName ?? demand.sourceId;
+  const demandLine = isBirthdayDemand
+    ? isDemandActive
+      ? `is throwing a party. Pay $${typeof amount === "number" ? amount : "-"}M to attend.`
+      : `doesn't want to come to your party :(.`
+    : isDebtCollector
+      ? isDemandActive
+        ? `wants you to settle up. Pay them $${typeof amount === "number" ? amount : "-"}M.`
+        : `wants to settle up $${typeof amount === "number" ? amount : "-"}M later (probably never).`
+      : isRent
+        ? isDemandActive
+        ? `wants you to pay your rent - $${typeof amount === "number" ? amount : "-"}M.`
+        : `doesn't want to pay you rent - $${typeof amount === "number" ? amount : "-"}M.`
+      : isDemandActive
+        ? `wants $${typeof amount === "number" ? amount : "-"}.`
+        : `said no to paying you $${typeof amount === "number" ? amount : "-"}.`;
+  const demandLineText =
+    isSelectingCards && typeof selectedPaymentTotal === "number"
+      ? `${demandLine.replace(/\.$/, "")} ($${selectedPaymentTotal}M selected).`
+      : demandLine;
 
   return (
     <aside
@@ -41,10 +82,8 @@ const PaymentDemandOverlay = ({
           loading="lazy"
           referrerPolicy="no-referrer"
         />
-        <p className="md-demand__line md-demand-source__name">
-          {isDemandActive
-            ? `${sourcePlayer?.displayName ?? demand.sourceId} wants $${typeof amount === "number" ? amount : "-"}.`
-            : `${sourcePlayer?.displayName ?? demand.sourceId} said no to paying you $${typeof amount === "number" ? amount : "-"}.`}
+        <p className="md-demand__line md-demand-source__message">
+          <span className="md-demand-source__name">{sourceName}</span> {demandLineText}
         </p>
       </div>
       <div className="md-demand__actions">

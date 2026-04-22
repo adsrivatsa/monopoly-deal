@@ -3,7 +3,6 @@ import OAuthButtons from "../components/auth/OAuthButtons";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
@@ -15,10 +14,7 @@ const LoginPage = () => {
       <Card className="auth-card">
         <CardHeader>
           <p className="eyebrow">Welcome back</p>
-          <CardTitle>Sign in to Monopoly Deal</CardTitle>
-          <CardDescription>
-            Use Google OAuth to sign in and return to your lobby automatically.
-          </CardDescription>
+          <CardTitle>Sign in to The Deal</CardTitle>
         </CardHeader>
 
         <CardContent>
@@ -41,7 +37,7 @@ const LoginPage = () => {
           </p>
 
           <Link to="/" className="text-link">
-            Return to lobby preview
+            Return to home
           </Link>
         </CardContent>
       </Card>

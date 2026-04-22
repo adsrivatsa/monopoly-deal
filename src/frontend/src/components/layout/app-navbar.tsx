@@ -103,8 +103,8 @@ const AppNavbar = () => {
     <header className="app-nav">
       <div className="app-nav__inner">
         <div className="app-nav__left">
-          <Link to="/lobby" className="app-nav__brand">
-            Fun Kames!
+          <Link to="/" className="app-nav__brand">
+            The Deal
           </Link>
         </div>
 

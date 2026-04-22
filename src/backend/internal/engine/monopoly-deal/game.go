@@ -1001,7 +1001,7 @@ func (g *Game) PlayItsMyBirthday(playerUUID uuid.UUID, cardID Identifier) (map[I
 		return nil, Card{}, err
 	}
 
-	g.Demands = NewPaymentDemands(g.IDGenerator, playerID, g.Players, g.Config.ItsMyBirthdayAmount)
+	g.Demands = NewPaymentDemands(g.IDGenerator, playerID, g.Players, g.Config.ItsMyBirthdayAmount, DemandSourceItsMyBirthday)
 
 	g.LastAction = card
 
@@ -1062,7 +1062,7 @@ func (g *Game) PlayDebtCollector(playerUUID uuid.UUID, targetUUID uuid.UUID, car
 
 	demandID := g.IDGenerator.New()
 	g.Demands = map[Identifier]Demand{
-		demandID: NewPaymentDemand(demandID, playerID, targetID, g.Config.DebtCollectorAmount),
+		demandID: NewPaymentDemand(demandID, playerID, targetID, g.Config.DebtCollectorAmount, DemansSourceDebtCollector),
 	}
 
 	g.LastAction = card
@@ -1268,7 +1268,7 @@ func (g *Game) PlaySlyDeal(playerUUID uuid.UUID, targetUUID uuid.UUID, cardID Id
 
 	demandID := g.IDGenerator.New()
 	g.Demands = map[Identifier]Demand{
-		demandID: NewPropertyDemand(demandID, playerID, targetID, nil, targetCardID),
+		demandID: NewPropertyDemand(demandID, playerID, targetID, nil, targetCardID, DemandSourceSlyDeal),
 	}
 
 	g.LastAction = card
@@ -1342,7 +1342,7 @@ func (g *Game) PlayForcedDeal(playerUUID uuid.UUID, targetUUID uuid.UUID, cardID
 
 	demandID := g.IDGenerator.New()
 	g.Demands = map[Identifier]Demand{
-		demandID: NewPropertyDemand(demandID, playerID, targetID, &sourceCardID, targetCardID),
+		demandID: NewPropertyDemand(demandID, playerID, targetID, &sourceCardID, targetCardID, DemandSourceForcedDeal),
 	}
 
 	g.LastAction = card
@@ -1409,7 +1409,7 @@ func (g *Game) PlayDealBreaker(playerUUID uuid.UUID, targetUUID uuid.UUID, cardI
 
 	demandID := g.IDGenerator.New()
 	g.Demands = map[Identifier]Demand{
-		demandID: NewPropertySetDemand(demandID, playerID, targetID, setID),
+		demandID: NewPropertySetDemand(demandID, playerID, targetID, setID, DemandSourceDealBreaker),
 	}
 
 	g.LastAction = card
@@ -1842,7 +1842,7 @@ func (g *Game) ResolvePendingRent(playerUUID uuid.UUID) (map[Identifier]Demand, 
 
 	pendingRent := g.PendingRent
 
-	g.Demands = NewPaymentDemands(g.IDGenerator, pendingRent.SourceID, pendingRent.TargetIDs, pendingRent.BaseAmount*pendingRent.Multiplier)
+	g.Demands = NewPaymentDemands(g.IDGenerator, pendingRent.SourceID, pendingRent.TargetIDs, pendingRent.BaseAmount*pendingRent.Multiplier, DemandSourceRent)
 	g.PendingRent = nil
 
 	g.SequenceNum++

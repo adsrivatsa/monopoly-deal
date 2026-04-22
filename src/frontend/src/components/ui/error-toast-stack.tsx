@@ -35,7 +35,6 @@ const ErrorToastItem = ({
   return (
     <article className="error-toast" role="status">
       <p className="error-toast__eyebrow">{notice.eyebrow ?? "Game error"}</p>
-      <p className="error-toast__title">{notice.title ?? "Action blocked"}</p>
       <p className="error-toast__message">{notice.message}</p>
       {notice.code ? <p className="error-toast__code">Code: {notice.code}</p> : null}
       <button
