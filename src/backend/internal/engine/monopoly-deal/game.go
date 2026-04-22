@@ -636,6 +636,118 @@ func (g *Game) PlayProperty(playerUUID uuid.UUID, cardID Identifier, propSetIDPt
 	return propSet, nil
 }
 
+func (g *Game) PlayHouse(playerUUID uuid.UUID, cardID, propSetID Identifier) (PropertySet, Card, error) {
+	playerID, err := g.checkPlayer(playerUUID)
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	card, err := g.checkCard(cardID, CategoryAction)
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	if card.AssetKey != AssetKeyHouse {
+		return PropertySet{}, Card{}, errors.InvalidCardForAction
+	}
+
+	err = g.checkDemands()
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	err = g.checkPendingRent()
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	properties := g.Properties[playerID]
+	setIdx := properties.IndexBySetID(propSetID)
+	if setIdx == -1 {
+		return PropertySet{}, Card{}, errors.PropertySetDoesntExist
+	}
+
+	propSet := properties[setIdx]
+
+	if !propSet.IsComplete() {
+		return PropertySet{}, Card{}, errors.PropertySetIsNotComplete
+	}
+
+	if propSet.IsLocked() {
+		return PropertySet{}, Card{}, errors.PropertySetHasHouse
+	}
+
+	_, err = g.discardHand(playerID, cardID)
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	propSet.Cards.Add(card)
+	properties[setIdx] = propSet
+	g.Properties[playerID] = properties
+
+	g.CompleteMove()
+	g.SequenceNum++
+
+	return propSet, card, nil
+}
+
+func (g *Game) PlayHotel(playerUUID uuid.UUID, cardID, propSetID Identifier) (PropertySet, Card, error) {
+	playerID, err := g.checkPlayer(playerUUID)
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	card, err := g.checkCard(cardID, CategoryAction)
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	if card.AssetKey != AssetKeyHotel {
+		return PropertySet{}, Card{}, errors.InvalidCardForAction
+	}
+
+	err = g.checkDemands()
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	err = g.checkPendingRent()
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	properties := g.Properties[playerID]
+	setIdx := properties.IndexBySetID(propSetID)
+	if setIdx == -1 {
+		return PropertySet{}, Card{}, errors.PropertySetDoesntExist
+	}
+
+	propSet := properties[setIdx]
+
+	if !propSet.IsComplete() {
+		return PropertySet{}, Card{}, errors.PropertySetIsNotComplete
+	}
+
+	if propSet.IsLocked() {
+		return PropertySet{}, Card{}, errors.PropertySetHasHotel
+	}
+
+	_, err = g.discardHand(playerID, cardID)
+	if err != nil {
+		return PropertySet{}, Card{}, err
+	}
+
+	propSet.Cards.Add(card)
+	properties[setIdx] = propSet
+	g.Properties[playerID] = properties
+
+	g.CompleteMove()
+	g.SequenceNum++
+
+	return propSet, card, nil
+}
+
 func (g *Game) RearrangeProperty(playerUUID uuid.UUID, cardID Identifier, targetSetIDPtr *Identifier, activeColorPtr *Color) (PropertySet, Card, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
@@ -1137,6 +1249,11 @@ func (g *Game) PlaySlyDeal(playerUUID uuid.UUID, targetUUID uuid.UUID, cardID Id
 		return nil, Card{}, err
 	}
 
+	err = g.checkPendingRent()
+	if err != nil {
+		return nil, Card{}, err
+	}
+
 	// TODO - check that target card can be removed from their sets
 
 	_, err = g.checkPlayerHasPropertyCard(targetID, targetCardID)
@@ -1201,6 +1318,11 @@ func (g *Game) PlayForcedDeal(playerUUID uuid.UUID, targetUUID uuid.UUID, cardID
 		return nil, Card{}, err
 	}
 
+	err = g.checkPendingRent()
+	if err != nil {
+		return nil, Card{}, err
+	}
+
 	// TODO - check that source and target cards can be removed from their sets
 
 	_, err = g.checkPlayerHasPropertyCard(playerID, sourceCardID)
@@ -1231,53 +1353,58 @@ func (g *Game) PlayForcedDeal(playerUUID uuid.UUID, targetUUID uuid.UUID, cardID
 	return g.Demands, card, nil
 }
 
-func (g *Game) PlayDealBreaker(playerUUID uuid.UUID, targetUUID uuid.UUID, cardID Identifier, setID Identifier) (map[Identifier]Demand, error) {
+func (g *Game) PlayDealBreaker(playerUUID uuid.UUID, targetUUID uuid.UUID, cardID Identifier, setID Identifier) (map[Identifier]Demand, Card, error) {
 	if playerUUID == targetUUID {
-		return nil, errors.CannotStealFromSelf
+		return nil, Card{}, errors.CannotStealFromSelf
 	}
 
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return nil, err
+		return nil, Card{}, err
 	}
 
 	targetID, err := g.checkPlayer(targetUUID)
 	if err != nil {
-		return nil, err
+		return nil, Card{}, err
 	}
 
 	err = g.checkTurn(playerID)
 	if err != nil {
-		return nil, err
+		return nil, Card{}, err
 	}
 
 	err = g.checkMoves()
 	if err != nil {
-		return nil, err
+		return nil, Card{}, err
 	}
 
 	card, err := g.checkCard(cardID, CategoryAction)
 	if err != nil {
-		return nil, err
+		return nil, Card{}, err
 	}
 
 	if card.AssetKey != AssetKeyDealBreaker {
-		return nil, errors.InvalidCardForAction
+		return nil, Card{}, errors.InvalidCardForAction
 	}
 
 	err = g.checkDemands()
 	if err != nil {
-		return nil, err
+		return nil, Card{}, err
+	}
+
+	err = g.checkPendingRent()
+	if err != nil {
+		return nil, Card{}, err
 	}
 
 	_, err = g.checkPlayerHasPropertySet(targetID, setID)
 	if err != nil {
-		return nil, err
+		return nil, Card{}, err
 	}
 
 	_, err = g.discardHand(playerID, cardID)
 	if err != nil {
-		return nil, err
+		return nil, Card{}, err
 	}
 
 	demandID := g.IDGenerator.New()
@@ -1290,7 +1417,7 @@ func (g *Game) PlayDealBreaker(playerUUID uuid.UUID, targetUUID uuid.UUID, cardI
 	g.CompleteMove()
 	g.SequenceNum++
 
-	return g.Demands, nil
+	return g.Demands, card, nil
 }
 
 func (g *Game) DenyDemand(playerUUID uuid.UUID, demandID Identifier, cardID Identifier) (Demand, Card, error) {
@@ -1395,10 +1522,8 @@ func canRemovePropertyCard(properties *PropertySets, cardID Identifier) bool {
 		return false
 	}
 
-	_, ok := set.Cards.RemoveByIdx(j)
-	if !ok {
-		return false
-	}
+	cards := set.Cards
+	set.Cards = append(append(Cards(nil), cards[:j]...), cards[j+1:]...)
 
 	(*properties)[i] = set
 	properties.Clean()
@@ -1636,13 +1761,11 @@ func (g *Game) transferPropertySet(sourceID Identifier, targetID Identifier, pro
 	}
 	g.Properties[sourceID] = sourceProperties
 
-	transferredSet := set
-	transferredSet.ID = g.IDGenerator.New()
 	targetProperties := g.Properties[targetID]
-	targetProperties.Add(transferredSet)
+	targetProperties.Add(set)
 	g.Properties[targetID] = targetProperties
 
-	return transferredSet, nil
+	return set, nil
 }
 
 func (g *Game) ComplyPropertySetDemand(playerUUID uuid.UUID, demandID Identifier) (uuid.UUID, PropertySet, error) {
@@ -1709,4 +1832,23 @@ func (g *Game) ResolvePendingRent(playerUUID uuid.UUID) (map[Identifier]Demand, 
 	g.SequenceNum++
 
 	return g.Demands, nil
+}
+
+func (g *Game) CheckWinConditions(playerUUID uuid.UUID) (bool, error) {
+	playerID, err := g.checkPlayer(playerUUID)
+	if err != nil {
+		return false, err
+	}
+
+	properties := g.Properties[playerID]
+	if properties.CompleteCount() < g.Config.WinSetAmount {
+		return false, nil
+	}
+
+	money := g.Money[playerID]
+	if money.Value() < g.Config.WinMoneyAmount {
+		return false, nil
+	}
+
+	return true, nil
 }

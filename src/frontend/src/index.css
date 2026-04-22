@@ -312,7 +312,7 @@ h1 {
 }
 
 .ui-card__header {
-  padding: 1.25rem 1.25rem 0;
+  padding: 1rem 1.25rem 0;
 }
 
 .ui-card__title {
@@ -328,7 +328,8 @@ h1 {
 }
 
 .ui-card__content {
-  padding: 1.25rem;
+  padding: 1rem;
+  padding-top: 0.5rem;
 }
 
 .ui-button {
@@ -590,7 +591,7 @@ h1 {
 }
 
 .field-input {
-  height: 2.7rem;
+  height: 2rem;
   border-radius: calc(var(--radius) - 4px);
   border: 1px solid var(--border);
   background: var(--surface);
@@ -635,6 +636,73 @@ h1 {
   margin: 0.5rem 0 1rem;
   color: var(--muted-foreground);
   font-size: 0.88rem;
+}
+
+.error-toast-stack {
+  position: fixed;
+  top: calc(var(--game-nav-offset, 0px) + 0.8rem);
+  right: 0.9rem;
+  z-index: 1200;
+  display: grid;
+  gap: 0.55rem;
+  width: min(92vw, 360px);
+}
+
+.error-toast {
+  border: 1px solid #ef4444;
+  border-radius: calc(var(--radius) - 4px);
+  background: #fee2e2;
+  color: #7f1d1d;
+  box-shadow: var(--shadow);
+  padding: 0.62rem 0.68rem;
+}
+
+.error-toast__eyebrow,
+.error-toast__title,
+.error-toast__message,
+.error-toast__code {
+  margin: 0;
+}
+
+.error-toast__eyebrow {
+  color: #991b1b;
+  font-size: 0.63rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.error-toast__title {
+  margin-top: 0.1rem;
+  font-size: 0.82rem;
+}
+
+.error-toast__message {
+  margin-top: 0.25rem;
+  font-size: 0.76rem;
+}
+
+.error-toast__code {
+  margin-top: 0.26rem;
+  color: #b91c1c;
+  font-size: 0.68rem;
+}
+
+.error-toast__close {
+  margin-top: 0.42rem;
+  border: 1px solid #f87171;
+  background: #fecaca;
+  color: #7f1d1d;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.23rem 0.5rem;
+  cursor: pointer;
+}
+
+.error-toast__close:hover {
+  background: #fca5a5;
 }
 
 .oauth-stack {
@@ -982,22 +1050,25 @@ h1 {
   width: 100%;
   max-width: none;
   margin: 0;
-  padding: calc(var(--game-nav-offset, 4.1rem) + 0.65rem) 0.9rem 0.9rem;
+  padding: calc(var(--game-nav-offset, 4.1rem) + 0.65rem) 0 0.9rem;
   min-height: 0;
   height: 100dvh;
   display: grid;
-  grid-template-columns: 1fr minmax(260px, 25%);
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 25%);
   gap: 0.75rem;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .game-page__board {
   min-width: 0;
+  min-height: 0;
+  display: flex;
 }
 
 .game-mount {
   width: 100%;
-  height: calc(100dvh - var(--game-nav-offset, 4.1rem) - 1.55rem);
+  height: 100%;
+  max-height: 100%;
   min-height: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1061,10 +1132,10 @@ h1 {
 }
 
 .game-chat-line {
-  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
-  border-radius: 10px;
-  background: color-mix(in oklab, var(--muted) 74%, transparent);
-  padding: 0.4rem 0.5rem;
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .game-chat-line__author,
@@ -1072,15 +1143,25 @@ h1 {
   margin: 0;
 }
 
+.game-chat-line__avatar {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.42rem;
+  object-fit: cover;
+  display: block;
+  border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
+  background: var(--muted);
+}
+
 .game-chat-line__author {
-  font-size: 0.7rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--primary);
-  margin-bottom: 0.1rem;
 }
 
 .game-chat-line__message {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
+  line-height: 1.35;
 }
 
 .game-player-snippet {
@@ -1128,6 +1209,7 @@ h1 {
   background: var(--primary);
   border-radius: 999px;
   padding: 0.12rem 0.36rem;
+  text-align: center;
 }
 
 .game-player-stats,

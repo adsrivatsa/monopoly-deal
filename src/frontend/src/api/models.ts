@@ -17,6 +17,8 @@ export enum Game {
 export const supportedGames: Game[] = [Game.MonopolyDeal];
 
 export type MonopolyDealSettings = {
+  win_set_amount: number;
+  win_money_amount: number;
   num_decks: number;
   start_num_cards: number;
   max_hand_size: number;
@@ -79,6 +81,8 @@ export const getDefaultSettingsForGame = <TGame extends Game>(
   switch (game) {
     case Game.MonopolyDeal:
       return {
+        win_set_amount: 3,
+        win_money_amount: 0,
         num_decks: 1,
         start_num_cards: 5,
         max_hand_size: 7,
@@ -159,6 +163,18 @@ const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
   switch (game) {
     case Game.MonopolyDeal:
       return [
+        {
+          key: "win_set_amount",
+          label: "Win set amount",
+          min: 3,
+          max: 6,
+        },
+        {
+          key: "win_money_amount",
+          label: "Win money amount",
+          min: 0,
+          max: 40,
+        },
         {
           key: "num_decks",
           label: "Number of decks",
@@ -289,6 +305,14 @@ export const parseGameSettings = <TGame extends Game>(
       };
 
       return {
+        win_set_amount: getSettingValue(
+          "win_set_amount",
+          defaults.win_set_amount,
+        ),
+        win_money_amount: getSettingValue(
+          "win_money_amount",
+          defaults.win_money_amount,
+        ),
         num_decks: getSettingValue("num_decks", defaults.num_decks),
         start_num_cards: getSettingValue(
           "start_num_cards",

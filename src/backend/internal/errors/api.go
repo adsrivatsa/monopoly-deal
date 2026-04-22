@@ -51,7 +51,7 @@ var DuplicateSocket = NewError("duplicate socket created", http.StatusConflict, 
 
 func InvalidMessageType[T any]() Error {
 	var expectedType T
-	msg := fmt.Sprintf("invalid message type, expected type %t", expectedType)
+	msg := fmt.Sprintf("invalid message type, expected type %T", expectedType)
 	return NewError(msg, http.StatusBadRequest, "API003")
 }
 

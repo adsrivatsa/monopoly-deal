@@ -2,8 +2,6 @@ package monopoly_deal
 
 import (
 	"fun-kames/internal/schema/monopoly_deal_schema"
-	"slices"
-	"strings"
 
 	"github.com/google/uuid"
 )
@@ -121,13 +119,13 @@ func (ps *PropertySets) Proto(playerUUID uuid.UUID) []*monopoly_deal_schema.Prop
 }
 
 func (ps *PropertySets) IndexBySetID(id Identifier) int {
-	i, ok := slices.BinarySearchFunc(*ps, id, func(set PropertySet, id Identifier) int {
-		return strings.Compare(string(set.ID), string(id))
-	})
-	if !ok {
-		return -1
+	for i, set := range *ps {
+		if set.ID == id {
+			return i
+		}
 	}
-	return i
+
+	return -1
 }
 
 func (ps *PropertySets) IndexByCardID(cardID Identifier) (int, int) {
@@ -221,4 +219,18 @@ func (ps *PropertySets) Clean() {
 	}
 
 	*ps = filtered
+}
+
+func (ps *PropertySets) CompleteCount() int {
+	if ps == nil {
+		return 0
+	}
+
+	count := 0
+	for _, p := range *ps {
+		if p.IsComplete() {
+			count++
+		}
+	}
+	return count
 }

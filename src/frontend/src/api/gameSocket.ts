@@ -83,6 +83,44 @@ export const sendGamePlayPropertyMessage = (
   socket.send(message);
 };
 
+export const sendGamePlayHouseMessage = (
+  socket: WebSocket,
+  payload: {
+    cardId: string;
+    propertySetId: string;
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playHouse: {
+        cardId: payload.cardId,
+        propertySetId: payload.propertySetId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGamePlayHotelMessage = (
+  socket: WebSocket,
+  payload: {
+    cardId: string;
+    propertySetId: string;
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playHotel: {
+        cardId: payload.cardId,
+        propertySetId: payload.propertySetId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
 export const sendGameCompleteTurnMessage = (socket: WebSocket) => {
   const message = GatewayClientMessage.encode({
     monopolyDealMessage: {
@@ -214,6 +252,27 @@ export const sendGamePlayForcedDealMessage = (
   socket.send(message);
 };
 
+export const sendGamePlayDealBreakerMessage = (
+  socket: WebSocket,
+  payload: {
+    cardId: string;
+    targetId: string;
+    propertySetId: string;
+  },
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      playDealBreaker: {
+        cardId: payload.cardId,
+        targetId: payload.targetId,
+        propertySetId: payload.propertySetId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
 export const sendGamePlayDoubleTheRentMessage = (
   socket: WebSocket,
   cardId: string,
@@ -320,6 +379,21 @@ export const sendGameComplyPropertyDemandMessage = (
   const message = GatewayClientMessage.encode({
     monopolyDealMessage: {
       complyPropertyDemand: {
+        demandId,
+      },
+    },
+  }).finish();
+
+  socket.send(message);
+};
+
+export const sendGameComplyPropertySetDemandMessage = (
+  socket: WebSocket,
+  demandId: string,
+) => {
+  const message = GatewayClientMessage.encode({
+    monopolyDealMessage: {
+      complyPropertySetDemand: {
         demandId,
       },
     },

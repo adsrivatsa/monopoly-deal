@@ -10,6 +10,8 @@ type Settings struct {
 	PassGoDraw          int `msgpack:"pass_go_draw" validate:"required,min=2,max=5"`
 	ItsMyBirthdayAmount int `msgpack:"its_my_birthday_amount" validate:"required,min=2,max=5"`
 	DebtCollectorAmount int `msgpack:"debt_collector_amount" validate:"required,min=5,max=8"`
+	WinSetAmount        int `msgpack:"win_set_amount" validate:"required,min=3,max=6"`
+	WinMoneyAmount      int `msgpack:"win_money_amount" validate:"min=0,max=40"`
 }
 
 func (s *Settings) Encode() ([]byte, error) {

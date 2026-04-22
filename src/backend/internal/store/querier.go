@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	CompleteGame(ctx context.Context, arg CompleteGameParams) (Game, error)
 	CreateGame(ctx context.Context, arg CreateGameParams) (Game, error)
 	CreateGamePlayer(ctx context.Context, arg CreateGamePlayerParams) (GamePlayer, error)
 	CreateGamePlayersFromRoom(ctx context.Context, arg CreateGamePlayersFromRoomParams) error

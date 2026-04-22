@@ -397,6 +397,51 @@ message TransferProperty {
   repeated PropertySet target_property_sets = 5;
 }
 
+message PlayDealBreaker {
+  string card_id = 1;
+  string target_id = 2;
+  string property_set_id = 3;
+}
+
+message ComplyPropertySetDemand {
+  string demand_id = 1;
+}
+
+message TransferPropertySet {
+  int32 seq_num = 1;
+  string source_id = 2;
+  string target_id = 3;
+  PropertySet property_set = 4;
+}
+
+message PlayHouse {
+  string card_id = 1;
+  string property_set_id = 2;
+}
+
+message HousePlayed {
+  int32 seq_num = 1;
+  string player_id = 2;
+  Card card = 3;
+  PropertySet property_set = 4;
+}
+
+message PlayHotel {
+  string card_id = 1;
+  string property_set_id = 2;
+}
+
+message HotelPlayed {
+  int32 seq_num = 1;
+  string player_id = 2;
+  Card card = 3;
+  PropertySet property_set = 4;
+}
+
+message WonGame {
+  string player_id = 1;
+}
+
 message ClientMessage {
   oneof payload {
     Chat chat = 1;
@@ -416,8 +461,11 @@ message ClientMessage {
     PlaySlyDeal play_sly_deal = 15;
     ComplyPropertyDemand comply_property_demand = 16;
     PlayForcedDeal play_forced_deal = 17;
-
+    PlayDealBreaker play_deal_breaker = 18;
+    ComplyPropertySetDemand comply_property_set_demand = 19;
     ComplyPaymentDemand comply_payment_demand = 20;
+    PlayHouse play_house = 21;
+    PlayHotel play_hotel = 22;
   }
 }
 
@@ -439,10 +487,13 @@ message ServerMessage {
     DemandDenied demand_denied = 14;
     CompliedDemand complied_demand = 15;
     TransferProperty transfer_property = 16;
-
-    PlayActionRes play_action_res = 19;
-    DemandCreated demand_created = 20;
-    PendingRentCreated pending_rent_created = 21;
-    TransferCards transfer_cards = 22;
+    TransferPropertySet transfer_property_set = 17;
+    HousePlayed house_played = 18;
+    HotelPlayed hotel_played = 19;
+    PlayActionRes play_action_res = 20;
+    DemandCreated demand_created = 21;
+    PendingRentCreated pending_rent_created = 22;
+    TransferCards transfer_cards = 23;
+    WonGame won_game = 24;
   }
 }

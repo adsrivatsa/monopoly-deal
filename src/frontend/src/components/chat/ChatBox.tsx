@@ -22,7 +22,7 @@ const ChatBox = <T,>({
   renderMessage,
   getMessageKey,
   emptyMessage = "No new events.",
-  placeholder = "Type a message...",
+  placeholder = "Enter message...",
   maxLength = 400,
   className,
   messagesInnerClassName,
@@ -71,7 +71,10 @@ const ChatBox = <T,>({
             ) : (
               messages.map((message, index) => {
                 return (
-                  <div className="chat-log__entry" key={getMessageKey(message, index)}>
+                  <div
+                    className="chat-log__entry"
+                    key={getMessageKey(message, index)}
+                  >
                     {renderMessage(message, index)}
                   </div>
                 );

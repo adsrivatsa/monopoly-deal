@@ -30,8 +30,9 @@ const PaymentDemandOverlay = ({
       aria-live="polite"
       onPointerDown={(event) => event.stopPropagation()}
     >
-      <p className="md-demand__eyebrow">Active demand</p>
-      <h3 className="md-demand__title">Payment demand</h3>
+      <h3 className="md-demand__title">
+        {isDemandActive ? "Payment requested" : "Payment denied"}
+      </h3>
       <div className="md-demand-source">
         <img
           className="md-demand-source__avatar"
@@ -41,15 +42,11 @@ const PaymentDemandOverlay = ({
           referrerPolicy="no-referrer"
         />
         <p className="md-demand__line md-demand-source__name">
-          From: {sourcePlayer?.displayName ?? demand.sourceId}
+          {isDemandActive
+            ? `${sourcePlayer?.displayName ?? demand.sourceId} wants $${typeof amount === "number" ? amount : "-"}.`
+            : `${sourcePlayer?.displayName ?? demand.sourceId} said no to paying you $${typeof amount === "number" ? amount : "-"}.`}
         </p>
       </div>
-      <p className="md-demand__line">
-        Amount: ${typeof amount === "number" ? amount : "-"}
-      </p>
-      {!isDemandActive ? (
-        <p className="md-demand__line">Status: Inactive (Comply sends no card transfer)</p>
-      ) : null}
       <div className="md-demand__actions">
         <button
           type="button"
@@ -63,7 +60,7 @@ const PaymentDemandOverlay = ({
               : undefined
           }
         >
-          {isSelectingCards ? "OK" : "Comply"}
+          {isDemandActive ? "Pay" : "OK"}
         </button>
         <button
           type="button"
@@ -73,7 +70,7 @@ const PaymentDemandOverlay = ({
           disabled={!canDeny}
           title={canDeny ? "Play Just Say No" : "Requires a Just Say No card"}
         >
-          Just Say No
+          Just Say No!
         </button>
       </div>
     </aside>

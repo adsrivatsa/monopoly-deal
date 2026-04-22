@@ -68,12 +68,13 @@ func AllGameTypeValues() []GameType {
 }
 
 type Game struct {
-	GameID      uuid.UUID `json:"game_id"`
-	DisplayName string    `json:"display_name"`
-	Game        GameType  `json:"game"`
-	GameState   []byte    `json:"game_state"`
-	Completed   bool      `json:"completed"`
-	CreatedAt   time.Time `json:"created_at"`
+	GameID      uuid.UUID  `json:"game_id"`
+	DisplayName string     `json:"display_name"`
+	Game        GameType   `json:"game"`
+	GameState   []byte     `json:"game_state"`
+	Completed   bool       `json:"completed"`
+	Winner      *uuid.UUID `json:"winner"`
+	CreatedAt   time.Time  `json:"created_at"`
 }
 
 type GamePlayer struct {

@@ -849,6 +849,51 @@ export interface TransferProperty {
   targetPropertySets: PropertySet[];
 }
 
+export interface PlayDealBreaker {
+  cardId: string;
+  targetId: string;
+  propertySetId: string;
+}
+
+export interface ComplyPropertySetDemand {
+  demandId: string;
+}
+
+export interface TransferPropertySet {
+  seqNum: number;
+  sourceId: string;
+  targetId: string;
+  propertySet: PropertySet | undefined;
+}
+
+export interface PlayHouse {
+  cardId: string;
+  propertySetId: string;
+}
+
+export interface HousePlayed {
+  seqNum: number;
+  playerId: string;
+  card: Card | undefined;
+  propertySet: PropertySet | undefined;
+}
+
+export interface PlayHotel {
+  cardId: string;
+  propertySetId: string;
+}
+
+export interface HotelPlayed {
+  seqNum: number;
+  playerId: string;
+  card: Card | undefined;
+  propertySet: PropertySet | undefined;
+}
+
+export interface WonGame {
+  playerId: string;
+}
+
 export interface ClientMessage {
   chat?: Chat | undefined;
   playMoney?: PlayMoney | undefined;
@@ -867,7 +912,11 @@ export interface ClientMessage {
   playSlyDeal?: PlaySlyDeal | undefined;
   complyPropertyDemand?: ComplyPropertyDemand | undefined;
   playForcedDeal?: PlayForcedDeal | undefined;
+  playDealBreaker?: PlayDealBreaker | undefined;
+  complyPropertySetDemand?: ComplyPropertySetDemand | undefined;
   complyPaymentDemand?: ComplyPaymentDemand | undefined;
+  playHouse?: PlayHouse | undefined;
+  playHotel?: PlayHotel | undefined;
 }
 
 export interface ServerMessage {
@@ -887,10 +936,14 @@ export interface ServerMessage {
   demandDenied?: DemandDenied | undefined;
   compliedDemand?: CompliedDemand | undefined;
   transferProperty?: TransferProperty | undefined;
+  transferPropertySet?: TransferPropertySet | undefined;
+  housePlayed?: HousePlayed | undefined;
+  hotelPlayed?: HotelPlayed | undefined;
   playActionRes?: PlayActionRes | undefined;
   demandCreated?: DemandCreated | undefined;
   pendingRentCreated?: PendingRentCreated | undefined;
   transferCards?: TransferCards | undefined;
+  wonGame?: WonGame | undefined;
 }
 
 function createBaseError(): Error {
@@ -5693,6 +5746,776 @@ export const TransferProperty: MessageFns<TransferProperty> = {
   },
 };
 
+function createBasePlayDealBreaker(): PlayDealBreaker {
+  return { cardId: "", targetId: "", propertySetId: "" };
+}
+
+export const PlayDealBreaker: MessageFns<PlayDealBreaker> = {
+  encode(message: PlayDealBreaker, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    if (message.targetId !== "") {
+      writer.uint32(18).string(message.targetId);
+    }
+    if (message.propertySetId !== "") {
+      writer.uint32(26).string(message.propertySetId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayDealBreaker {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayDealBreaker();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.targetId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.propertySetId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayDealBreaker {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+      targetId: isSet(object.targetId)
+        ? globalThis.String(object.targetId)
+        : isSet(object.target_id)
+        ? globalThis.String(object.target_id)
+        : "",
+      propertySetId: isSet(object.propertySetId)
+        ? globalThis.String(object.propertySetId)
+        : isSet(object.property_set_id)
+        ? globalThis.String(object.property_set_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayDealBreaker): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    if (message.targetId !== "") {
+      obj.targetId = message.targetId;
+    }
+    if (message.propertySetId !== "") {
+      obj.propertySetId = message.propertySetId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayDealBreaker>, I>>(base?: I): PlayDealBreaker {
+    return PlayDealBreaker.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayDealBreaker>, I>>(object: I): PlayDealBreaker {
+    const message = createBasePlayDealBreaker();
+    message.cardId = object.cardId ?? "";
+    message.targetId = object.targetId ?? "";
+    message.propertySetId = object.propertySetId ?? "";
+    return message;
+  },
+};
+
+function createBaseComplyPropertySetDemand(): ComplyPropertySetDemand {
+  return { demandId: "" };
+}
+
+export const ComplyPropertySetDemand: MessageFns<ComplyPropertySetDemand> = {
+  encode(message: ComplyPropertySetDemand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.demandId !== "") {
+      writer.uint32(10).string(message.demandId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ComplyPropertySetDemand {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseComplyPropertySetDemand();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.demandId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ComplyPropertySetDemand {
+    return {
+      demandId: isSet(object.demandId)
+        ? globalThis.String(object.demandId)
+        : isSet(object.demand_id)
+        ? globalThis.String(object.demand_id)
+        : "",
+    };
+  },
+
+  toJSON(message: ComplyPropertySetDemand): unknown {
+    const obj: any = {};
+    if (message.demandId !== "") {
+      obj.demandId = message.demandId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ComplyPropertySetDemand>, I>>(base?: I): ComplyPropertySetDemand {
+    return ComplyPropertySetDemand.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ComplyPropertySetDemand>, I>>(object: I): ComplyPropertySetDemand {
+    const message = createBaseComplyPropertySetDemand();
+    message.demandId = object.demandId ?? "";
+    return message;
+  },
+};
+
+function createBaseTransferPropertySet(): TransferPropertySet {
+  return { seqNum: 0, sourceId: "", targetId: "", propertySet: undefined };
+}
+
+export const TransferPropertySet: MessageFns<TransferPropertySet> = {
+  encode(message: TransferPropertySet, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.sourceId !== "") {
+      writer.uint32(18).string(message.sourceId);
+    }
+    if (message.targetId !== "") {
+      writer.uint32(26).string(message.targetId);
+    }
+    if (message.propertySet !== undefined) {
+      PropertySet.encode(message.propertySet, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TransferPropertySet {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTransferPropertySet();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.sourceId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.targetId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.propertySet = PropertySet.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TransferPropertySet {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      sourceId: isSet(object.sourceId)
+        ? globalThis.String(object.sourceId)
+        : isSet(object.source_id)
+        ? globalThis.String(object.source_id)
+        : "",
+      targetId: isSet(object.targetId)
+        ? globalThis.String(object.targetId)
+        : isSet(object.target_id)
+        ? globalThis.String(object.target_id)
+        : "",
+      propertySet: isSet(object.propertySet)
+        ? PropertySet.fromJSON(object.propertySet)
+        : isSet(object.property_set)
+        ? PropertySet.fromJSON(object.property_set)
+        : undefined,
+    };
+  },
+
+  toJSON(message: TransferPropertySet): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.sourceId !== "") {
+      obj.sourceId = message.sourceId;
+    }
+    if (message.targetId !== "") {
+      obj.targetId = message.targetId;
+    }
+    if (message.propertySet !== undefined) {
+      obj.propertySet = PropertySet.toJSON(message.propertySet);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<TransferPropertySet>, I>>(base?: I): TransferPropertySet {
+    return TransferPropertySet.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<TransferPropertySet>, I>>(object: I): TransferPropertySet {
+    const message = createBaseTransferPropertySet();
+    message.seqNum = object.seqNum ?? 0;
+    message.sourceId = object.sourceId ?? "";
+    message.targetId = object.targetId ?? "";
+    message.propertySet = (object.propertySet !== undefined && object.propertySet !== null)
+      ? PropertySet.fromPartial(object.propertySet)
+      : undefined;
+    return message;
+  },
+};
+
+function createBasePlayHouse(): PlayHouse {
+  return { cardId: "", propertySetId: "" };
+}
+
+export const PlayHouse: MessageFns<PlayHouse> = {
+  encode(message: PlayHouse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    if (message.propertySetId !== "") {
+      writer.uint32(18).string(message.propertySetId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayHouse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayHouse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.propertySetId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayHouse {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+      propertySetId: isSet(object.propertySetId)
+        ? globalThis.String(object.propertySetId)
+        : isSet(object.property_set_id)
+        ? globalThis.String(object.property_set_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayHouse): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    if (message.propertySetId !== "") {
+      obj.propertySetId = message.propertySetId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayHouse>, I>>(base?: I): PlayHouse {
+    return PlayHouse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayHouse>, I>>(object: I): PlayHouse {
+    const message = createBasePlayHouse();
+    message.cardId = object.cardId ?? "";
+    message.propertySetId = object.propertySetId ?? "";
+    return message;
+  },
+};
+
+function createBaseHousePlayed(): HousePlayed {
+  return { seqNum: 0, playerId: "", card: undefined, propertySet: undefined };
+}
+
+export const HousePlayed: MessageFns<HousePlayed> = {
+  encode(message: HousePlayed, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
+    if (message.card !== undefined) {
+      Card.encode(message.card, writer.uint32(26).fork()).join();
+    }
+    if (message.propertySet !== undefined) {
+      PropertySet.encode(message.propertySet, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HousePlayed {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHousePlayed();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.card = Card.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.propertySet = PropertySet.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HousePlayed {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      card: isSet(object.card) ? Card.fromJSON(object.card) : undefined,
+      propertySet: isSet(object.propertySet)
+        ? PropertySet.fromJSON(object.propertySet)
+        : isSet(object.property_set)
+        ? PropertySet.fromJSON(object.property_set)
+        : undefined,
+    };
+  },
+
+  toJSON(message: HousePlayed): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.card !== undefined) {
+      obj.card = Card.toJSON(message.card);
+    }
+    if (message.propertySet !== undefined) {
+      obj.propertySet = PropertySet.toJSON(message.propertySet);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<HousePlayed>, I>>(base?: I): HousePlayed {
+    return HousePlayed.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<HousePlayed>, I>>(object: I): HousePlayed {
+    const message = createBaseHousePlayed();
+    message.seqNum = object.seqNum ?? 0;
+    message.playerId = object.playerId ?? "";
+    message.card = (object.card !== undefined && object.card !== null) ? Card.fromPartial(object.card) : undefined;
+    message.propertySet = (object.propertySet !== undefined && object.propertySet !== null)
+      ? PropertySet.fromPartial(object.propertySet)
+      : undefined;
+    return message;
+  },
+};
+
+function createBasePlayHotel(): PlayHotel {
+  return { cardId: "", propertySetId: "" };
+}
+
+export const PlayHotel: MessageFns<PlayHotel> = {
+  encode(message: PlayHotel, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.cardId !== "") {
+      writer.uint32(10).string(message.cardId);
+    }
+    if (message.propertySetId !== "") {
+      writer.uint32(18).string(message.propertySetId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PlayHotel {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePlayHotel();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cardId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.propertySetId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PlayHotel {
+    return {
+      cardId: isSet(object.cardId)
+        ? globalThis.String(object.cardId)
+        : isSet(object.card_id)
+        ? globalThis.String(object.card_id)
+        : "",
+      propertySetId: isSet(object.propertySetId)
+        ? globalThis.String(object.propertySetId)
+        : isSet(object.property_set_id)
+        ? globalThis.String(object.property_set_id)
+        : "",
+    };
+  },
+
+  toJSON(message: PlayHotel): unknown {
+    const obj: any = {};
+    if (message.cardId !== "") {
+      obj.cardId = message.cardId;
+    }
+    if (message.propertySetId !== "") {
+      obj.propertySetId = message.propertySetId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PlayHotel>, I>>(base?: I): PlayHotel {
+    return PlayHotel.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PlayHotel>, I>>(object: I): PlayHotel {
+    const message = createBasePlayHotel();
+    message.cardId = object.cardId ?? "";
+    message.propertySetId = object.propertySetId ?? "";
+    return message;
+  },
+};
+
+function createBaseHotelPlayed(): HotelPlayed {
+  return { seqNum: 0, playerId: "", card: undefined, propertySet: undefined };
+}
+
+export const HotelPlayed: MessageFns<HotelPlayed> = {
+  encode(message: HotelPlayed, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.seqNum !== 0) {
+      writer.uint32(8).int32(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      writer.uint32(18).string(message.playerId);
+    }
+    if (message.card !== undefined) {
+      Card.encode(message.card, writer.uint32(26).fork()).join();
+    }
+    if (message.propertySet !== undefined) {
+      PropertySet.encode(message.propertySet, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HotelPlayed {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHotelPlayed();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seqNum = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.card = Card.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.propertySet = PropertySet.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HotelPlayed {
+    return {
+      seqNum: isSet(object.seqNum)
+        ? globalThis.Number(object.seqNum)
+        : isSet(object.seq_num)
+        ? globalThis.Number(object.seq_num)
+        : 0,
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+      card: isSet(object.card) ? Card.fromJSON(object.card) : undefined,
+      propertySet: isSet(object.propertySet)
+        ? PropertySet.fromJSON(object.propertySet)
+        : isSet(object.property_set)
+        ? PropertySet.fromJSON(object.property_set)
+        : undefined,
+    };
+  },
+
+  toJSON(message: HotelPlayed): unknown {
+    const obj: any = {};
+    if (message.seqNum !== 0) {
+      obj.seqNum = Math.round(message.seqNum);
+    }
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    if (message.card !== undefined) {
+      obj.card = Card.toJSON(message.card);
+    }
+    if (message.propertySet !== undefined) {
+      obj.propertySet = PropertySet.toJSON(message.propertySet);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<HotelPlayed>, I>>(base?: I): HotelPlayed {
+    return HotelPlayed.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<HotelPlayed>, I>>(object: I): HotelPlayed {
+    const message = createBaseHotelPlayed();
+    message.seqNum = object.seqNum ?? 0;
+    message.playerId = object.playerId ?? "";
+    message.card = (object.card !== undefined && object.card !== null) ? Card.fromPartial(object.card) : undefined;
+    message.propertySet = (object.propertySet !== undefined && object.propertySet !== null)
+      ? PropertySet.fromPartial(object.propertySet)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseWonGame(): WonGame {
+  return { playerId: "" };
+}
+
+export const WonGame: MessageFns<WonGame> = {
+  encode(message: WonGame, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.playerId !== "") {
+      writer.uint32(10).string(message.playerId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WonGame {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWonGame();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.playerId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WonGame {
+    return {
+      playerId: isSet(object.playerId)
+        ? globalThis.String(object.playerId)
+        : isSet(object.player_id)
+        ? globalThis.String(object.player_id)
+        : "",
+    };
+  },
+
+  toJSON(message: WonGame): unknown {
+    const obj: any = {};
+    if (message.playerId !== "") {
+      obj.playerId = message.playerId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<WonGame>, I>>(base?: I): WonGame {
+    return WonGame.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<WonGame>, I>>(object: I): WonGame {
+    const message = createBaseWonGame();
+    message.playerId = object.playerId ?? "";
+    return message;
+  },
+};
+
 function createBaseClientMessage(): ClientMessage {
   return {
     chat: undefined,
@@ -5712,7 +6535,11 @@ function createBaseClientMessage(): ClientMessage {
     playSlyDeal: undefined,
     complyPropertyDemand: undefined,
     playForcedDeal: undefined,
+    playDealBreaker: undefined,
+    complyPropertySetDemand: undefined,
     complyPaymentDemand: undefined,
+    playHouse: undefined,
+    playHotel: undefined,
   };
 }
 
@@ -5769,8 +6596,20 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     if (message.playForcedDeal !== undefined) {
       PlayForcedDeal.encode(message.playForcedDeal, writer.uint32(138).fork()).join();
     }
+    if (message.playDealBreaker !== undefined) {
+      PlayDealBreaker.encode(message.playDealBreaker, writer.uint32(146).fork()).join();
+    }
+    if (message.complyPropertySetDemand !== undefined) {
+      ComplyPropertySetDemand.encode(message.complyPropertySetDemand, writer.uint32(154).fork()).join();
+    }
     if (message.complyPaymentDemand !== undefined) {
       ComplyPaymentDemand.encode(message.complyPaymentDemand, writer.uint32(162).fork()).join();
+    }
+    if (message.playHouse !== undefined) {
+      PlayHouse.encode(message.playHouse, writer.uint32(170).fork()).join();
+    }
+    if (message.playHotel !== undefined) {
+      PlayHotel.encode(message.playHotel, writer.uint32(178).fork()).join();
     }
     return writer;
   },
@@ -5918,12 +6757,44 @@ export const ClientMessage: MessageFns<ClientMessage> = {
           message.playForcedDeal = PlayForcedDeal.decode(reader, reader.uint32());
           continue;
         }
+        case 18: {
+          if (tag !== 146) {
+            break;
+          }
+
+          message.playDealBreaker = PlayDealBreaker.decode(reader, reader.uint32());
+          continue;
+        }
+        case 19: {
+          if (tag !== 154) {
+            break;
+          }
+
+          message.complyPropertySetDemand = ComplyPropertySetDemand.decode(reader, reader.uint32());
+          continue;
+        }
         case 20: {
           if (tag !== 162) {
             break;
           }
 
           message.complyPaymentDemand = ComplyPaymentDemand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 21: {
+          if (tag !== 170) {
+            break;
+          }
+
+          message.playHouse = PlayHouse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 22: {
+          if (tag !== 178) {
+            break;
+          }
+
+          message.playHotel = PlayHotel.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -6018,10 +6889,30 @@ export const ClientMessage: MessageFns<ClientMessage> = {
         : isSet(object.play_forced_deal)
         ? PlayForcedDeal.fromJSON(object.play_forced_deal)
         : undefined,
+      playDealBreaker: isSet(object.playDealBreaker)
+        ? PlayDealBreaker.fromJSON(object.playDealBreaker)
+        : isSet(object.play_deal_breaker)
+        ? PlayDealBreaker.fromJSON(object.play_deal_breaker)
+        : undefined,
+      complyPropertySetDemand: isSet(object.complyPropertySetDemand)
+        ? ComplyPropertySetDemand.fromJSON(object.complyPropertySetDemand)
+        : isSet(object.comply_property_set_demand)
+        ? ComplyPropertySetDemand.fromJSON(object.comply_property_set_demand)
+        : undefined,
       complyPaymentDemand: isSet(object.complyPaymentDemand)
         ? ComplyPaymentDemand.fromJSON(object.complyPaymentDemand)
         : isSet(object.comply_payment_demand)
         ? ComplyPaymentDemand.fromJSON(object.comply_payment_demand)
+        : undefined,
+      playHouse: isSet(object.playHouse)
+        ? PlayHouse.fromJSON(object.playHouse)
+        : isSet(object.play_house)
+        ? PlayHouse.fromJSON(object.play_house)
+        : undefined,
+      playHotel: isSet(object.playHotel)
+        ? PlayHotel.fromJSON(object.playHotel)
+        : isSet(object.play_hotel)
+        ? PlayHotel.fromJSON(object.play_hotel)
         : undefined,
     };
   },
@@ -6079,8 +6970,20 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     if (message.playForcedDeal !== undefined) {
       obj.playForcedDeal = PlayForcedDeal.toJSON(message.playForcedDeal);
     }
+    if (message.playDealBreaker !== undefined) {
+      obj.playDealBreaker = PlayDealBreaker.toJSON(message.playDealBreaker);
+    }
+    if (message.complyPropertySetDemand !== undefined) {
+      obj.complyPropertySetDemand = ComplyPropertySetDemand.toJSON(message.complyPropertySetDemand);
+    }
     if (message.complyPaymentDemand !== undefined) {
       obj.complyPaymentDemand = ComplyPaymentDemand.toJSON(message.complyPaymentDemand);
+    }
+    if (message.playHouse !== undefined) {
+      obj.playHouse = PlayHouse.toJSON(message.playHouse);
+    }
+    if (message.playHotel !== undefined) {
+      obj.playHotel = PlayHotel.toJSON(message.playHotel);
     }
     return obj;
   },
@@ -6139,8 +7042,21 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     message.playForcedDeal = (object.playForcedDeal !== undefined && object.playForcedDeal !== null)
       ? PlayForcedDeal.fromPartial(object.playForcedDeal)
       : undefined;
+    message.playDealBreaker = (object.playDealBreaker !== undefined && object.playDealBreaker !== null)
+      ? PlayDealBreaker.fromPartial(object.playDealBreaker)
+      : undefined;
+    message.complyPropertySetDemand =
+      (object.complyPropertySetDemand !== undefined && object.complyPropertySetDemand !== null)
+        ? ComplyPropertySetDemand.fromPartial(object.complyPropertySetDemand)
+        : undefined;
     message.complyPaymentDemand = (object.complyPaymentDemand !== undefined && object.complyPaymentDemand !== null)
       ? ComplyPaymentDemand.fromPartial(object.complyPaymentDemand)
+      : undefined;
+    message.playHouse = (object.playHouse !== undefined && object.playHouse !== null)
+      ? PlayHouse.fromPartial(object.playHouse)
+      : undefined;
+    message.playHotel = (object.playHotel !== undefined && object.playHotel !== null)
+      ? PlayHotel.fromPartial(object.playHotel)
       : undefined;
     return message;
   },
@@ -6164,10 +7080,14 @@ function createBaseServerMessage(): ServerMessage {
     demandDenied: undefined,
     compliedDemand: undefined,
     transferProperty: undefined,
+    transferPropertySet: undefined,
+    housePlayed: undefined,
+    hotelPlayed: undefined,
     playActionRes: undefined,
     demandCreated: undefined,
     pendingRentCreated: undefined,
     transferCards: undefined,
+    wonGame: undefined,
   };
 }
 
@@ -6221,17 +7141,29 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     if (message.transferProperty !== undefined) {
       TransferProperty.encode(message.transferProperty, writer.uint32(130).fork()).join();
     }
+    if (message.transferPropertySet !== undefined) {
+      TransferPropertySet.encode(message.transferPropertySet, writer.uint32(138).fork()).join();
+    }
+    if (message.housePlayed !== undefined) {
+      HousePlayed.encode(message.housePlayed, writer.uint32(146).fork()).join();
+    }
+    if (message.hotelPlayed !== undefined) {
+      HotelPlayed.encode(message.hotelPlayed, writer.uint32(154).fork()).join();
+    }
     if (message.playActionRes !== undefined) {
-      PlayActionRes.encode(message.playActionRes, writer.uint32(154).fork()).join();
+      PlayActionRes.encode(message.playActionRes, writer.uint32(162).fork()).join();
     }
     if (message.demandCreated !== undefined) {
-      DemandCreated.encode(message.demandCreated, writer.uint32(162).fork()).join();
+      DemandCreated.encode(message.demandCreated, writer.uint32(170).fork()).join();
     }
     if (message.pendingRentCreated !== undefined) {
-      PendingRentCreated.encode(message.pendingRentCreated, writer.uint32(170).fork()).join();
+      PendingRentCreated.encode(message.pendingRentCreated, writer.uint32(178).fork()).join();
     }
     if (message.transferCards !== undefined) {
-      TransferCards.encode(message.transferCards, writer.uint32(178).fork()).join();
+      TransferCards.encode(message.transferCards, writer.uint32(186).fork()).join();
+    }
+    if (message.wonGame !== undefined) {
+      WonGame.encode(message.wonGame, writer.uint32(194).fork()).join();
     }
     return writer;
   },
@@ -6371,12 +7303,28 @@ export const ServerMessage: MessageFns<ServerMessage> = {
           message.transferProperty = TransferProperty.decode(reader, reader.uint32());
           continue;
         }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.transferPropertySet = TransferPropertySet.decode(reader, reader.uint32());
+          continue;
+        }
+        case 18: {
+          if (tag !== 146) {
+            break;
+          }
+
+          message.housePlayed = HousePlayed.decode(reader, reader.uint32());
+          continue;
+        }
         case 19: {
           if (tag !== 154) {
             break;
           }
 
-          message.playActionRes = PlayActionRes.decode(reader, reader.uint32());
+          message.hotelPlayed = HotelPlayed.decode(reader, reader.uint32());
           continue;
         }
         case 20: {
@@ -6384,7 +7332,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.demandCreated = DemandCreated.decode(reader, reader.uint32());
+          message.playActionRes = PlayActionRes.decode(reader, reader.uint32());
           continue;
         }
         case 21: {
@@ -6392,7 +7340,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.pendingRentCreated = PendingRentCreated.decode(reader, reader.uint32());
+          message.demandCreated = DemandCreated.decode(reader, reader.uint32());
           continue;
         }
         case 22: {
@@ -6400,7 +7348,23 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
+          message.pendingRentCreated = PendingRentCreated.decode(reader, reader.uint32());
+          continue;
+        }
+        case 23: {
+          if (tag !== 186) {
+            break;
+          }
+
           message.transferCards = TransferCards.decode(reader, reader.uint32());
+          continue;
+        }
+        case 24: {
+          if (tag !== 194) {
+            break;
+          }
+
+          message.wonGame = WonGame.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -6490,6 +7454,21 @@ export const ServerMessage: MessageFns<ServerMessage> = {
         : isSet(object.transfer_property)
         ? TransferProperty.fromJSON(object.transfer_property)
         : undefined,
+      transferPropertySet: isSet(object.transferPropertySet)
+        ? TransferPropertySet.fromJSON(object.transferPropertySet)
+        : isSet(object.transfer_property_set)
+        ? TransferPropertySet.fromJSON(object.transfer_property_set)
+        : undefined,
+      housePlayed: isSet(object.housePlayed)
+        ? HousePlayed.fromJSON(object.housePlayed)
+        : isSet(object.house_played)
+        ? HousePlayed.fromJSON(object.house_played)
+        : undefined,
+      hotelPlayed: isSet(object.hotelPlayed)
+        ? HotelPlayed.fromJSON(object.hotelPlayed)
+        : isSet(object.hotel_played)
+        ? HotelPlayed.fromJSON(object.hotel_played)
+        : undefined,
       playActionRes: isSet(object.playActionRes)
         ? PlayActionRes.fromJSON(object.playActionRes)
         : isSet(object.play_action_res)
@@ -6509,6 +7488,11 @@ export const ServerMessage: MessageFns<ServerMessage> = {
         ? TransferCards.fromJSON(object.transferCards)
         : isSet(object.transfer_cards)
         ? TransferCards.fromJSON(object.transfer_cards)
+        : undefined,
+      wonGame: isSet(object.wonGame)
+        ? WonGame.fromJSON(object.wonGame)
+        : isSet(object.won_game)
+        ? WonGame.fromJSON(object.won_game)
         : undefined,
     };
   },
@@ -6563,6 +7547,15 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     if (message.transferProperty !== undefined) {
       obj.transferProperty = TransferProperty.toJSON(message.transferProperty);
     }
+    if (message.transferPropertySet !== undefined) {
+      obj.transferPropertySet = TransferPropertySet.toJSON(message.transferPropertySet);
+    }
+    if (message.housePlayed !== undefined) {
+      obj.housePlayed = HousePlayed.toJSON(message.housePlayed);
+    }
+    if (message.hotelPlayed !== undefined) {
+      obj.hotelPlayed = HotelPlayed.toJSON(message.hotelPlayed);
+    }
     if (message.playActionRes !== undefined) {
       obj.playActionRes = PlayActionRes.toJSON(message.playActionRes);
     }
@@ -6574,6 +7567,9 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     }
     if (message.transferCards !== undefined) {
       obj.transferCards = TransferCards.toJSON(message.transferCards);
+    }
+    if (message.wonGame !== undefined) {
+      obj.wonGame = WonGame.toJSON(message.wonGame);
     }
     return obj;
   },
@@ -6630,6 +7626,15 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     message.transferProperty = (object.transferProperty !== undefined && object.transferProperty !== null)
       ? TransferProperty.fromPartial(object.transferProperty)
       : undefined;
+    message.transferPropertySet = (object.transferPropertySet !== undefined && object.transferPropertySet !== null)
+      ? TransferPropertySet.fromPartial(object.transferPropertySet)
+      : undefined;
+    message.housePlayed = (object.housePlayed !== undefined && object.housePlayed !== null)
+      ? HousePlayed.fromPartial(object.housePlayed)
+      : undefined;
+    message.hotelPlayed = (object.hotelPlayed !== undefined && object.hotelPlayed !== null)
+      ? HotelPlayed.fromPartial(object.hotelPlayed)
+      : undefined;
     message.playActionRes = (object.playActionRes !== undefined && object.playActionRes !== null)
       ? PlayActionRes.fromPartial(object.playActionRes)
       : undefined;
@@ -6641,6 +7646,9 @@ export const ServerMessage: MessageFns<ServerMessage> = {
       : undefined;
     message.transferCards = (object.transferCards !== undefined && object.transferCards !== null)
       ? TransferCards.fromPartial(object.transferCards)
+      : undefined;
+    message.wonGame = (object.wonGame !== undefined && object.wonGame !== null)
+      ? WonGame.fromPartial(object.wonGame)
       : undefined;
     return message;
   },

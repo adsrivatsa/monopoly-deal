@@ -9,22 +9,10 @@ import (
 	"fun-kames/internal/schema/room_schema"
 	"fun-kames/internal/store"
 	"fun-kames/internal/token"
-	"sync"
 
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
 )
-
-func (c *Controller) getGameLock(gameID uuid.UUID) *sync.RWMutex {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	lock, ok := c.gameLocks[gameID]
-	if !ok {
-		lock = &sync.RWMutex{}
-		c.gameLocks[gameID] = lock
-	}
-	return lock
-}
 
 func (c *Controller) ListenGameEvents(ctx context.Context, tp token.Payload, callback func(message *schema.ServerMessage)) error {
 	g, err := c.store.GetGameByPlayer(ctx, tp.PlayerID)
@@ -59,7 +47,7 @@ func (c *Controller) ListenGameEvents(ctx context.Context, tp token.Payload, cal
 					return err
 				}
 
-				msg = c.maskMonopolyDealPrivateEvents(tp, msg.GetMonopolyDealMessage())
+				msg = c.MonopolyDealController.MaskEvents(tp, msg.GetMonopolyDealMessage())
 			default:
 			}
 
@@ -165,10 +153,6 @@ func (c *Controller) CreateGame(ctx context.Context, tp token.Payload) error {
 	if err != nil {
 		return err
 	}
-
-	c.mu.Lock()
-	c.gameLocks[g.GameID] = &sync.RWMutex{}
-	c.mu.Unlock()
 
 	e := &schema.ServerMessage{
 		Payload: &schema.ServerMessage_RoomMessage{

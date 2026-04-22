@@ -20,7 +20,6 @@ import {
   type Player,
 } from "../../../generated/monopoly_deal";
 import DebtCollectorTargetPickerOverlay from "./action/DebtCollectorTargetPickerOverlay";
-import SlyDealPropertyPickerOverlay from "./action/SlyDealPropertyPickerOverlay";
 import DiscardPromptOverlay from "./discard/DiscardPromptOverlay";
 import GameCardStackBox from "./GameCardStackBox";
 import DemandOverlay from "./demand/DemandOverlay";
@@ -39,6 +38,11 @@ type MonopolyDealHtmlBoardProps = {
     cardId: string,
     targetPlayerId: string,
     targetCardId: string,
+  ) => void;
+  onPlayDealBreakerCard: (
+    cardId: string,
+    targetPlayerId: string,
+    propertySetId: string,
   ) => void;
   onPlayForcedDealCard: (
     cardId: string,
@@ -64,8 +68,10 @@ type MonopolyDealHtmlBoardProps = {
   ) => void;
   onComplyPaymentDemand: (demandId: string, cardIds: string[]) => void;
   onComplyPropertyDemand: (demandId: string) => void;
+  onComplyPropertySetDemand: (demandId: string) => void;
   onDenyDemand: (demandId: string) => void;
   onClientError?: (error: unknown) => void;
+  onGameError?: (error: { message: string; code: string }) => void;
 };
 
 type Size = {
@@ -87,15 +93,18 @@ type ColorPickerState = {
 };
 
 type DebtCollectorPickerState = {
-  mode: "debt_collector" | "wild_rent" | "sly_deal" | "forced_deal";
+  mode: "debt_collector" | "wild_rent";
   cardId: string;
 };
 
-type SlyDealPickerState = {
+type DealPickerState = {
+  mode: "sly_deal" | "forced_deal" | "deal_breaker";
   cardId: string;
-  targetPlayerId: string;
-  targetCardId?: string;
-  mode: "sly_deal" | "forced_deal";
+  selectedOpponentCardId?: string;
+  selectedOpponentPlayerId?: string;
+  selectedTargetPropertySetId?: string;
+  selectedSourceCardId?: string;
+  isOpponentSelectionConfirmed?: boolean;
 };
 
 type DraggingCardState = {
@@ -104,32 +113,26 @@ type DraggingCardState = {
   sourcePropertySetId?: string;
 };
 
+type RearrangeSelectionState = {
+  cardId: string;
+  sourcePropertySetId: string;
+};
+
 const MIN_ZOOM = 0.65;
 const MAX_ZOOM = 2.2;
+const BOARD_COLUMN_GAP_REM = 0.7;
 
-const chooseGrid = (count: number): { rows: number; columns: number } => {
-  if (count <= 0) {
-    return { rows: 1, columns: 1 };
+const computeBoardGrid = (playerCount: number): { columns: number } => {
+  if (playerCount <= 1) {
+    return { columns: 1 };
   }
 
-  let bestRows = 1;
-  let bestColumns = count;
-  let bestScore = Number.POSITIVE_INFINITY;
-
-  for (let columns = 1; columns <= count; columns += 1) {
-    const rows = Math.ceil(count / columns);
-    const diff = Math.abs(rows - columns);
-    const overflow = rows * columns - count;
-    const score = diff * 100 + overflow;
-
-    if (score < bestScore) {
-      bestScore = score;
-      bestRows = rows;
-      bestColumns = columns;
-    }
+  if (playerCount === 2) {
+    return { columns: 1 };
   }
 
-  return { rows: bestRows, columns: bestColumns };
+  const columns = Math.ceil(Math.sqrt(playerCount));
+  return { columns };
 };
 
 const toSelectableColors = (card: Card): Color[] => {
@@ -198,7 +201,7 @@ const colorHex = (color: Color): string => {
   }
 };
 
-const requiredPropertyCountForColor = (color: Color): number => {
+const minPropertyCountForCompleteSet = (color: Color): number => {
   switch (color) {
     case Color.COLOR_BROWN:
     case Color.COLOR_BLUE:
@@ -230,12 +233,21 @@ const countPropertyCards = (propertySet: PropertySet): number => {
 };
 
 const isPropertySetComplete = (propertySet: PropertySet): boolean => {
-  const requiredCount = requiredPropertyCountForColor(propertySet.color);
-  if (!Number.isFinite(requiredCount)) {
+  const minRequiredCount = minPropertyCountForCompleteSet(propertySet.color);
+  if (!Number.isFinite(minRequiredCount)) {
     return false;
   }
 
-  return countPropertyCards(propertySet) >= requiredCount;
+  return countPropertyCards(propertySet) >= minRequiredCount;
+};
+
+const isPropertySetLocked = (propertySet: PropertySet): boolean => {
+  return propertySet.cards.some((card) => {
+    return (
+      card.assetKey === AssetKey.ASSET_KEY_HOUSE ||
+      card.assetKey === AssetKey.ASSET_KEY_HOTEL
+    );
+  });
 };
 
 const clampPan = (
@@ -276,6 +288,7 @@ const MonopolyDealHtmlBoard = ({
   onPlayDebtCollectorCard,
   onPlayWildRentCard,
   onPlaySlyDealCard,
+  onPlayDealBreakerCard,
   onPlayForcedDealCard,
   onPlayDoubleTheRentCard,
   onResolvePendingRent,
@@ -288,29 +301,63 @@ const MonopolyDealHtmlBoard = ({
   onPlayPropertyCard,
   onComplyPaymentDemand,
   onComplyPropertyDemand,
+  onComplyPropertySetDemand,
   onClientError,
+  onGameError,
 }: MonopolyDealHtmlBoardProps) => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState<Pan>({ x: 0, y: 0 });
-  const [viewportSize, setViewportSize] = useState<Size>({ width: 1, height: 1 });
+  const [viewportSize, setViewportSize] = useState<Size>({
+    width: 1,
+    height: 1,
+  });
   const [contentSize, setContentSize] = useState<Size>({ width: 1, height: 1 });
   const [isPanning, setIsPanning] = useState(false);
-  const [draggingCard, setDraggingCard] = useState<DraggingCardState | null>(null);
+  const [draggingCard, setDraggingCard] = useState<DraggingCardState | null>(
+    null,
+  );
   const [colorPicker, setColorPicker] = useState<ColorPickerState | null>(null);
   const [debtCollectorPicker, setDebtCollectorPicker] =
     useState<DebtCollectorPickerState | null>(null);
-  const [slyDealPicker, setSlyDealPicker] = useState<SlyDealPickerState | null>(null);
+  const [dealPicker, setDealPicker] = useState<DealPickerState | null>(null);
   const [isSelectingPaymentCards, setIsSelectingPaymentCards] = useState(false);
-  const [selectedPaymentCardIds, setSelectedPaymentCardIds] = useState<Set<string>>(
-    () => new Set(),
-  );
-  const [activePaymentDemandId, setActivePaymentDemandId] = useState<string | null>(null);
+  const [selectedPaymentCardIds, setSelectedPaymentCardIds] = useState<
+    Set<string>
+  >(() => new Set());
+  const [activePaymentDemandId, setActivePaymentDemandId] = useState<
+    string | null
+  >(null);
+  const [selectedHandPlacementCardId, setSelectedHandPlacementCardId] =
+    useState<string | null>(null);
+  const [selectedRearrangeCard, setSelectedRearrangeCard] =
+    useState<RearrangeSelectionState | null>(null);
   const panPointerIdRef = useRef<number | null>(null);
   const panStartPointRef = useRef<{ x: number; y: number } | null>(null);
 
   const players = gameState?.players ?? [];
+
+  const orderedPlayers = useMemo(() => {
+    if (!selfPlayerId) {
+      return players;
+    }
+
+    const selfIndex = players.findIndex(
+      (player) => player.playerId === selfPlayerId,
+    );
+    if (selfIndex <= 0) {
+      return players;
+    }
+
+    const nextPlayers = [...players];
+    const [selfPlayer] = nextPlayers.splice(selfIndex, 1);
+    if (selfPlayer) {
+      nextPlayers.unshift(selfPlayer);
+    }
+
+    return nextPlayers;
+  }, [players, selfPlayerId]);
   const visibleDemands = useMemo<Demand[]>(() => {
     const demands = gameState?.demands ?? [];
     const selfDemands = selfPlayerId
@@ -367,6 +414,14 @@ const MonopolyDealHtmlBoard = ({
     return lookup;
   }, [assetImageByKey, gameState?.properties]);
 
+  const propertySetCardsById = useMemo(() => {
+    const lookup: Record<string, Card[]> = {};
+    for (const propertySet of gameState?.properties ?? []) {
+      lookup[propertySet.propertySetId] = propertySet.cards;
+    }
+    return lookup;
+  }, [gameState?.properties]);
+
   const selfPropertySets = useMemo(() => {
     if (!selfPlayerId) {
       return [] as PropertySet[];
@@ -416,10 +471,20 @@ const MonopolyDealHtmlBoard = ({
     selectedPaymentDemand?.demandKind === DemandKind.DEMAND_KIND_PAYMENT &&
     selectedPaymentDemand?.isActive === true;
 
+  const isSelectingDealCards = !!dealPicker;
+  const canTapPlaceFromHand =
+    isSelfTurn &&
+    !isDiscardRequired &&
+    !isSelectingPaymentCards &&
+    !isSelectingDealCards &&
+    !colorPicker &&
+    !debtCollectorPicker;
+
   const shouldDimBoard =
     isDiscardRequired ||
     hasPendingRent ||
-    (hasAnyDemand && !(isSelectedPaymentDemandActive && isSelectingPaymentCards));
+    (hasAnyDemand &&
+      !(isSelectedPaymentDemandActive && isSelectingPaymentCards));
 
   const paymentAmount = selectedPaymentDemand?.paymentDemand?.amount ?? 0;
   const hasSelectedAllBoardCards = useMemo(() => {
@@ -435,14 +500,188 @@ const MonopolyDealHtmlBoard = ({
   const canConfirmPaymentSelection =
     selectedPaymentTotal >= paymentAmount || hasSelectedAllBoardCards;
 
-  const { rows, columns } = useMemo(() => chooseGrid(players.length), [players.length]);
+  const stealableCardOwnerById = useMemo(() => {
+    const lookup = new Map<string, string>();
+
+    for (const [playerId, propertySets] of Object.entries(
+      propertySetsByPlayer,
+    )) {
+      if (selfPlayerId && playerId === selfPlayerId) {
+        continue;
+      }
+
+      for (const propertySet of propertySets) {
+        if (isPropertySetComplete(propertySet)) {
+          continue;
+        }
+
+        for (const card of propertySet.cards) {
+          if (isPropertyCard(card)) {
+            lookup.set(card.cardId, playerId);
+          }
+        }
+      }
+    }
+
+    return lookup;
+  }, [propertySetsByPlayer, selfPlayerId]);
+
+  const forcedDealSourceCardIds = useMemo(() => {
+    const selectableIds = new Set<string>();
+
+    for (const propertySet of selfPropertySets) {
+      if (isPropertySetComplete(propertySet)) {
+        continue;
+      }
+
+      for (const card of propertySet.cards) {
+        if (isPropertyCard(card)) {
+          selectableIds.add(card.cardId);
+        }
+      }
+    }
+
+    return selectableIds;
+  }, [selfPropertySets]);
+
+  const stealableCompleteSetOwnerById = useMemo(() => {
+    const lookup = new Map<string, string>();
+
+    for (const [playerId, propertySets] of Object.entries(
+      propertySetsByPlayer,
+    )) {
+      if (selfPlayerId && playerId === selfPlayerId) {
+        continue;
+      }
+
+      for (const propertySet of propertySets) {
+        if (isPropertySetComplete(propertySet)) {
+          lookup.set(propertySet.propertySetId, playerId);
+        }
+      }
+    }
+
+    return lookup;
+  }, [propertySetsByPlayer, selfPlayerId]);
+
+  const selectedDealCardIds = useMemo(() => {
+    const selectedIds = new Set<string>();
+
+    if (dealPicker?.selectedOpponentCardId) {
+      selectedIds.add(dealPicker.selectedOpponentCardId);
+    }
+
+    if (dealPicker?.selectedSourceCardId) {
+      selectedIds.add(dealPicker.selectedSourceCardId);
+    }
+
+    if (dealPicker?.selectedTargetPropertySetId) {
+      for (const propertySet of gameState?.properties ?? []) {
+        if (
+          propertySet.propertySetId !== dealPicker.selectedTargetPropertySetId
+        ) {
+          continue;
+        }
+
+        for (const card of propertySet.cards) {
+          selectedIds.add(card.cardId);
+        }
+        break;
+      }
+    }
+
+    return selectedIds;
+  }, [
+    dealPicker?.selectedOpponentCardId,
+    dealPicker?.selectedSourceCardId,
+    dealPicker?.selectedTargetPropertySetId,
+    gameState?.properties,
+  ]);
+
+  const selectedHandPlacementCardIds = useMemo(() => {
+    if (!selectedHandPlacementCardId) {
+      return new Set<string>();
+    }
+
+    return new Set([selectedHandPlacementCardId]);
+  }, [selectedHandPlacementCardId]);
+
+  const selectedRearrangeCardIds = useMemo(() => {
+    if (!selectedRearrangeCard) {
+      return new Set<string>();
+    }
+
+    return new Set([selectedRearrangeCard.cardId]);
+  }, [selectedRearrangeCard]);
+
+  const selectedDealPropertySetIds = useMemo(() => {
+    const selectedIds = new Set<string>();
+
+    if (dealPicker?.selectedTargetPropertySetId) {
+      selectedIds.add(dealPicker.selectedTargetPropertySetId);
+    }
+
+    return selectedIds;
+  }, [dealPicker?.selectedTargetPropertySetId]);
+
+  const selectedForcedDealTargetPlayerName = useMemo(() => {
+    if (!dealPicker?.selectedOpponentPlayerId) {
+      return undefined;
+    }
+
+    return players.find(
+      (player) => player.playerId === dealPicker.selectedOpponentPlayerId,
+    )?.displayName;
+  }, [dealPicker?.selectedOpponentPlayerId, players]);
+
+  const { columns } = useMemo(
+    () => computeBoardGrid(orderedPlayers.length),
+    [orderedPlayers.length],
+  );
+
+  const boardColumnWidth = useMemo(() => {
+    const viewportWidth = Math.max(viewportSize.width, 1);
+    return Math.min(1000, viewportWidth);
+  }, [viewportSize.width]);
+
+  const boardColumnGapPx = useMemo(() => {
+    const rootFontSize = Number.parseFloat(
+      window.getComputedStyle(document.documentElement).fontSize,
+    );
+    const safeRootFontSize = Number.isFinite(rootFontSize) ? rootFontSize : 16;
+    return BOARD_COLUMN_GAP_REM * safeRootFontSize;
+  }, []);
+
+  const boardMinWidth = useMemo(() => {
+    return columns * boardColumnWidth + Math.max(0, columns - 1) * boardColumnGapPx;
+  }, [boardColumnGapPx, boardColumnWidth, columns]);
+
+  const playerColumns = useMemo(() => {
+    const nextColumns: Player[][] = Array.from({ length: columns }, () => []);
+
+    orderedPlayers.forEach((player, index) => {
+      nextColumns[index % columns].push(player);
+    });
+
+    return nextColumns;
+  }, [columns, orderedPlayers]);
+
   const boardStyle = useMemo<CSSProperties>(() => {
     return {
       transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-      gridTemplateColumns: `repeat(${columns}, minmax(0%, 1fr))`,
-      gridTemplateRows: `repeat(${rows}, minmax(0%, auto))`,
+      display: "flex",
+      alignItems: "flex-start",
+      gap: `${BOARD_COLUMN_GAP_REM}rem`,
+      minWidth: `${boardMinWidth}px`,
     };
-  }, [columns, pan.x, pan.y, rows, zoom]);
+  }, [boardMinWidth, pan.x, pan.y, zoom]);
+
+  const boardContentSize = useMemo<Size>(() => {
+    return {
+      width: Math.max(contentSize.width, boardMinWidth),
+      height: contentSize.height,
+    };
+  }, [boardMinWidth, contentSize.height, contentSize.width]);
 
   const withErrorHandling = useCallback(
     (fn: () => void) => {
@@ -483,11 +722,13 @@ const MonopolyDealHtmlBoard = ({
       viewportObserver.disconnect();
       contentObserver.disconnect();
     };
-  }, [players.length, rows, columns]);
+  }, [orderedPlayers.length]);
 
   useEffect(() => {
-    setPan((current) => clampPan(current, zoom, viewportSize, contentSize));
-  }, [zoom, viewportSize, contentSize]);
+    setPan((current) =>
+      clampPan(current, zoom, viewportSize, boardContentSize),
+    );
+  }, [zoom, viewportSize, boardContentSize]);
 
   const onBoardWheel = useCallback(
     (event: globalThis.WheelEvent) => {
@@ -519,14 +760,19 @@ const MonopolyDealHtmlBoard = ({
               x: localX - worldX * nextZoom,
               y: localY - worldY * nextZoom,
             };
-            return clampPan(candidatePan, nextZoom, viewportSize, contentSize);
+            return clampPan(
+              candidatePan,
+              nextZoom,
+              viewportSize,
+              boardContentSize,
+            );
           });
 
           return nextZoom;
         });
       });
     },
-    [contentSize, viewportSize, withErrorHandling],
+    [boardContentSize, viewportSize, withErrorHandling],
   );
 
   useEffect(() => {
@@ -547,6 +793,15 @@ const MonopolyDealHtmlBoard = ({
       return;
     }
 
+    const target = event.target as HTMLElement | null;
+    if (
+      target?.closest(
+        "button, input, textarea, select, [draggable='true'], .md-card, .md-demand, .md-player-picker, .md-color-picker",
+      )
+    ) {
+      return;
+    }
+
     if (event.button !== 0) {
       return;
     }
@@ -555,6 +810,7 @@ const MonopolyDealHtmlBoard = ({
     panStartPointRef.current = { x: event.clientX, y: event.clientY };
     setIsPanning(true);
     event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
   };
 
   const onBoardPointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -563,6 +819,9 @@ const MonopolyDealHtmlBoard = ({
     }
 
     withErrorHandling(() => {
+      event.preventDefault();
+      window.getSelection()?.removeAllRanges();
+
       const previous = panStartPointRef.current;
       if (!previous) {
         return;
@@ -579,7 +838,7 @@ const MonopolyDealHtmlBoard = ({
           },
           zoom,
           viewportSize,
-          contentSize,
+          boardContentSize,
         ),
       );
     });
@@ -605,68 +864,174 @@ const MonopolyDealHtmlBoard = ({
     [yourHand],
   );
 
+  const placeCardOnMoney = useCallback(
+    (cardId: string) => {
+      withErrorHandling(() => {
+        if (draggingCard?.source === "board") {
+          return;
+        }
+
+        onPlayMoneyCard(cardId);
+      });
+    },
+    [draggingCard?.source, onPlayMoneyCard, withErrorHandling],
+  );
+
+  const placeCardOnActionPile = useCallback(
+    (cardId: string) => {
+      withErrorHandling(() => {
+        if (draggingCard?.source === "board") {
+          return;
+        }
+
+        const card = getCardById(cardId);
+        if (card?.assetKey === AssetKey.ASSET_KEY_DEBT_COLLECTOR) {
+          setDebtCollectorPicker({
+            mode: "debt_collector",
+            cardId,
+          });
+          return;
+        }
+
+        if (card?.assetKey === AssetKey.ASSET_KEY_RENT_WILD) {
+          setDebtCollectorPicker({
+            mode: "wild_rent",
+            cardId,
+          });
+          return;
+        }
+
+        if (card?.assetKey === AssetKey.ASSET_KEY_SLY_DEAL) {
+          if (!hasMovesLeft) {
+            console.log("[game-ui] sly deal blocked; no moves left");
+            onGameError?.({
+              message: "You have no moves left this turn.",
+              code: "NO_MOVES_LEFT",
+            });
+            return;
+          }
+
+          if (stealableCardOwnerById.size === 0) {
+            console.log(
+              "[game-ui] sly deal blocked; no opponent property available",
+            );
+            onGameError?.({
+              message:
+                "No opponent has any property cards down. You cannot play Sly Deal.",
+              code: "SLY_DEAL_NO_OPPONENT_PROPERTY",
+            });
+            return;
+          }
+
+          setDealPicker({
+            mode: "sly_deal",
+            cardId,
+          });
+          return;
+        }
+
+        if (card?.assetKey === AssetKey.ASSET_KEY_DEAL_BREAKER) {
+          if (!hasMovesLeft) {
+            console.log("[game-ui] deal breaker blocked; no moves left");
+            onGameError?.({
+              message: "You have no moves left this turn.",
+              code: "NO_MOVES_LEFT",
+            });
+            return;
+          }
+
+          if (stealableCompleteSetOwnerById.size === 0) {
+            console.log(
+              "[game-ui] deal breaker blocked; no opponent complete set available",
+            );
+            onGameError?.({
+              message:
+                "No opponent has a complete property set. You cannot play Deal Breaker.",
+              code: "DEAL_BREAKER_NO_COMPLETE_SET",
+            });
+            return;
+          }
+
+          setDealPicker({
+            mode: "deal_breaker",
+            cardId,
+          });
+          return;
+        }
+
+        if (card?.assetKey === AssetKey.ASSET_KEY_FORCED_DEAL) {
+          if (!hasMovesLeft) {
+            console.log("[game-ui] forced deal blocked; no moves left");
+            onGameError?.({
+              message: "You have no moves left this turn.",
+              code: "NO_MOVES_LEFT",
+            });
+            return;
+          }
+
+          if (stealableCardOwnerById.size === 0) {
+            console.log(
+              "[game-ui] forced deal blocked; no opponent property available",
+            );
+            onGameError?.({
+              message: "No opponent has any property cards down. You cannot play Forced Deal.",
+              code: "FORCED_DEAL_NO_OPPONENT_PROPERTY",
+            });
+            return;
+          }
+
+          if (forcedDealSourceCardIds.size === 0) {
+            console.log(
+              "[game-ui] forced deal blocked; no own property available",
+            );
+            onGameError?.({
+              message: "You have no property cards down. You cannot play Forced Deal.",
+              code: "FORCED_DEAL_NO_OWN_PROPERTY",
+            });
+            return;
+          }
+
+          setDealPicker({
+            mode: "forced_deal",
+            cardId,
+          });
+          return;
+        }
+
+        onPlayPassGoCard(cardId);
+      });
+    },
+    [
+      draggingCard?.source,
+      forcedDealSourceCardIds.size,
+      getCardById,
+      hasMovesLeft,
+      onGameError,
+      onPlayPassGoCard,
+      stealableCardOwnerById.size,
+      stealableCompleteSetOwnerById.size,
+      withErrorHandling,
+    ],
+  );
+
   const onDropMoney = (event: DragEvent<HTMLElement>) => {
     event.preventDefault();
-    withErrorHandling(() => {
-      if (draggingCard?.source === "board") {
-        return;
-      }
+    const cardId = event.dataTransfer.getData("text/plain");
+    if (!cardId) {
+      return;
+    }
 
-      const cardId = event.dataTransfer.getData("text/plain");
-      if (!cardId) {
-        return;
-      }
-      onPlayMoneyCard(cardId);
-    });
+    placeCardOnMoney(cardId);
   };
 
   const onDropPassGo = (event: DragEvent<HTMLElement>) => {
     event.preventDefault();
-    withErrorHandling(() => {
-      if (draggingCard?.source === "board") {
-        return;
-      }
+    const cardId = event.dataTransfer.getData("text/plain");
+    if (!cardId) {
+      return;
+    }
 
-      const cardId = event.dataTransfer.getData("text/plain");
-      if (!cardId) {
-        return;
-      }
-
-      const card = getCardById(cardId);
-      if (card?.assetKey === AssetKey.ASSET_KEY_DEBT_COLLECTOR) {
-        setDebtCollectorPicker({
-          mode: "debt_collector",
-          cardId,
-        });
-        return;
-      }
-
-      if (card?.assetKey === AssetKey.ASSET_KEY_RENT_WILD) {
-        setDebtCollectorPicker({
-          mode: "wild_rent",
-          cardId,
-        });
-        return;
-      }
-
-      if (card?.assetKey === AssetKey.ASSET_KEY_SLY_DEAL) {
-        setDebtCollectorPicker({
-          mode: "sly_deal",
-          cardId,
-        });
-        return;
-      }
-
-      if (card?.assetKey === AssetKey.ASSET_KEY_FORCED_DEAL) {
-        setDebtCollectorPicker({
-          mode: "forced_deal",
-          cardId,
-        });
-        return;
-      }
-
-      onPlayPassGoCard(cardId);
-    });
+    placeCardOnActionPile(cardId);
   };
 
   const submitPropertyPlay = useCallback(
@@ -714,7 +1079,10 @@ const MonopolyDealHtmlBoard = ({
 
       if (!propertySetId) {
         const selectableColors = toSelectableColors(card);
-        if (card.category === Category.CATEGORY_WILD_PROPERTY && selectableColors.length > 1) {
+        if (
+          card.category === Category.CATEGORY_WILD_PROPERTY &&
+          selectableColors.length > 1
+        ) {
           setColorPicker({
             mode: "rearrange",
             cardId: card.cardId,
@@ -734,126 +1102,169 @@ const MonopolyDealHtmlBoard = ({
     [isSelfTurn, onRearrangeCard],
   );
 
-  const onDropProperty = (propertySetId?: string) => (event: DragEvent<HTMLElement>) => {
-    event.preventDefault();
-    withErrorHandling(() => {
+  const placeCardOnProperty = useCallback(
+    (cardId: string, propertySetId?: string) => {
+      withErrorHandling(() => {
+        if (
+          draggingCard?.source === "board" &&
+          draggingCard.cardId === cardId
+        ) {
+          if (!draggingCard.sourcePropertySetId) {
+            return;
+          }
+
+          const sourcePropertySet = selfPropertySets.find((propertySet) => {
+            return (
+              propertySet.propertySetId === draggingCard.sourcePropertySetId
+            );
+          });
+          if (!sourcePropertySet || isPropertySetLocked(sourcePropertySet)) {
+            console.log("[game-ui] rearrange blocked; source set is locked", {
+              cardId,
+              sourcePropertySetId: draggingCard.sourcePropertySetId,
+            });
+            return;
+          }
+
+          const sourceCard = sourcePropertySet.cards.find(
+            (card) => card.cardId === cardId,
+          );
+          if (!sourceCard || !isPropertyCard(sourceCard)) {
+            console.log("[game-ui] rearrange blocked; card not movable", {
+              cardId,
+            });
+            return;
+          }
+
+          submitRearrangeCard(
+            sourceCard,
+            draggingCard.sourcePropertySetId,
+            propertySetId,
+          );
+          return;
+        }
+
+        const card = getCardById(cardId);
+        if (!card) {
+          return;
+        }
+
+        submitPropertyPlay(card, propertySetId);
+      });
+    },
+    [
+      draggingCard,
+      getCardById,
+      selfPropertySets,
+      submitPropertyPlay,
+      submitRearrangeCard,
+      withErrorHandling,
+    ],
+  );
+
+  const onDropProperty =
+    (propertySetId?: string) => (event: DragEvent<HTMLElement>) => {
+      event.preventDefault();
       const cardId = event.dataTransfer.getData("text/plain");
       if (!cardId) {
         return;
       }
 
-      if (draggingCard?.source === "board" && draggingCard.cardId === cardId) {
-        if (!draggingCard.sourcePropertySetId) {
-          return;
-        }
-
-        const sourcePropertySet = selfPropertySets.find((propertySet) => {
-          return propertySet.propertySetId === draggingCard.sourcePropertySetId;
-        });
-        if (!sourcePropertySet || isPropertySetComplete(sourcePropertySet)) {
-          console.log("[game-ui] rearrange blocked; source set is complete", {
-            cardId,
-            sourcePropertySetId: draggingCard.sourcePropertySetId,
-          });
-          return;
-        }
-
-        const sourceCard = sourcePropertySet.cards.find((card) => card.cardId === cardId);
-        if (!sourceCard || !isPropertyCard(sourceCard)) {
-          console.log("[game-ui] rearrange blocked; card not movable", {
-            cardId,
-          });
-          return;
-        }
-
-        submitRearrangeCard(
-          sourceCard,
-          draggingCard.sourcePropertySetId,
-          propertySetId,
-        );
-        return;
-      }
-
-      const card = getCardById(cardId);
-      if (!card) {
-        return;
-      }
-
-      submitPropertyPlay(card, propertySetId);
-    });
-  };
+      placeCardOnProperty(cardId, propertySetId);
+    };
 
   const onAllowDrop = (event: DragEvent<HTMLElement>) => {
     event.preventDefault();
   };
 
-  const onDemandComply = useCallback((demandId: string) => {
-    const clickedDemand = visibleDemands.find((demand) => demand.id === demandId);
-    if (!clickedDemand) {
-      console.log("[game-ui] demand action: comply ignored (missing demand)");
-      return;
-    }
+  const onDemandComply = useCallback(
+    (demandId: string) => {
+      const clickedDemand = visibleDemands.find(
+        (demand) => demand.id === demandId,
+      );
+      if (!clickedDemand) {
+        console.log("[game-ui] demand action: comply ignored (missing demand)");
+        return;
+      }
 
-    if (clickedDemand.demandKind === DemandKind.DEMAND_KIND_PROPERTY) {
-      onComplyPropertyDemand(demandId);
-      return;
-    }
+      if (clickedDemand.demandKind === DemandKind.DEMAND_KIND_PROPERTY) {
+        onComplyPropertyDemand(demandId);
+        return;
+      }
 
-    if (clickedDemand.demandKind !== DemandKind.DEMAND_KIND_PAYMENT) {
-      console.log("[game-ui] demand action: comply ignored (unsupported demand kind)");
-      return;
-    }
+      if (clickedDemand.demandKind === DemandKind.DEMAND_KIND_PROPERTY_SET) {
+        onComplyPropertySetDemand(demandId);
+        return;
+      }
 
-    if (!clickedDemand.isActive) {
-      onComplyPaymentDemand(demandId, []);
+      if (clickedDemand.demandKind !== DemandKind.DEMAND_KIND_PAYMENT) {
+        console.log(
+          "[game-ui] demand action: comply ignored (unsupported demand kind)",
+        );
+        return;
+      }
+
+      if (!clickedDemand.isActive) {
+        onComplyPaymentDemand(demandId, []);
+        setIsSelectingPaymentCards(false);
+        setActivePaymentDemandId(null);
+        setSelectedPaymentCardIds(new Set());
+        return;
+      }
+
+      if (!isSelectingPaymentCards || activePaymentDemandId !== demandId) {
+        setIsSelectingPaymentCards(true);
+        setActivePaymentDemandId(demandId);
+        setSelectedPaymentCardIds(new Set());
+        console.log("[game-ui] demand action: comply (selection started)");
+        return;
+      }
+
+      if (!canConfirmPaymentSelection) {
+        console.log(
+          "[game-ui] demand action: comply blocked (selected value too low)",
+          {
+            selectedPaymentTotal,
+            requiredAmount: paymentAmount,
+          },
+        );
+        return;
+      }
+
+      const selectedCardIds = Array.from(selectedPaymentCardIds);
+      onComplyPaymentDemand(demandId, selectedCardIds);
       setIsSelectingPaymentCards(false);
       setActivePaymentDemandId(null);
       setSelectedPaymentCardIds(new Set());
-      return;
-    }
+    },
+    [
+      activePaymentDemandId,
+      canConfirmPaymentSelection,
+      isSelectingPaymentCards,
+      onComplyPropertyDemand,
+      onComplyPropertySetDemand,
+      onComplyPaymentDemand,
+      paymentAmount,
+      selectedPaymentCardIds,
+      selectedPaymentTotal,
+      visibleDemands,
+    ],
+  );
 
-    if (!isSelectingPaymentCards || activePaymentDemandId !== demandId) {
-      setIsSelectingPaymentCards(true);
-      setActivePaymentDemandId(demandId);
-      setSelectedPaymentCardIds(new Set());
-      console.log("[game-ui] demand action: comply (selection started)");
-      return;
-    }
+  const onDemandDeny = useCallback(
+    (demandId: string) => {
+      if (!hasJustSayNo) {
+        console.log(
+          "[game-ui] demand action: deny blocked (missing JUST_SAY_NO)",
+        );
+        return;
+      }
 
-    if (!canConfirmPaymentSelection) {
-      console.log("[game-ui] demand action: comply blocked (selected value too low)", {
-        selectedPaymentTotal,
-        requiredAmount: paymentAmount,
-      });
-      return;
-    }
-
-    const selectedCardIds = Array.from(selectedPaymentCardIds);
-    onComplyPaymentDemand(demandId, selectedCardIds);
-    setIsSelectingPaymentCards(false);
-    setActivePaymentDemandId(null);
-    setSelectedPaymentCardIds(new Set());
-  }, [
-    activePaymentDemandId,
-    canConfirmPaymentSelection,
-    isSelectingPaymentCards,
-    onComplyPropertyDemand,
-    onComplyPaymentDemand,
-    paymentAmount,
-    selectedPaymentCardIds,
-    selectedPaymentTotal,
-    visibleDemands,
-  ]);
-
-  const onDemandDeny = useCallback((demandId: string) => {
-    if (!hasJustSayNo) {
-      console.log("[game-ui] demand action: deny blocked (missing JUST_SAY_NO)");
-      return;
-    }
-
-    console.log("[game-ui] demand action: just-say-no");
-    onDenyDemand(demandId);
-  }, [hasJustSayNo, onDenyDemand]);
+      console.log("[game-ui] demand action: just-say-no");
+      onDenyDemand(demandId);
+    },
+    [hasJustSayNo, onDenyDemand],
+  );
 
   const onToggleSelectedPaymentCard = useCallback((card: Card) => {
     setSelectedPaymentCardIds((current) => {
@@ -874,10 +1285,13 @@ const MonopolyDealHtmlBoard = ({
       }
 
       if (selfPlayerId && targetPlayerId === selfPlayerId) {
-        console.log("[game-ui] debt collector target blocked (cannot select self)", {
-          cardId: debtCollectorPicker.cardId,
-          targetPlayerId,
-        });
+        console.log(
+          "[game-ui] debt collector target blocked (cannot select self)",
+          {
+            cardId: debtCollectorPicker.cardId,
+            targetPlayerId,
+          },
+        );
         return;
       }
 
@@ -887,19 +1301,7 @@ const MonopolyDealHtmlBoard = ({
         targetPlayerId,
       });
 
-      if (debtCollectorPicker.mode === "sly_deal") {
-        setSlyDealPicker({
-          mode: "sly_deal",
-          cardId: debtCollectorPicker.cardId,
-          targetPlayerId,
-        });
-      } else if (debtCollectorPicker.mode === "forced_deal") {
-        setSlyDealPicker({
-          mode: "forced_deal",
-          cardId: debtCollectorPicker.cardId,
-          targetPlayerId,
-        });
-      } else if (debtCollectorPicker.mode === "wild_rent") {
+      if (debtCollectorPicker.mode === "wild_rent") {
         onPlayWildRentCard(debtCollectorPicker.cardId, targetPlayerId);
       } else {
         onPlayDebtCollectorCard(debtCollectorPicker.cardId, targetPlayerId);
@@ -916,7 +1318,9 @@ const MonopolyDealHtmlBoard = ({
 
   const onPendingRentDouble = useCallback(() => {
     if (!hasDoubleTheRent) {
-      console.log("[game-ui] pending rent action: double blocked (missing DOUBLE_THE_RENT)");
+      console.log(
+        "[game-ui] pending rent action: double blocked (missing DOUBLE_THE_RENT)",
+      );
       return;
     }
 
@@ -929,83 +1333,262 @@ const MonopolyDealHtmlBoard = ({
     onResolvePendingRent();
   }, [onResolvePendingRent]);
 
-  const slyDealTargetPlayer = useMemo(() => {
-    if (!slyDealPicker) {
-      return undefined;
-    }
-
-    return players.find((player) => player.playerId === slyDealPicker.targetPlayerId);
-  }, [players, slyDealPicker]);
-
-  const slyDealStealableSets = useMemo(() => {
-    if (!slyDealPicker) {
-      return [] as PropertySet[];
-    }
-
-    const candidateSets = propertySetsByPlayer[slyDealPicker.targetPlayerId] ?? [];
-    return candidateSets
-      .filter((propertySet) => !isPropertySetComplete(propertySet))
-      .map((propertySet) => {
-        return {
-          ...propertySet,
-          cards: propertySet.cards.filter((card) => isPropertyCard(card)),
-        };
-      })
-      .filter((propertySet) => propertySet.cards.length > 0);
-  }, [propertySetsByPlayer, slyDealPicker]);
-
-  const forcedDealSourceSets = useMemo(() => {
-    if (!slyDealPicker || slyDealPicker.mode !== "forced_deal") {
-      return [] as PropertySet[];
-    }
-
-    return selfPropertySets
-      .filter((propertySet) => !isPropertySetComplete(propertySet))
-      .map((propertySet) => {
-        return {
-          ...propertySet,
-          cards: propertySet.cards.filter((card) => isPropertyCard(card)),
-        };
-      })
-      .filter((propertySet) => propertySet.cards.length > 0);
-  }, [selfPropertySets, slyDealPicker]);
-
-  const onSelectSlyDealCard = useCallback(
-    (selectedCardId: string) => {
-      if (!slyDealPicker) {
+  const onSelectDealCard = useCallback(
+    (card: Card) => {
+      if (!dealPicker) {
         return;
       }
 
-      if (slyDealPicker.mode === "forced_deal") {
-        if (!slyDealPicker.targetCardId) {
-          setSlyDealPicker((current) => {
-            if (!current || current.mode !== "forced_deal") {
-              return current;
-            }
-
-            return {
-              ...current,
-              targetCardId: selectedCardId,
-            };
-          });
+      if (dealPicker.mode === "sly_deal") {
+        const targetPlayerId = stealableCardOwnerById.get(card.cardId);
+        if (!targetPlayerId) {
           return;
         }
 
-        onPlayForcedDealCard(
-          slyDealPicker.cardId,
-          slyDealPicker.targetPlayerId,
-          selectedCardId,
-          slyDealPicker.targetCardId,
-        );
-        setSlyDealPicker(null);
+        setDealPicker((current) => {
+          if (!current || current.mode !== "sly_deal") {
+            return current;
+          }
+
+          return {
+            ...current,
+            selectedOpponentCardId: card.cardId,
+            selectedOpponentPlayerId: targetPlayerId,
+          };
+        });
         return;
       }
 
-      onPlaySlyDealCard(slyDealPicker.cardId, slyDealPicker.targetPlayerId, selectedCardId);
-      setSlyDealPicker(null);
+      if (dealPicker.mode === "deal_breaker") {
+        return;
+      }
+
+      const targetPlayerId = stealableCardOwnerById.get(card.cardId);
+      if (targetPlayerId) {
+        setDealPicker((current) => {
+          if (!current || current.mode !== "forced_deal") {
+            return current;
+          }
+
+          return {
+            ...current,
+            selectedOpponentCardId: card.cardId,
+            selectedOpponentPlayerId: targetPlayerId,
+          };
+        });
+        return;
+      }
+
+      if (!forcedDealSourceCardIds.has(card.cardId)) {
+        return;
+      }
+
+      setDealPicker((current) => {
+        if (!current || current.mode !== "forced_deal") {
+          return current;
+        }
+
+        return {
+          ...current,
+          selectedSourceCardId: card.cardId,
+        };
+      });
     },
-    [onPlayForcedDealCard, onPlaySlyDealCard, slyDealPicker],
+    [dealPicker, forcedDealSourceCardIds, stealableCardOwnerById],
   );
+
+  const onSelectCardFromCompletedSet = useCallback(() => {
+    onGameError?.({
+      message:
+        "Cards in completed property sets cannot be targeted by Sly Deal or Forced Deal.",
+      code: "DEAL_CARD_IN_COMPLETED_SET",
+    });
+  }, [onGameError]);
+
+  const onSelectIncompleteSetForDealBreaker = useCallback(() => {
+    onGameError?.({
+      message: "Deal Breaker can only target complete property sets.",
+      code: "DEAL_BREAKER_REQUIRES_COMPLETE_SET",
+    });
+  }, [onGameError]);
+
+  const onSelectDealPropertySet = useCallback(
+    (propertySet: PropertySet, playerId: string) => {
+      if (!dealPicker || dealPicker.mode !== "deal_breaker") {
+        return;
+      }
+
+      if (!isPropertySetComplete(propertySet)) {
+        onSelectIncompleteSetForDealBreaker();
+        return;
+      }
+
+      if (selfPlayerId && playerId === selfPlayerId) {
+        return;
+      }
+
+      setDealPicker((current) => {
+        if (!current || current.mode !== "deal_breaker") {
+          return current;
+        }
+
+        return {
+          ...current,
+          selectedTargetPropertySetId: propertySet.propertySetId,
+          selectedOpponentPlayerId: playerId,
+        };
+      });
+    },
+    [dealPicker, onSelectIncompleteSetForDealBreaker, selfPlayerId],
+  );
+
+  const onToggleSelectedRearrangeCard = useCallback(
+    (card: Card, sourcePropertySetId: string) => {
+      if (!isPropertyCard(card)) {
+        return;
+      }
+
+      setSelectedRearrangeCard((current) => {
+        if (
+          current &&
+          current.cardId === card.cardId &&
+          current.sourcePropertySetId === sourcePropertySetId
+        ) {
+          return null;
+        }
+
+        return {
+          cardId: card.cardId,
+          sourcePropertySetId,
+        };
+      });
+    },
+    [],
+  );
+
+  const onApplySelectedRearrangeCard = useCallback(
+    (targetPropertySetId?: string) => {
+      if (!selectedRearrangeCard) {
+        return;
+      }
+
+      const sourcePropertySet = selfPropertySets.find((propertySet) => {
+        return propertySet.propertySetId === selectedRearrangeCard.sourcePropertySetId;
+      });
+      if (!sourcePropertySet || isPropertySetLocked(sourcePropertySet)) {
+        setSelectedRearrangeCard(null);
+        return;
+      }
+
+      const sourceCard = sourcePropertySet.cards.find(
+        (card) => card.cardId === selectedRearrangeCard.cardId,
+      );
+      if (!sourceCard || !isPropertyCard(sourceCard)) {
+        setSelectedRearrangeCard(null);
+        return;
+      }
+
+      submitRearrangeCard(
+        sourceCard,
+        selectedRearrangeCard.sourcePropertySetId,
+        targetPropertySetId,
+      );
+      setSelectedRearrangeCard(null);
+    },
+    [selectedRearrangeCard, selfPropertySets, submitRearrangeCard],
+  );
+
+  const onConfirmDealSelection = useCallback(() => {
+    if (!dealPicker || !dealPicker.selectedOpponentPlayerId) {
+      return;
+    }
+
+    if (dealPicker.mode === "deal_breaker") {
+      if (!dealPicker.selectedTargetPropertySetId) {
+        return;
+      }
+
+      if (
+        stealableCompleteSetOwnerById.get(
+          dealPicker.selectedTargetPropertySetId,
+        ) !== dealPicker.selectedOpponentPlayerId
+      ) {
+        return;
+      }
+
+      onPlayDealBreakerCard(
+        dealPicker.cardId,
+        dealPicker.selectedOpponentPlayerId,
+        dealPicker.selectedTargetPropertySetId,
+      );
+      setDealPicker(null);
+      return;
+    }
+
+    if (!dealPicker.selectedOpponentCardId) {
+      return;
+    }
+
+    if (
+      stealableCardOwnerById.get(dealPicker.selectedOpponentCardId) !==
+      dealPicker.selectedOpponentPlayerId
+    ) {
+      return;
+    }
+
+    if (dealPicker.mode === "sly_deal") {
+      onPlaySlyDealCard(
+        dealPicker.cardId,
+        dealPicker.selectedOpponentPlayerId,
+        dealPicker.selectedOpponentCardId,
+      );
+      setDealPicker(null);
+      return;
+    }
+
+    if (
+      !dealPicker.selectedSourceCardId ||
+      !forcedDealSourceCardIds.has(dealPicker.selectedSourceCardId)
+    ) {
+      return;
+    }
+
+    onPlayForcedDealCard(
+      dealPicker.cardId,
+      dealPicker.selectedOpponentPlayerId,
+      dealPicker.selectedSourceCardId,
+      dealPicker.selectedOpponentCardId,
+    );
+    setDealPicker(null);
+  }, [
+    dealPicker,
+    forcedDealSourceCardIds,
+    onPlayDealBreakerCard,
+    onPlayForcedDealCard,
+    onPlaySlyDealCard,
+    stealableCompleteSetOwnerById,
+    stealableCardOwnerById,
+  ]);
+
+  const canConfirmDealSelection =
+    !!dealPicker &&
+    (dealPicker.mode === "deal_breaker"
+      ? !!dealPicker.selectedTargetPropertySetId &&
+        !!dealPicker.selectedOpponentPlayerId &&
+        stealableCompleteSetOwnerById.get(
+          dealPicker.selectedTargetPropertySetId,
+        ) === dealPicker.selectedOpponentPlayerId
+      : !!dealPicker.selectedOpponentCardId &&
+        !!dealPicker.selectedOpponentPlayerId &&
+        stealableCardOwnerById.get(dealPicker.selectedOpponentCardId) ===
+          dealPicker.selectedOpponentPlayerId &&
+        (dealPicker.mode === "sly_deal" ||
+          (!!dealPicker.selectedSourceCardId &&
+            forcedDealSourceCardIds.has(dealPicker.selectedSourceCardId))));
+
+  const onCancelDealPicker = useCallback(() => {
+    setDealPicker(null);
+  }, []);
 
   useEffect(() => {
     if (isSelectingPaymentCards && !isSelectedPaymentDemandActive) {
@@ -1015,20 +1598,86 @@ const MonopolyDealHtmlBoard = ({
     }
   }, [isSelectedPaymentDemandActive, isSelectingPaymentCards]);
 
+  useEffect(() => {
+    if (!dealPicker) {
+      return;
+    }
+
+    const stillInHand = yourHand.some(
+      (card) => card.cardId === dealPicker.cardId,
+    );
+    if (!stillInHand || !isSelfTurn || isDiscardRequired) {
+      setDealPicker(null);
+    }
+  }, [dealPicker, isDiscardRequired, isSelfTurn, yourHand]);
+
+  useEffect(() => {
+    if (!selectedHandPlacementCardId) {
+      return;
+    }
+
+    const stillInHand = yourHand.some(
+      (card) => card.cardId === selectedHandPlacementCardId,
+    );
+    if (!stillInHand || !canTapPlaceFromHand) {
+      setSelectedHandPlacementCardId(null);
+    }
+  }, [canTapPlaceFromHand, selectedHandPlacementCardId, yourHand]);
+
+  useEffect(() => {
+    if (!selectedRearrangeCard) {
+      return;
+    }
+
+    const sourcePropertySet = selfPropertySets.find((propertySet) => {
+      return propertySet.propertySetId === selectedRearrangeCard.sourcePropertySetId;
+    });
+    const stillExists = sourcePropertySet?.cards.some((card) => {
+      return card.cardId === selectedRearrangeCard.cardId;
+    });
+
+    if (
+      !isSelfTurn ||
+      isDiscardRequired ||
+      isSelectingPaymentCards ||
+      isSelectingDealCards ||
+      !stillExists ||
+      (sourcePropertySet ? isPropertySetLocked(sourcePropertySet) : true)
+    ) {
+      setSelectedRearrangeCard(null);
+    }
+  }, [
+    isDiscardRequired,
+    isSelectingDealCards,
+    isSelectingPaymentCards,
+    isSelfTurn,
+    selectedRearrangeCard,
+    selfPropertySets,
+  ]);
+
   const renderPlayerBoard = (player: Player) => {
     const playerMoney = moneyByPlayer[player.playerId] ?? [];
     const propertySets = propertySetsByPlayer[player.playerId] ?? [];
     const isCurrentPlayer = player.playerId === currentPlayerId;
     const isSelfBoard = !!selfPlayerId && player.playerId === selfPlayerId;
-    const canInteractWithBoard = isSelfBoard && isSelfTurn && !isDiscardRequired;
+    const canInteractWithBoard =
+      isSelfBoard && isSelfTurn && !isDiscardRequired && !isSelectingDealCards;
     const canSelectBoardCards =
       isSelfBoard && isSelectingPaymentCards && isSelectedPaymentDemandActive;
+    const canSelectDealCards =
+      !!dealPicker &&
+      (dealPicker.mode === "deal_breaker"
+        ? !isSelfBoard
+        : dealPicker.mode === "forced_deal"
+          ? true
+          : !isSelfBoard);
     const dropHandlers = canInteractWithBoard
       ? {
           onDragOver: onAllowDrop,
           onDropMoney,
           onDropPropertyRoot: onDropProperty(),
-          onDropPropertySet: (propertySetId: string) => onDropProperty(propertySetId),
+          onDropPropertySet: (propertySetId: string) =>
+            onDropProperty(propertySetId),
         }
       : {
           onDragOver: undefined,
@@ -1038,7 +1687,13 @@ const MonopolyDealHtmlBoard = ({
         };
 
     const canRearrangeFromBoard =
-      isSelfBoard && isSelfTurn && !isSelectingPaymentCards && !isDiscardRequired;
+      isSelfBoard &&
+      isSelfTurn &&
+      !isSelectingPaymentCards &&
+      !isSelectingDealCards &&
+      !isDiscardRequired;
+    const canClickRearrangeDestination =
+      canRearrangeFromBoard && !!selectedRearrangeCard;
 
     return (
       <article
@@ -1060,7 +1715,8 @@ const MonopolyDealHtmlBoard = ({
           <div>
             <p className="md-player-board__name">{player.displayName}</p>
             <p className="md-player-board__stats">
-              ${player.money} total · {player.completedSets} sets · {player.handCards} in hand
+              ${player.money} total · {player.completedSets} sets ·{" "}
+              {player.handCards} in hand
             </p>
           </div>
         </header>
@@ -1074,6 +1730,27 @@ const MonopolyDealHtmlBoard = ({
             }
             onDragOver={dropHandlers.onDragOver}
             onDrop={dropHandlers.onDropMoney}
+            onPointerDown={(event) => {
+              if (
+                (canInteractWithBoard && selectedHandPlacementCardId) ||
+                canClickRearrangeDestination
+              ) {
+                event.stopPropagation();
+              }
+            }}
+            onClick={() => {
+              if (canClickRearrangeDestination) {
+                onApplySelectedRearrangeCard(undefined);
+                return;
+              }
+
+              if (!canInteractWithBoard || !selectedHandPlacementCardId) {
+                return;
+              }
+
+              placeCardOnMoney(selectedHandPlacementCardId);
+              setSelectedHandPlacementCardId(null);
+            }}
           >
             <GameCardStackBox
               title="Money"
@@ -1081,9 +1758,27 @@ const MonopolyDealHtmlBoard = ({
               assetImageByKey={assetImageByKey}
               layout="stack"
               emptyLabel="Drop money here"
-              selectableCards={canSelectBoardCards}
-              selectedCardIds={selectedPaymentCardIds}
-              onCardClick={onToggleSelectedPaymentCard}
+              selectableCards={
+                canSelectBoardCards ||
+                (canSelectDealCards && dealPicker?.mode !== "deal_breaker")
+              }
+              selectedCardIds={
+                canSelectBoardCards
+                  ? selectedPaymentCardIds
+                  : canClickRearrangeDestination
+                    ? selectedRearrangeCardIds
+                  : selectedDealCardIds
+              }
+              onCardClick={(card) => {
+                if (canSelectBoardCards) {
+                  onToggleSelectedPaymentCard(card);
+                  return;
+                }
+
+                if (canSelectDealCards) {
+                  onSelectDealCard(card);
+                }
+              }}
               isDragActive={!!draggingCard}
             />
           </div>
@@ -1092,12 +1787,63 @@ const MonopolyDealHtmlBoard = ({
             <div
               className={
                 draggingCard
-                  ? "md-dropzone md-dropzone--property-set is-drag-active"
-                  : "md-dropzone md-dropzone--property-set"
+                  ? [
+                      "md-dropzone",
+                      "md-dropzone--property-set",
+                      selectedDealPropertySetIds.has(propertySet.propertySetId)
+                        ? "is-set-selected"
+                        : "",
+                      "is-drag-active",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                  : [
+                      "md-dropzone",
+                      "md-dropzone--property-set",
+                      selectedDealPropertySetIds.has(propertySet.propertySetId)
+                        ? "is-set-selected"
+                        : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
               }
               key={propertySet.propertySetId}
               onDragOver={dropHandlers.onDragOver}
               onDrop={dropHandlers.onDropPropertySet(propertySet.propertySetId)}
+              onPointerDown={(event) => {
+                if (
+                  (canSelectDealCards && dealPicker?.mode === "deal_breaker") ||
+                  (canInteractWithBoard && selectedHandPlacementCardId) ||
+                  canClickRearrangeDestination
+                ) {
+                  event.stopPropagation();
+                }
+              }}
+              onClick={(event) => {
+                if ((event.target as HTMLElement | null)?.closest(".md-card")) {
+                  return;
+                }
+
+                if (canSelectDealCards && dealPicker?.mode === "deal_breaker") {
+                  onSelectDealPropertySet(propertySet, player.playerId);
+                  return;
+                }
+
+                if (canClickRearrangeDestination) {
+                  onApplySelectedRearrangeCard(propertySet.propertySetId);
+                  return;
+                }
+
+                if (!canInteractWithBoard || !selectedHandPlacementCardId) {
+                  return;
+                }
+
+                placeCardOnProperty(
+                  selectedHandPlacementCardId,
+                  propertySet.propertySetId,
+                );
+                setSelectedHandPlacementCardId(null);
+              }}
             >
               <GameCardStackBox
                 title={`Set ${index + 1}`}
@@ -1106,12 +1852,50 @@ const MonopolyDealHtmlBoard = ({
                 layout="stack"
                 color={propertySet.color}
                 emptyLabel="Empty"
-                selectableCards={canSelectBoardCards}
-                selectedCardIds={selectedPaymentCardIds}
-                onCardClick={onToggleSelectedPaymentCard}
+                selectableCards={
+                  canSelectBoardCards || canSelectDealCards || canRearrangeFromBoard
+                }
+                selectedCardIds={
+                  canSelectBoardCards
+                    ? selectedPaymentCardIds
+                    : selectedRearrangeCard
+                      ? selectedRearrangeCardIds
+                    : selectedDealCardIds
+                }
+                onCardClick={(card) => {
+                  if (canSelectBoardCards) {
+                    onToggleSelectedPaymentCard(card);
+                    return;
+                  }
+
+                  if (canSelectDealCards) {
+                    if (dealPicker?.mode === "deal_breaker") {
+                      onSelectDealPropertySet(propertySet, player.playerId);
+                      return;
+                    }
+
+                    if (isPropertySetComplete(propertySet)) {
+                      onSelectCardFromCompletedSet();
+                      return;
+                    }
+
+                    onSelectDealCard(card);
+                    return;
+                  }
+
+                  if (
+                    canRearrangeFromBoard &&
+                    !isPropertySetLocked(propertySet) &&
+                    isPropertyCard(card)
+                  ) {
+                    onToggleSelectedRearrangeCard(card, propertySet.propertySetId);
+                  }
+                }}
                 draggableCards={canRearrangeFromBoard}
                 canDragCard={(card) => {
-                  return !isPropertySetComplete(propertySet) && isPropertyCard(card);
+                  return (
+                    !isPropertySetLocked(propertySet) && isPropertyCard(card)
+                  );
                 }}
                 onCardDragStart={(card) => {
                   setDraggingCard({
@@ -1134,8 +1918,31 @@ const MonopolyDealHtmlBoard = ({
             }
             onDragOver={dropHandlers.onDragOver}
             onDrop={dropHandlers.onDropPropertyRoot}
+            onPointerDown={(event) => {
+              if (
+                (canInteractWithBoard && selectedHandPlacementCardId) ||
+                canClickRearrangeDestination
+              ) {
+                event.stopPropagation();
+              }
+            }}
+            onClick={() => {
+              if (canClickRearrangeDestination) {
+                onApplySelectedRearrangeCard(undefined);
+                return;
+              }
+
+              if (!canInteractWithBoard || !selectedHandPlacementCardId) {
+                return;
+              }
+
+              placeCardOnProperty(selectedHandPlacementCardId, undefined);
+              setSelectedHandPlacementCardId(null);
+            }}
           >
-            <div className="md-property-empty">Drop property here to start a new set</div>
+            <div className="md-property-empty">
+              Drop property here to start a new set
+            </div>
           </div>
         </div>
       </article>
@@ -1159,7 +1966,54 @@ const MonopolyDealHtmlBoard = ({
         onPointerCancel={stopPan}
       >
         <div className="md-demand-overlay-wrap">
-          {hasPendingRent && gameState?.pendingRent ? (
+          {dealPicker ? (
+            <aside
+              className="md-demand md-demand--payment"
+              aria-live="polite"
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <p className="md-demand__eyebrow">
+                {dealPicker.mode === "forced_deal"
+                  ? "Forced Deal"
+                  : dealPicker.mode === "deal_breaker"
+                    ? "Deal Breaker"
+                    : "Sly Deal"}
+              </p>
+              <h3 className="md-demand__title">
+                {dealPicker.mode === "deal_breaker"
+                  ? "Choose an opponent complete set"
+                  : dealPicker.mode === "forced_deal"
+                    ? "Choose an opponent property and one of your properties"
+                    : "Choose an opponent property"}
+              </h3>
+              <p className="md-demand__line">
+                {dealPicker.mode === "deal_breaker"
+                  ? "Select one complete set, then confirm."
+                  : dealPicker.mode === "forced_deal"
+                    ? `Target: ${selectedForcedDealTargetPlayerName ?? "Opponent"}. Select one opponent card and one of your cards, then confirm.`
+                    : "Select one opponent card, then confirm."}
+              </p>
+              <div className="md-demand__actions">
+                <button
+                  type="button"
+                  className="md-demand__button"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={onConfirmDealSelection}
+                  disabled={!canConfirmDealSelection}
+                >
+                  Confirm
+                </button>
+                <button
+                  type="button"
+                  className="md-demand__button md-demand__button--secondary"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={onCancelDealPicker}
+                >
+                  Cancel
+                </button>
+              </div>
+            </aside>
+          ) : hasPendingRent && gameState?.pendingRent ? (
             <PendingRentOverlay
               pendingRent={gameState.pendingRent}
               players={players}
@@ -1177,6 +2031,7 @@ const MonopolyDealHtmlBoard = ({
               demands={visibleDemands}
               players={players}
               targetCardImageById={propertyCardImageById}
+              propertySetCardsById={propertySetCardsById}
               canDeny={hasJustSayNo}
               isSelectingCards={isSelectingPaymentCards}
               selectingDemandId={activePaymentDemandId ?? undefined}
@@ -1195,7 +2050,17 @@ const MonopolyDealHtmlBoard = ({
           ref={contentRef}
           style={boardStyle}
         >
-          {players.map((player) => renderPlayerBoard(player))}
+          {playerColumns.map((playerColumn, columnIndex) => (
+            <div
+              className="md-board-column"
+              key={`col-${columnIndex}`}
+              style={{
+                width: `${boardColumnWidth}px`,
+              }}
+            >
+              {playerColumn.map((player) => renderPlayerBoard(player))}
+            </div>
+          ))}
         </div>
       </section>
 
@@ -1208,6 +2073,14 @@ const MonopolyDealHtmlBoard = ({
           }
           onDragOver={onAllowDrop}
           onDrop={onDropPassGo}
+          onClick={() => {
+            if (!canTapPlaceFromHand || !selectedHandPlacementCardId) {
+              return;
+            }
+
+            placeCardOnActionPile(selectedHandPlacementCardId);
+            setSelectedHandPlacementCardId(null);
+          }}
         >
           <GameCardStackBox
             title="Action pile"
@@ -1226,10 +2099,31 @@ const MonopolyDealHtmlBoard = ({
             assetImageByKey={assetImageByKey}
             layout="spread"
             emptyLabel="Waiting for cards"
-            draggableCards={!isSelectingPaymentCards && !isDiscardRequired}
-            selectableCards={isDiscardRequired}
-            selectedCardIds={selectedDiscardCardIds}
-            onCardClick={(card) => onToggleDiscardCard(card.cardId)}
+            draggableCards={
+              !isSelectingPaymentCards &&
+              !isSelectingDealCards &&
+              !isDiscardRequired
+            }
+            selectableCards={isDiscardRequired || canTapPlaceFromHand}
+            selectedCardIds={
+              isDiscardRequired
+                ? selectedDiscardCardIds
+                : selectedHandPlacementCardIds
+            }
+            onCardClick={(card) => {
+              if (isDiscardRequired) {
+                onToggleDiscardCard(card.cardId);
+                return;
+              }
+
+              if (!canTapPlaceFromHand) {
+                return;
+              }
+
+              setSelectedHandPlacementCardId((current) => {
+                return current === card.cardId ? null : card.cardId;
+              });
+            }}
             onCardDragStart={(card) =>
               setDraggingCard({
                 cardId: card.cardId,
@@ -1248,14 +2142,23 @@ const MonopolyDealHtmlBoard = ({
           onClick={() => setColorPicker(null)}
         >
           <div
-            className="md-color-picker"
+            className="md-color-picker md-demand md-demand--payment"
             role="dialog"
             aria-modal="true"
             aria-label="Choose property color"
             onClick={(event) => event.stopPropagation()}
           >
-            <p className="md-color-picker__title">Choose a color</p>
-            <div className="md-color-picker__swatches">
+            <p className="md-demand__eyebrow">Color selection</p>
+            <h3 className="md-demand__title">Choose a color</h3>
+            <p className="md-demand__line">Pick one option to continue.</p>
+            <div
+              className="md-color-picker__swatches"
+              style={{
+                ["--md-color-cols" as string]: String(
+                  Math.min(5, Math.max(1, colorPicker.colors.length)),
+                ),
+              }}
+            >
               {colorPicker.colors.map((color) => (
                 <button
                   type="button"
@@ -1266,7 +2169,11 @@ const MonopolyDealHtmlBoard = ({
                     if (colorPicker.mode === "rearrange") {
                       onRearrangeCard(colorPicker.cardId, undefined, color);
                     } else {
-                      onPlayPropertyCard(colorPicker.cardId, colorPicker.propertySetId, color);
+                      onPlayPropertyCard(
+                        colorPicker.cardId,
+                        colorPicker.propertySetId,
+                        color,
+                      );
                     }
                     setColorPicker(null);
                   }}
@@ -1286,50 +2193,15 @@ const MonopolyDealHtmlBoard = ({
           eyebrow={
             debtCollectorPicker.mode === "wild_rent"
               ? "Wild Rent"
-              : debtCollectorPicker.mode === "sly_deal"
-                ? "Sly Deal"
-                : debtCollectorPicker.mode === "forced_deal"
-                  ? "Forced Deal"
-                : "Debt Collector"
+              : "Debt Collector"
           }
           ariaLabel={
             debtCollectorPicker.mode === "wild_rent"
               ? "Choose wild rent target"
-              : debtCollectorPicker.mode === "sly_deal"
-                ? "Choose sly deal target"
-                : debtCollectorPicker.mode === "forced_deal"
-                  ? "Choose forced deal target"
-                : "Choose debt collector target"
+              : "Choose debt collector target"
           }
           onSelectPlayer={onSelectDebtCollectorTarget}
           onClose={() => setDebtCollectorPicker(null)}
-        />
-      ) : null}
-
-      {slyDealPicker ? (
-        <SlyDealPropertyPickerOverlay
-          eyebrow={slyDealPicker.mode === "forced_deal" ? "Forced Deal" : "Sly Deal"}
-          title={
-            slyDealPicker.mode === "forced_deal"
-              ? slyDealPicker.targetCardId
-                ? "Choose one of your properties to swap"
-                : `Choose a property from ${slyDealTargetPlayer?.displayName ?? "target"}`
-              : `Choose a property from ${slyDealTargetPlayer?.displayName ?? "target"}`
-          }
-          targetPlayer={slyDealTargetPlayer}
-          propertySets={
-            slyDealPicker.mode === "forced_deal" && slyDealPicker.targetCardId
-              ? forcedDealSourceSets
-              : slyDealStealableSets
-          }
-          assetImageByKey={assetImageByKey}
-          emptyText={
-            slyDealPicker.mode === "forced_deal" && slyDealPicker.targetCardId
-              ? "No swappable property cards in your sets."
-              : "No stealable property cards."
-          }
-          onSelectCard={onSelectSlyDealCard}
-          onClose={() => setSlyDealPicker(null)}
         />
       ) : null}
     </div>

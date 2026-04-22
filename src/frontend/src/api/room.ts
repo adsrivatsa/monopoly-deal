@@ -4,7 +4,7 @@ import {
   isTokenErrorCode,
   readApiError,
 } from "./client";
-import { Game } from "./models";
+import { Game, parseGameSettings, stringifyGameSettings } from "./models";
 
 export type ListRoomsParams = {
   limit: number;
@@ -235,9 +235,14 @@ export const readyRoom = async (): Promise<ReadyRoomResult> => {
 export const updateRoomSettings = async (
   params: UpdateRoomSettingsParams,
 ): Promise<UpdateRoomSettingsResult> => {
+  const normalizedSettings = stringifyGameSettings(
+    params.game,
+    parseGameSettings(params.game, params.settings),
+  );
+
   const payload = {
     ...params,
-    settings: Array.from(params.settings),
+    settings: Array.from(normalizedSettings),
   };
 
   const response = await apiFetch("/room/settings", {

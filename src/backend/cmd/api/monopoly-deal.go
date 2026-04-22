@@ -42,7 +42,7 @@ func (s *Server) MonopolyDealSocket(w http.ResponseWriter, r *http.Request) {
 		s.gameSocketsMu.Unlock()
 	}()
 
-	msg := s.services.GetMonopolyDealGame(ctx, tp)
+	msg := s.services.MonopolyDealController.GetGameState(ctx, tp)
 	sock.send(msg)
 
 	go s.ping(ctx, sock)
@@ -74,7 +74,7 @@ func (s *Server) handleClientMonopolyDealMessages(ctx context.Context, sock *soc
 
 		switch p := msg.GetPayload().(type) {
 		case *schema.ClientMessage_MonopolyDealMessage:
-			err := s.services.HandleMonopolyDealEvent(ctx, tp, p)
+			err := s.services.MonopolyDealController.HandleEvent(ctx, tp, p)
 			if err != nil {
 				var intErr errors.Error
 				if !stderrors.As(err, &intErr) {

@@ -16,3 +16,6 @@ SELECT g.*
       SET game_state = $1
     WHERE game_id = $2
 RETURNING *;
+
+-- name: CompleteGame :one
+UPDATE game SET completed = TRUE, winner = $1 WHERE game_id = $2 RETURNING *;

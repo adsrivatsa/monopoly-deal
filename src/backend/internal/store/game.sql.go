@@ -11,10 +11,34 @@ import (
 	"github.com/google/uuid"
 )
 
+const completeGame = `-- name: CompleteGame :one
+UPDATE game SET completed = TRUE, winner = $1 WHERE game_id = $2 RETURNING game_id, display_name, game, game_state, completed, winner, created_at
+`
+
+type CompleteGameParams struct {
+	Winner *uuid.UUID `json:"winner"`
+	GameID uuid.UUID  `json:"game_id"`
+}
+
+func (q *Queries) CompleteGame(ctx context.Context, arg CompleteGameParams) (Game, error) {
+	row := q.db.QueryRow(ctx, completeGame, arg.Winner, arg.GameID)
+	var i Game
+	err := row.Scan(
+		&i.GameID,
+		&i.DisplayName,
+		&i.Game,
+		&i.GameState,
+		&i.Completed,
+		&i.Winner,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createGame = `-- name: CreateGame :one
    INSERT INTO game (display_name, game, game_state)
    VALUES ($1, $2, $3)
-RETURNING game_id, display_name, game, game_state, completed, created_at
+RETURNING game_id, display_name, game, game_state, completed, winner, created_at
 `
 
 type CreateGameParams struct {
@@ -32,13 +56,14 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, e
 		&i.Game,
 		&i.GameState,
 		&i.Completed,
+		&i.Winner,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getGameByPlayer = `-- name: GetGameByPlayer :one
-SELECT g.game_id, g.display_name, g.game, g.game_state, g.completed, g.created_at
+SELECT g.game_id, g.display_name, g.game, g.game_state, g.completed, g.winner, g.created_at
   FROM game g
            INNER JOIN game_player gp
            ON gp.game_id = g.game_id
@@ -55,6 +80,7 @@ func (q *Queries) GetGameByPlayer(ctx context.Context, playerID uuid.UUID) (Game
 		&i.Game,
 		&i.GameState,
 		&i.Completed,
+		&i.Winner,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -64,7 +90,7 @@ const updateGameState = `-- name: UpdateGameState :one
    UPDATE game
       SET game_state = $1
     WHERE game_id = $2
-RETURNING game_id, display_name, game, game_state, completed, created_at
+RETURNING game_id, display_name, game, game_state, completed, winner, created_at
 `
 
 type UpdateGameStateParams struct {
@@ -81,6 +107,7 @@ func (q *Queries) UpdateGameState(ctx context.Context, arg UpdateGameStateParams
 		&i.Game,
 		&i.GameState,
 		&i.Completed,
+		&i.Winner,
 		&i.CreatedAt,
 	)
 	return i, err

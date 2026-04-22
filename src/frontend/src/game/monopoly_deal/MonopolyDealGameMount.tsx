@@ -14,6 +14,11 @@ type MonopolyDealGameMountProps = {
     targetPlayerId: string,
     targetCardId: string,
   ) => void;
+  onPlayDealBreakerCard: (
+    cardId: string,
+    targetPlayerId: string,
+    propertySetId: string,
+  ) => void;
   onPlayForcedDealCard: (
     cardId: string,
     targetPlayerId: string,
@@ -39,7 +44,9 @@ type MonopolyDealGameMountProps = {
   ) => void;
   onComplyPaymentDemand: (demandId: string, cardIds: string[]) => void;
   onComplyPropertyDemand: (demandId: string) => void;
+  onComplyPropertySetDemand: (demandId: string) => void;
   onClientError?: (error: unknown) => void;
+  onGameError?: (error: { message: string; code: string }) => void;
 };
 
 const MonopolyDealGameMount = ({
@@ -51,6 +58,7 @@ const MonopolyDealGameMount = ({
   onPlayDebtCollectorCard,
   onPlayWildRentCard,
   onPlaySlyDealCard,
+  onPlayDealBreakerCard,
   onPlayForcedDealCard,
   onPlayDoubleTheRentCard,
   onResolvePendingRent,
@@ -63,7 +71,9 @@ const MonopolyDealGameMount = ({
   onPlayPropertyCard,
   onComplyPaymentDemand,
   onComplyPropertyDemand,
+  onComplyPropertySetDemand,
   onClientError,
+  onGameError,
 }: MonopolyDealGameMountProps) => {
   return (
     <MonopolyDealHtmlBoard
@@ -75,6 +85,7 @@ const MonopolyDealGameMount = ({
       onPlayDebtCollectorCard={onPlayDebtCollectorCard}
       onPlayWildRentCard={onPlayWildRentCard}
       onPlaySlyDealCard={onPlaySlyDealCard}
+      onPlayDealBreakerCard={onPlayDealBreakerCard}
       onPlayForcedDealCard={onPlayForcedDealCard}
       onPlayDoubleTheRentCard={onPlayDoubleTheRentCard}
       onResolvePendingRent={onResolvePendingRent}
@@ -87,7 +98,9 @@ const MonopolyDealGameMount = ({
       onPlayPropertyCard={onPlayPropertyCard}
       onComplyPaymentDemand={onComplyPaymentDemand}
       onComplyPropertyDemand={onComplyPropertyDemand}
+      onComplyPropertySetDemand={onComplyPropertySetDemand}
       onClientError={onClientError}
+      onGameError={onGameError}
     />
   );
 };

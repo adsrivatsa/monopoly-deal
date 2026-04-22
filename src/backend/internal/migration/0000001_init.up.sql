@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS game
         game game_type NOT NULL,
         game_state bytea NOT NULL,
         completed bool NOT NULL DEFAULT FALSE,
+        winner uuid REFERENCES player (player_id),
         created_at timestamptz NOT NULL DEFAULT NOW()
     );
 

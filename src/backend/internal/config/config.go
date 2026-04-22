@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	BackendDomain         string        `mapstructure:"BACKEND_DOMAIN"`
+	BackendPort           int           `mapstructure:"BACKEND_PORT"`
 	DatabaseURL           string        `mapstructure:"DATABASE_URL"`
 	MigrationURL          string        `mapstructure:"MIGRATION_URL"`
 	CookieSecret          string        `mapstructure:"COOKIE_SECRET"`

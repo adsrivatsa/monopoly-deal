@@ -24,17 +24,23 @@ const configuredGames: Game[] = appConfig.room.create.games
 const availableGames: Game[] =
   configuredGames.length > 0 ? configuredGames : [Game.MonopolyDeal];
 
-const gameOptions: Array<{ value: Game; label: string }> = availableGames.map((game) => {
-  return {
-    value: game,
-    label: getGameDisplayName(game),
-  };
-});
+const gameOptions: Array<{ value: Game; label: string }> = availableGames.map(
+  (game) => {
+    return {
+      value: game,
+      label: getGameDisplayName(game),
+    };
+  },
+);
 
 const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
   const [displayName, setDisplayName] = useState("");
   const [game, setGame] = useState<Game>(availableGames[0]);
-  const [capacity, setCapacity] = useState(String(appConfig.room.create.capacity.min));
+  const [capacity, setCapacity] = useState(
+    String(appConfig.room.create.capacity.min),
+  );
+
+  console.log(getDefaultSettingsForGame(game));
 
   const defaultSettings = stringifyGameSettings(
     game,

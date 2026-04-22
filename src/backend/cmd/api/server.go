@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"fun-kames/internal/config"
 	"fun-kames/internal/service"
 	"fun-kames/internal/token"
@@ -153,7 +154,7 @@ func (s *Server) addRoutes() {
 
 func (s *Server) Start() error {
 	srv := &http.Server{
-		Addr:    s.cfg.BackendDomain,
+		Addr:    fmt.Sprintf(":%d", s.cfg.BackendPort),
 		Handler: s.router,
 	}
 	return srv.ListenAndServe()

@@ -1,4 +1,5 @@
 import {
+  type Card,
   DemandKind,
   type Demand,
   type Player,
@@ -11,6 +12,7 @@ type DemandOverlayProps = {
   demands: Demand[];
   players: Player[];
   targetCardImageById: Record<string, string>;
+  propertySetCardsById: Record<string, Card[]>;
   canDeny: boolean;
   isSelectingCards: boolean;
   selectingDemandId?: string;
@@ -23,6 +25,7 @@ const DemandOverlay = ({
   demands,
   players,
   targetCardImageById,
+  propertySetCardsById,
   canDeny,
   isSelectingCards,
   selectingDemandId,
@@ -65,6 +68,11 @@ const DemandOverlay = ({
                   ? targetCardImageById[demand.propertyDemand.targetCardId]
                   : undefined
               }
+              sourceCardImageUrl={
+                demand.propertyDemand?.sourceCardId
+                  ? targetCardImageById[demand.propertyDemand.sourceCardId]
+                  : undefined
+              }
               canDeny={canDeny}
               onComply={onComply}
               onDeny={onDeny}
@@ -74,7 +82,20 @@ const DemandOverlay = ({
 
         if (demand.demandKind === DemandKind.DEMAND_KIND_PROPERTY_SET) {
           return (
-            <PropertySetDemandOverlay key={demand.id} demand={demand} players={players} />
+            <PropertySetDemandOverlay
+              key={demand.id}
+              demand={demand}
+              players={players}
+              targetCardImageById={targetCardImageById}
+              requestedCards={
+                demand.propertySetDemand?.propertySetId
+                  ? propertySetCardsById[demand.propertySetDemand.propertySetId] ?? []
+                  : []
+              }
+              canDeny={canDeny}
+              onComply={onComply}
+              onDeny={onDeny}
+            />
           );
         }
 

@@ -24,18 +24,19 @@ const PendingRentOverlay = ({
     };
   });
   const totalAmount = pendingRent.baseAmount * Math.max(1, pendingRent.multiplier);
+  const targetLabel = targets.length === 1 ? "Target" : "Targets";
 
   return (
     <aside
-      className="md-demand md-demand--rent"
+      className="md-demand md-demand--payment"
       aria-live="polite"
       onPointerDown={(event) => event.stopPropagation()}
     >
-      <p className="md-demand__eyebrow">Pending rent</p>
-      <h3 className="md-demand__title">Rent demand</h3>
+      <h3 className="md-demand__title">Pending rent</h3>
+      <p className="md-demand__line">{targetLabel}:</p>
       <div className="md-rent-targets" role="list" aria-label="Rent targets">
         {targets.length === 0 ? (
-          <p className="md-demand__line">Targets: -</p>
+          <p className="md-demand__line">-</p>
         ) : (
           targets.map((target) => (
             <div key={target.playerId} className="md-rent-target" role="listitem">
@@ -51,7 +52,7 @@ const PendingRentOverlay = ({
           ))
         )}
       </div>
-      <p className="md-demand__line">Total: ${totalAmount}</p>
+      <p className="md-demand__line">Payment: ${totalAmount}</p>
       <div className="md-demand__actions">
         <button
           type="button"
