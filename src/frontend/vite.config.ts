@@ -32,7 +32,7 @@ const parseEnvFile = (filePath: string): Record<string, string> => {
 };
 
 export default defineConfig(() => {
-  const devEnvPath = resolve(__dirname, "../dev.env");
+  const devEnvPath = resolve(__dirname, "../prod.env");
   const devEnv = parseEnvFile(devEnvPath);
   const viteEnv = Object.fromEntries(
     Object.entries(devEnv).filter(([key]) => key.startsWith("VITE_")),

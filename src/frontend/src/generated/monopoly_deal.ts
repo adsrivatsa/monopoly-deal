@@ -892,6 +892,8 @@ export interface HotelPlayed {
 
 export interface WonGame {
   playerId: string;
+  numCompletedSets: number;
+  money: number;
 }
 
 export interface ClientMessage {
@@ -6453,13 +6455,19 @@ export const HotelPlayed: MessageFns<HotelPlayed> = {
 };
 
 function createBaseWonGame(): WonGame {
-  return { playerId: "" };
+  return { playerId: "", numCompletedSets: 0, money: 0 };
 }
 
 export const WonGame: MessageFns<WonGame> = {
   encode(message: WonGame, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.playerId !== "") {
       writer.uint32(10).string(message.playerId);
+    }
+    if (message.numCompletedSets !== 0) {
+      writer.uint32(16).int32(message.numCompletedSets);
+    }
+    if (message.money !== 0) {
+      writer.uint32(24).int32(message.money);
     }
     return writer;
   },
@@ -6479,6 +6487,22 @@ export const WonGame: MessageFns<WonGame> = {
           message.playerId = reader.string();
           continue;
         }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.numCompletedSets = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.money = reader.int32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -6495,6 +6519,12 @@ export const WonGame: MessageFns<WonGame> = {
         : isSet(object.player_id)
         ? globalThis.String(object.player_id)
         : "",
+      numCompletedSets: isSet(object.numCompletedSets)
+        ? globalThis.Number(object.numCompletedSets)
+        : isSet(object.num_completed_sets)
+        ? globalThis.Number(object.num_completed_sets)
+        : 0,
+      money: isSet(object.money) ? globalThis.Number(object.money) : 0,
     };
   },
 
@@ -6502,6 +6532,12 @@ export const WonGame: MessageFns<WonGame> = {
     const obj: any = {};
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
+    }
+    if (message.numCompletedSets !== 0) {
+      obj.numCompletedSets = Math.round(message.numCompletedSets);
+    }
+    if (message.money !== 0) {
+      obj.money = Math.round(message.money);
     }
     return obj;
   },
@@ -6512,6 +6548,8 @@ export const WonGame: MessageFns<WonGame> = {
   fromPartial<I extends Exact<DeepPartial<WonGame>, I>>(object: I): WonGame {
     const message = createBaseWonGame();
     message.playerId = object.playerId ?? "";
+    message.numCompletedSets = object.numCompletedSets ?? 0;
+    message.money = object.money ?? 0;
     return message;
   },
 };

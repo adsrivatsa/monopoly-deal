@@ -9,6 +9,10 @@ export const themeRegistry = [
     id: "lavender-light",
     label: "Lavender Light",
   },
+  {
+    id: "rose-light",
+    label: "Rose Light",
+  },
 ] as const;
 
 export type ThemeId = (typeof themeRegistry)[number]["id"];

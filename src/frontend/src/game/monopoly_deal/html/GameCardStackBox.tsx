@@ -12,14 +12,9 @@ type GameCardStackBoxProps = {
   color?: Color;
   className?: string;
   emptyLabel?: string;
-  draggableCards?: boolean;
-  canDragCard?: (card: Card) => boolean;
   selectableCards?: boolean;
   selectedCardIds?: ReadonlySet<string>;
-  isDragActive?: boolean;
   onCardClick?: (card: Card) => void;
-  onCardDragStart?: (card: Card) => void;
-  onCardDragEnd?: () => void;
 };
 
 const colorToCss = (color: Color | undefined): string | undefined => {
@@ -57,14 +52,9 @@ const GameCardStackBox = ({
   color,
   className,
   emptyLabel = "No cards",
-  draggableCards = false,
-  canDragCard,
   selectableCards = false,
   selectedCardIds,
-  isDragActive = false,
   onCardClick,
-  onCardDragStart,
-  onCardDragEnd,
 }: GameCardStackBoxProps) => {
   const cardsContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -109,12 +99,9 @@ const GameCardStackBox = ({
     if (className) {
       classes.push(className);
     }
-    if (isDragActive) {
-      classes.push("is-drag-active");
-    }
 
     return classes.join(" ");
-  }, [className, isDragActive, layout]);
+  }, [className, layout]);
 
   return (
     <section
@@ -136,12 +123,9 @@ const GameCardStackBox = ({
               <GameCardView
                 card={card}
                 imageUrl={assetImageByKey[card.assetKey]}
-                draggable={draggableCards && (canDragCard ? canDragCard(card) : true)}
                 isSelected={selectedCardIds?.has(card.cardId) ?? false}
                 className={layout === "stack" ? "md-card--tight" : ""}
                 onClick={selectableCards ? onCardClick : undefined}
-                onDragStart={(draggedCard) => onCardDragStart?.(draggedCard)}
-                onDragEnd={onCardDragEnd}
               />
             </div>
           ))

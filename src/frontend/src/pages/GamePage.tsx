@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   connectGameSocket,
   decodeGameServerMessage,
@@ -30,6 +30,7 @@ import {
 import { getPlayer } from "../api/player";
 import ChatBox from "../components/chat/ChatBox";
 import TurnControlsCard from "../components/game/TurnControlsCard";
+import Button from "../components/ui/button";
 import ErrorToastStack, { type ErrorToastNotice } from "../components/ui/error-toast-stack";
 import MonopolyDealGameMount from "../game/monopoly_deal/MonopolyDealGameMount";
 import {
@@ -42,6 +43,7 @@ import {
   type GameState,
   type PropertySet,
   type Player,
+  type WonGame,
 } from "../generated/monopoly_deal";
 
 type GameChatMessage = {
@@ -51,6 +53,11 @@ type GameChatMessage = {
 };
 
 type GameErrorNotice = ErrorToastNotice;
+
+type WonGameResult = WonGame & {
+  displayName?: string;
+  avatarUrl?: string;
+};
 
 const toAssetImageMap = (assetImages: AssetImage[]): Record<number, string> => {
   return assetImages.reduce<Record<number, string>>((lookup, assetImage) => {
@@ -77,6 +84,57 @@ const toClientGameError = (error: unknown, code: string): GameError => {
     code,
     status: 0,
   };
+};
+
+const isGameErrorLike = (value: unknown): value is GameError => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<GameError>;
+  return typeof candidate.message === "string";
+};
+
+const toServerGameErrors = (value: unknown): GameError[] => {
+  const collected: GameError[] = [];
+  const visited = new Set<unknown>();
+
+  const visit = (node: unknown) => {
+    if (!node || typeof node !== "object" || visited.has(node)) {
+      return;
+    }
+    visited.add(node);
+
+    if (isGameErrorLike(node)) {
+      collected.push({
+        message: node.message,
+        code: typeof node.code === "string" ? node.code : "SERVER_ERROR",
+        status: typeof node.status === "number" ? node.status : 0,
+      });
+    }
+
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        visit(item);
+      }
+      return;
+    }
+
+    for (const [key, child] of Object.entries(node)) {
+      if (key.toLowerCase().includes("error")) {
+        visit(child);
+        continue;
+      }
+
+      if (typeof child === "object") {
+        visit(child);
+      }
+    }
+  };
+
+  visit(value);
+
+  return collected.filter((error) => error.message.trim().length > 0);
 };
 
 const toCardIdSet = (cards: Card[]): Set<string> => {
@@ -143,9 +201,15 @@ const isPropertySetCompleteForBuilding = (propertySet: PropertySet): boolean => 
   return propertyCardCount >= requiredCount;
 };
 
+let globalSocketSessionId = 0;
+let globalGameSocket: WebSocket | null = null;
+let globalReconnectTimeoutId: number | null = null;
+
 const GamePage = () => {
   const { game_id: gameId } = useParams();
+  const navigate = useNavigate();
   const socketRef = useRef<WebSocket | null>(null);
+  const reconnectAttemptRef = useRef(0);
   const [initialGameState, setInitialGameState] = useState<GameState | null>(
     null,
   );
@@ -166,6 +230,7 @@ const GamePage = () => {
   const [selectedDiscardCardIds, setSelectedDiscardCardIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [wonGame, setWonGame] = useState<WonGameResult | null>(null);
 
   const pushErrorNotice = useCallback(
     (
@@ -275,22 +340,120 @@ const GamePage = () => {
   }, []);
 
   useEffect(() => {
-    const socket = connectGameSocket();
-    socketRef.current = socket;
+    let didUnmount = false;
+    let activeSocket: WebSocket | null = null;
+    const sessionId = globalSocketSessionId + 1;
+    globalSocketSessionId = sessionId;
 
-    console.log("[game-ws] connecting", socket.url);
-
-    socket.onopen = () => {
-      console.log("[game-ws] open", { gameId });
+    const isCurrentSession = () => {
+      return !didUnmount && globalSocketSessionId === sessionId;
     };
 
-    socket.onmessage = (event) => {
-      void (async () => {
-        try {
+    const clearReconnectTimer = () => {
+      if (globalReconnectTimeoutId !== null) {
+        window.clearTimeout(globalReconnectTimeoutId);
+        globalReconnectTimeoutId = null;
+      }
+    };
+
+    const scheduleReconnect = () => {
+      if (!isCurrentSession()) {
+        return;
+      }
+
+      clearReconnectTimer();
+      const attempt = reconnectAttemptRef.current;
+      const delayMs = Math.min(5000, 500 * 2 ** attempt);
+      reconnectAttemptRef.current = attempt + 1;
+
+      console.log("[game-ws] reconnect scheduled", {
+        attempt: attempt + 1,
+        delayMs,
+      });
+
+      globalReconnectTimeoutId = window.setTimeout(() => {
+        globalReconnectTimeoutId = null;
+        if (!isCurrentSession()) {
+          return;
+        }
+        connectSocket();
+      }, delayMs);
+    };
+
+    const connectSocket = () => {
+      if (!isCurrentSession()) {
+        return;
+      }
+
+      const existingSocket = globalGameSocket;
+      if (existingSocket && existingSocket !== activeSocket) {
+        socketRef.current = null;
+        existingSocket.close();
+      }
+
+      const socket = connectGameSocket();
+      activeSocket = socket;
+      globalGameSocket = socket;
+      socketRef.current = socket;
+
+      console.log("[game-ws] connecting", socket.url);
+
+      socket.onopen = () => {
+        if (
+          !isCurrentSession() ||
+          socketRef.current !== socket ||
+          globalGameSocket !== socket
+        ) {
+          return;
+        }
+        reconnectAttemptRef.current = 0;
+        clearReconnectTimer();
+        console.log("[game-ws] open", { gameId });
+      };
+
+      socket.onmessage = (event) => {
+        if (
+          !isCurrentSession() ||
+          socketRef.current !== socket ||
+          globalGameSocket !== socket
+        ) {
+          return;
+        }
+
+        void (async () => {
+          try {
           const message = await decodeGameServerMessage(event.data);
           if (!message) {
             console.log("[game-ws] message (non-binary)", event.data);
+            if (typeof event.data === "string") {
+              try {
+                const parsed = JSON.parse(event.data) as unknown;
+                const serverErrors = toServerGameErrors(parsed);
+                for (const serverError of serverErrors) {
+                  pushErrorNotice(serverError, {
+                    title: "Server error",
+                    eyebrow: "Game server",
+                  });
+                }
+              } catch {
+                pushErrorNotice({
+                  message: event.data,
+                  code: "SERVER_TEXT_EVENT",
+                }, {
+                  title: "Server error",
+                  eyebrow: "Game server",
+                });
+              }
+            }
             return;
+          }
+
+          const serverErrors = toServerGameErrors(toGameServerMessageJson(message));
+          for (const serverError of serverErrors) {
+            pushErrorNotice(serverError, {
+              title: "Server error",
+              eyebrow: "Game server",
+            });
           }
 
           const assetImages =
@@ -349,11 +512,6 @@ const GamePage = () => {
             });
           }
 
-          const gameError = message.monopolyDealMessage?.error;
-          if (gameError) {
-            pushErrorNotice(gameError);
-          }
-
           const chatReceived = message.monopolyDealMessage?.chatReceived;
           if (chatReceived) {
             setChatMessages((current) => {
@@ -366,6 +524,13 @@ const GamePage = () => {
                 },
               ];
             });
+          }
+
+          const wonGameMessage = message.monopolyDealMessage?.wonGame as
+            | WonGameResult
+            | undefined;
+          if (wonGameMessage) {
+            setWonGame(wonGameMessage);
           }
 
           const startTurnRes = message.monopolyDealMessage?.startTurnRes;
@@ -1366,33 +1531,70 @@ const GamePage = () => {
             });
           }
 
-          console.log("[game-ws] message", toGameServerMessageJson(message));
-        } catch (error) {
-          console.error("[game-ws] failed to decode message", error);
-          pushErrorNotice(toClientGameError(error, "WS_MESSAGE_DECODE_FAILED"));
+            console.log("[game-ws] message", toGameServerMessageJson(message));
+          } catch (error) {
+            console.error("[game-ws] failed to decode message", error);
+            pushErrorNotice(toClientGameError(error, "WS_MESSAGE_DECODE_FAILED"));
+          }
+        })();
+      };
+
+      socket.onerror = (event) => {
+        if (
+          !isCurrentSession() ||
+          socketRef.current !== socket ||
+          globalGameSocket !== socket
+        ) {
+          return;
         }
-      })();
+        console.log("[game-ws] error", event);
+      };
+
+      socket.onclose = (event) => {
+        console.log("[game-ws] close", {
+          code: event.code,
+          reason: event.reason,
+          wasClean: event.wasClean,
+        });
+
+        if (!isCurrentSession()) {
+          return;
+        }
+
+        if (socketRef.current === socket) {
+          socketRef.current = null;
+        }
+        if (globalGameSocket === socket) {
+          globalGameSocket = null;
+        }
+
+        const isDuplicateSocketClose =
+          event.reason.toLowerCase().includes("duplicate socket created") ||
+          event.reason.includes("API002");
+        if (isDuplicateSocketClose) {
+          console.log("[game-ws] duplicate socket close; skip reconnect");
+          return;
+        }
+
+        scheduleReconnect();
+      };
     };
 
-    socket.onerror = (event) => {
-      console.log("[game-ws] error", event);
-      pushErrorNotice({
-        message: "Game connection encountered an error. Reconnect to continue.",
-        code: "WS_CONNECTION_ERROR",
-      });
-    };
-
-    socket.onclose = (event) => {
-      console.log("[game-ws] close", {
-        code: event.code,
-        reason: event.reason,
-        wasClean: event.wasClean,
-      });
-    };
+    connectSocket();
 
     return () => {
-      socketRef.current = null;
-      socket.close();
+      didUnmount = true;
+      if (globalSocketSessionId === sessionId) {
+        globalSocketSessionId = sessionId + 1;
+      }
+      clearReconnectTimer();
+      if (socketRef.current === activeSocket) {
+        socketRef.current = null;
+      }
+      if (globalGameSocket === activeSocket) {
+        globalGameSocket = null;
+      }
+      activeSocket?.close();
     };
   }, [gameId, pushErrorNotice, selfPlayerId]);
 
@@ -2197,6 +2399,39 @@ const GamePage = () => {
   );
 
   const handlePassTurn = useCallback(() => {
+    if (selfPlayerId) {
+      const selfPropertySets = (initialGameState?.properties ?? []).filter(
+        (propertySet) => propertySet.playerId === selfPlayerId,
+      );
+      const incompleteSetCountByColor = new Map<Color, number>();
+
+      for (const propertySet of selfPropertySets) {
+        const requiredCount = minPropertyCountForCompleteSet(propertySet.color);
+        if (!Number.isFinite(requiredCount)) {
+          continue;
+        }
+
+        const propertyCardCount = propertySet.cards.filter((card) => {
+          return isPropertyCardForSetCompletion(card);
+        }).length;
+        if (propertyCardCount >= requiredCount) {
+          continue;
+        }
+
+        const nextCount =
+          (incompleteSetCountByColor.get(propertySet.color) ?? 0) + 1;
+        incompleteSetCountByColor.set(propertySet.color, nextCount);
+
+        if (nextCount > 1) {
+          notifyFrontendRule(
+            "You cannot pass turn with multiple incomplete sets of the same color.",
+            "INVALID_INCOMPLETE_PROPERTY_SETS",
+          );
+          return;
+        }
+      }
+    }
+
     const socket = socketRef.current;
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       console.log("[game-ws] complete turn skipped; socket not open");
@@ -2205,7 +2440,7 @@ const GamePage = () => {
     }
 
     sendGameCompleteTurnMessage(socket);
-  }, [notifySocketUnavailable]);
+  }, [initialGameState?.properties, notifyFrontendRule, notifySocketUnavailable, selfPlayerId]);
 
   const handleComplyPaymentDemand = useCallback((demandId: string, cardIds: string[]) => {
     const socket = socketRef.current;
@@ -2378,9 +2613,23 @@ const GamePage = () => {
     sendGameResolvePendingRentMessage(socket);
   }, [notifySocketUnavailable]);
 
+  const winnerProfile = wonGame
+    ? players.find((player) => player.playerId === wonGame.playerId)
+    : null;
+  const winnerName = wonGame
+    ? wonGame.displayName ??
+      winnerProfile?.displayName ??
+      playerNameById[wonGame.playerId] ??
+      wonGame.playerId
+    : "";
+  const winnerAvatarUrl = wonGame?.avatarUrl ?? winnerProfile?.avatarUrl ?? "";
+  const winnerInitial = winnerName.trim().charAt(0).toUpperCase() || "W";
+
   return (
     <>
-      <main className="page game-page">
+      <main
+        className={wonGame ? "page game-page game-page--ended" : "page game-page"}
+      >
         <section className="game-page__board">
           <MonopolyDealGameMount
             initialGameState={initialGameState}
@@ -2493,6 +2742,56 @@ const GamePage = () => {
             requiredDiscardCount={discardRequiredCount}
           />
         </aside>
+
+        {wonGame ? (
+          <section
+            className="game-end-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="game-end-title"
+          >
+            <article className="game-end-modal">
+              <p className="game-end-modal__eyebrow">Game over</p>
+              <h2 id="game-end-title" className="game-end-modal__title">
+                {winnerName} won the game
+              </h2>
+              <div className="game-end-modal__winner">
+                {winnerAvatarUrl ? (
+                  <img
+                    className="game-end-modal__avatar"
+                    src={winnerAvatarUrl}
+                    alt={winnerName}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="game-end-modal__avatar game-end-modal__avatar--fallback" aria-hidden="true">
+                    {winnerInitial}
+                  </div>
+                )}
+                <p className="game-end-modal__winner-name">{winnerName}</p>
+              </div>
+              <dl className="game-end-modal__stats" aria-label="Winning stats">
+                <div className="game-end-modal__stat">
+                  <dt>Completed sets</dt>
+                  <dd>{wonGame.numCompletedSets}</dd>
+                </div>
+                <div className="game-end-modal__stat">
+                  <dt>Money</dt>
+                  <dd>${wonGame.money}</dd>
+                </div>
+              </dl>
+              <Button
+                className="game-end-modal__button"
+                onClick={() => {
+                  navigate("/lobby");
+                }}
+              >
+                Go Home
+              </Button>
+            </article>
+          </section>
+        ) : null}
       </main>
 
       <ErrorToastStack notices={errorNotices} onDismiss={dismissErrorNotice} />

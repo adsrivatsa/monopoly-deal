@@ -20,6 +20,7 @@
   max-height: 100%;
   overflow: hidden;
   overscroll-behavior: contain;
+  touch-action: none;
   border: 1px solid color-mix(in oklab, var(--border) 86%, transparent);
   border-radius: calc(var(--radius) + 2px);
   background: color-mix(in oklab, var(--card) 82%, transparent);
@@ -242,6 +243,7 @@
   gap: 0.7rem;
   width: 100%;
   min-height: 100%;
+  touch-action: none;
   transform-origin: top left;
   will-change: transform;
   padding: 0;
@@ -351,11 +353,6 @@
   min-height: 4.25rem;
 }
 
-.md-dropzone.is-drag-active {
-  outline: 1px dashed color-mix(in oklab, var(--primary) 72%, transparent);
-  outline-offset: 1px;
-}
-
 .md-dropzone--property-set.is-set-selected {
   outline: 2px solid color-mix(in oklab, var(--primary) 84%, white 16%);
   outline-offset: 2px;
@@ -391,6 +388,15 @@
   overflow-y: hidden;
   padding: 0.15rem 0;
   scrollbar-width: thin;
+}
+
+.md-player-board .md-stack-box__cards {
+  overflow: hidden;
+  touch-action: none;
+}
+
+.md-player-board .md-card {
+  touch-action: none;
 }
 
 .md-stack-box--spread .md-stack-box__cards {
@@ -438,10 +444,6 @@
   box-shadow: none;
 }
 
-.md-card[draggable="true"] {
-  cursor: grab;
-}
-
 .md-card--clickable {
   cursor: pointer;
 }
@@ -476,8 +478,9 @@
 }
 
 .md-hand-row {
+  --md-hand-card-width: clamp(58px, 6.4vw, 96px);
   display: grid;
-  grid-template-columns: 20% 80%;
+  grid-template-columns: calc(var(--md-hand-card-width) + 1.35rem) minmax(0, 1fr);
   gap: 0.65rem;
   align-items: stretch;
   height: 100%;
@@ -485,12 +488,16 @@
   min-height: 0;
 }
 
+.md-dropzone--action {
+  min-width: 0;
+}
+
 .md-hand-main {
   min-width: 0;
 }
 
 .md-hand-main .md-card {
-  width: clamp(58px, 6.4vw, 96px);
+  width: var(--md-hand-card-width);
 }
 
 .md-hand-main .md-stack-box {
@@ -498,11 +505,21 @@
 }
 
 .md-dropzone--action .md-card {
-  width: clamp(58px, 6.4vw, 96px);
+  width: 100%;
 }
 
 .md-dropzone--action .md-stack-box {
   min-height: 100%;
+}
+
+.md-dropzone--action .md-stack-box__cards {
+  justify-content: center;
+  overflow: hidden;
+}
+
+.md-dropzone--action .md-stack-box__card-wrap {
+  width: var(--md-hand-card-width);
+  flex: 0 0 auto;
 }
 
 .md-hand-main .md-stack-box__title,
@@ -665,18 +682,41 @@
   display: block;
 }
 
-@media (max-width: 840px) {
-  .md-player-board__body {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (min-width: 841px) {
+  .md-html-board {
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
   .md-hand-row {
-    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+@media (min-width: 1180px) {
+  .md-player-board .md-card--tight {
+    width: clamp(90px, 7.2vw, 148px);
+  }
+}
+
+@media (max-width: 840px) {
+  .md-html-board {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .md-hand-row {
+    --md-hand-card-width: clamp(52px, 13vw, 86px);
+    height: auto;
+    min-height: 0;
+    align-items: start;
+  }
+
+  .md-hand-main .md-stack-box,
+  .md-dropzone--action .md-stack-box {
     min-height: 0;
   }
 
-  .md-hand-main .md-card {
-    width: clamp(52px, 13vw, 86px);
+  .md-player-board__body {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .md-dropzone--action .md-stack-box {

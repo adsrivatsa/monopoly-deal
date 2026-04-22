@@ -3713,10 +3713,12 @@ func (x *HotelPlayed) GetPropertySet() *PropertySet {
 }
 
 type WonGame struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	PlayerId      string                 `protobuf:"bytes,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	PlayerId         string                 `protobuf:"bytes,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	NumCompletedSets int32                  `protobuf:"varint,2,opt,name=num_completed_sets,json=numCompletedSets,proto3" json:"num_completed_sets,omitempty"`
+	Money            int32                  `protobuf:"varint,3,opt,name=money,proto3" json:"money,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *WonGame) Reset() {
@@ -3754,6 +3756,20 @@ func (x *WonGame) GetPlayerId() string {
 		return x.PlayerId
 	}
 	return ""
+}
+
+func (x *WonGame) GetNumCompletedSets() int32 {
+	if x != nil {
+		return x.NumCompletedSets
+	}
+	return 0
+}
+
+func (x *WonGame) GetMoney() int32 {
+	if x != nil {
+		return x.Money
+	}
+	return 0
 }
 
 type ClientMessage struct {
@@ -4830,9 +4846,11 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x128\n" +
 	"\x04card\x18\x03 \x01(\v2$.fun_kames.schema.monopoly_deal.CardR\x04card\x12N\n" +
-	"\fproperty_set\x18\x04 \x01(\v2+.fun_kames.schema.monopoly_deal.PropertySetR\vpropertySet\"&\n" +
+	"\fproperty_set\x18\x04 \x01(\v2+.fun_kames.schema.monopoly_deal.PropertySetR\vpropertySet\"j\n" +
 	"\aWonGame\x12\x1b\n" +
-	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\"\xc7\x0f\n" +
+	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12,\n" +
+	"\x12num_completed_sets\x18\x02 \x01(\x05R\x10numCompletedSets\x12\x14\n" +
+	"\x05money\x18\x03 \x01(\x05R\x05money\"\xc7\x0f\n" +
 	"\rClientMessage\x12:\n" +
 	"\x04chat\x18\x01 \x01(\v2$.fun_kames.schema.monopoly_deal.ChatH\x00R\x04chat\x12J\n" +
 	"\n" +

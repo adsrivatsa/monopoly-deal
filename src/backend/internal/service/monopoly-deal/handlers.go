@@ -168,7 +168,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		return err
 	}
 
-	didWin, err := game.CheckWinConditions(tp.PlayerID)
+	completeSets, moneyValue, didWin, err := game.CheckWinConditions(tp.PlayerID)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,9 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		events = append(events, &monopoly_deal_schema.ServerMessage{
 			Payload: &monopoly_deal_schema.ServerMessage_WonGame{
 				WonGame: &monopoly_deal_schema.WonGame{
-					PlayerId: tp.PlayerID.String(),
+					PlayerId:         tp.PlayerID.String(),
+					NumCompletedSets: int32(completeSets),
+					Money:            int32(moneyValue),
 				},
 			},
 		})

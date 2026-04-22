@@ -8,12 +8,9 @@ import {
 type GameCardViewProps = {
   card: Card;
   imageUrl?: string;
-  draggable?: boolean;
   isSelected?: boolean;
   className?: string;
   onClick?: (card: Card) => void;
-  onDragStart?: (card: Card) => void;
-  onDragEnd?: () => void;
 };
 
 const shouldFlipTwoColorWild = (card: Card): boolean => {
@@ -35,12 +32,9 @@ const shouldFlipTwoColorWild = (card: Card): boolean => {
 const GameCardView = ({
   card,
   imageUrl,
-  draggable = false,
   isSelected = false,
   className,
   onClick,
-  onDragStart,
-  onDragEnd,
 }: GameCardViewProps) => {
   const [isImageBroken, setIsImageBroken] = useState(false);
   const [cardAspectRatio, setCardAspectRatio] = useState("10 / 16");
@@ -79,30 +73,18 @@ const GameCardView = ({
   }, [cardAspectRatio]);
 
   return (
-    <article
-      className={computedClassName}
-      style={cardStyle}
-      draggable={draggable}
-      onPointerDown={(event) => {
-        if (onClick) {
+      <article
+        className={computedClassName}
+        style={cardStyle}
+        onClick={(event) => {
+          if (!onClick) {
+            return;
+          }
           event.stopPropagation();
-        }
-      }}
-      onClick={(event) => {
-        if (!onClick) {
-          return;
-        }
-        event.stopPropagation();
-        onClick(card);
-      }}
-      onDragStart={(event) => {
-        event.dataTransfer.setData("text/plain", card.cardId);
-        event.dataTransfer.effectAllowed = "move";
-        onDragStart?.(card);
-      }}
-      onDragEnd={() => onDragEnd?.()}
-      aria-label={assetKeyToJSON(card.assetKey)}
-    >
+          onClick(card);
+        }}
+        aria-label={assetKeyToJSON(card.assetKey)}
+      >
       {hasImage ? (
         <img
           src={imageUrl}

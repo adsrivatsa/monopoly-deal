@@ -440,6 +440,8 @@ message HotelPlayed {
 
 message WonGame {
   string player_id = 1;
+  int32 num_completed_sets = 2;
+  int32 money = 3;
 }
 
 message ClientMessage {

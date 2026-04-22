@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type DragEvent,
+  type MouseEvent,
   type PointerEvent,
 } from "react";
 import {
@@ -105,12 +105,6 @@ type DealPickerState = {
   selectedTargetPropertySetId?: string;
   selectedSourceCardId?: string;
   isOpponentSelectionConfirmed?: boolean;
-};
-
-type DraggingCardState = {
-  cardId: string;
-  source: "hand" | "board";
-  sourcePropertySetId?: string;
 };
 
 type RearrangeSelectionState = {
@@ -279,6 +273,25 @@ const clampPan = (
   return { x: nextX, y: nextY };
 };
 
+const distanceBetweenPoints = (
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): number => {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  return Math.hypot(dx, dy);
+};
+
+const midpointBetweenPoints = (
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): { x: number; y: number } => {
+  return {
+    x: (a.x + b.x) / 2,
+    y: (a.y + b.y) / 2,
+  };
+};
+
 const MonopolyDealHtmlBoard = ({
   gameState,
   assetImageByKey,
@@ -315,9 +328,6 @@ const MonopolyDealHtmlBoard = ({
   });
   const [contentSize, setContentSize] = useState<Size>({ width: 1, height: 1 });
   const [isPanning, setIsPanning] = useState(false);
-  const [draggingCard, setDraggingCard] = useState<DraggingCardState | null>(
-    null,
-  );
   const [colorPicker, setColorPicker] = useState<ColorPickerState | null>(null);
   const [debtCollectorPicker, setDebtCollectorPicker] =
     useState<DebtCollectorPickerState | null>(null);
@@ -335,6 +345,15 @@ const MonopolyDealHtmlBoard = ({
     useState<RearrangeSelectionState | null>(null);
   const panPointerIdRef = useRef<number | null>(null);
   const panStartPointRef = useRef<{ x: number; y: number } | null>(null);
+  const didPanDuringPointerRef = useRef(false);
+  const suppressClickUntilRef = useRef(0);
+  const activeTouchPointsRef = useRef<Map<number, { x: number; y: number }>>(
+    new Map(),
+  );
+  const pinchStartDistanceRef = useRef<number | null>(null);
+  const pinchStartZoomRef = useRef(1);
+  const pinchWorldCenterRef = useRef<{ x: number; y: number } | null>(null);
+  const autoResolvedPendingRentKeyRef = useRef<string | null>(null);
 
   const players = gameState?.players ?? [];
 
@@ -368,7 +387,8 @@ const MonopolyDealHtmlBoard = ({
   }, [gameState?.demands, selfPlayerId]);
 
   const hasAnyDemand = visibleDemands.length > 0;
-  const hasPendingRent = !!gameState?.pendingRent;
+  const pendingRent = gameState?.pendingRent;
+  const hasPendingRent = !!pendingRent;
   const currentPlayerId = gameState?.currentPlayerId ?? "";
   const isSelfTurn = !!selfPlayerId && selfPlayerId === currentPlayerId;
   const yourHand = gameState?.yourHand?.cards ?? [];
@@ -378,8 +398,17 @@ const MonopolyDealHtmlBoard = ({
   const hasDoubleTheRent = yourHand.some(
     (card) => card.assetKey === AssetKey.ASSET_KEY_DOUBLE_THE_RENT,
   );
+  const shouldAutoResolvePendingRent =
+    !!pendingRent &&
+    (!selfPlayerId || pendingRent.playerId === selfPlayerId) &&
+    !hasDoubleTheRent;
+  const shouldShowPendingRentOverlay = hasPendingRent && !shouldAutoResolvePendingRent;
   const hasMovesLeft = (gameState?.movesLeft ?? 0) > 0;
-  const lastActionCards = gameState?.lastAction ? [gameState.lastAction] : [];
+  const lastActionCards =
+    gameState?.lastAction &&
+    gameState.lastAction.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
+      ? [gameState.lastAction]
+      : [];
 
   const moneyByPlayer = useMemo(() => {
     const lookup: Record<string, Card[]> = {};
@@ -482,7 +511,7 @@ const MonopolyDealHtmlBoard = ({
 
   const shouldDimBoard =
     isDiscardRequired ||
-    hasPendingRent ||
+    shouldShowPendingRentOverlay ||
     (hasAnyDemand &&
       !(isSelectedPaymentDemandActive && isSelectingPaymentCards));
 
@@ -796,9 +825,53 @@ const MonopolyDealHtmlBoard = ({
     const target = event.target as HTMLElement | null;
     if (
       target?.closest(
-        "button, input, textarea, select, [draggable='true'], .md-card, .md-demand, .md-player-picker, .md-color-picker",
+        "button, input, textarea, select, .md-demand, .md-player-picker, .md-color-picker",
       )
     ) {
+      return;
+    }
+
+    if (event.pointerType === "touch") {
+      didPanDuringPointerRef.current = false;
+      activeTouchPointsRef.current.set(event.pointerId, {
+        x: event.clientX,
+        y: event.clientY,
+      });
+      event.currentTarget.setPointerCapture(event.pointerId);
+
+      if (activeTouchPointsRef.current.size === 1) {
+        panPointerIdRef.current = event.pointerId;
+        panStartPointRef.current = { x: event.clientX, y: event.clientY };
+        setIsPanning(true);
+      }
+
+      if (activeTouchPointsRef.current.size >= 2) {
+        const [first, second] = Array.from(activeTouchPointsRef.current.values());
+        if (!first || !second) {
+          return;
+        }
+
+        const center = midpointBetweenPoints(first, second);
+        const rect = event.currentTarget.getBoundingClientRect();
+        const localCenter = {
+          x: center.x - rect.left,
+          y: center.y - rect.top,
+        };
+        const distance = distanceBetweenPoints(first, second);
+
+        pinchStartDistanceRef.current = distance;
+        pinchStartZoomRef.current = zoom;
+        pinchWorldCenterRef.current = {
+          x: (localCenter.x - pan.x) / zoom,
+          y: (localCenter.y - pan.y) / zoom,
+        };
+
+        setIsPanning(false);
+        panPointerIdRef.current = null;
+        panStartPointRef.current = null;
+      }
+
+      event.preventDefault();
       return;
     }
 
@@ -806,22 +879,77 @@ const MonopolyDealHtmlBoard = ({
       return;
     }
 
+    didPanDuringPointerRef.current = false;
     panPointerIdRef.current = event.pointerId;
     panStartPointRef.current = { x: event.clientX, y: event.clientY };
-    setIsPanning(true);
-    event.currentTarget.setPointerCapture(event.pointerId);
-    event.preventDefault();
+    setIsPanning(false);
+  };
+
+  const resetPanTracking = () => {
+    didPanDuringPointerRef.current = false;
+    setIsPanning(false);
+    panPointerIdRef.current = null;
+    panStartPointRef.current = null;
   };
 
   const onBoardPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "touch") {
+      const point = activeTouchPointsRef.current.get(event.pointerId);
+      if (point) {
+        point.x = event.clientX;
+        point.y = event.clientY;
+      }
+
+      if (
+        activeTouchPointsRef.current.size >= 2 &&
+        pinchStartDistanceRef.current &&
+        pinchWorldCenterRef.current
+      ) {
+        withErrorHandling(() => {
+          event.preventDefault();
+
+          const [first, second] = Array.from(activeTouchPointsRef.current.values());
+          if (!first || !second) {
+            return;
+          }
+
+          const center = midpointBetweenPoints(first, second);
+          const currentDistance = distanceBetweenPoints(first, second);
+          const scale = currentDistance / pinchStartDistanceRef.current;
+          const candidateZoom = pinchStartZoomRef.current * scale;
+          const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, candidateZoom));
+          const rect = event.currentTarget.getBoundingClientRect();
+          const localCenter = {
+            x: center.x - rect.left,
+            y: center.y - rect.top,
+          };
+          const worldCenter = pinchWorldCenterRef.current;
+          const candidatePan = {
+            x: localCenter.x - worldCenter.x * nextZoom,
+            y: localCenter.y - worldCenter.y * nextZoom,
+          };
+
+          setZoom(nextZoom);
+          setPan(
+            clampPan(candidatePan, nextZoom, viewportSize, boardContentSize),
+          );
+        });
+        return;
+      }
+    }
+
     if (!isPanning || panPointerIdRef.current !== event.pointerId) {
+      if (panPointerIdRef.current !== event.pointerId) {
+        return;
+      }
+    }
+
+    if (event.pointerType === "mouse" && (event.buttons & 1) === 0) {
+      resetPanTracking();
       return;
     }
 
     withErrorHandling(() => {
-      event.preventDefault();
-      window.getSelection()?.removeAllRanges();
-
       const previous = panStartPointRef.current;
       if (!previous) {
         return;
@@ -829,6 +957,18 @@ const MonopolyDealHtmlBoard = ({
 
       const deltaX = event.clientX - previous.x;
       const deltaY = event.clientY - previous.y;
+
+      if (!didPanDuringPointerRef.current) {
+        const movement = Math.hypot(deltaX, deltaY);
+        if (movement < 4) {
+          return;
+        }
+        didPanDuringPointerRef.current = true;
+        setIsPanning(true);
+      }
+
+      event.preventDefault();
+      window.getSelection()?.removeAllRanges();
       panStartPointRef.current = { x: event.clientX, y: event.clientY };
       setPan((current) =>
         clampPan(
@@ -845,16 +985,37 @@ const MonopolyDealHtmlBoard = ({
   };
 
   const stopPan = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "touch") {
+      activeTouchPointsRef.current.delete(event.pointerId);
+      if (activeTouchPointsRef.current.size < 2) {
+        pinchStartDistanceRef.current = null;
+        pinchWorldCenterRef.current = null;
+      }
+    }
+
     if (panPointerIdRef.current !== event.pointerId) {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
       return;
     }
 
-    setIsPanning(false);
-    panPointerIdRef.current = null;
-    panStartPointRef.current = null;
+    if (didPanDuringPointerRef.current) {
+      suppressClickUntilRef.current = performance.now() + 220;
+    }
+    resetPanTracking();
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+  };
+
+  const onBoardClickCapture = (event: MouseEvent<HTMLDivElement>) => {
+    if (performance.now() >= suppressClickUntilRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
   };
 
   const getCardById = useCallback(
@@ -867,23 +1028,15 @@ const MonopolyDealHtmlBoard = ({
   const placeCardOnMoney = useCallback(
     (cardId: string) => {
       withErrorHandling(() => {
-        if (draggingCard?.source === "board") {
-          return;
-        }
-
         onPlayMoneyCard(cardId);
       });
     },
-    [draggingCard?.source, onPlayMoneyCard, withErrorHandling],
+    [onPlayMoneyCard, withErrorHandling],
   );
 
   const placeCardOnActionPile = useCallback(
     (cardId: string) => {
       withErrorHandling(() => {
-        if (draggingCard?.source === "board") {
-          return;
-        }
-
         const card = getCardById(cardId);
         if (card?.assetKey === AssetKey.ASSET_KEY_DEBT_COLLECTOR) {
           setDebtCollectorPicker({
@@ -1002,7 +1155,6 @@ const MonopolyDealHtmlBoard = ({
       });
     },
     [
-      draggingCard?.source,
       forcedDealSourceCardIds.size,
       getCardById,
       hasMovesLeft,
@@ -1013,26 +1165,6 @@ const MonopolyDealHtmlBoard = ({
       withErrorHandling,
     ],
   );
-
-  const onDropMoney = (event: DragEvent<HTMLElement>) => {
-    event.preventDefault();
-    const cardId = event.dataTransfer.getData("text/plain");
-    if (!cardId) {
-      return;
-    }
-
-    placeCardOnMoney(cardId);
-  };
-
-  const onDropPassGo = (event: DragEvent<HTMLElement>) => {
-    event.preventDefault();
-    const cardId = event.dataTransfer.getData("text/plain");
-    if (!cardId) {
-      return;
-    }
-
-    placeCardOnActionPile(cardId);
-  };
 
   const submitPropertyPlay = useCallback(
     (card: Card, propertySetId?: string) => {
@@ -1105,45 +1237,6 @@ const MonopolyDealHtmlBoard = ({
   const placeCardOnProperty = useCallback(
     (cardId: string, propertySetId?: string) => {
       withErrorHandling(() => {
-        if (
-          draggingCard?.source === "board" &&
-          draggingCard.cardId === cardId
-        ) {
-          if (!draggingCard.sourcePropertySetId) {
-            return;
-          }
-
-          const sourcePropertySet = selfPropertySets.find((propertySet) => {
-            return (
-              propertySet.propertySetId === draggingCard.sourcePropertySetId
-            );
-          });
-          if (!sourcePropertySet || isPropertySetLocked(sourcePropertySet)) {
-            console.log("[game-ui] rearrange blocked; source set is locked", {
-              cardId,
-              sourcePropertySetId: draggingCard.sourcePropertySetId,
-            });
-            return;
-          }
-
-          const sourceCard = sourcePropertySet.cards.find(
-            (card) => card.cardId === cardId,
-          );
-          if (!sourceCard || !isPropertyCard(sourceCard)) {
-            console.log("[game-ui] rearrange blocked; card not movable", {
-              cardId,
-            });
-            return;
-          }
-
-          submitRearrangeCard(
-            sourceCard,
-            draggingCard.sourcePropertySetId,
-            propertySetId,
-          );
-          return;
-        }
-
         const card = getCardById(cardId);
         if (!card) {
           return;
@@ -1153,29 +1246,11 @@ const MonopolyDealHtmlBoard = ({
       });
     },
     [
-      draggingCard,
       getCardById,
-      selfPropertySets,
       submitPropertyPlay,
-      submitRearrangeCard,
       withErrorHandling,
     ],
   );
-
-  const onDropProperty =
-    (propertySetId?: string) => (event: DragEvent<HTMLElement>) => {
-      event.preventDefault();
-      const cardId = event.dataTransfer.getData("text/plain");
-      if (!cardId) {
-        return;
-      }
-
-      placeCardOnProperty(cardId, propertySetId);
-    };
-
-  const onAllowDrop = (event: DragEvent<HTMLElement>) => {
-    event.preventDefault();
-  };
 
   const onDemandComply = useCallback(
     (demandId: string) => {
@@ -1332,6 +1407,33 @@ const MonopolyDealHtmlBoard = ({
     console.log("[game-ui] pending rent action: rent");
     onResolvePendingRent();
   }, [onResolvePendingRent]);
+
+  useEffect(() => {
+    if (!pendingRent) {
+      autoResolvedPendingRentKeyRef.current = null;
+      return;
+    }
+
+    if (!shouldAutoResolvePendingRent) {
+      autoResolvedPendingRentKeyRef.current = null;
+      return;
+    }
+
+    const pendingRentKey = [
+      pendingRent.playerId,
+      pendingRent.baseAmount,
+      pendingRent.multiplier,
+      pendingRent.targetIds.join("|"),
+    ].join(":");
+
+    if (autoResolvedPendingRentKeyRef.current === pendingRentKey) {
+      return;
+    }
+
+    autoResolvedPendingRentKeyRef.current = pendingRentKey;
+    console.log("[game-ui] pending rent action: auto-rent (missing DOUBLE_THE_RENT)");
+    onResolvePendingRent();
+  }, [onResolvePendingRent, pendingRent, shouldAutoResolvePendingRent]);
 
   const onSelectDealCard = useCallback(
     (card: Card) => {
@@ -1671,20 +1773,6 @@ const MonopolyDealHtmlBoard = ({
         : dealPicker.mode === "forced_deal"
           ? true
           : !isSelfBoard);
-    const dropHandlers = canInteractWithBoard
-      ? {
-          onDragOver: onAllowDrop,
-          onDropMoney,
-          onDropPropertyRoot: onDropProperty(),
-          onDropPropertySet: (propertySetId: string) =>
-            onDropProperty(propertySetId),
-        }
-      : {
-          onDragOver: undefined,
-          onDropMoney: undefined,
-          onDropPropertyRoot: undefined,
-          onDropPropertySet: (_propertySetId: string) => undefined,
-        };
 
     const canRearrangeFromBoard =
       isSelfBoard &&
@@ -1723,21 +1811,7 @@ const MonopolyDealHtmlBoard = ({
 
         <div className="md-player-board__body">
           <div
-            className={
-              draggingCard
-                ? "md-dropzone md-dropzone--money is-drag-active"
-                : "md-dropzone md-dropzone--money"
-            }
-            onDragOver={dropHandlers.onDragOver}
-            onDrop={dropHandlers.onDropMoney}
-            onPointerDown={(event) => {
-              if (
-                (canInteractWithBoard && selectedHandPlacementCardId) ||
-                canClickRearrangeDestination
-              ) {
-                event.stopPropagation();
-              }
-            }}
+            className="md-dropzone md-dropzone--money"
             onClick={() => {
               if (canClickRearrangeDestination) {
                 onApplySelectedRearrangeCard(undefined);
@@ -1757,7 +1831,7 @@ const MonopolyDealHtmlBoard = ({
               cards={playerMoney}
               assetImageByKey={assetImageByKey}
               layout="stack"
-              emptyLabel="Drop money here"
+              emptyLabel="Select a card, then tap here"
               selectableCards={
                 canSelectBoardCards ||
                 (canSelectDealCards && dealPicker?.mode !== "deal_breaker")
@@ -1770,6 +1844,17 @@ const MonopolyDealHtmlBoard = ({
                   : selectedDealCardIds
               }
               onCardClick={(card) => {
+                if (canClickRearrangeDestination) {
+                  onApplySelectedRearrangeCard(undefined);
+                  return;
+                }
+
+                if (canInteractWithBoard && selectedHandPlacementCardId) {
+                  placeCardOnMoney(selectedHandPlacementCardId);
+                  setSelectedHandPlacementCardId(null);
+                  return;
+                }
+
                 if (canSelectBoardCards) {
                   onToggleSelectedPaymentCard(card);
                   return;
@@ -1779,46 +1864,21 @@ const MonopolyDealHtmlBoard = ({
                   onSelectDealCard(card);
                 }
               }}
-              isDragActive={!!draggingCard}
             />
           </div>
 
           {propertySets.map((propertySet, index) => (
             <div
-              className={
-                draggingCard
-                  ? [
-                      "md-dropzone",
-                      "md-dropzone--property-set",
-                      selectedDealPropertySetIds.has(propertySet.propertySetId)
-                        ? "is-set-selected"
-                        : "",
-                      "is-drag-active",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")
-                  : [
-                      "md-dropzone",
-                      "md-dropzone--property-set",
-                      selectedDealPropertySetIds.has(propertySet.propertySetId)
-                        ? "is-set-selected"
-                        : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")
-              }
+              className={[
+                "md-dropzone",
+                "md-dropzone--property-set",
+                selectedDealPropertySetIds.has(propertySet.propertySetId)
+                  ? "is-set-selected"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               key={propertySet.propertySetId}
-              onDragOver={dropHandlers.onDragOver}
-              onDrop={dropHandlers.onDropPropertySet(propertySet.propertySetId)}
-              onPointerDown={(event) => {
-                if (
-                  (canSelectDealCards && dealPicker?.mode === "deal_breaker") ||
-                  (canInteractWithBoard && selectedHandPlacementCardId) ||
-                  canClickRearrangeDestination
-                ) {
-                  event.stopPropagation();
-                }
-              }}
               onClick={(event) => {
                 if ((event.target as HTMLElement | null)?.closest(".md-card")) {
                   return;
@@ -1863,6 +1923,20 @@ const MonopolyDealHtmlBoard = ({
                     : selectedDealCardIds
                 }
                 onCardClick={(card) => {
+                  if (canClickRearrangeDestination) {
+                    onApplySelectedRearrangeCard(propertySet.propertySetId);
+                    return;
+                  }
+
+                  if (canInteractWithBoard && selectedHandPlacementCardId) {
+                    placeCardOnProperty(
+                      selectedHandPlacementCardId,
+                      propertySet.propertySetId,
+                    );
+                    setSelectedHandPlacementCardId(null);
+                    return;
+                  }
+
                   if (canSelectBoardCards) {
                     onToggleSelectedPaymentCard(card);
                     return;
@@ -1891,41 +1965,12 @@ const MonopolyDealHtmlBoard = ({
                     onToggleSelectedRearrangeCard(card, propertySet.propertySetId);
                   }
                 }}
-                draggableCards={canRearrangeFromBoard}
-                canDragCard={(card) => {
-                  return (
-                    !isPropertySetLocked(propertySet) && isPropertyCard(card)
-                  );
-                }}
-                onCardDragStart={(card) => {
-                  setDraggingCard({
-                    cardId: card.cardId,
-                    source: "board",
-                    sourcePropertySetId: propertySet.propertySetId,
-                  });
-                }}
-                onCardDragEnd={() => setDraggingCard(null)}
-                isDragActive={!!draggingCard}
               />
             </div>
           ))}
 
           <div
-            className={
-              draggingCard
-                ? "md-dropzone md-dropzone--property-new is-drag-active"
-                : "md-dropzone md-dropzone--property-new"
-            }
-            onDragOver={dropHandlers.onDragOver}
-            onDrop={dropHandlers.onDropPropertyRoot}
-            onPointerDown={(event) => {
-              if (
-                (canInteractWithBoard && selectedHandPlacementCardId) ||
-                canClickRearrangeDestination
-              ) {
-                event.stopPropagation();
-              }
-            }}
+            className="md-dropzone md-dropzone--property-new"
             onClick={() => {
               if (canClickRearrangeDestination) {
                 onApplySelectedRearrangeCard(undefined);
@@ -1939,11 +1984,11 @@ const MonopolyDealHtmlBoard = ({
               placeCardOnProperty(selectedHandPlacementCardId, undefined);
               setSelectedHandPlacementCardId(null);
             }}
-          >
-            <div className="md-property-empty">
-              Drop property here to start a new set
+            >
+              <div className="md-property-empty">
+                Select a card, then tap here to start a new set
+              </div>
             </div>
-          </div>
         </div>
       </article>
     );
@@ -1960,10 +2005,11 @@ const MonopolyDealHtmlBoard = ({
           .filter(Boolean)
           .join(" ")}
         ref={viewportRef}
-        onPointerDown={onBoardPointerDown}
-        onPointerMove={onBoardPointerMove}
-        onPointerUp={stopPan}
-        onPointerCancel={stopPan}
+        onPointerDownCapture={onBoardPointerDown}
+        onPointerMoveCapture={onBoardPointerMove}
+        onPointerUpCapture={stopPan}
+        onPointerCancelCapture={stopPan}
+        onClickCapture={onBoardClickCapture}
       >
         <div className="md-demand-overlay-wrap">
           {dealPicker ? (
@@ -2013,9 +2059,9 @@ const MonopolyDealHtmlBoard = ({
                 </button>
               </div>
             </aside>
-          ) : hasPendingRent && gameState?.pendingRent ? (
+          ) : shouldShowPendingRentOverlay && pendingRent ? (
             <PendingRentOverlay
-              pendingRent={gameState.pendingRent}
+              pendingRent={pendingRent}
               players={players}
               canDouble={hasDoubleTheRent && hasMovesLeft}
               onDouble={onPendingRentDouble}
@@ -2066,13 +2112,7 @@ const MonopolyDealHtmlBoard = ({
 
       <section className="md-hand-row">
         <div
-          className={
-            draggingCard
-              ? "md-dropzone md-dropzone--action is-drag-active"
-              : "md-dropzone md-dropzone--action"
-          }
-          onDragOver={onAllowDrop}
-          onDrop={onDropPassGo}
+          className="md-dropzone md-dropzone--action"
           onClick={() => {
             if (!canTapPlaceFromHand || !selectedHandPlacementCardId) {
               return;
@@ -2083,12 +2123,11 @@ const MonopolyDealHtmlBoard = ({
           }}
         >
           <GameCardStackBox
-            title="Action pile"
+            title="Actions"
             cards={lastActionCards}
             assetImageByKey={assetImageByKey}
             layout="spread"
-            emptyLabel="Drop action cards here"
-            isDragActive={!!draggingCard}
+            emptyLabel="Select a card, then tap here"
           />
         </div>
 
@@ -2099,11 +2138,6 @@ const MonopolyDealHtmlBoard = ({
             assetImageByKey={assetImageByKey}
             layout="spread"
             emptyLabel="Waiting for cards"
-            draggableCards={
-              !isSelectingPaymentCards &&
-              !isSelectingDealCards &&
-              !isDiscardRequired
-            }
             selectableCards={isDiscardRequired || canTapPlaceFromHand}
             selectedCardIds={
               isDiscardRequired
@@ -2124,13 +2158,6 @@ const MonopolyDealHtmlBoard = ({
                 return current === card.cardId ? null : card.cardId;
               });
             }}
-            onCardDragStart={(card) =>
-              setDraggingCard({
-                cardId: card.cardId,
-                source: "hand",
-              })
-            }
-            onCardDragEnd={() => setDraggingCard(null)}
           />
         </div>
       </section>
