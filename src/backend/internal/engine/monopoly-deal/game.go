@@ -142,7 +142,7 @@ func (g *Game) Proto(playerUUID uuid.UUID, allPlayerUUIDs []uuid.UUID) *monopoly
 	for _, assetKey := range assetKeys {
 		assetImages = append(assetImages, &monopoly_deal_schema.AssetImage{
 			AssetKey: assetKey.Proto(),
-			ImageUrl: fmt.Sprintf("http://127.0.0.1:4000/static/card/%s.svg", string(assetKey)), // TODO - this is just for now
+			ImageUrl: fmt.Sprintf("https://deal-backend.adsrivatsa.com/static/card/%s.svg", string(assetKey)), // TODO - this is just for now
 		})
 	}
 

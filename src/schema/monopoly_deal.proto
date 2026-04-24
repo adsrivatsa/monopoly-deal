@@ -22,34 +22,34 @@ message ChatReceived {
 enum AssetKey {
   ASSET_KEY_UNSPECIFIED = 0;
 
-  ASSET_KEY_BALTIC_AVE = 1;
-  ASSET_KEY_MEDITERRANEAN_AVE = 2;
-  ASSET_KEY_CONNECTICUT_AVE = 3;
-  ASSET_KEY_ORIENTAL_AVE = 4;
-  ASSET_KEY_VERMONT_AVE = 5;
-  ASSET_KEY_ST_CHARLES_PLACE = 6;
-  ASSET_KEY_VIRGINIA_AVE = 7;
-  ASSET_KEY_STATES_AVE = 8;
-  ASSET_KEY_NEW_YORK_AVE = 9;
-  ASSET_KEY_ST_JAMES_PLACE = 10;
-  ASSET_KEY_TENNESSEE_AVE = 11;
-  ASSET_KEY_KENTUCKY_AVE = 12;
-  ASSET_KEY_INDIANA_AVE = 13;
-  ASSET_KEY_ILLINOIS_AVE = 14;
-  ASSET_KEY_VENTNOR_AVE = 15;
-  ASSET_KEY_MARVIN_GARDENS = 16;
-  ASSET_KEY_ATLANTIC_AVE = 17;
-  ASSET_KEY_NORTH_CAROLINA_AVE = 18;
-  ASSET_KEY_PACIFIC_AVE = 19;
-  ASSET_KEY_PENNSYLVANIA_AVE = 20;
-  ASSET_KEY_BOARDWALK = 21;
-  ASSET_KEY_PARK_PLACE = 22;
-  ASSET_KEY_WATER_WORKS = 23;
-  ASSET_KEY_ELECTRIC_COMPANY = 24;
-  ASSET_KEY_SHORT_LINE = 25;
-  ASSET_KEY_B_AND_O_RAILROAD = 26;
-  ASSET_KEY_READING_RAILROAD = 27;
-  ASSET_KEY_PENNSYLVANIA_RAILROAD = 28;
+  ASSET_KEY_BROWN1 = 1;
+  ASSET_KEY_BROWN2 = 2;
+  ASSET_KEY_SKY1 = 3;
+  ASSET_KEY_SKY2 = 4;
+  ASSET_KEY_SKY3 = 5;
+  ASSET_KEY_PINK1 = 6;
+  ASSET_KEY_PINK2 = 7;
+  ASSET_KEY_PINK3 = 8;
+  ASSET_KEY_ORANGE1 = 9;
+  ASSET_KEY_ORANGE2 = 10;
+  ASSET_KEY_ORANGE3 = 11;
+  ASSET_KEY_RED1 = 12;
+  ASSET_KEY_RED2 = 13;
+  ASSET_KEY_RED3 = 14;
+  ASSET_KEY_YELLOW1 = 15;
+  ASSET_KEY_YELLOW2 = 16;
+  ASSET_KEY_YELLOW3 = 17;
+  ASSET_KEY_GREEN1 = 18;
+  ASSET_KEY_GREEN2 = 19;
+  ASSET_KEY_GREEN3 = 20;
+  ASSET_KEY_BLUE1 = 21;
+  ASSET_KEY_BLUE2 = 22;
+  ASSET_KEY_UTIL1 = 23;
+  ASSET_KEY_UTIL2 = 24;
+  ASSET_KEY_RAIL1 = 25;
+  ASSET_KEY_RAIL2 = 26;
+  ASSET_KEY_RAIL3 = 27;
+  ASSET_KEY_RAIL4 = 28;
 
   ASSET_KEY_WILD_BROWN_SKY = 29;
   ASSET_KEY_WILD_SKY_RAILROAD = 30;
@@ -215,6 +215,7 @@ message GameState {
   Card last_action = 10;
   repeated AssetImage asset_images = 11;
   int32 max_hand_size = 12;
+  int64 deadline_ms = 13;
 }
 
 message StartTurnRes {
@@ -222,6 +223,7 @@ message StartTurnRes {
   string player_id = 2;
   repeated Card cards = 3;
   int32 moves_left = 4;
+  int64 deadline_ms = 5;
 }
 
 message StartTurnMaskedRes {
@@ -246,6 +248,7 @@ message PlayMoneyRes {
   int32 seq_num = 1;
   string player_id = 2;
   Card card = 3;
+  int64 deadline_ms = 4;
 }
 
 message PlayProperty {
@@ -258,6 +261,7 @@ message PlayPropertyRes {
   int32 seq_num = 1;
   string player_id = 2;
   PropertySet property_set = 3;
+  int64 deadline_ms = 4;
 }
 
 message CompleteTurn {
@@ -273,6 +277,7 @@ message PlayPassGoRes {
   string player_id = 2;
   repeated Card cards = 3;
   Card last_played_card = 4;
+  int64 deadline_ms = 5;
 }
 
 message PlayPassGoMaskedRes {
@@ -308,10 +313,12 @@ message PlayActionRes {
   int32 seq_num = 1;
   string player_id = 2;
   Card last_played_card = 3;
+  int64 deadline_ms = 4;
 }
 
 message DemandCreated {
   Demand demand = 1;
+  int64 deadline_ms = 2;
 }
 
 message ComplyPaymentDemand {
@@ -323,10 +330,12 @@ message CompliedDemand {
   int32 seq_num = 1;
   string demand_id = 2;
   string player_id = 3;
+  int64 deadline_ms = 4;
 }
 
 message PendingRentCreated {
   PendingRent pending_rent = 1;
+  int64 deadline_ms = 2;
 }
 
 message ResolvePendingRent {
@@ -336,6 +345,7 @@ message ResolvePendingRent {
 message PendingRentResolved {
   int32 seq_num = 1;
   string player_id = 2;
+  int64 deadline_ms = 3;
 }
 
 message TransferCards {

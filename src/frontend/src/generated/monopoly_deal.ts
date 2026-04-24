@@ -11,34 +11,34 @@ export const protobufPackage = "the_deal.schema.monopoly_deal";
 
 export enum AssetKey {
   ASSET_KEY_UNSPECIFIED = 0,
-  ASSET_KEY_BALTIC_AVE = 1,
-  ASSET_KEY_MEDITERRANEAN_AVE = 2,
-  ASSET_KEY_CONNECTICUT_AVE = 3,
-  ASSET_KEY_ORIENTAL_AVE = 4,
-  ASSET_KEY_VERMONT_AVE = 5,
-  ASSET_KEY_ST_CHARLES_PLACE = 6,
-  ASSET_KEY_VIRGINIA_AVE = 7,
-  ASSET_KEY_STATES_AVE = 8,
-  ASSET_KEY_NEW_YORK_AVE = 9,
-  ASSET_KEY_ST_JAMES_PLACE = 10,
-  ASSET_KEY_TENNESSEE_AVE = 11,
-  ASSET_KEY_KENTUCKY_AVE = 12,
-  ASSET_KEY_INDIANA_AVE = 13,
-  ASSET_KEY_ILLINOIS_AVE = 14,
-  ASSET_KEY_VENTNOR_AVE = 15,
-  ASSET_KEY_MARVIN_GARDENS = 16,
-  ASSET_KEY_ATLANTIC_AVE = 17,
-  ASSET_KEY_NORTH_CAROLINA_AVE = 18,
-  ASSET_KEY_PACIFIC_AVE = 19,
-  ASSET_KEY_PENNSYLVANIA_AVE = 20,
-  ASSET_KEY_BOARDWALK = 21,
-  ASSET_KEY_PARK_PLACE = 22,
-  ASSET_KEY_WATER_WORKS = 23,
-  ASSET_KEY_ELECTRIC_COMPANY = 24,
-  ASSET_KEY_SHORT_LINE = 25,
-  ASSET_KEY_B_AND_O_RAILROAD = 26,
-  ASSET_KEY_READING_RAILROAD = 27,
-  ASSET_KEY_PENNSYLVANIA_RAILROAD = 28,
+  ASSET_KEY_BROWN1 = 1,
+  ASSET_KEY_BROWN2 = 2,
+  ASSET_KEY_SKY1 = 3,
+  ASSET_KEY_SKY2 = 4,
+  ASSET_KEY_SKY3 = 5,
+  ASSET_KEY_PINK1 = 6,
+  ASSET_KEY_PINK2 = 7,
+  ASSET_KEY_PINK3 = 8,
+  ASSET_KEY_ORANGE1 = 9,
+  ASSET_KEY_ORANGE2 = 10,
+  ASSET_KEY_ORANGE3 = 11,
+  ASSET_KEY_RED1 = 12,
+  ASSET_KEY_RED2 = 13,
+  ASSET_KEY_RED3 = 14,
+  ASSET_KEY_YELLOW1 = 15,
+  ASSET_KEY_YELLOW2 = 16,
+  ASSET_KEY_YELLOW3 = 17,
+  ASSET_KEY_GREEN1 = 18,
+  ASSET_KEY_GREEN2 = 19,
+  ASSET_KEY_GREEN3 = 20,
+  ASSET_KEY_BLUE1 = 21,
+  ASSET_KEY_BLUE2 = 22,
+  ASSET_KEY_UTIL1 = 23,
+  ASSET_KEY_UTIL2 = 24,
+  ASSET_KEY_RAIL1 = 25,
+  ASSET_KEY_RAIL2 = 26,
+  ASSET_KEY_RAIL3 = 27,
+  ASSET_KEY_RAIL4 = 28,
   ASSET_KEY_WILD_BROWN_SKY = 29,
   ASSET_KEY_WILD_SKY_RAILROAD = 30,
   ASSET_KEY_WILD_PINK_ORANGE = 31,
@@ -78,89 +78,89 @@ export function assetKeyFromJSON(object: any): AssetKey {
     case "ASSET_KEY_UNSPECIFIED":
       return AssetKey.ASSET_KEY_UNSPECIFIED;
     case 1:
-    case "ASSET_KEY_BALTIC_AVE":
-      return AssetKey.ASSET_KEY_BALTIC_AVE;
+    case "ASSET_KEY_BROWN1":
+      return AssetKey.ASSET_KEY_BROWN1;
     case 2:
-    case "ASSET_KEY_MEDITERRANEAN_AVE":
-      return AssetKey.ASSET_KEY_MEDITERRANEAN_AVE;
+    case "ASSET_KEY_BROWN2":
+      return AssetKey.ASSET_KEY_BROWN2;
     case 3:
-    case "ASSET_KEY_CONNECTICUT_AVE":
-      return AssetKey.ASSET_KEY_CONNECTICUT_AVE;
+    case "ASSET_KEY_SKY1":
+      return AssetKey.ASSET_KEY_SKY1;
     case 4:
-    case "ASSET_KEY_ORIENTAL_AVE":
-      return AssetKey.ASSET_KEY_ORIENTAL_AVE;
+    case "ASSET_KEY_SKY2":
+      return AssetKey.ASSET_KEY_SKY2;
     case 5:
-    case "ASSET_KEY_VERMONT_AVE":
-      return AssetKey.ASSET_KEY_VERMONT_AVE;
+    case "ASSET_KEY_SKY3":
+      return AssetKey.ASSET_KEY_SKY3;
     case 6:
-    case "ASSET_KEY_ST_CHARLES_PLACE":
-      return AssetKey.ASSET_KEY_ST_CHARLES_PLACE;
+    case "ASSET_KEY_PINK1":
+      return AssetKey.ASSET_KEY_PINK1;
     case 7:
-    case "ASSET_KEY_VIRGINIA_AVE":
-      return AssetKey.ASSET_KEY_VIRGINIA_AVE;
+    case "ASSET_KEY_PINK2":
+      return AssetKey.ASSET_KEY_PINK2;
     case 8:
-    case "ASSET_KEY_STATES_AVE":
-      return AssetKey.ASSET_KEY_STATES_AVE;
+    case "ASSET_KEY_PINK3":
+      return AssetKey.ASSET_KEY_PINK3;
     case 9:
-    case "ASSET_KEY_NEW_YORK_AVE":
-      return AssetKey.ASSET_KEY_NEW_YORK_AVE;
+    case "ASSET_KEY_ORANGE1":
+      return AssetKey.ASSET_KEY_ORANGE1;
     case 10:
-    case "ASSET_KEY_ST_JAMES_PLACE":
-      return AssetKey.ASSET_KEY_ST_JAMES_PLACE;
+    case "ASSET_KEY_ORANGE2":
+      return AssetKey.ASSET_KEY_ORANGE2;
     case 11:
-    case "ASSET_KEY_TENNESSEE_AVE":
-      return AssetKey.ASSET_KEY_TENNESSEE_AVE;
+    case "ASSET_KEY_ORANGE3":
+      return AssetKey.ASSET_KEY_ORANGE3;
     case 12:
-    case "ASSET_KEY_KENTUCKY_AVE":
-      return AssetKey.ASSET_KEY_KENTUCKY_AVE;
+    case "ASSET_KEY_RED1":
+      return AssetKey.ASSET_KEY_RED1;
     case 13:
-    case "ASSET_KEY_INDIANA_AVE":
-      return AssetKey.ASSET_KEY_INDIANA_AVE;
+    case "ASSET_KEY_RED2":
+      return AssetKey.ASSET_KEY_RED2;
     case 14:
-    case "ASSET_KEY_ILLINOIS_AVE":
-      return AssetKey.ASSET_KEY_ILLINOIS_AVE;
+    case "ASSET_KEY_RED3":
+      return AssetKey.ASSET_KEY_RED3;
     case 15:
-    case "ASSET_KEY_VENTNOR_AVE":
-      return AssetKey.ASSET_KEY_VENTNOR_AVE;
+    case "ASSET_KEY_YELLOW1":
+      return AssetKey.ASSET_KEY_YELLOW1;
     case 16:
-    case "ASSET_KEY_MARVIN_GARDENS":
-      return AssetKey.ASSET_KEY_MARVIN_GARDENS;
+    case "ASSET_KEY_YELLOW2":
+      return AssetKey.ASSET_KEY_YELLOW2;
     case 17:
-    case "ASSET_KEY_ATLANTIC_AVE":
-      return AssetKey.ASSET_KEY_ATLANTIC_AVE;
+    case "ASSET_KEY_YELLOW3":
+      return AssetKey.ASSET_KEY_YELLOW3;
     case 18:
-    case "ASSET_KEY_NORTH_CAROLINA_AVE":
-      return AssetKey.ASSET_KEY_NORTH_CAROLINA_AVE;
+    case "ASSET_KEY_GREEN1":
+      return AssetKey.ASSET_KEY_GREEN1;
     case 19:
-    case "ASSET_KEY_PACIFIC_AVE":
-      return AssetKey.ASSET_KEY_PACIFIC_AVE;
+    case "ASSET_KEY_GREEN2":
+      return AssetKey.ASSET_KEY_GREEN2;
     case 20:
-    case "ASSET_KEY_PENNSYLVANIA_AVE":
-      return AssetKey.ASSET_KEY_PENNSYLVANIA_AVE;
+    case "ASSET_KEY_GREEN3":
+      return AssetKey.ASSET_KEY_GREEN3;
     case 21:
-    case "ASSET_KEY_BOARDWALK":
-      return AssetKey.ASSET_KEY_BOARDWALK;
+    case "ASSET_KEY_BLUE1":
+      return AssetKey.ASSET_KEY_BLUE1;
     case 22:
-    case "ASSET_KEY_PARK_PLACE":
-      return AssetKey.ASSET_KEY_PARK_PLACE;
+    case "ASSET_KEY_BLUE2":
+      return AssetKey.ASSET_KEY_BLUE2;
     case 23:
-    case "ASSET_KEY_WATER_WORKS":
-      return AssetKey.ASSET_KEY_WATER_WORKS;
+    case "ASSET_KEY_UTIL1":
+      return AssetKey.ASSET_KEY_UTIL1;
     case 24:
-    case "ASSET_KEY_ELECTRIC_COMPANY":
-      return AssetKey.ASSET_KEY_ELECTRIC_COMPANY;
+    case "ASSET_KEY_UTIL2":
+      return AssetKey.ASSET_KEY_UTIL2;
     case 25:
-    case "ASSET_KEY_SHORT_LINE":
-      return AssetKey.ASSET_KEY_SHORT_LINE;
+    case "ASSET_KEY_RAIL1":
+      return AssetKey.ASSET_KEY_RAIL1;
     case 26:
-    case "ASSET_KEY_B_AND_O_RAILROAD":
-      return AssetKey.ASSET_KEY_B_AND_O_RAILROAD;
+    case "ASSET_KEY_RAIL2":
+      return AssetKey.ASSET_KEY_RAIL2;
     case 27:
-    case "ASSET_KEY_READING_RAILROAD":
-      return AssetKey.ASSET_KEY_READING_RAILROAD;
+    case "ASSET_KEY_RAIL3":
+      return AssetKey.ASSET_KEY_RAIL3;
     case 28:
-    case "ASSET_KEY_PENNSYLVANIA_RAILROAD":
-      return AssetKey.ASSET_KEY_PENNSYLVANIA_RAILROAD;
+    case "ASSET_KEY_RAIL4":
+      return AssetKey.ASSET_KEY_RAIL4;
     case 29:
     case "ASSET_KEY_WILD_BROWN_SKY":
       return AssetKey.ASSET_KEY_WILD_BROWN_SKY;
@@ -262,62 +262,62 @@ export function assetKeyToJSON(object: AssetKey): string {
   switch (object) {
     case AssetKey.ASSET_KEY_UNSPECIFIED:
       return "ASSET_KEY_UNSPECIFIED";
-    case AssetKey.ASSET_KEY_BALTIC_AVE:
-      return "ASSET_KEY_BALTIC_AVE";
-    case AssetKey.ASSET_KEY_MEDITERRANEAN_AVE:
-      return "ASSET_KEY_MEDITERRANEAN_AVE";
-    case AssetKey.ASSET_KEY_CONNECTICUT_AVE:
-      return "ASSET_KEY_CONNECTICUT_AVE";
-    case AssetKey.ASSET_KEY_ORIENTAL_AVE:
-      return "ASSET_KEY_ORIENTAL_AVE";
-    case AssetKey.ASSET_KEY_VERMONT_AVE:
-      return "ASSET_KEY_VERMONT_AVE";
-    case AssetKey.ASSET_KEY_ST_CHARLES_PLACE:
-      return "ASSET_KEY_ST_CHARLES_PLACE";
-    case AssetKey.ASSET_KEY_VIRGINIA_AVE:
-      return "ASSET_KEY_VIRGINIA_AVE";
-    case AssetKey.ASSET_KEY_STATES_AVE:
-      return "ASSET_KEY_STATES_AVE";
-    case AssetKey.ASSET_KEY_NEW_YORK_AVE:
-      return "ASSET_KEY_NEW_YORK_AVE";
-    case AssetKey.ASSET_KEY_ST_JAMES_PLACE:
-      return "ASSET_KEY_ST_JAMES_PLACE";
-    case AssetKey.ASSET_KEY_TENNESSEE_AVE:
-      return "ASSET_KEY_TENNESSEE_AVE";
-    case AssetKey.ASSET_KEY_KENTUCKY_AVE:
-      return "ASSET_KEY_KENTUCKY_AVE";
-    case AssetKey.ASSET_KEY_INDIANA_AVE:
-      return "ASSET_KEY_INDIANA_AVE";
-    case AssetKey.ASSET_KEY_ILLINOIS_AVE:
-      return "ASSET_KEY_ILLINOIS_AVE";
-    case AssetKey.ASSET_KEY_VENTNOR_AVE:
-      return "ASSET_KEY_VENTNOR_AVE";
-    case AssetKey.ASSET_KEY_MARVIN_GARDENS:
-      return "ASSET_KEY_MARVIN_GARDENS";
-    case AssetKey.ASSET_KEY_ATLANTIC_AVE:
-      return "ASSET_KEY_ATLANTIC_AVE";
-    case AssetKey.ASSET_KEY_NORTH_CAROLINA_AVE:
-      return "ASSET_KEY_NORTH_CAROLINA_AVE";
-    case AssetKey.ASSET_KEY_PACIFIC_AVE:
-      return "ASSET_KEY_PACIFIC_AVE";
-    case AssetKey.ASSET_KEY_PENNSYLVANIA_AVE:
-      return "ASSET_KEY_PENNSYLVANIA_AVE";
-    case AssetKey.ASSET_KEY_BOARDWALK:
-      return "ASSET_KEY_BOARDWALK";
-    case AssetKey.ASSET_KEY_PARK_PLACE:
-      return "ASSET_KEY_PARK_PLACE";
-    case AssetKey.ASSET_KEY_WATER_WORKS:
-      return "ASSET_KEY_WATER_WORKS";
-    case AssetKey.ASSET_KEY_ELECTRIC_COMPANY:
-      return "ASSET_KEY_ELECTRIC_COMPANY";
-    case AssetKey.ASSET_KEY_SHORT_LINE:
-      return "ASSET_KEY_SHORT_LINE";
-    case AssetKey.ASSET_KEY_B_AND_O_RAILROAD:
-      return "ASSET_KEY_B_AND_O_RAILROAD";
-    case AssetKey.ASSET_KEY_READING_RAILROAD:
-      return "ASSET_KEY_READING_RAILROAD";
-    case AssetKey.ASSET_KEY_PENNSYLVANIA_RAILROAD:
-      return "ASSET_KEY_PENNSYLVANIA_RAILROAD";
+    case AssetKey.ASSET_KEY_BROWN1:
+      return "ASSET_KEY_BROWN1";
+    case AssetKey.ASSET_KEY_BROWN2:
+      return "ASSET_KEY_BROWN2";
+    case AssetKey.ASSET_KEY_SKY1:
+      return "ASSET_KEY_SKY1";
+    case AssetKey.ASSET_KEY_SKY2:
+      return "ASSET_KEY_SKY2";
+    case AssetKey.ASSET_KEY_SKY3:
+      return "ASSET_KEY_SKY3";
+    case AssetKey.ASSET_KEY_PINK1:
+      return "ASSET_KEY_PINK1";
+    case AssetKey.ASSET_KEY_PINK2:
+      return "ASSET_KEY_PINK2";
+    case AssetKey.ASSET_KEY_PINK3:
+      return "ASSET_KEY_PINK3";
+    case AssetKey.ASSET_KEY_ORANGE1:
+      return "ASSET_KEY_ORANGE1";
+    case AssetKey.ASSET_KEY_ORANGE2:
+      return "ASSET_KEY_ORANGE2";
+    case AssetKey.ASSET_KEY_ORANGE3:
+      return "ASSET_KEY_ORANGE3";
+    case AssetKey.ASSET_KEY_RED1:
+      return "ASSET_KEY_RED1";
+    case AssetKey.ASSET_KEY_RED2:
+      return "ASSET_KEY_RED2";
+    case AssetKey.ASSET_KEY_RED3:
+      return "ASSET_KEY_RED3";
+    case AssetKey.ASSET_KEY_YELLOW1:
+      return "ASSET_KEY_YELLOW1";
+    case AssetKey.ASSET_KEY_YELLOW2:
+      return "ASSET_KEY_YELLOW2";
+    case AssetKey.ASSET_KEY_YELLOW3:
+      return "ASSET_KEY_YELLOW3";
+    case AssetKey.ASSET_KEY_GREEN1:
+      return "ASSET_KEY_GREEN1";
+    case AssetKey.ASSET_KEY_GREEN2:
+      return "ASSET_KEY_GREEN2";
+    case AssetKey.ASSET_KEY_GREEN3:
+      return "ASSET_KEY_GREEN3";
+    case AssetKey.ASSET_KEY_BLUE1:
+      return "ASSET_KEY_BLUE1";
+    case AssetKey.ASSET_KEY_BLUE2:
+      return "ASSET_KEY_BLUE2";
+    case AssetKey.ASSET_KEY_UTIL1:
+      return "ASSET_KEY_UTIL1";
+    case AssetKey.ASSET_KEY_UTIL2:
+      return "ASSET_KEY_UTIL2";
+    case AssetKey.ASSET_KEY_RAIL1:
+      return "ASSET_KEY_RAIL1";
+    case AssetKey.ASSET_KEY_RAIL2:
+      return "ASSET_KEY_RAIL2";
+    case AssetKey.ASSET_KEY_RAIL3:
+      return "ASSET_KEY_RAIL3";
+    case AssetKey.ASSET_KEY_RAIL4:
+      return "ASSET_KEY_RAIL4";
     case AssetKey.ASSET_KEY_WILD_BROWN_SKY:
       return "ASSET_KEY_WILD_BROWN_SKY";
     case AssetKey.ASSET_KEY_WILD_SKY_RAILROAD:
@@ -735,6 +735,7 @@ export interface GameState {
   lastAction: Card | undefined;
   assetImages: AssetImage[];
   maxHandSize: number;
+  deadlineMs: number;
 }
 
 export interface StartTurnRes {
@@ -742,6 +743,7 @@ export interface StartTurnRes {
   playerId: string;
   cards: Card[];
   movesLeft: number;
+  deadlineMs: number;
 }
 
 export interface StartTurnMaskedRes {
@@ -758,6 +760,7 @@ export interface PlayMoneyRes {
   seqNum: number;
   playerId: string;
   card: Card | undefined;
+  deadlineMs: number;
 }
 
 export interface PlayProperty {
@@ -770,6 +773,7 @@ export interface PlayPropertyRes {
   seqNum: number;
   playerId: string;
   propertySet: PropertySet | undefined;
+  deadlineMs: number;
 }
 
 export interface CompleteTurn {
@@ -784,6 +788,7 @@ export interface PlayPassGoRes {
   playerId: string;
   cards: Card[];
   lastPlayedCard: Card | undefined;
+  deadlineMs: number;
 }
 
 export interface PlayPassGoMaskedRes {
@@ -819,10 +824,12 @@ export interface PlayActionRes {
   seqNum: number;
   playerId: string;
   lastPlayedCard: Card | undefined;
+  deadlineMs: number;
 }
 
 export interface DemandCreated {
   demand: Demand | undefined;
+  deadlineMs: number;
 }
 
 export interface ComplyPaymentDemand {
@@ -834,10 +841,12 @@ export interface CompliedDemand {
   seqNum: number;
   demandId: string;
   playerId: string;
+  deadlineMs: number;
 }
 
 export interface PendingRentCreated {
   pendingRent: PendingRent | undefined;
+  deadlineMs: number;
 }
 
 export interface ResolvePendingRent {
@@ -846,6 +855,7 @@ export interface ResolvePendingRent {
 export interface PendingRentResolved {
   seqNum: number;
   playerId: string;
+  deadlineMs: number;
 }
 
 export interface TransferCards {
@@ -2491,6 +2501,7 @@ function createBaseGameState(): GameState {
     lastAction: undefined,
     assetImages: [],
     maxHandSize: 0,
+    deadlineMs: 0,
   };
 }
 
@@ -2531,6 +2542,9 @@ export const GameState: MessageFns<GameState> = {
     }
     if (message.maxHandSize !== 0) {
       writer.uint32(96).int32(message.maxHandSize);
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(104).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -2638,6 +2652,14 @@ export const GameState: MessageFns<GameState> = {
           message.maxHandSize = reader.int32();
           continue;
         }
+        case 13: {
+          if (tag !== 104) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2699,6 +2721,11 @@ export const GameState: MessageFns<GameState> = {
         : isSet(object.max_hand_size)
         ? globalThis.Number(object.max_hand_size)
         : 0,
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
     };
   },
 
@@ -2740,6 +2767,9 @@ export const GameState: MessageFns<GameState> = {
     if (message.maxHandSize !== 0) {
       obj.maxHandSize = Math.round(message.maxHandSize);
     }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
+    }
     return obj;
   },
 
@@ -2766,12 +2796,13 @@ export const GameState: MessageFns<GameState> = {
       : undefined;
     message.assetImages = object.assetImages?.map((e) => AssetImage.fromPartial(e)) || [];
     message.maxHandSize = object.maxHandSize ?? 0;
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
 
 function createBaseStartTurnRes(): StartTurnRes {
-  return { seqNum: 0, playerId: "", cards: [], movesLeft: 0 };
+  return { seqNum: 0, playerId: "", cards: [], movesLeft: 0, deadlineMs: 0 };
 }
 
 export const StartTurnRes: MessageFns<StartTurnRes> = {
@@ -2787,6 +2818,9 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
     }
     if (message.movesLeft !== 0) {
       writer.uint32(32).int32(message.movesLeft);
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(40).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -2830,6 +2864,14 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
           message.movesLeft = reader.int32();
           continue;
         }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2857,6 +2899,11 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
         : isSet(object.moves_left)
         ? globalThis.Number(object.moves_left)
         : 0,
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
     };
   },
 
@@ -2874,6 +2921,9 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
     if (message.movesLeft !== 0) {
       obj.movesLeft = Math.round(message.movesLeft);
     }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
+    }
     return obj;
   },
 
@@ -2886,6 +2936,7 @@ export const StartTurnRes: MessageFns<StartTurnRes> = {
     message.playerId = object.playerId ?? "";
     message.cards = object.cards?.map((e) => Card.fromPartial(e)) || [];
     message.movesLeft = object.movesLeft ?? 0;
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
@@ -3059,7 +3110,7 @@ export const PlayMoney: MessageFns<PlayMoney> = {
 };
 
 function createBasePlayMoneyRes(): PlayMoneyRes {
-  return { seqNum: 0, playerId: "", card: undefined };
+  return { seqNum: 0, playerId: "", card: undefined, deadlineMs: 0 };
 }
 
 export const PlayMoneyRes: MessageFns<PlayMoneyRes> = {
@@ -3072,6 +3123,9 @@ export const PlayMoneyRes: MessageFns<PlayMoneyRes> = {
     }
     if (message.card !== undefined) {
       Card.encode(message.card, writer.uint32(26).fork()).join();
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(32).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -3107,6 +3161,14 @@ export const PlayMoneyRes: MessageFns<PlayMoneyRes> = {
           message.card = Card.decode(reader, reader.uint32());
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3129,6 +3191,11 @@ export const PlayMoneyRes: MessageFns<PlayMoneyRes> = {
         ? globalThis.String(object.player_id)
         : "",
       card: isSet(object.card) ? Card.fromJSON(object.card) : undefined,
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
     };
   },
 
@@ -3143,6 +3210,9 @@ export const PlayMoneyRes: MessageFns<PlayMoneyRes> = {
     if (message.card !== undefined) {
       obj.card = Card.toJSON(message.card);
     }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
+    }
     return obj;
   },
 
@@ -3154,6 +3224,7 @@ export const PlayMoneyRes: MessageFns<PlayMoneyRes> = {
     message.seqNum = object.seqNum ?? 0;
     message.playerId = object.playerId ?? "";
     message.card = (object.card !== undefined && object.card !== null) ? Card.fromPartial(object.card) : undefined;
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
@@ -3263,7 +3334,7 @@ export const PlayProperty: MessageFns<PlayProperty> = {
 };
 
 function createBasePlayPropertyRes(): PlayPropertyRes {
-  return { seqNum: 0, playerId: "", propertySet: undefined };
+  return { seqNum: 0, playerId: "", propertySet: undefined, deadlineMs: 0 };
 }
 
 export const PlayPropertyRes: MessageFns<PlayPropertyRes> = {
@@ -3276,6 +3347,9 @@ export const PlayPropertyRes: MessageFns<PlayPropertyRes> = {
     }
     if (message.propertySet !== undefined) {
       PropertySet.encode(message.propertySet, writer.uint32(26).fork()).join();
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(32).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -3311,6 +3385,14 @@ export const PlayPropertyRes: MessageFns<PlayPropertyRes> = {
           message.propertySet = PropertySet.decode(reader, reader.uint32());
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3337,6 +3419,11 @@ export const PlayPropertyRes: MessageFns<PlayPropertyRes> = {
         : isSet(object.property_set)
         ? PropertySet.fromJSON(object.property_set)
         : undefined,
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
     };
   },
 
@@ -3351,6 +3438,9 @@ export const PlayPropertyRes: MessageFns<PlayPropertyRes> = {
     if (message.propertySet !== undefined) {
       obj.propertySet = PropertySet.toJSON(message.propertySet);
     }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
+    }
     return obj;
   },
 
@@ -3364,6 +3454,7 @@ export const PlayPropertyRes: MessageFns<PlayPropertyRes> = {
     message.propertySet = (object.propertySet !== undefined && object.propertySet !== null)
       ? PropertySet.fromPartial(object.propertySet)
       : undefined;
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
@@ -3476,7 +3567,7 @@ export const PlayPassGo: MessageFns<PlayPassGo> = {
 };
 
 function createBasePlayPassGoRes(): PlayPassGoRes {
-  return { seqNum: 0, playerId: "", cards: [], lastPlayedCard: undefined };
+  return { seqNum: 0, playerId: "", cards: [], lastPlayedCard: undefined, deadlineMs: 0 };
 }
 
 export const PlayPassGoRes: MessageFns<PlayPassGoRes> = {
@@ -3492,6 +3583,9 @@ export const PlayPassGoRes: MessageFns<PlayPassGoRes> = {
     }
     if (message.lastPlayedCard !== undefined) {
       Card.encode(message.lastPlayedCard, writer.uint32(34).fork()).join();
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(40).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -3535,6 +3629,14 @@ export const PlayPassGoRes: MessageFns<PlayPassGoRes> = {
           message.lastPlayedCard = Card.decode(reader, reader.uint32());
           continue;
         }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3562,6 +3664,11 @@ export const PlayPassGoRes: MessageFns<PlayPassGoRes> = {
         : isSet(object.last_played_card)
         ? Card.fromJSON(object.last_played_card)
         : undefined,
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
     };
   },
 
@@ -3579,6 +3686,9 @@ export const PlayPassGoRes: MessageFns<PlayPassGoRes> = {
     if (message.lastPlayedCard !== undefined) {
       obj.lastPlayedCard = Card.toJSON(message.lastPlayedCard);
     }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
+    }
     return obj;
   },
 
@@ -3593,6 +3703,7 @@ export const PlayPassGoRes: MessageFns<PlayPassGoRes> = {
     message.lastPlayedCard = (object.lastPlayedCard !== undefined && object.lastPlayedCard !== null)
       ? Card.fromPartial(object.lastPlayedCard)
       : undefined;
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
@@ -4084,7 +4195,7 @@ export const PlayDoubleTheRent: MessageFns<PlayDoubleTheRent> = {
 };
 
 function createBasePlayActionRes(): PlayActionRes {
-  return { seqNum: 0, playerId: "", lastPlayedCard: undefined };
+  return { seqNum: 0, playerId: "", lastPlayedCard: undefined, deadlineMs: 0 };
 }
 
 export const PlayActionRes: MessageFns<PlayActionRes> = {
@@ -4097,6 +4208,9 @@ export const PlayActionRes: MessageFns<PlayActionRes> = {
     }
     if (message.lastPlayedCard !== undefined) {
       Card.encode(message.lastPlayedCard, writer.uint32(26).fork()).join();
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(32).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -4132,6 +4246,14 @@ export const PlayActionRes: MessageFns<PlayActionRes> = {
           message.lastPlayedCard = Card.decode(reader, reader.uint32());
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4158,6 +4280,11 @@ export const PlayActionRes: MessageFns<PlayActionRes> = {
         : isSet(object.last_played_card)
         ? Card.fromJSON(object.last_played_card)
         : undefined,
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
     };
   },
 
@@ -4172,6 +4299,9 @@ export const PlayActionRes: MessageFns<PlayActionRes> = {
     if (message.lastPlayedCard !== undefined) {
       obj.lastPlayedCard = Card.toJSON(message.lastPlayedCard);
     }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
+    }
     return obj;
   },
 
@@ -4185,18 +4315,22 @@ export const PlayActionRes: MessageFns<PlayActionRes> = {
     message.lastPlayedCard = (object.lastPlayedCard !== undefined && object.lastPlayedCard !== null)
       ? Card.fromPartial(object.lastPlayedCard)
       : undefined;
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
 
 function createBaseDemandCreated(): DemandCreated {
-  return { demand: undefined };
+  return { demand: undefined, deadlineMs: 0 };
 }
 
 export const DemandCreated: MessageFns<DemandCreated> = {
   encode(message: DemandCreated, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.demand !== undefined) {
       Demand.encode(message.demand, writer.uint32(10).fork()).join();
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(16).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -4216,6 +4350,14 @@ export const DemandCreated: MessageFns<DemandCreated> = {
           message.demand = Demand.decode(reader, reader.uint32());
           continue;
         }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4226,13 +4368,23 @@ export const DemandCreated: MessageFns<DemandCreated> = {
   },
 
   fromJSON(object: any): DemandCreated {
-    return { demand: isSet(object.demand) ? Demand.fromJSON(object.demand) : undefined };
+    return {
+      demand: isSet(object.demand) ? Demand.fromJSON(object.demand) : undefined,
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
+    };
   },
 
   toJSON(message: DemandCreated): unknown {
     const obj: any = {};
     if (message.demand !== undefined) {
       obj.demand = Demand.toJSON(message.demand);
+    }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
     }
     return obj;
   },
@@ -4245,6 +4397,7 @@ export const DemandCreated: MessageFns<DemandCreated> = {
     message.demand = (object.demand !== undefined && object.demand !== null)
       ? Demand.fromPartial(object.demand)
       : undefined;
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
@@ -4334,7 +4487,7 @@ export const ComplyPaymentDemand: MessageFns<ComplyPaymentDemand> = {
 };
 
 function createBaseCompliedDemand(): CompliedDemand {
-  return { seqNum: 0, demandId: "", playerId: "" };
+  return { seqNum: 0, demandId: "", playerId: "", deadlineMs: 0 };
 }
 
 export const CompliedDemand: MessageFns<CompliedDemand> = {
@@ -4347,6 +4500,9 @@ export const CompliedDemand: MessageFns<CompliedDemand> = {
     }
     if (message.playerId !== "") {
       writer.uint32(26).string(message.playerId);
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(32).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -4382,6 +4538,14 @@ export const CompliedDemand: MessageFns<CompliedDemand> = {
           message.playerId = reader.string();
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4408,6 +4572,11 @@ export const CompliedDemand: MessageFns<CompliedDemand> = {
         : isSet(object.player_id)
         ? globalThis.String(object.player_id)
         : "",
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
     };
   },
 
@@ -4422,6 +4591,9 @@ export const CompliedDemand: MessageFns<CompliedDemand> = {
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
     }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
+    }
     return obj;
   },
 
@@ -4433,18 +4605,22 @@ export const CompliedDemand: MessageFns<CompliedDemand> = {
     message.seqNum = object.seqNum ?? 0;
     message.demandId = object.demandId ?? "";
     message.playerId = object.playerId ?? "";
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
 
 function createBasePendingRentCreated(): PendingRentCreated {
-  return { pendingRent: undefined };
+  return { pendingRent: undefined, deadlineMs: 0 };
 }
 
 export const PendingRentCreated: MessageFns<PendingRentCreated> = {
   encode(message: PendingRentCreated, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.pendingRent !== undefined) {
       PendingRent.encode(message.pendingRent, writer.uint32(10).fork()).join();
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(16).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -4464,6 +4640,14 @@ export const PendingRentCreated: MessageFns<PendingRentCreated> = {
           message.pendingRent = PendingRent.decode(reader, reader.uint32());
           continue;
         }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4480,6 +4664,11 @@ export const PendingRentCreated: MessageFns<PendingRentCreated> = {
         : isSet(object.pending_rent)
         ? PendingRent.fromJSON(object.pending_rent)
         : undefined,
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
     };
   },
 
@@ -4487,6 +4676,9 @@ export const PendingRentCreated: MessageFns<PendingRentCreated> = {
     const obj: any = {};
     if (message.pendingRent !== undefined) {
       obj.pendingRent = PendingRent.toJSON(message.pendingRent);
+    }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
     }
     return obj;
   },
@@ -4499,6 +4691,7 @@ export const PendingRentCreated: MessageFns<PendingRentCreated> = {
     message.pendingRent = (object.pendingRent !== undefined && object.pendingRent !== null)
       ? PendingRent.fromPartial(object.pendingRent)
       : undefined;
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
@@ -4547,7 +4740,7 @@ export const ResolvePendingRent: MessageFns<ResolvePendingRent> = {
 };
 
 function createBasePendingRentResolved(): PendingRentResolved {
-  return { seqNum: 0, playerId: "" };
+  return { seqNum: 0, playerId: "", deadlineMs: 0 };
 }
 
 export const PendingRentResolved: MessageFns<PendingRentResolved> = {
@@ -4557,6 +4750,9 @@ export const PendingRentResolved: MessageFns<PendingRentResolved> = {
     }
     if (message.playerId !== "") {
       writer.uint32(18).string(message.playerId);
+    }
+    if (message.deadlineMs !== 0) {
+      writer.uint32(24).int64(message.deadlineMs);
     }
     return writer;
   },
@@ -4584,6 +4780,14 @@ export const PendingRentResolved: MessageFns<PendingRentResolved> = {
           message.playerId = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4605,6 +4809,11 @@ export const PendingRentResolved: MessageFns<PendingRentResolved> = {
         : isSet(object.player_id)
         ? globalThis.String(object.player_id)
         : "",
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
     };
   },
 
@@ -4616,6 +4825,9 @@ export const PendingRentResolved: MessageFns<PendingRentResolved> = {
     if (message.playerId !== "") {
       obj.playerId = message.playerId;
     }
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
+    }
     return obj;
   },
 
@@ -4626,6 +4838,7 @@ export const PendingRentResolved: MessageFns<PendingRentResolved> = {
     const message = createBasePendingRentResolved();
     message.seqNum = object.seqNum ?? 0;
     message.playerId = object.playerId ?? "";
+    message.deadlineMs = object.deadlineMs ?? 0;
     return message;
   },
 };
@@ -7904,6 +8117,17 @@ export type DeepPartial<T> = T extends Builtin ? T
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function longToNumber(int64: { toString(): string }): number {
+  const num = globalThis.Number(int64.toString());
+  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
+    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
+    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
+  }
+  return num;
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

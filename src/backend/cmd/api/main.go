@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	envPath := "../dev.env"
+	envPath := "../prod.env"
 	cfg, err := config.Load(envPath)
 	if err != nil {
 		panic(err)

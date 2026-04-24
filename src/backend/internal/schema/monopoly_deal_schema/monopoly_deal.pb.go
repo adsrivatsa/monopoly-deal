@@ -25,34 +25,34 @@ type AssetKey int32
 
 const (
 	AssetKey_ASSET_KEY_UNSPECIFIED           AssetKey = 0
-	AssetKey_ASSET_KEY_BALTIC_AVE            AssetKey = 1
-	AssetKey_ASSET_KEY_MEDITERRANEAN_AVE     AssetKey = 2
-	AssetKey_ASSET_KEY_CONNECTICUT_AVE       AssetKey = 3
-	AssetKey_ASSET_KEY_ORIENTAL_AVE          AssetKey = 4
-	AssetKey_ASSET_KEY_VERMONT_AVE           AssetKey = 5
-	AssetKey_ASSET_KEY_ST_CHARLES_PLACE      AssetKey = 6
-	AssetKey_ASSET_KEY_VIRGINIA_AVE          AssetKey = 7
-	AssetKey_ASSET_KEY_STATES_AVE            AssetKey = 8
-	AssetKey_ASSET_KEY_NEW_YORK_AVE          AssetKey = 9
-	AssetKey_ASSET_KEY_ST_JAMES_PLACE        AssetKey = 10
-	AssetKey_ASSET_KEY_TENNESSEE_AVE         AssetKey = 11
-	AssetKey_ASSET_KEY_KENTUCKY_AVE          AssetKey = 12
-	AssetKey_ASSET_KEY_INDIANA_AVE           AssetKey = 13
-	AssetKey_ASSET_KEY_ILLINOIS_AVE          AssetKey = 14
-	AssetKey_ASSET_KEY_VENTNOR_AVE           AssetKey = 15
-	AssetKey_ASSET_KEY_MARVIN_GARDENS        AssetKey = 16
-	AssetKey_ASSET_KEY_ATLANTIC_AVE          AssetKey = 17
-	AssetKey_ASSET_KEY_NORTH_CAROLINA_AVE    AssetKey = 18
-	AssetKey_ASSET_KEY_PACIFIC_AVE           AssetKey = 19
-	AssetKey_ASSET_KEY_PENNSYLVANIA_AVE      AssetKey = 20
-	AssetKey_ASSET_KEY_BOARDWALK             AssetKey = 21
-	AssetKey_ASSET_KEY_PARK_PLACE            AssetKey = 22
-	AssetKey_ASSET_KEY_WATER_WORKS           AssetKey = 23
-	AssetKey_ASSET_KEY_ELECTRIC_COMPANY      AssetKey = 24
-	AssetKey_ASSET_KEY_SHORT_LINE            AssetKey = 25
-	AssetKey_ASSET_KEY_B_AND_O_RAILROAD      AssetKey = 26
-	AssetKey_ASSET_KEY_READING_RAILROAD      AssetKey = 27
-	AssetKey_ASSET_KEY_PENNSYLVANIA_RAILROAD AssetKey = 28
+	AssetKey_ASSET_KEY_BROWN1                AssetKey = 1
+	AssetKey_ASSET_KEY_BROWN2                AssetKey = 2
+	AssetKey_ASSET_KEY_SKY1                  AssetKey = 3
+	AssetKey_ASSET_KEY_SKY2                  AssetKey = 4
+	AssetKey_ASSET_KEY_SKY3                  AssetKey = 5
+	AssetKey_ASSET_KEY_PINK1                 AssetKey = 6
+	AssetKey_ASSET_KEY_PINK2                 AssetKey = 7
+	AssetKey_ASSET_KEY_PINK3                 AssetKey = 8
+	AssetKey_ASSET_KEY_ORANGE1               AssetKey = 9
+	AssetKey_ASSET_KEY_ORANGE2               AssetKey = 10
+	AssetKey_ASSET_KEY_ORANGE3               AssetKey = 11
+	AssetKey_ASSET_KEY_RED1                  AssetKey = 12
+	AssetKey_ASSET_KEY_RED2                  AssetKey = 13
+	AssetKey_ASSET_KEY_RED3                  AssetKey = 14
+	AssetKey_ASSET_KEY_YELLOW1               AssetKey = 15
+	AssetKey_ASSET_KEY_YELLOW2               AssetKey = 16
+	AssetKey_ASSET_KEY_YELLOW3               AssetKey = 17
+	AssetKey_ASSET_KEY_GREEN1                AssetKey = 18
+	AssetKey_ASSET_KEY_GREEN2                AssetKey = 19
+	AssetKey_ASSET_KEY_GREEN3                AssetKey = 20
+	AssetKey_ASSET_KEY_BLUE1                 AssetKey = 21
+	AssetKey_ASSET_KEY_BLUE2                 AssetKey = 22
+	AssetKey_ASSET_KEY_UTIL1                 AssetKey = 23
+	AssetKey_ASSET_KEY_UTIL2                 AssetKey = 24
+	AssetKey_ASSET_KEY_RAIL1                 AssetKey = 25
+	AssetKey_ASSET_KEY_RAIL2                 AssetKey = 26
+	AssetKey_ASSET_KEY_RAIL3                 AssetKey = 27
+	AssetKey_ASSET_KEY_RAIL4                 AssetKey = 28
 	AssetKey_ASSET_KEY_WILD_BROWN_SKY        AssetKey = 29
 	AssetKey_ASSET_KEY_WILD_SKY_RAILROAD     AssetKey = 30
 	AssetKey_ASSET_KEY_WILD_PINK_ORANGE      AssetKey = 31
@@ -89,34 +89,34 @@ const (
 var (
 	AssetKey_name = map[int32]string{
 		0:  "ASSET_KEY_UNSPECIFIED",
-		1:  "ASSET_KEY_BALTIC_AVE",
-		2:  "ASSET_KEY_MEDITERRANEAN_AVE",
-		3:  "ASSET_KEY_CONNECTICUT_AVE",
-		4:  "ASSET_KEY_ORIENTAL_AVE",
-		5:  "ASSET_KEY_VERMONT_AVE",
-		6:  "ASSET_KEY_ST_CHARLES_PLACE",
-		7:  "ASSET_KEY_VIRGINIA_AVE",
-		8:  "ASSET_KEY_STATES_AVE",
-		9:  "ASSET_KEY_NEW_YORK_AVE",
-		10: "ASSET_KEY_ST_JAMES_PLACE",
-		11: "ASSET_KEY_TENNESSEE_AVE",
-		12: "ASSET_KEY_KENTUCKY_AVE",
-		13: "ASSET_KEY_INDIANA_AVE",
-		14: "ASSET_KEY_ILLINOIS_AVE",
-		15: "ASSET_KEY_VENTNOR_AVE",
-		16: "ASSET_KEY_MARVIN_GARDENS",
-		17: "ASSET_KEY_ATLANTIC_AVE",
-		18: "ASSET_KEY_NORTH_CAROLINA_AVE",
-		19: "ASSET_KEY_PACIFIC_AVE",
-		20: "ASSET_KEY_PENNSYLVANIA_AVE",
-		21: "ASSET_KEY_BOARDWALK",
-		22: "ASSET_KEY_PARK_PLACE",
-		23: "ASSET_KEY_WATER_WORKS",
-		24: "ASSET_KEY_ELECTRIC_COMPANY",
-		25: "ASSET_KEY_SHORT_LINE",
-		26: "ASSET_KEY_B_AND_O_RAILROAD",
-		27: "ASSET_KEY_READING_RAILROAD",
-		28: "ASSET_KEY_PENNSYLVANIA_RAILROAD",
+		1:  "ASSET_KEY_BROWN1",
+		2:  "ASSET_KEY_BROWN2",
+		3:  "ASSET_KEY_SKY1",
+		4:  "ASSET_KEY_SKY2",
+		5:  "ASSET_KEY_SKY3",
+		6:  "ASSET_KEY_PINK1",
+		7:  "ASSET_KEY_PINK2",
+		8:  "ASSET_KEY_PINK3",
+		9:  "ASSET_KEY_ORANGE1",
+		10: "ASSET_KEY_ORANGE2",
+		11: "ASSET_KEY_ORANGE3",
+		12: "ASSET_KEY_RED1",
+		13: "ASSET_KEY_RED2",
+		14: "ASSET_KEY_RED3",
+		15: "ASSET_KEY_YELLOW1",
+		16: "ASSET_KEY_YELLOW2",
+		17: "ASSET_KEY_YELLOW3",
+		18: "ASSET_KEY_GREEN1",
+		19: "ASSET_KEY_GREEN2",
+		20: "ASSET_KEY_GREEN3",
+		21: "ASSET_KEY_BLUE1",
+		22: "ASSET_KEY_BLUE2",
+		23: "ASSET_KEY_UTIL1",
+		24: "ASSET_KEY_UTIL2",
+		25: "ASSET_KEY_RAIL1",
+		26: "ASSET_KEY_RAIL2",
+		27: "ASSET_KEY_RAIL3",
+		28: "ASSET_KEY_RAIL4",
 		29: "ASSET_KEY_WILD_BROWN_SKY",
 		30: "ASSET_KEY_WILD_SKY_RAILROAD",
 		31: "ASSET_KEY_WILD_PINK_ORANGE",
@@ -150,34 +150,34 @@ var (
 	}
 	AssetKey_value = map[string]int32{
 		"ASSET_KEY_UNSPECIFIED":           0,
-		"ASSET_KEY_BALTIC_AVE":            1,
-		"ASSET_KEY_MEDITERRANEAN_AVE":     2,
-		"ASSET_KEY_CONNECTICUT_AVE":       3,
-		"ASSET_KEY_ORIENTAL_AVE":          4,
-		"ASSET_KEY_VERMONT_AVE":           5,
-		"ASSET_KEY_ST_CHARLES_PLACE":      6,
-		"ASSET_KEY_VIRGINIA_AVE":          7,
-		"ASSET_KEY_STATES_AVE":            8,
-		"ASSET_KEY_NEW_YORK_AVE":          9,
-		"ASSET_KEY_ST_JAMES_PLACE":        10,
-		"ASSET_KEY_TENNESSEE_AVE":         11,
-		"ASSET_KEY_KENTUCKY_AVE":          12,
-		"ASSET_KEY_INDIANA_AVE":           13,
-		"ASSET_KEY_ILLINOIS_AVE":          14,
-		"ASSET_KEY_VENTNOR_AVE":           15,
-		"ASSET_KEY_MARVIN_GARDENS":        16,
-		"ASSET_KEY_ATLANTIC_AVE":          17,
-		"ASSET_KEY_NORTH_CAROLINA_AVE":    18,
-		"ASSET_KEY_PACIFIC_AVE":           19,
-		"ASSET_KEY_PENNSYLVANIA_AVE":      20,
-		"ASSET_KEY_BOARDWALK":             21,
-		"ASSET_KEY_PARK_PLACE":            22,
-		"ASSET_KEY_WATER_WORKS":           23,
-		"ASSET_KEY_ELECTRIC_COMPANY":      24,
-		"ASSET_KEY_SHORT_LINE":            25,
-		"ASSET_KEY_B_AND_O_RAILROAD":      26,
-		"ASSET_KEY_READING_RAILROAD":      27,
-		"ASSET_KEY_PENNSYLVANIA_RAILROAD": 28,
+		"ASSET_KEY_BROWN1":                1,
+		"ASSET_KEY_BROWN2":                2,
+		"ASSET_KEY_SKY1":                  3,
+		"ASSET_KEY_SKY2":                  4,
+		"ASSET_KEY_SKY3":                  5,
+		"ASSET_KEY_PINK1":                 6,
+		"ASSET_KEY_PINK2":                 7,
+		"ASSET_KEY_PINK3":                 8,
+		"ASSET_KEY_ORANGE1":               9,
+		"ASSET_KEY_ORANGE2":               10,
+		"ASSET_KEY_ORANGE3":               11,
+		"ASSET_KEY_RED1":                  12,
+		"ASSET_KEY_RED2":                  13,
+		"ASSET_KEY_RED3":                  14,
+		"ASSET_KEY_YELLOW1":               15,
+		"ASSET_KEY_YELLOW2":               16,
+		"ASSET_KEY_YELLOW3":               17,
+		"ASSET_KEY_GREEN1":                18,
+		"ASSET_KEY_GREEN2":                19,
+		"ASSET_KEY_GREEN3":                20,
+		"ASSET_KEY_BLUE1":                 21,
+		"ASSET_KEY_BLUE2":                 22,
+		"ASSET_KEY_UTIL1":                 23,
+		"ASSET_KEY_UTIL2":                 24,
+		"ASSET_KEY_RAIL1":                 25,
+		"ASSET_KEY_RAIL2":                 26,
+		"ASSET_KEY_RAIL3":                 27,
+		"ASSET_KEY_RAIL4":                 28,
 		"ASSET_KEY_WILD_BROWN_SKY":        29,
 		"ASSET_KEY_WILD_SKY_RAILROAD":     30,
 		"ASSET_KEY_WILD_PINK_ORANGE":      31,
@@ -1390,6 +1390,7 @@ type GameState struct {
 	LastAction      *Card                  `protobuf:"bytes,10,opt,name=last_action,json=lastAction,proto3" json:"last_action,omitempty"`
 	AssetImages     []*AssetImage          `protobuf:"bytes,11,rep,name=asset_images,json=assetImages,proto3" json:"asset_images,omitempty"`
 	MaxHandSize     int32                  `protobuf:"varint,12,opt,name=max_hand_size,json=maxHandSize,proto3" json:"max_hand_size,omitempty"`
+	DeadlineMs      int64                  `protobuf:"varint,13,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -1508,12 +1509,20 @@ func (x *GameState) GetMaxHandSize() int32 {
 	return 0
 }
 
+func (x *GameState) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
+	}
+	return 0
+}
+
 type StartTurnRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
 	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
 	Cards         []*Card                `protobuf:"bytes,3,rep,name=cards,proto3" json:"cards,omitempty"`
 	MovesLeft     int32                  `protobuf:"varint,4,opt,name=moves_left,json=movesLeft,proto3" json:"moves_left,omitempty"`
+	DeadlineMs    int64                  `protobuf:"varint,5,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1572,6 +1581,13 @@ func (x *StartTurnRes) GetCards() []*Card {
 func (x *StartTurnRes) GetMovesLeft() int32 {
 	if x != nil {
 		return x.MovesLeft
+	}
+	return 0
+}
+
+func (x *StartTurnRes) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
 	}
 	return 0
 }
@@ -1685,6 +1701,7 @@ type PlayMoneyRes struct {
 	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
 	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
 	Card          *Card                  `protobuf:"bytes,3,opt,name=card,proto3" json:"card,omitempty"`
+	DeadlineMs    int64                  `protobuf:"varint,4,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1738,6 +1755,13 @@ func (x *PlayMoneyRes) GetCard() *Card {
 		return x.Card
 	}
 	return nil
+}
+
+func (x *PlayMoneyRes) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
+	}
+	return 0
 }
 
 type PlayProperty struct {
@@ -1805,6 +1829,7 @@ type PlayPropertyRes struct {
 	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
 	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
 	PropertySet   *PropertySet           `protobuf:"bytes,3,opt,name=property_set,json=propertySet,proto3" json:"property_set,omitempty"`
+	DeadlineMs    int64                  `protobuf:"varint,4,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1858,6 +1883,13 @@ func (x *PlayPropertyRes) GetPropertySet() *PropertySet {
 		return x.PropertySet
 	}
 	return nil
+}
+
+func (x *PlayPropertyRes) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
+	}
+	return 0
 }
 
 type CompleteTurn struct {
@@ -1946,6 +1978,7 @@ type PlayPassGoRes struct {
 	PlayerId       string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
 	Cards          []*Card                `protobuf:"bytes,3,rep,name=cards,proto3" json:"cards,omitempty"`
 	LastPlayedCard *Card                  `protobuf:"bytes,4,opt,name=last_played_card,json=lastPlayedCard,proto3" json:"last_played_card,omitempty"`
+	DeadlineMs     int64                  `protobuf:"varint,5,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -2006,6 +2039,13 @@ func (x *PlayPassGoRes) GetLastPlayedCard() *Card {
 		return x.LastPlayedCard
 	}
 	return nil
+}
+
+func (x *PlayPassGoRes) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
+	}
+	return 0
 }
 
 type PlayPassGoMaskedRes struct {
@@ -2317,6 +2357,7 @@ type PlayActionRes struct {
 	SeqNum         int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
 	PlayerId       string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
 	LastPlayedCard *Card                  `protobuf:"bytes,3,opt,name=last_played_card,json=lastPlayedCard,proto3" json:"last_played_card,omitempty"`
+	DeadlineMs     int64                  `protobuf:"varint,4,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -2372,9 +2413,17 @@ func (x *PlayActionRes) GetLastPlayedCard() *Card {
 	return nil
 }
 
+func (x *PlayActionRes) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
+	}
+	return 0
+}
+
 type DemandCreated struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Demand        *Demand                `protobuf:"bytes,1,opt,name=demand,proto3" json:"demand,omitempty"`
+	DeadlineMs    int64                  `protobuf:"varint,2,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2414,6 +2463,13 @@ func (x *DemandCreated) GetDemand() *Demand {
 		return x.Demand
 	}
 	return nil
+}
+
+func (x *DemandCreated) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
+	}
+	return 0
 }
 
 type ComplyPaymentDemand struct {
@@ -2473,6 +2529,7 @@ type CompliedDemand struct {
 	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
 	DemandId      string                 `protobuf:"bytes,2,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
 	PlayerId      string                 `protobuf:"bytes,3,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	DeadlineMs    int64                  `protobuf:"varint,4,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2528,9 +2585,17 @@ func (x *CompliedDemand) GetPlayerId() string {
 	return ""
 }
 
+func (x *CompliedDemand) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
+	}
+	return 0
+}
+
 type PendingRentCreated struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PendingRent   *PendingRent           `protobuf:"bytes,1,opt,name=pending_rent,json=pendingRent,proto3" json:"pending_rent,omitempty"`
+	DeadlineMs    int64                  `protobuf:"varint,2,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2570,6 +2635,13 @@ func (x *PendingRentCreated) GetPendingRent() *PendingRent {
 		return x.PendingRent
 	}
 	return nil
+}
+
+func (x *PendingRentCreated) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
+	}
+	return 0
 }
 
 type ResolvePendingRent struct {
@@ -2612,6 +2684,7 @@ type PendingRentResolved struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
 	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	DeadlineMs    int64                  `protobuf:"varint,3,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2658,6 +2731,13 @@ func (x *PendingRentResolved) GetPlayerId() string {
 		return x.PlayerId
 	}
 	return ""
+}
+
+func (x *PendingRentResolved) GetDeadlineMs() int64 {
+	if x != nil {
+		return x.DeadlineMs
+	}
+	return 0
 }
 
 type TransferCards struct {
@@ -4792,7 +4872,7 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\n" +
 	"AssetImage\x12D\n" +
 	"\tasset_key\x18\x01 \x01(\x0e2'.the_deal.schema.monopoly_deal.AssetKeyR\bassetKey\x12\x1b\n" +
-	"\timage_url\x18\x02 \x01(\tR\bimageUrl\"\xd8\x05\n" +
+	"\timage_url\x18\x02 \x01(\tR\bimageUrl\"\xf9\x05\n" +
 	"\tGameState\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12?\n" +
 	"\aplayers\x18\x02 \x03(\v2%.the_deal.schema.monopoly_deal.PlayerR\aplayers\x12*\n" +
@@ -4810,43 +4890,53 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	" \x01(\v2#.the_deal.schema.monopoly_deal.CardR\n" +
 	"lastAction\x12L\n" +
 	"\fasset_images\x18\v \x03(\v2).the_deal.schema.monopoly_deal.AssetImageR\vassetImages\x12\"\n" +
-	"\rmax_hand_size\x18\f \x01(\x05R\vmaxHandSizeB\x0f\n" +
-	"\r_pending_rent\"\x9e\x01\n" +
+	"\rmax_hand_size\x18\f \x01(\x05R\vmaxHandSize\x12\x1f\n" +
+	"\vdeadline_ms\x18\r \x01(\x03R\n" +
+	"deadlineMsB\x0f\n" +
+	"\r_pending_rent\"\xbf\x01\n" +
 	"\fStartTurnRes\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x129\n" +
 	"\x05cards\x18\x03 \x03(\v2#.the_deal.schema.monopoly_deal.CardR\x05cards\x12\x1d\n" +
 	"\n" +
-	"moves_left\x18\x04 \x01(\x05R\tmovesLeft\"g\n" +
+	"moves_left\x18\x04 \x01(\x05R\tmovesLeft\x12\x1f\n" +
+	"\vdeadline_ms\x18\x05 \x01(\x03R\n" +
+	"deadlineMs\"g\n" +
 	"\x12StartTurnMaskedRes\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12\x1b\n" +
 	"\tnum_cards\x18\x03 \x01(\x05R\bnumCards\"$\n" +
 	"\tPlayMoney\x12\x17\n" +
-	"\acard_id\x18\x01 \x01(\tR\x06cardId\"}\n" +
+	"\acard_id\x18\x01 \x01(\tR\x06cardId\"\x9e\x01\n" +
 	"\fPlayMoneyRes\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x127\n" +
-	"\x04card\x18\x03 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x04card\"\xc7\x01\n" +
+	"\x04card\x18\x03 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x04card\x12\x1f\n" +
+	"\vdeadline_ms\x18\x04 \x01(\x03R\n" +
+	"deadlineMs\"\xc7\x01\n" +
 	"\fPlayProperty\x12\x17\n" +
 	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12+\n" +
 	"\x0fproperty_set_id\x18\x02 \x01(\tH\x00R\rpropertySetId\x88\x01\x01\x12L\n" +
 	"\factive_color\x18\x03 \x01(\x0e2$.the_deal.schema.monopoly_deal.ColorH\x01R\vactiveColor\x88\x01\x01B\x12\n" +
 	"\x10_property_set_idB\x0f\n" +
-	"\r_active_color\"\x96\x01\n" +
+	"\r_active_color\"\xb7\x01\n" +
 	"\x0fPlayPropertyRes\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12M\n" +
-	"\fproperty_set\x18\x03 \x01(\v2*.the_deal.schema.monopoly_deal.PropertySetR\vpropertySet\"\x0e\n" +
+	"\fproperty_set\x18\x03 \x01(\v2*.the_deal.schema.monopoly_deal.PropertySetR\vpropertySet\x12\x1f\n" +
+	"\vdeadline_ms\x18\x04 \x01(\x03R\n" +
+	"deadlineMs\"\x0e\n" +
 	"\fCompleteTurn\"%\n" +
 	"\n" +
 	"PlayPassGo\x12\x17\n" +
-	"\acard_id\x18\x01 \x01(\tR\x06cardId\"\xcf\x01\n" +
+	"\acard_id\x18\x01 \x01(\tR\x06cardId\"\xf0\x01\n" +
 	"\rPlayPassGoRes\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x129\n" +
 	"\x05cards\x18\x03 \x03(\v2#.the_deal.schema.monopoly_deal.CardR\x05cards\x12M\n" +
-	"\x10last_played_card\x18\x04 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x0elastPlayedCard\"\xb7\x01\n" +
+	"\x10last_played_card\x18\x04 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x0elastPlayedCard\x12\x1f\n" +
+	"\vdeadline_ms\x18\x05 \x01(\x03R\n" +
+	"deadlineMs\"\xb7\x01\n" +
 	"\x13PlayPassGoMaskedRes\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12\x1b\n" +
@@ -4863,26 +4953,36 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1b\n" +
 	"\ttarget_id\x18\x02 \x01(\tR\btargetId\",\n" +
 	"\x11PlayDoubleTheRent\x12\x17\n" +
-	"\acard_id\x18\x01 \x01(\tR\x06cardId\"\x94\x01\n" +
+	"\acard_id\x18\x01 \x01(\tR\x06cardId\"\xb5\x01\n" +
 	"\rPlayActionRes\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12M\n" +
-	"\x10last_played_card\x18\x03 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x0elastPlayedCard\"N\n" +
+	"\x10last_played_card\x18\x03 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x0elastPlayedCard\x12\x1f\n" +
+	"\vdeadline_ms\x18\x04 \x01(\x03R\n" +
+	"deadlineMs\"o\n" +
 	"\rDemandCreated\x12=\n" +
-	"\x06demand\x18\x01 \x01(\v2%.the_deal.schema.monopoly_deal.DemandR\x06demand\"M\n" +
+	"\x06demand\x18\x01 \x01(\v2%.the_deal.schema.monopoly_deal.DemandR\x06demand\x12\x1f\n" +
+	"\vdeadline_ms\x18\x02 \x01(\x03R\n" +
+	"deadlineMs\"M\n" +
 	"\x13ComplyPaymentDemand\x12\x1b\n" +
 	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\x12\x19\n" +
-	"\bcard_ids\x18\x02 \x03(\tR\acardIds\"c\n" +
+	"\bcard_ids\x18\x02 \x03(\tR\acardIds\"\x84\x01\n" +
 	"\x0eCompliedDemand\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
 	"\tdemand_id\x18\x02 \x01(\tR\bdemandId\x12\x1b\n" +
-	"\tplayer_id\x18\x03 \x01(\tR\bplayerId\"c\n" +
+	"\tplayer_id\x18\x03 \x01(\tR\bplayerId\x12\x1f\n" +
+	"\vdeadline_ms\x18\x04 \x01(\x03R\n" +
+	"deadlineMs\"\x84\x01\n" +
 	"\x12PendingRentCreated\x12M\n" +
-	"\fpending_rent\x18\x01 \x01(\v2*.the_deal.schema.monopoly_deal.PendingRentR\vpendingRent\"\x14\n" +
-	"\x12ResolvePendingRent\"K\n" +
+	"\fpending_rent\x18\x01 \x01(\v2*.the_deal.schema.monopoly_deal.PendingRentR\vpendingRent\x12\x1f\n" +
+	"\vdeadline_ms\x18\x02 \x01(\x03R\n" +
+	"deadlineMs\"\x14\n" +
+	"\x12ResolvePendingRent\"l\n" +
 	"\x13PendingRentResolved\x12\x17\n" +
 	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\"\xdd\x02\n" +
+	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12\x1f\n" +
+	"\vdeadline_ms\x18\x03 \x01(\x03R\n" +
+	"deadlineMs\"\xdd\x02\n" +
 	"\rTransferCards\x12\x1b\n" +
 	"\tsource_id\x18\x01 \x01(\tR\bsourceId\x12\x1b\n" +
 	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x129\n" +
@@ -5028,38 +5128,38 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\x14pending_rent_created\x18\x16 \x01(\v21.the_deal.schema.monopoly_deal.PendingRentCreatedH\x00R\x12pendingRentCreated\x12U\n" +
 	"\x0etransfer_cards\x18\x17 \x01(\v2,.the_deal.schema.monopoly_deal.TransferCardsH\x00R\rtransferCards\x12C\n" +
 	"\bwon_game\x18\x18 \x01(\v2&.the_deal.schema.monopoly_deal.WonGameH\x00R\awonGameB\t\n" +
-	"\apayload*\x9f\r\n" +
+	"\apayload*\xc6\v\n" +
 	"\bAssetKey\x12\x19\n" +
-	"\x15ASSET_KEY_UNSPECIFIED\x10\x00\x12\x18\n" +
-	"\x14ASSET_KEY_BALTIC_AVE\x10\x01\x12\x1f\n" +
-	"\x1bASSET_KEY_MEDITERRANEAN_AVE\x10\x02\x12\x1d\n" +
-	"\x19ASSET_KEY_CONNECTICUT_AVE\x10\x03\x12\x1a\n" +
-	"\x16ASSET_KEY_ORIENTAL_AVE\x10\x04\x12\x19\n" +
-	"\x15ASSET_KEY_VERMONT_AVE\x10\x05\x12\x1e\n" +
-	"\x1aASSET_KEY_ST_CHARLES_PLACE\x10\x06\x12\x1a\n" +
-	"\x16ASSET_KEY_VIRGINIA_AVE\x10\a\x12\x18\n" +
-	"\x14ASSET_KEY_STATES_AVE\x10\b\x12\x1a\n" +
-	"\x16ASSET_KEY_NEW_YORK_AVE\x10\t\x12\x1c\n" +
-	"\x18ASSET_KEY_ST_JAMES_PLACE\x10\n" +
-	"\x12\x1b\n" +
-	"\x17ASSET_KEY_TENNESSEE_AVE\x10\v\x12\x1a\n" +
-	"\x16ASSET_KEY_KENTUCKY_AVE\x10\f\x12\x19\n" +
-	"\x15ASSET_KEY_INDIANA_AVE\x10\r\x12\x1a\n" +
-	"\x16ASSET_KEY_ILLINOIS_AVE\x10\x0e\x12\x19\n" +
-	"\x15ASSET_KEY_VENTNOR_AVE\x10\x0f\x12\x1c\n" +
-	"\x18ASSET_KEY_MARVIN_GARDENS\x10\x10\x12\x1a\n" +
-	"\x16ASSET_KEY_ATLANTIC_AVE\x10\x11\x12 \n" +
-	"\x1cASSET_KEY_NORTH_CAROLINA_AVE\x10\x12\x12\x19\n" +
-	"\x15ASSET_KEY_PACIFIC_AVE\x10\x13\x12\x1e\n" +
-	"\x1aASSET_KEY_PENNSYLVANIA_AVE\x10\x14\x12\x17\n" +
-	"\x13ASSET_KEY_BOARDWALK\x10\x15\x12\x18\n" +
-	"\x14ASSET_KEY_PARK_PLACE\x10\x16\x12\x19\n" +
-	"\x15ASSET_KEY_WATER_WORKS\x10\x17\x12\x1e\n" +
-	"\x1aASSET_KEY_ELECTRIC_COMPANY\x10\x18\x12\x18\n" +
-	"\x14ASSET_KEY_SHORT_LINE\x10\x19\x12\x1e\n" +
-	"\x1aASSET_KEY_B_AND_O_RAILROAD\x10\x1a\x12\x1e\n" +
-	"\x1aASSET_KEY_READING_RAILROAD\x10\x1b\x12#\n" +
-	"\x1fASSET_KEY_PENNSYLVANIA_RAILROAD\x10\x1c\x12\x1c\n" +
+	"\x15ASSET_KEY_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10ASSET_KEY_BROWN1\x10\x01\x12\x14\n" +
+	"\x10ASSET_KEY_BROWN2\x10\x02\x12\x12\n" +
+	"\x0eASSET_KEY_SKY1\x10\x03\x12\x12\n" +
+	"\x0eASSET_KEY_SKY2\x10\x04\x12\x12\n" +
+	"\x0eASSET_KEY_SKY3\x10\x05\x12\x13\n" +
+	"\x0fASSET_KEY_PINK1\x10\x06\x12\x13\n" +
+	"\x0fASSET_KEY_PINK2\x10\a\x12\x13\n" +
+	"\x0fASSET_KEY_PINK3\x10\b\x12\x15\n" +
+	"\x11ASSET_KEY_ORANGE1\x10\t\x12\x15\n" +
+	"\x11ASSET_KEY_ORANGE2\x10\n" +
+	"\x12\x15\n" +
+	"\x11ASSET_KEY_ORANGE3\x10\v\x12\x12\n" +
+	"\x0eASSET_KEY_RED1\x10\f\x12\x12\n" +
+	"\x0eASSET_KEY_RED2\x10\r\x12\x12\n" +
+	"\x0eASSET_KEY_RED3\x10\x0e\x12\x15\n" +
+	"\x11ASSET_KEY_YELLOW1\x10\x0f\x12\x15\n" +
+	"\x11ASSET_KEY_YELLOW2\x10\x10\x12\x15\n" +
+	"\x11ASSET_KEY_YELLOW3\x10\x11\x12\x14\n" +
+	"\x10ASSET_KEY_GREEN1\x10\x12\x12\x14\n" +
+	"\x10ASSET_KEY_GREEN2\x10\x13\x12\x14\n" +
+	"\x10ASSET_KEY_GREEN3\x10\x14\x12\x13\n" +
+	"\x0fASSET_KEY_BLUE1\x10\x15\x12\x13\n" +
+	"\x0fASSET_KEY_BLUE2\x10\x16\x12\x13\n" +
+	"\x0fASSET_KEY_UTIL1\x10\x17\x12\x13\n" +
+	"\x0fASSET_KEY_UTIL2\x10\x18\x12\x13\n" +
+	"\x0fASSET_KEY_RAIL1\x10\x19\x12\x13\n" +
+	"\x0fASSET_KEY_RAIL2\x10\x1a\x12\x13\n" +
+	"\x0fASSET_KEY_RAIL3\x10\x1b\x12\x13\n" +
+	"\x0fASSET_KEY_RAIL4\x10\x1c\x12\x1c\n" +
 	"\x18ASSET_KEY_WILD_BROWN_SKY\x10\x1d\x12\x1f\n" +
 	"\x1bASSET_KEY_WILD_SKY_RAILROAD\x10\x1e\x12\x1e\n" +
 	"\x1aASSET_KEY_WILD_PINK_ORANGE\x10\x1f\x12\x1d\n" +

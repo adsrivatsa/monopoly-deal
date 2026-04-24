@@ -8,131 +8,131 @@ import (
 type AssetKey string
 
 const (
-	AssetKeyUnspecified          AssetKey = ""
-	AssetKeyBalticAve            AssetKey = "baltic_ave"
-	AssetKeyMediterraneanAve     AssetKey = "mediterranean_ave"
-	AssetKeyConnecticutAve       AssetKey = "connecticut_ave"
-	AssetKeyOrientalAve          AssetKey = "oriental_ave"
-	AssetKeyVermontAve           AssetKey = "vermont_ave"
-	AssetKeyStCharlesPlace       AssetKey = "st_charles_place"
-	AssetKeyVirginiaAve          AssetKey = "virginia_ave"
-	AssetKeyStatesAve            AssetKey = "states_ave"
-	AssetKeyNewYorkAve           AssetKey = "new_york_ave"
-	AssetKeyStJamesPlace         AssetKey = "st_james_place"
-	AssetKeyTennesseeAve         AssetKey = "tennessee_ave"
-	AssetKeyKentuckyAve          AssetKey = "kentucky_ave"
-	AssetKeyIndianaAve           AssetKey = "indiana_ave"
-	AssetKeyIllinoisAve          AssetKey = "illinois_ave"
-	AssetKeyVentnorAve           AssetKey = "ventnor_ave"
-	AssetKeyMarvinGardens        AssetKey = "marvin_gardens"
-	AssetKeyAtlanticAve          AssetKey = "atlantic_ave"
-	AssetKeyNorthCarolinaAve     AssetKey = "north_carolina_ave"
-	AssetKeyPacificAve           AssetKey = "pacific_ave"
-	AssetKeyPennsylvaniaAve      AssetKey = "pennsylvania_ave"
-	AssetKeyBoardwalk            AssetKey = "boardwalk"
-	AssetKeyParkPlace            AssetKey = "park_place"
-	AssetKeyWaterWorks           AssetKey = "water_works"
-	AssetKeyElectricCompany      AssetKey = "electric_company"
-	AssetKeyShortLine            AssetKey = "short_line"
-	AssetKeyBandORailRoad        AssetKey = "b_and_o_railroad"
-	AssetKeyReadingRailroad      AssetKey = "reading_railroad"
-	AssetKeyPennsylvaniaRailroad AssetKey = "pennsylvania_railroad"
-	AssetKeyWildBrownSky         AssetKey = "wild_brown_sky"
-	AssetKeyWildSkyRailroad      AssetKey = "wild_sky_railroad"
-	AssetKeyWildPinkOrange       AssetKey = "wild_pink_orange"
-	AssetKeyWildRedYellow        AssetKey = "wild_red_yellow"
-	AssetKeyWildGreenBlue        AssetKey = "wild_green_blue"
-	AssetKeyWildGreenRailroad    AssetKey = "wild_green_railroad"
-	AssetKeyWildUtilityRailroad  AssetKey = "wild_utility_railroad"
-	AssetKeyWildWild             AssetKey = "wild_wild"
-	AssetKeyMoney10              AssetKey = "money_10"
-	AssetKeyMoney5               AssetKey = "money_5"
-	AssetKeyMoney4               AssetKey = "money_4"
-	AssetKeyMoney3               AssetKey = "money_3"
-	AssetKeyMoney2               AssetKey = "money_2"
-	AssetKeyMoney1               AssetKey = "money_1"
-	AssetKeyDealBreaker          AssetKey = "deal_breaker"
-	AssetKeyJustSayNo            AssetKey = "just_say_no"
-	AssetKeyHotel                AssetKey = "hotel"
-	AssetKeyDebtCollector        AssetKey = "debt_collector"
-	AssetKeyForcedDeal           AssetKey = "forced_deal"
-	AssetKeySlyDeal              AssetKey = "sly_deal"
-	AssetKeyHouse                AssetKey = "house"
-	AssetKeyItsMyBirthday        AssetKey = "its_my_birthday"
-	AssetKeyDoubleTheRent        AssetKey = "double_the_rent"
-	AssetKeyPassGo               AssetKey = "pass_go"
-	AssetKeyRentWild             AssetKey = "rent_wild"
-	AssetKeyRentBrownSky         AssetKey = "rent_brown_sky"
-	AssetKeyRentPinkOrange       AssetKey = "rent_pink_orange"
-	AssetKeyRentRedYellow        AssetKey = "rent_red_yellow"
-	AssetKeyRentGreenBlue        AssetKey = "rent_green_blue"
-	AssetKeyRentUtilityRailroad  AssetKey = "rent_utility_railroad"
+	AssetKeyUnspecified         AssetKey = ""
+	AssetKeyBrown1              AssetKey = "brown1"
+	AssetKeyBrown2              AssetKey = "brown2"
+	AssetKeySky1                AssetKey = "sky1"
+	AssetKeySky2                AssetKey = "sky2"
+	AssetKeySky3                AssetKey = "sky3"
+	AssetKeyPink1               AssetKey = "pink1"
+	AssetKeyPink2               AssetKey = "pink2"
+	AssetKeyPink3               AssetKey = "pink3"
+	AssetKeyOrange1             AssetKey = "orange1"
+	AssetKeyOrange2             AssetKey = "orange2"
+	AssetKeyOrange3             AssetKey = "orange3"
+	AssetKeyRed1                AssetKey = "red1"
+	AssetKeyRed2                AssetKey = "red2"
+	AssetKeyRed3                AssetKey = "red3"
+	AssetKeyYellow1             AssetKey = "yellow1"
+	AssetKeyYellow2             AssetKey = "yellow2"
+	AssetKeyYellow3             AssetKey = "yellow3"
+	AssetKeyGreen1              AssetKey = "green1"
+	AssetKeyGreen2              AssetKey = "green2"
+	AssetKeyGreen3              AssetKey = "green3"
+	AssetKeyBlue1               AssetKey = "blue1"
+	AssetKeyBlue2               AssetKey = "blue2"
+	AssetKeyUtil1               AssetKey = "util1"
+	AssetKeyUtil2               AssetKey = "util2"
+	AssetKeyRail1               AssetKey = "rail1"
+	AssetKeyRail2               AssetKey = "rail2"
+	AssetKeyRail3               AssetKey = "rail3"
+	AssetKeyRail4               AssetKey = "rail4"
+	AssetKeyWildBrownSky        AssetKey = "wild_brown_sky"
+	AssetKeyWildSkyRailroad     AssetKey = "wild_sky_railroad"
+	AssetKeyWildPinkOrange      AssetKey = "wild_pink_orange"
+	AssetKeyWildRedYellow       AssetKey = "wild_red_yellow"
+	AssetKeyWildGreenBlue       AssetKey = "wild_green_blue"
+	AssetKeyWildGreenRailroad   AssetKey = "wild_green_railroad"
+	AssetKeyWildUtilityRailroad AssetKey = "wild_utility_railroad"
+	AssetKeyWildWild            AssetKey = "wild_wild"
+	AssetKeyMoney10             AssetKey = "money10"
+	AssetKeyMoney5              AssetKey = "money5"
+	AssetKeyMoney4              AssetKey = "money4"
+	AssetKeyMoney3              AssetKey = "money3"
+	AssetKeyMoney2              AssetKey = "money2"
+	AssetKeyMoney1              AssetKey = "money1"
+	AssetKeyDealBreaker         AssetKey = "deal_breaker"
+	AssetKeyJustSayNo           AssetKey = "just_say_no"
+	AssetKeyHotel               AssetKey = "hotel"
+	AssetKeyDebtCollector       AssetKey = "debt_collector"
+	AssetKeyForcedDeal          AssetKey = "forced_deal"
+	AssetKeySlyDeal             AssetKey = "sly_deal"
+	AssetKeyHouse               AssetKey = "house"
+	AssetKeyItsMyBirthday       AssetKey = "its_my_birthday"
+	AssetKeyDoubleTheRent       AssetKey = "double_the_rent"
+	AssetKeyPassGo              AssetKey = "pass_go"
+	AssetKeyRentWild            AssetKey = "rent_wild"
+	AssetKeyRentBrownSky        AssetKey = "rent_brown_sky"
+	AssetKeyRentPinkOrange      AssetKey = "rent_pink_orange"
+	AssetKeyRentRedYellow       AssetKey = "rent_red_yellow"
+	AssetKeyRentGreenBlue       AssetKey = "rent_green_blue"
+	AssetKeyRentUtilityRailroad AssetKey = "rent_utility_railroad"
 )
 
 var AssetKeyProtoMap = map[AssetKey]monopoly_deal_schema.AssetKey{
-	AssetKeyUnspecified:          monopoly_deal_schema.AssetKey_ASSET_KEY_UNSPECIFIED,
-	AssetKeyBalticAve:            monopoly_deal_schema.AssetKey_ASSET_KEY_BALTIC_AVE,
-	AssetKeyMediterraneanAve:     monopoly_deal_schema.AssetKey_ASSET_KEY_MEDITERRANEAN_AVE,
-	AssetKeyConnecticutAve:       monopoly_deal_schema.AssetKey_ASSET_KEY_CONNECTICUT_AVE,
-	AssetKeyOrientalAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_ORIENTAL_AVE,
-	AssetKeyVermontAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_VERMONT_AVE,
-	AssetKeyStCharlesPlace:       monopoly_deal_schema.AssetKey_ASSET_KEY_ST_CHARLES_PLACE,
-	AssetKeyVirginiaAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_VIRGINIA_AVE,
-	AssetKeyStatesAve:            monopoly_deal_schema.AssetKey_ASSET_KEY_STATES_AVE,
-	AssetKeyNewYorkAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_NEW_YORK_AVE,
-	AssetKeyStJamesPlace:         monopoly_deal_schema.AssetKey_ASSET_KEY_ST_JAMES_PLACE,
-	AssetKeyTennesseeAve:         monopoly_deal_schema.AssetKey_ASSET_KEY_TENNESSEE_AVE,
-	AssetKeyKentuckyAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_KENTUCKY_AVE,
-	AssetKeyIndianaAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_INDIANA_AVE,
-	AssetKeyIllinoisAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_ILLINOIS_AVE,
-	AssetKeyVentnorAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_VENTNOR_AVE,
-	AssetKeyMarvinGardens:        monopoly_deal_schema.AssetKey_ASSET_KEY_MARVIN_GARDENS,
-	AssetKeyAtlanticAve:          monopoly_deal_schema.AssetKey_ASSET_KEY_ATLANTIC_AVE,
-	AssetKeyNorthCarolinaAve:     monopoly_deal_schema.AssetKey_ASSET_KEY_NORTH_CAROLINA_AVE,
-	AssetKeyPacificAve:           monopoly_deal_schema.AssetKey_ASSET_KEY_PACIFIC_AVE,
-	AssetKeyPennsylvaniaAve:      monopoly_deal_schema.AssetKey_ASSET_KEY_PENNSYLVANIA_AVE,
-	AssetKeyBoardwalk:            monopoly_deal_schema.AssetKey_ASSET_KEY_BOARDWALK,
-	AssetKeyParkPlace:            monopoly_deal_schema.AssetKey_ASSET_KEY_PARK_PLACE,
-	AssetKeyWaterWorks:           monopoly_deal_schema.AssetKey_ASSET_KEY_WATER_WORKS,
-	AssetKeyElectricCompany:      monopoly_deal_schema.AssetKey_ASSET_KEY_ELECTRIC_COMPANY,
-	AssetKeyShortLine:            monopoly_deal_schema.AssetKey_ASSET_KEY_SHORT_LINE,
-	AssetKeyBandORailRoad:        monopoly_deal_schema.AssetKey_ASSET_KEY_B_AND_O_RAILROAD,
-	AssetKeyReadingRailroad:      monopoly_deal_schema.AssetKey_ASSET_KEY_READING_RAILROAD,
-	AssetKeyPennsylvaniaRailroad: monopoly_deal_schema.AssetKey_ASSET_KEY_PENNSYLVANIA_RAILROAD,
-	AssetKeyWildBrownSky:         monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_BROWN_SKY,
-	AssetKeyWildSkyRailroad:      monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_SKY_RAILROAD,
-	AssetKeyWildPinkOrange:       monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_PINK_ORANGE,
-	AssetKeyWildRedYellow:        monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_RED_YELLOW,
-	AssetKeyWildGreenBlue:        monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_GREEN_BLUE,
-	AssetKeyWildGreenRailroad:    monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_GREEN_RAILROAD,
-	AssetKeyWildUtilityRailroad:  monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_UTILITY_RAILROAD,
-	AssetKeyWildWild:             monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_WILD,
-	AssetKeyMoney10:              monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_10,
-	AssetKeyMoney5:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_5,
-	AssetKeyMoney4:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_4,
-	AssetKeyMoney3:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_3,
-	AssetKeyMoney2:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_2,
-	AssetKeyMoney1:               monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_1,
-	AssetKeyDealBreaker:          monopoly_deal_schema.AssetKey_ASSET_KEY_DEAL_BREAKER,
-	AssetKeyJustSayNo:            monopoly_deal_schema.AssetKey_ASSET_KEY_JUST_SAY_NO,
-	AssetKeyHotel:                monopoly_deal_schema.AssetKey_ASSET_KEY_HOTEL,
-	AssetKeyDebtCollector:        monopoly_deal_schema.AssetKey_ASSET_KEY_DEBT_COLLECTOR,
-	AssetKeyForcedDeal:           monopoly_deal_schema.AssetKey_ASSET_KEY_FORCED_DEAL,
-	AssetKeySlyDeal:              monopoly_deal_schema.AssetKey_ASSET_KEY_SLY_DEAL,
-	AssetKeyHouse:                monopoly_deal_schema.AssetKey_ASSET_KEY_HOUSE,
-	AssetKeyItsMyBirthday:        monopoly_deal_schema.AssetKey_ASSET_KEY_ITS_MY_BIRTHDAY,
-	AssetKeyDoubleTheRent:        monopoly_deal_schema.AssetKey_ASSET_KEY_DOUBLE_THE_RENT,
-	AssetKeyPassGo:               monopoly_deal_schema.AssetKey_ASSET_KEY_PASS_GO,
-	AssetKeyRentWild:             monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_WILD,
-	AssetKeyRentBrownSky:         monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_BROWN_SKY,
-	AssetKeyRentPinkOrange:       monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_PINK_ORANGE,
-	AssetKeyRentRedYellow:        monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_RED_YELLOW,
-	AssetKeyRentGreenBlue:        monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_GREEN_BLUE,
-	AssetKeyRentUtilityRailroad:  monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_UTILITY_RAILROAD,
+	AssetKeyUnspecified:         monopoly_deal_schema.AssetKey_ASSET_KEY_UNSPECIFIED,
+	AssetKeyBrown1:              monopoly_deal_schema.AssetKey_ASSET_KEY_BROWN1,
+	AssetKeyBrown2:              monopoly_deal_schema.AssetKey_ASSET_KEY_BROWN2,
+	AssetKeySky1:                monopoly_deal_schema.AssetKey_ASSET_KEY_SKY1,
+	AssetKeySky2:                monopoly_deal_schema.AssetKey_ASSET_KEY_SKY2,
+	AssetKeySky3:                monopoly_deal_schema.AssetKey_ASSET_KEY_SKY3,
+	AssetKeyPink1:               monopoly_deal_schema.AssetKey_ASSET_KEY_PINK1,
+	AssetKeyPink2:               monopoly_deal_schema.AssetKey_ASSET_KEY_PINK2,
+	AssetKeyPink3:               monopoly_deal_schema.AssetKey_ASSET_KEY_PINK3,
+	AssetKeyOrange1:             monopoly_deal_schema.AssetKey_ASSET_KEY_ORANGE1,
+	AssetKeyOrange2:             monopoly_deal_schema.AssetKey_ASSET_KEY_ORANGE2,
+	AssetKeyOrange3:             monopoly_deal_schema.AssetKey_ASSET_KEY_ORANGE3,
+	AssetKeyRed1:                monopoly_deal_schema.AssetKey_ASSET_KEY_RED1,
+	AssetKeyRed2:                monopoly_deal_schema.AssetKey_ASSET_KEY_RED2,
+	AssetKeyRed3:                monopoly_deal_schema.AssetKey_ASSET_KEY_RED3,
+	AssetKeyYellow1:             monopoly_deal_schema.AssetKey_ASSET_KEY_YELLOW1,
+	AssetKeyYellow2:             monopoly_deal_schema.AssetKey_ASSET_KEY_YELLOW2,
+	AssetKeyYellow3:             monopoly_deal_schema.AssetKey_ASSET_KEY_YELLOW3,
+	AssetKeyGreen1:              monopoly_deal_schema.AssetKey_ASSET_KEY_GREEN1,
+	AssetKeyGreen2:              monopoly_deal_schema.AssetKey_ASSET_KEY_GREEN2,
+	AssetKeyGreen3:              monopoly_deal_schema.AssetKey_ASSET_KEY_GREEN3,
+	AssetKeyBlue1:               monopoly_deal_schema.AssetKey_ASSET_KEY_BLUE1,
+	AssetKeyBlue2:               monopoly_deal_schema.AssetKey_ASSET_KEY_BLUE2,
+	AssetKeyUtil1:               monopoly_deal_schema.AssetKey_ASSET_KEY_UTIL1,
+	AssetKeyUtil2:               monopoly_deal_schema.AssetKey_ASSET_KEY_UTIL2,
+	AssetKeyRail1:               monopoly_deal_schema.AssetKey_ASSET_KEY_RAIL1,
+	AssetKeyRail2:               monopoly_deal_schema.AssetKey_ASSET_KEY_RAIL2,
+	AssetKeyRail3:               monopoly_deal_schema.AssetKey_ASSET_KEY_RAIL3,
+	AssetKeyRail4:               monopoly_deal_schema.AssetKey_ASSET_KEY_RAIL4,
+	AssetKeyWildBrownSky:        monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_BROWN_SKY,
+	AssetKeyWildSkyRailroad:     monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_SKY_RAILROAD,
+	AssetKeyWildPinkOrange:      monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_PINK_ORANGE,
+	AssetKeyWildRedYellow:       monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_RED_YELLOW,
+	AssetKeyWildGreenBlue:       monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_GREEN_BLUE,
+	AssetKeyWildGreenRailroad:   monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_GREEN_RAILROAD,
+	AssetKeyWildUtilityRailroad: monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_UTILITY_RAILROAD,
+	AssetKeyWildWild:            monopoly_deal_schema.AssetKey_ASSET_KEY_WILD_WILD,
+	AssetKeyMoney10:             monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_10,
+	AssetKeyMoney5:              monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_5,
+	AssetKeyMoney4:              monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_4,
+	AssetKeyMoney3:              monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_3,
+	AssetKeyMoney2:              monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_2,
+	AssetKeyMoney1:              monopoly_deal_schema.AssetKey_ASSET_KEY_MONEY_1,
+	AssetKeyDealBreaker:         monopoly_deal_schema.AssetKey_ASSET_KEY_DEAL_BREAKER,
+	AssetKeyJustSayNo:           monopoly_deal_schema.AssetKey_ASSET_KEY_JUST_SAY_NO,
+	AssetKeyHotel:               monopoly_deal_schema.AssetKey_ASSET_KEY_HOTEL,
+	AssetKeyDebtCollector:       monopoly_deal_schema.AssetKey_ASSET_KEY_DEBT_COLLECTOR,
+	AssetKeyForcedDeal:          monopoly_deal_schema.AssetKey_ASSET_KEY_FORCED_DEAL,
+	AssetKeySlyDeal:             monopoly_deal_schema.AssetKey_ASSET_KEY_SLY_DEAL,
+	AssetKeyHouse:               monopoly_deal_schema.AssetKey_ASSET_KEY_HOUSE,
+	AssetKeyItsMyBirthday:       monopoly_deal_schema.AssetKey_ASSET_KEY_ITS_MY_BIRTHDAY,
+	AssetKeyDoubleTheRent:       monopoly_deal_schema.AssetKey_ASSET_KEY_DOUBLE_THE_RENT,
+	AssetKeyPassGo:              monopoly_deal_schema.AssetKey_ASSET_KEY_PASS_GO,
+	AssetKeyRentWild:            monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_WILD,
+	AssetKeyRentBrownSky:        monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_BROWN_SKY,
+	AssetKeyRentPinkOrange:      monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_PINK_ORANGE,
+	AssetKeyRentRedYellow:       monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_RED_YELLOW,
+	AssetKeyRentGreenBlue:       monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_GREEN_BLUE,
+	AssetKeyRentUtilityRailroad: monopoly_deal_schema.AssetKey_ASSET_KEY_RENT_UTILITY_RAILROAD,
 }
 
 func AllAssetKeys() []AssetKey {
-	return []AssetKey{AssetKeyBalticAve, AssetKeyMediterraneanAve, AssetKeyConnecticutAve, AssetKeyOrientalAve, AssetKeyVermontAve, AssetKeyStCharlesPlace, AssetKeyVirginiaAve, AssetKeyStatesAve, AssetKeyNewYorkAve, AssetKeyStJamesPlace, AssetKeyTennesseeAve, AssetKeyKentuckyAve, AssetKeyIndianaAve, AssetKeyIllinoisAve, AssetKeyVentnorAve, AssetKeyMarvinGardens, AssetKeyAtlanticAve, AssetKeyNorthCarolinaAve, AssetKeyPacificAve, AssetKeyPennsylvaniaAve, AssetKeyBoardwalk, AssetKeyParkPlace, AssetKeyWaterWorks, AssetKeyElectricCompany, AssetKeyShortLine, AssetKeyBandORailRoad, AssetKeyReadingRailroad, AssetKeyPennsylvaniaRailroad, AssetKeyWildBrownSky, AssetKeyWildSkyRailroad, AssetKeyWildPinkOrange, AssetKeyWildRedYellow, AssetKeyWildGreenBlue, AssetKeyWildGreenRailroad, AssetKeyWildUtilityRailroad, AssetKeyWildWild, AssetKeyMoney10, AssetKeyMoney5, AssetKeyMoney4, AssetKeyMoney3, AssetKeyMoney2, AssetKeyMoney1, AssetKeyDealBreaker, AssetKeyJustSayNo, AssetKeyHotel, AssetKeyDebtCollector, AssetKeyForcedDeal, AssetKeySlyDeal, AssetKeyHouse, AssetKeyItsMyBirthday, AssetKeyDoubleTheRent, AssetKeyPassGo, AssetKeyRentWild, AssetKeyRentBrownSky, AssetKeyRentPinkOrange, AssetKeyRentRedYellow, AssetKeyRentGreenBlue, AssetKeyRentUtilityRailroad}
+	return []AssetKey{AssetKeyBrown1, AssetKeyBrown2, AssetKeySky1, AssetKeySky2, AssetKeySky3, AssetKeyPink1, AssetKeyPink2, AssetKeyPink3, AssetKeyOrange1, AssetKeyOrange2, AssetKeyOrange3, AssetKeyRed1, AssetKeyRed2, AssetKeyRed3, AssetKeyYellow1, AssetKeyYellow2, AssetKeyYellow3, AssetKeyGreen1, AssetKeyGreen2, AssetKeyGreen3, AssetKeyBlue1, AssetKeyBlue2, AssetKeyUtil1, AssetKeyUtil2, AssetKeyRail1, AssetKeyRail2, AssetKeyRail3, AssetKeyRail4, AssetKeyWildBrownSky, AssetKeyWildSkyRailroad, AssetKeyWildPinkOrange, AssetKeyWildRedYellow, AssetKeyWildGreenBlue, AssetKeyWildGreenRailroad, AssetKeyWildUtilityRailroad, AssetKeyWildWild, AssetKeyMoney10, AssetKeyMoney5, AssetKeyMoney4, AssetKeyMoney3, AssetKeyMoney2, AssetKeyMoney1, AssetKeyDealBreaker, AssetKeyJustSayNo, AssetKeyHotel, AssetKeyDebtCollector, AssetKeyForcedDeal, AssetKeySlyDeal, AssetKeyHouse, AssetKeyItsMyBirthday, AssetKeyDoubleTheRent, AssetKeyPassGo, AssetKeyRentWild, AssetKeyRentBrownSky, AssetKeyRentPinkOrange, AssetKeyRentRedYellow, AssetKeyRentGreenBlue, AssetKeyRentUtilityRailroad}
 }
 
 func (a AssetKey) Proto() monopoly_deal_schema.AssetKey {
@@ -320,34 +320,34 @@ func (c Card) Proto() *monopoly_deal_schema.Card {
 // DO NOT USE THIS MAP TO FETCH CARDS!
 // Cards are NOT unique here.
 var CardByAssetKey = map[AssetKey]Card{
-	AssetKeyBalticAve:            NewCard("", CategoryPureProperty, AssetKeyBalticAve, 1, ColorBrown),
-	AssetKeyMediterraneanAve:     NewCard("", CategoryPureProperty, AssetKeyMediterraneanAve, 1, ColorBrown),
-	AssetKeyConnecticutAve:       NewCard("", CategoryPureProperty, AssetKeyConnecticutAve, 1, ColorSky),
-	AssetKeyOrientalAve:          NewCard("", CategoryPureProperty, AssetKeyOrientalAve, 1, ColorSky),
-	AssetKeyVermontAve:           NewCard("", CategoryPureProperty, AssetKeyVermontAve, 1, ColorSky),
-	AssetKeyStCharlesPlace:       NewCard("", CategoryPureProperty, AssetKeyStCharlesPlace, 2, ColorPink),
-	AssetKeyVirginiaAve:          NewCard("", CategoryPureProperty, AssetKeyVirginiaAve, 2, ColorPink),
-	AssetKeyStatesAve:            NewCard("", CategoryPureProperty, AssetKeyStatesAve, 2, ColorPink),
-	AssetKeyNewYorkAve:           NewCard("", CategoryPureProperty, AssetKeyNewYorkAve, 2, ColorOrange),
-	AssetKeyStJamesPlace:         NewCard("", CategoryPureProperty, AssetKeyStJamesPlace, 2, ColorOrange),
-	AssetKeyTennesseeAve:         NewCard("", CategoryPureProperty, AssetKeyTennesseeAve, 2, ColorOrange),
-	AssetKeyKentuckyAve:          NewCard("", CategoryPureProperty, AssetKeyKentuckyAve, 3, ColorRed),
-	AssetKeyIndianaAve:           NewCard("", CategoryPureProperty, AssetKeyIndianaAve, 3, ColorRed),
-	AssetKeyIllinoisAve:          NewCard("", CategoryPureProperty, AssetKeyIllinoisAve, 3, ColorRed),
-	AssetKeyVentnorAve:           NewCard("", CategoryPureProperty, AssetKeyVentnorAve, 3, ColorYellow),
-	AssetKeyMarvinGardens:        NewCard("", CategoryPureProperty, AssetKeyMarvinGardens, 3, ColorYellow),
-	AssetKeyAtlanticAve:          NewCard("", CategoryPureProperty, AssetKeyAtlanticAve, 3, ColorYellow),
-	AssetKeyNorthCarolinaAve:     NewCard("", CategoryPureProperty, AssetKeyNorthCarolinaAve, 4, ColorGreen),
-	AssetKeyPacificAve:           NewCard("", CategoryPureProperty, AssetKeyPacificAve, 4, ColorGreen),
-	AssetKeyPennsylvaniaAve:      NewCard("", CategoryPureProperty, AssetKeyPennsylvaniaAve, 4, ColorGreen),
-	AssetKeyBoardwalk:            NewCard("", CategoryPureProperty, AssetKeyBoardwalk, 4, ColorBlue),
-	AssetKeyParkPlace:            NewCard("", CategoryPureProperty, AssetKeyParkPlace, 4, ColorBlue),
-	AssetKeyWaterWorks:           NewCard("", CategoryPureProperty, AssetKeyWaterWorks, 2, ColorUtility),
-	AssetKeyElectricCompany:      NewCard("", CategoryPureProperty, AssetKeyElectricCompany, 2, ColorUtility),
-	AssetKeyShortLine:            NewCard("", CategoryPureProperty, AssetKeyShortLine, 2, ColorRailroad),
-	AssetKeyBandORailRoad:        NewCard("", CategoryPureProperty, AssetKeyBandORailRoad, 2, ColorRailroad),
-	AssetKeyReadingRailroad:      NewCard("", CategoryPureProperty, AssetKeyReadingRailroad, 2, ColorRailroad),
-	AssetKeyPennsylvaniaRailroad: NewCard("", CategoryPureProperty, AssetKeyPennsylvaniaRailroad, 2, ColorRailroad),
+	AssetKeyBrown1:  NewCard("", CategoryPureProperty, AssetKeyBrown1, 1, ColorBrown),
+	AssetKeyBrown2:  NewCard("", CategoryPureProperty, AssetKeyBrown2, 1, ColorBrown),
+	AssetKeySky1:    NewCard("", CategoryPureProperty, AssetKeySky1, 1, ColorSky),
+	AssetKeySky2:    NewCard("", CategoryPureProperty, AssetKeySky2, 1, ColorSky),
+	AssetKeySky3:    NewCard("", CategoryPureProperty, AssetKeySky3, 1, ColorSky),
+	AssetKeyPink1:   NewCard("", CategoryPureProperty, AssetKeyPink1, 2, ColorPink),
+	AssetKeyPink2:   NewCard("", CategoryPureProperty, AssetKeyPink2, 2, ColorPink),
+	AssetKeyPink3:   NewCard("", CategoryPureProperty, AssetKeyPink3, 2, ColorPink),
+	AssetKeyOrange1: NewCard("", CategoryPureProperty, AssetKeyOrange1, 2, ColorOrange),
+	AssetKeyOrange2: NewCard("", CategoryPureProperty, AssetKeyOrange2, 2, ColorOrange),
+	AssetKeyOrange3: NewCard("", CategoryPureProperty, AssetKeyOrange3, 2, ColorOrange),
+	AssetKeyRed1:    NewCard("", CategoryPureProperty, AssetKeyRed1, 3, ColorRed),
+	AssetKeyRed2:    NewCard("", CategoryPureProperty, AssetKeyRed2, 3, ColorRed),
+	AssetKeyRed3:    NewCard("", CategoryPureProperty, AssetKeyRed3, 3, ColorRed),
+	AssetKeyYellow1: NewCard("", CategoryPureProperty, AssetKeyYellow1, 3, ColorYellow),
+	AssetKeyYellow2: NewCard("", CategoryPureProperty, AssetKeyYellow2, 3, ColorYellow),
+	AssetKeyYellow3: NewCard("", CategoryPureProperty, AssetKeyYellow3, 3, ColorYellow),
+	AssetKeyGreen1:  NewCard("", CategoryPureProperty, AssetKeyGreen1, 4, ColorGreen),
+	AssetKeyGreen2:  NewCard("", CategoryPureProperty, AssetKeyGreen2, 4, ColorGreen),
+	AssetKeyGreen3:  NewCard("", CategoryPureProperty, AssetKeyGreen3, 4, ColorGreen),
+	AssetKeyBlue1:   NewCard("", CategoryPureProperty, AssetKeyBlue1, 4, ColorBlue),
+	AssetKeyBlue2:   NewCard("", CategoryPureProperty, AssetKeyBlue2, 4, ColorBlue),
+	AssetKeyUtil1:   NewCard("", CategoryPureProperty, AssetKeyUtil1, 2, ColorUtility),
+	AssetKeyUtil2:   NewCard("", CategoryPureProperty, AssetKeyUtil2, 2, ColorUtility),
+	AssetKeyRail1:   NewCard("", CategoryPureProperty, AssetKeyRail1, 2, ColorRailroad),
+	AssetKeyRail2:   NewCard("", CategoryPureProperty, AssetKeyRail2, 2, ColorRailroad),
+	AssetKeyRail3:   NewCard("", CategoryPureProperty, AssetKeyRail3, 2, ColorRailroad),
+	AssetKeyRail4:   NewCard("", CategoryPureProperty, AssetKeyRail4, 2, ColorRailroad),
 
 	AssetKeyWildBrownSky:        NewCard("", CategoryWildProperty, AssetKeyWildBrownSky, 1, ColorBrown, ColorSky),
 	AssetKeyWildSkyRailroad:     NewCard("", CategoryWildProperty, AssetKeyWildSkyRailroad, 4, ColorSky, ColorRailroad),
