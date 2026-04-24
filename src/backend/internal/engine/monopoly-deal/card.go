@@ -38,12 +38,12 @@ const (
 	AssetKeyRail3               AssetKey = "rail3"
 	AssetKeyRail4               AssetKey = "rail4"
 	AssetKeyWildBrownSky        AssetKey = "wild_brown_sky"
-	AssetKeyWildSkyRailroad     AssetKey = "wild_sky_railroad"
+	AssetKeyWildSkyRailroad     AssetKey = "wild_sky_rail"
 	AssetKeyWildPinkOrange      AssetKey = "wild_pink_orange"
 	AssetKeyWildRedYellow       AssetKey = "wild_red_yellow"
 	AssetKeyWildGreenBlue       AssetKey = "wild_green_blue"
-	AssetKeyWildGreenRailroad   AssetKey = "wild_green_railroad"
-	AssetKeyWildUtilityRailroad AssetKey = "wild_utility_railroad"
+	AssetKeyWildGreenRailroad   AssetKey = "wild_green_rail"
+	AssetKeyWildUtilityRailroad AssetKey = "wild_util_rail"
 	AssetKeyWildWild            AssetKey = "wild_wild"
 	AssetKeyMoney10             AssetKey = "money10"
 	AssetKeyMoney5              AssetKey = "money5"
@@ -66,7 +66,7 @@ const (
 	AssetKeyRentPinkOrange      AssetKey = "rent_pink_orange"
 	AssetKeyRentRedYellow       AssetKey = "rent_red_yellow"
 	AssetKeyRentGreenBlue       AssetKey = "rent_green_blue"
-	AssetKeyRentUtilityRailroad AssetKey = "rent_utility_railroad"
+	AssetKeyRentUtilityRailroad AssetKey = "rent_util_rail"
 )
 
 var AssetKeyProtoMap = map[AssetKey]monopoly_deal_schema.AssetKey{
