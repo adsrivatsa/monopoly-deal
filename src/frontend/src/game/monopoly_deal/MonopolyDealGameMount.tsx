@@ -33,6 +33,8 @@ type MonopolyDealGameMountProps = {
     color?: Color,
   ) => void;
   onDenyDemand: (demandId: string) => void;
+  onPassTurn: () => void;
+  onSubmitDiscard: () => void;
   isDiscardRequired: boolean;
   requiredDiscardCount: number;
   selectedDiscardCardIds: ReadonlySet<string>;
@@ -64,6 +66,8 @@ const MonopolyDealGameMount = ({
   onResolvePendingRent,
   onRearrangeCard,
   onDenyDemand,
+  onPassTurn,
+  onSubmitDiscard,
   isDiscardRequired,
   requiredDiscardCount,
   selectedDiscardCardIds,
@@ -91,6 +95,8 @@ const MonopolyDealGameMount = ({
       onResolvePendingRent={onResolvePendingRent}
       onRearrangeCard={onRearrangeCard}
       onDenyDemand={onDenyDemand}
+      onPassTurn={onPassTurn}
+      onSubmitDiscard={onSubmitDiscard}
       isDiscardRequired={isDiscardRequired}
       requiredDiscardCount={requiredDiscardCount}
       selectedDiscardCardIds={selectedDiscardCardIds}

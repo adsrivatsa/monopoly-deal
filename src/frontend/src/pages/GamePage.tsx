@@ -29,7 +29,6 @@ import {
 } from "../api/gameSocket";
 import { getPlayer } from "../api/player";
 import ChatBox from "../components/chat/ChatBox";
-import TurnControlsCard from "../components/game/TurnControlsCard";
 import Button from "../components/ui/button";
 import ErrorToastStack, { type ErrorToastNotice } from "../components/ui/error-toast-stack";
 import MonopolyDealGameMount from "../game/monopoly_deal/MonopolyDealGameMount";
@@ -311,6 +310,7 @@ const GamePage = () => {
     {},
   );
   const [chatMessages, setChatMessages] = useState<GameChatMessage[]>([]);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [errorNotices, setErrorNotices] = useState<GameErrorNotice[]>([]);
   const [selectedDiscardCardIds, setSelectedDiscardCardIds] = useState<Set<string>>(
     () => new Set(),
@@ -2844,12 +2844,18 @@ const GamePage = () => {
     : "";
   const winnerAvatarUrl = wonGame?.avatarUrl ?? winnerProfile?.avatarUrl ?? "";
   const winnerInitial = winnerName.trim().charAt(0).toUpperCase() || "W";
+  const gamePageClassName = [
+    "page",
+    "game-page",
+    wonGame ? "game-page--ended" : "",
+    isSidebarCollapsed ? "game-page--sidebar-collapsed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <>
-      <main
-        className={wonGame ? "page game-page game-page--ended" : "page game-page"}
-      >
+      <main className={gamePageClassName}>
         <section className="game-page__board">
           <MonopolyDealGameMount
             initialGameState={initialGameState}
@@ -2866,6 +2872,8 @@ const GamePage = () => {
             onResolvePendingRent={handleResolvePendingRent}
             onRearrangeCard={handleRearrangeCard}
             onDenyDemand={handleDenyDemand}
+            onPassTurn={handlePassTurn}
+            onSubmitDiscard={handleSubmitDiscard}
             isDiscardRequired={isDiscardRequired}
             requiredDiscardCount={discardRequiredCount}
             selectedDiscardCardIds={selectedDiscardCardIds}
@@ -2884,83 +2892,117 @@ const GamePage = () => {
               });
             }}
           />
+
         </section>
 
         <aside className="game-sidebar" aria-label="Game sidebar">
-          <ChatBox
-            title="Game chat"
-            messages={chatMessages}
-            onSendMessage={handleSendChatMessage}
-            getMessageKey={(message) => message.id}
-            emptyMessage="No messages yet."
-            renderMessage={(message) => {
-              const author =
-                playerNameById[message.playerId] ?? message.playerId;
-              const authorAvatar =
-                players.find((player) => player.playerId === message.playerId)?.avatarUrl ?? "";
-              return (
-                <article className="game-chat-line">
-                  <img
-                    className="game-chat-line__avatar"
-                    src={authorAvatar}
-                    alt={author}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                  />
-                  <p className="chat-message game-chat-line__message">
-                    <span className="game-chat-line__author">{author}:</span> {message.text}
-                  </p>
-                </article>
-              );
-            }}
-            className="game-chat-panel"
-            messagesInnerClassName="game-chat-received-list"
-          />
-
-          <section className="game-sidebar-card game-players-card">
-            <h2 className="game-sidebar-title">Players</h2>
-            <div className="game-players-list">
-              {players.length === 0 ? (
-                <p className="game-sidebar-empty">Waiting for players</p>
-              ) : (
-                players.map((player) => (
-                  <article
-                    className="game-player-snippet"
-                    key={player.playerId}
-                  >
-                    <img
-                      className="game-player-avatar"
-                      src={player.avatarUrl}
-                      alt={player.displayName}
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="game-player-meta">
-                      <p className="game-player-name">
-                        {player.displayName}
-                        {player.playerId === currentTurnPlayerId ? (
-                          <span className="game-player-pill">Current turn</span>
-                        ) : null}
-                      </p>
-                      <p className="game-player-stats">
-                        ${player.money} · {player.completedSets} sets · {player.handCards} cards
-                      </p>
-                    </div>
-                  </article>
-                ))
-              )}
+          <section
+            className={[
+              "game-sidebar-card",
+              "game-sidebar-panels",
+              "game-sidebar-collapsible",
+              isSidebarCollapsed ? "is-collapsed" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={() => setIsSidebarCollapsed((current) => !current)}
+          >
+            <div className="game-sidebar-card__header">
+              <h2 className="game-sidebar-title">Game Panels</h2>
+              <button
+                type="button"
+                className="game-collapse-button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setIsSidebarCollapsed((current) => !current);
+                }}
+                aria-expanded={!isSidebarCollapsed}
+                aria-label={isSidebarCollapsed ? "Expand sidebar panels" : "Collapse sidebar panels"}
+                title={isSidebarCollapsed ? "Expand" : "Collapse"}
+              >
+                <span className="game-collapse-icon game-collapse-icon--horizontal" aria-hidden="true">
+                  {isSidebarCollapsed ? "<" : ">"}
+                </span>
+                <span className="game-collapse-icon game-collapse-icon--vertical" aria-hidden="true">
+                  {isSidebarCollapsed ? "▾" : "▴"}
+                </span>
+              </button>
             </div>
-          </section>
+            <div
+              className={[
+                "game-sidebar-panels__content",
+                isSidebarCollapsed ? "is-collapsed" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              aria-hidden={isSidebarCollapsed}
+            >
+                <ChatBox
+                  title="Game chat"
+                  messages={chatMessages}
+                  onSendMessage={handleSendChatMessage}
+                  getMessageKey={(message) => message.id}
+                  emptyMessage="No messages yet."
+                  renderMessage={(message) => {
+                    const author =
+                      playerNameById[message.playerId] ?? message.playerId;
+                    const authorAvatar =
+                      players.find((player) => player.playerId === message.playerId)?.avatarUrl ?? "";
+                    return (
+                      <article className="game-chat-line">
+                        <img
+                          className="game-chat-line__avatar"
+                          src={authorAvatar}
+                          alt={author}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                        <p className="chat-message game-chat-line__message">
+                          <span className="game-chat-line__author">{author}:</span> {message.text}
+                        </p>
+                      </article>
+                    );
+                  }}
+                  className="game-chat-panel"
+                  messagesInnerClassName="game-chat-received-list"
+                />
 
-          <TurnControlsCard
-            onPassTurn={handlePassTurn}
-            onSubmitDiscard={handleSubmitDiscard}
-            movesLeft={movesLeft}
-            showMovesLeft={selfPlayerId === currentTurnPlayerId}
-            isDiscardRequired={isDiscardRequired}
-            selectedDiscardCount={selectedDiscardCardIds.size}
-            requiredDiscardCount={discardRequiredCount}
-          />
+                <section className="game-sidebar-card game-players-card">
+                  <h2 className="game-sidebar-title">Players</h2>
+                  <div className="game-players-list">
+                    {players.length === 0 ? (
+                      <p className="game-sidebar-empty">Waiting for players</p>
+                    ) : (
+                      players.map((player) => (
+                        <article
+                          className="game-player-snippet"
+                          key={player.playerId}
+                        >
+                          <img
+                            className="game-player-avatar"
+                            src={player.avatarUrl}
+                            alt={player.displayName}
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="game-player-meta">
+                            <p className="game-player-name">
+                              {player.displayName}
+                              {player.playerId === currentTurnPlayerId ? (
+                                <span className="game-player-pill">Current turn</span>
+                              ) : null}
+                            </p>
+                            <p className="game-player-stats">
+                              ${player.money} · {player.completedSets} sets · {player.handCards} cards
+                            </p>
+                          </div>
+                        </article>
+                      ))
+                    )}
+                  </div>
+                </section>
+              </div>
+          </section>
         </aside>
 
         {wonGame ? (

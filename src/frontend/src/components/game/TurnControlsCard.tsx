@@ -6,6 +6,7 @@ type TurnControlsCardProps = {
   isDiscardRequired: boolean;
   selectedDiscardCount: number;
   requiredDiscardCount: number;
+  className?: string;
 };
 
 const TurnControlsCard = ({
@@ -16,11 +17,15 @@ const TurnControlsCard = ({
   isDiscardRequired,
   selectedDiscardCount,
   requiredDiscardCount,
+  className,
 }: TurnControlsCardProps) => {
   const isSubmitEnabled = selectedDiscardCount === requiredDiscardCount;
+  const cardClassName = ["game-sidebar-card", "game-turn-controls-card", className]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <section className="game-sidebar-card game-turn-controls-card">
+    <section className={cardClassName}>
       <h2 className="game-sidebar-title">{isDiscardRequired ? "Discard" : "Turn"}</h2>
       <button
         type="button"

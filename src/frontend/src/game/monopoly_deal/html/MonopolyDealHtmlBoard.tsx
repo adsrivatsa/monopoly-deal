@@ -70,6 +70,8 @@ type MonopolyDealHtmlBoardProps = {
   onComplyPropertyDemand: (demandId: string) => void;
   onComplyPropertySetDemand: (demandId: string) => void;
   onDenyDemand: (demandId: string) => void;
+  onPassTurn: () => void;
+  onSubmitDiscard: () => void;
   onClientError?: (error: unknown) => void;
   onGameError?: (error: { message: string; code: string }) => void;
 };
@@ -317,6 +319,8 @@ const MonopolyDealHtmlBoard = ({
   onComplyPropertySetDemand,
   onClientError,
   onGameError,
+  onPassTurn,
+  onSubmitDiscard,
 }: MonopolyDealHtmlBoardProps) => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -408,6 +412,7 @@ const MonopolyDealHtmlBoard = ({
   const shouldShowPendingRentOverlay =
     hasPendingRent && !shouldAutoResolvePendingRent;
   const hasMovesLeft = (gameState?.movesLeft ?? 0) > 0;
+  const movesLeft = gameState?.movesLeft ?? 0;
   const lastActionCards =
     gameState?.lastAction &&
     gameState.lastAction.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
@@ -2170,6 +2175,30 @@ const MonopolyDealHtmlBoard = ({
             }}
           />
         </div>
+
+        <section className="md-hand-turn-controls">
+          <button
+            type="button"
+            className="md-demand__button md-hand-turn-button"
+            onClick={isDiscardRequired ? onSubmitDiscard : onPassTurn}
+            disabled={
+              isDiscardRequired
+                ? selectedDiscardCardIds.size !== requiredDiscardCount
+                : false
+            }
+          >
+            {isDiscardRequired
+              ? `Submit Discard (${selectedDiscardCardIds.size}/${requiredDiscardCount})`
+              : isSelfTurn
+                ? (
+                    <>
+                      Pass Turn{" "}
+                      <span className="md-hand-turn-button__moves">({movesLeft} left)</span>
+                    </>
+                  )
+                : "Pass Turn"}
+          </button>
+        </section>
       </section>
 
       {colorPicker ? (

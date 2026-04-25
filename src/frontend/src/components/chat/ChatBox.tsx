@@ -13,6 +13,8 @@ type ChatBoxProps<T> = {
   className?: string;
   messagesInnerClassName?: string;
   stickToBottom?: boolean;
+  headerAction?: ReactNode;
+  collapsed?: boolean;
 };
 
 const ChatBox = <T,>({
@@ -27,6 +29,8 @@ const ChatBox = <T,>({
   className,
   messagesInnerClassName,
   stickToBottom = true,
+  headerAction,
+  collapsed = false,
 }: ChatBoxProps<T>) => {
   const [inputValue, setInputValue] = useState("");
   const messagesRef = useRef<HTMLDivElement | null>(null);
@@ -53,9 +57,11 @@ const ChatBox = <T,>({
 
   return (
     <Card className={`room-chat-panel ${className ?? ""}`.trim()}>
-      <CardHeader>
+      <CardHeader className="chat-box__header">
         <CardTitle>{title}</CardTitle>
+        {headerAction}
       </CardHeader>
+      {collapsed ? null : (
       <CardContent className="room-chat-content">
         <div className="chat-log" role="log" aria-live="polite">
           <div
@@ -96,6 +102,7 @@ const ChatBox = <T,>({
           />
         </form>
       </CardContent>
+      )}
     </Card>
   );
 };

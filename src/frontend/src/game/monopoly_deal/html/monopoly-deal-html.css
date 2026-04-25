@@ -512,6 +512,9 @@
   --md-hand-card-width: clamp(58px, 6.4vw, 96px);
   display: grid;
   grid-template-columns: calc(var(--md-hand-card-width) + 1.35rem) minmax(0, 1fr);
+  grid-template-areas:
+    "action hand"
+    "controls controls";
   gap: 0.65rem;
   align-items: stretch;
   height: 100%;
@@ -520,11 +523,35 @@
 }
 
 .md-dropzone--action {
+  grid-area: action;
   min-width: 0;
 }
 
 .md-hand-main {
+  grid-area: hand;
   min-width: 0;
+}
+
+.md-hand-turn-controls {
+  grid-area: controls;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.md-hand-turn-button {
+  width: min(240px, 100%);
+  font-size: 0.82rem;
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.md-hand-turn-button__moves {
+  display: inline;
+  margin-left: 0.22rem;
 }
 
 .md-hand-main .md-card {
@@ -719,7 +746,31 @@
   }
 
   .md-hand-row {
+    grid-template-columns:
+      calc(var(--md-hand-card-width) + 1.35rem)
+      minmax(0, 1fr)
+      minmax(120px, 150px);
+    grid-template-areas: "action hand controls";
     height: auto;
+  }
+
+  .md-hand-turn-controls {
+    align-items: stretch;
+  }
+
+  .md-hand-turn-button {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .md-hand-turn-button__moves {
+    display: block;
+    margin-left: 0;
   }
 }
 
@@ -739,6 +790,21 @@
     height: auto;
     min-height: 0;
     align-items: start;
+  }
+
+  .md-hand-turn-controls {
+    justify-content: stretch;
+    align-items: stretch;
+  }
+
+  .md-hand-turn-button {
+    width: 100%;
+    font-size: 0.9rem;
+    min-height: 2.6rem;
+    padding: 0.5rem 0.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .md-hand-main .md-stack-box,

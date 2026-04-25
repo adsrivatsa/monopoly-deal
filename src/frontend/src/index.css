@@ -1204,6 +1204,7 @@ h1 {
   min-width: 0;
   min-height: 0;
   display: flex;
+  position: relative;
 }
 
 .game-mount {
@@ -1228,8 +1229,51 @@ h1 {
 }
 
 .game-chat-panel {
-  flex: 0 0 50%;
+  flex: 0 0 48%;
   min-height: 0;
+}
+
+.game-sidebar-panels {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-sidebar-card.game-sidebar-panels {
+  border-radius: 8px;
+  padding-bottom: 0.28rem;
+  padding-left: 0.28rem;
+  padding-right: 0.28rem;
+}
+
+.game-sidebar-panels .game-sidebar-title {
+  padding-left: 0.24rem;
+}
+
+.game-sidebar-panels.is-collapsed {
+  cursor: pointer;
+}
+
+.game-sidebar-panels.is-collapsed .game-collapse-button {
+  font-size: 1.12rem;
+  font-weight: 800;
+}
+
+.game-sidebar-panels__content {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+  height: 100%;
+}
+
+.chat-box__header,
+.game-sidebar-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
 }
 
 .game-players-card {
@@ -1254,6 +1298,30 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted-foreground);
+}
+
+.game-collapse-button {
+  border: none;
+  background: transparent;
+  color: var(--foreground);
+  border-radius: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.game-collapse-button:hover {
+  color: color-mix(in oklab, var(--primary) 70%, var(--foreground) 30%);
+}
+
+.game-collapse-icon--vertical {
+  display: none;
 }
 
 .game-pass-turn-button {
@@ -1370,7 +1438,78 @@ h1 {
   color: var(--muted-foreground);
 }
 
+@media (min-width: 641px) {
+  .game-page.game-page--sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+
+  .game-sidebar-collapsible.is-collapsed {
+    flex: 1 1 auto;
+    width: max-content;
+    min-height: 100%;
+    padding: 0.5rem 0.28rem;
+  }
+
+  .game-sidebar-panels.game-sidebar-collapsible.is-collapsed .game-sidebar-card__header {
+    position: relative;
+    min-height: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    flex-direction: column;
+  }
+
+  .game-sidebar-panels.game-sidebar-collapsible.is-collapsed .game-collapse-button {
+    position: absolute;
+    left: 50%;
+    bottom: 0.2rem;
+    transform: translateX(-50%);
+  }
+
+  .game-sidebar-panels.game-sidebar-collapsible.is-collapsed .game-sidebar-title {
+    padding-left: 0;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.73rem;
+    text-align: center;
+  }
+
+  .game-sidebar-panels.game-sidebar-collapsible.is-collapsed .game-sidebar-panels__content {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
+  .game-sidebar-panels__content {
+    max-height: 1200px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 220ms ease, opacity 180ms ease, margin-top 180ms ease;
+  }
+
+  .game-sidebar-panels__content.is-collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    pointer-events: none;
+  }
+
+  .game-sidebar-panels.game-sidebar-collapsible.is-collapsed {
+    flex: 0 0 auto;
+    min-height: auto;
+  }
+
+  .game-collapse-icon--horizontal {
+    display: none;
+  }
+
+  .game-collapse-icon--vertical {
+    display: inline;
+  }
+
   .page {
     padding-top: 4.75rem;
   }
@@ -1478,7 +1617,17 @@ h1 {
     height: min(70dvh, 680px);
   }
 
+  .game-page.game-page--sidebar-collapsed {
+    grid-template-rows: minmax(300px, 58dvh) auto;
+    min-height: 0;
+  }
+
+  .game-page.game-page--sidebar-collapsed .game-sidebar {
+    height: auto;
+  }
+
   .game-turn-controls-card {
     order: -1;
   }
+
 }
