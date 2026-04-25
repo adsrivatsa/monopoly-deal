@@ -9,9 +9,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Setup SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -27,22 +24,24 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           PROJECT_ROOT: ${{ secrets.PROJECT_ROOT }}
-        run:
-          # Pull latest code
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "cd ${PROJECT_ROOT}"
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "git pull"
+        run: |
+          ssh -i ~/.ssh/deploy_key ${SSH_USER}@${SSH_HOST} "
+            set -e
           
-          # Build backend
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "cd ./src/backend"
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "go build -o app ./cmd/api"
+            echo 'Pulling latest code...'
+            cd '${PROJECT_ROOT}'
+            git pull
           
-          # Restart backend
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "pm2 restart backend"
-        
-          # Build frontend
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "cd ./src/frontend"
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "npm i"
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "npm run build"
+            echo 'Building backend...'
+            cd src/backend && go build -o app ./cmd/api
           
-          # Restart frontend
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "pm2 restart frontend"
+            echo 'Building frontend...'
+            cd ../frontend && npm ci && npm run build
+          
+            echo 'Restarting services...'
+            cd ..
+            pm2 reload backend || pm2 restart backend
+            pm2 reload frontend || pm2 restart frontend
+          
+            echo 'Deployment complete!'
+          "
