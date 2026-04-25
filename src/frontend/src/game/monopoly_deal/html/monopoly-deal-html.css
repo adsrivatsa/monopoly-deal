@@ -293,6 +293,7 @@
 }
 
 .md-player-board {
+  --md-player-tight-card-width: clamp(80px, 8.4vw, 124px);
   border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
   border-radius: 14px;
   background:
@@ -344,19 +345,48 @@
 }
 
 .md-player-board__body {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-flow: row;
-  grid-auto-rows: auto;
-  column-gap: 0.55rem;
-  row-gap: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
   align-items: start;
   align-content: start;
   min-height: 0;
 }
 
 .md-dropzone--money {
-  grid-column: span 2;
+  flex: 0 0 auto;
+  width: max-content;
+  min-width: 20%;
+  max-width: 100%;
+}
+
+.md-dropzone--money .md-stack-box {
+  width: max-content;
+  min-width: 100%;
+}
+
+.md-player-board .md-dropzone--money .md-stack-box__cards {
+  justify-content: flex-start;
+  overflow-x: hidden;
+}
+
+.md-dropzone--money .md-stack-box__empty {
+  width: min(100%, 14rem);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.md-dropzone--property-set,
+.md-dropzone--property-new {
+  flex: 0 0 auto;
+  width: max-content;
+  min-width: 20%;
+}
+
+.md-dropzone--property-set .md-stack-box,
+.md-dropzone--property-new .md-stack-box {
+  width: max-content;
+  min-width: 100%;
 }
 
 .md-property-empty {
@@ -367,6 +397,8 @@
   padding: 0.45rem;
   font-size: 0.69rem;
   text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
   color: var(--muted-foreground);
 }
 
@@ -382,6 +414,7 @@
 .md-dropzone--property-new .md-property-empty {
   background: color-mix(in oklab, var(--muted) 45%, transparent);
   min-height: 4.25rem;
+  width: min(100%, 14rem);
 }
 
 .md-dropzone--property-set.is-set-selected {
@@ -443,11 +476,11 @@
 }
 
 .md-player-board .md-card--tight {
-  width: clamp(80px, 8.4vw, 124px);
+  width: var(--md-player-tight-card-width);
 }
 
 .md-player-board .md-stack-box--stack .md-stack-box__card-wrap + .md-stack-box__card-wrap {
-  margin-left: -3.9rem;
+  margin-left: calc(var(--md-player-tight-card-width) * -0.75);
 }
 
 .md-stack-box__empty {
@@ -794,8 +827,8 @@
 }
 
 @media (min-width: 1180px) {
-  .md-player-board .md-card--tight {
-    width: clamp(90px, 7.2vw, 148px);
+  .md-player-board {
+    --md-player-tight-card-width: clamp(90px, 7.2vw, 148px);
   }
 }
 
@@ -837,7 +870,7 @@
   }
 
   .md-player-board__body {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
   }
 
   .md-dropzone--action .md-stack-box {
