@@ -1,28 +1,32 @@
+import { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 import AppNavbar from "./components/layout/app-navbar";
-import GamePage from "./pages/GamePage";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import LobbyPage from "./pages/LobbyPage";
-import ProfilePage from "./pages/ProfilePage";
-import RoomPage from "./pages/RoomPage";
 import ProtectedLobbyRoute from "./routes/ProtectedLobbyRoute";
+
+const HomePage = lazy(() => import("./pages/HomePage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const LobbyPage = lazy(() => import("./pages/LobbyPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const RoomPage = lazy(() => import("./pages/RoomPage"));
+const GamePage = lazy(() => import("./pages/GamePage"));
 
 const App = () => {
   return (
     <div className="app-shell">
       <AppNavbar />
       <div className="app-shell__content">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route element={<ProtectedLobbyRoute />}>
-            <Route path="/lobby" element={<LobbyPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/room/:room_id" element={<RoomPage />} />
-            <Route path="/game/:game_id" element={<GamePage />} />
-          </Route>
-        </Routes>
+        <Suspense fallback={<div className="page">Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route element={<ProtectedLobbyRoute />}>
+              <Route path="/lobby" element={<LobbyPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/room/:room_id" element={<RoomPage />} />
+              <Route path="/game/:game_id" element={<GamePage />} />
+            </Route>
+          </Routes>
+        </Suspense>
       </div>
     </div>
   );
