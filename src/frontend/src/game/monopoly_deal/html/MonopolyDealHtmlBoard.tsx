@@ -510,13 +510,15 @@ const MonopolyDealHtmlBoard = ({
     selectedPaymentDemand?.isActive === true;
 
   const isSelectingDealCards = !!dealPicker;
-  const canTapPlaceFromHand =
-    isSelfTurn &&
+  const canSelectHandCards =
     !isDiscardRequired &&
     !isSelectingPaymentCards &&
     !isSelectingDealCards &&
     !colorPicker &&
     !debtCollectorPicker;
+  const canTapPlaceFromHand =
+    isSelfTurn &&
+    canSelectHandCards;
 
   const shouldDimBoard =
     isDiscardRequired ||
@@ -1733,10 +1735,10 @@ const MonopolyDealHtmlBoard = ({
     const stillInHand = yourHand.some(
       (card) => card.cardId === selectedHandPlacementCardId,
     );
-    if (!stillInHand || !canTapPlaceFromHand) {
+    if (!stillInHand || !canSelectHandCards) {
       setSelectedHandPlacementCardId(null);
     }
-  }, [canTapPlaceFromHand, selectedHandPlacementCardId, yourHand]);
+  }, [canSelectHandCards, selectedHandPlacementCardId, yourHand]);
 
   useEffect(() => {
     if (!selectedRearrangeCard) {
@@ -2153,7 +2155,7 @@ const MonopolyDealHtmlBoard = ({
             assetImageByKey={assetImageByKey}
             layout="spread"
             emptyLabel="Waiting for cards"
-            selectableCards={isDiscardRequired || canTapPlaceFromHand}
+            selectableCards={isDiscardRequired || canSelectHandCards}
             selectedCardIds={
               isDiscardRequired
                 ? selectedDiscardCardIds
@@ -2165,7 +2167,7 @@ const MonopolyDealHtmlBoard = ({
                 return;
               }
 
-              if (!canTapPlaceFromHand) {
+              if (!canSelectHandCards) {
                 return;
               }
 

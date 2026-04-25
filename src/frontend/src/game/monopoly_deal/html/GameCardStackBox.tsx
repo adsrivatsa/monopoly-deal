@@ -118,17 +118,29 @@ const GameCardStackBox = ({
         {cards.length === 0 ? (
           <p className="md-stack-box__empty">{emptyLabel}</p>
         ) : (
-          cards.map((card) => (
-            <div className="md-stack-box__card-wrap" key={card.cardId} role="listitem">
-              <GameCardView
-                card={card}
-                imageUrl={assetImageByKey[card.assetKey]}
-                isSelected={selectedCardIds?.has(card.cardId) ?? false}
-                className={layout === "stack" ? "md-card--tight" : ""}
-                onClick={selectableCards ? onCardClick : undefined}
-              />
-            </div>
-          ))
+          cards.map((card) => {
+            const isSelected = selectedCardIds?.has(card.cardId) ?? false;
+            return (
+              <div
+                className={[
+                  "md-stack-box__card-wrap",
+                  isSelected ? "md-stack-box__card-wrap--selected" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                key={card.cardId}
+                role="listitem"
+              >
+                <GameCardView
+                  card={card}
+                  imageUrl={assetImageByKey[card.assetKey]}
+                  isSelected={isSelected}
+                  className={layout === "stack" ? "md-card--tight" : ""}
+                  onClick={selectableCards ? onCardClick : undefined}
+                />
+              </div>
+            );
+          })
         )}
       </div>
     </section>

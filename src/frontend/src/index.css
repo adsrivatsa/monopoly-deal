@@ -1603,7 +1603,7 @@ h1 {
   .game-page {
     padding: calc(var(--game-nav-offset, 3.85rem) + 0.55rem) 0.6rem 0.6rem;
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(300px, 58dvh) 1fr;
+    grid-template-rows: minmax(560px, 92dvh) 1fr;
     height: auto;
     min-height: calc(100dvh - var(--game-nav-offset, 3.85rem));
   }
@@ -1618,7 +1618,7 @@ h1 {
   }
 
   .game-page.game-page--sidebar-collapsed {
-    grid-template-rows: minmax(300px, 58dvh) auto;
+    grid-template-rows: minmax(560px, 92dvh) auto;
     min-height: 0;
   }
 
