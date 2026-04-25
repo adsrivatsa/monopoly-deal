@@ -116,7 +116,7 @@ const GameCardStackBox = ({
         ref={cardsContainerRef}
       >
         {cards.length === 0 ? (
-          <p className="md-stack-box__empty">{emptyLabel}</p>
+          emptyLabel ? <p className="md-stack-box__empty">{emptyLabel}</p> : null
         ) : (
           cards.map((card) => {
             const isSelected = selectedCardIds?.has(card.cardId) ?? false;

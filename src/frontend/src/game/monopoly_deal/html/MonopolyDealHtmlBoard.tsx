@@ -1798,6 +1798,14 @@ const MonopolyDealHtmlBoard = ({
       !isDiscardRequired;
     const canClickRearrangeDestination =
       canRearrangeFromBoard && !!selectedRearrangeCard;
+    const moneyEmptyLabel =
+      isSelfBoard && isSelfTurn
+        ? "Select a card, then tap here to play as money."
+        : "";
+    const propertyNewEmptyLabel =
+      isSelfBoard && isSelfTurn
+        ? "Select a card, then tap here to start a new set."
+        : "";
 
     return (
       <article
@@ -1847,7 +1855,7 @@ const MonopolyDealHtmlBoard = ({
               cards={playerMoney}
               assetImageByKey={assetImageByKey}
               layout="stack"
-              emptyLabel="Select a card, then tap here"
+              emptyLabel={moneyEmptyLabel}
               selectableCards={
                 canSelectBoardCards ||
                 (canSelectDealCards && dealPicker?.mode !== "deal_breaker")
@@ -1927,7 +1935,7 @@ const MonopolyDealHtmlBoard = ({
                 assetImageByKey={assetImageByKey}
                 layout="stack"
                 color={propertySet.color}
-                emptyLabel="Empty"
+                emptyLabel=""
                 selectableCards={
                   canSelectBoardCards ||
                   canSelectDealCards ||
@@ -1990,26 +1998,28 @@ const MonopolyDealHtmlBoard = ({
             </div>
           ))}
 
-          <div
-            className="md-dropzone md-dropzone--property-new"
-            onClick={() => {
-              if (canClickRearrangeDestination) {
-                onApplySelectedRearrangeCard(undefined);
-                return;
-              }
+          {isSelfBoard ? (
+            <div
+              className="md-dropzone md-dropzone--property-new"
+              onClick={() => {
+                if (canClickRearrangeDestination) {
+                  onApplySelectedRearrangeCard(undefined);
+                  return;
+                }
 
-              if (!canInteractWithBoard || !selectedHandPlacementCardId) {
-                return;
-              }
+                if (!canInteractWithBoard || !selectedHandPlacementCardId) {
+                  return;
+                }
 
-              placeCardOnProperty(selectedHandPlacementCardId, undefined);
-              setSelectedHandPlacementCardId(null);
-            }}
-          >
-            <div className="md-property-empty">
-              Select a card, then tap here to start a new set
+                placeCardOnProperty(selectedHandPlacementCardId, undefined);
+                setSelectedHandPlacementCardId(null);
+              }}
+            >
+              <div className="md-property-empty">
+                {propertyNewEmptyLabel}
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </article>
     );

@@ -774,6 +774,9 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: playMoneyRes.seqNum,
+                movesLeft: isSelfPlay
+                  ? Math.max(0, current.movesLeft - 1)
+                  : current.movesLeft,
                 players: nextPlayers,
                 money: nextMoney,
                 yourHand: nextYourHand,
@@ -864,6 +867,9 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: playPropertyRes.seqNum,
+                movesLeft: isSelfPlay
+                  ? Math.max(0, current.movesLeft - 1)
+                  : current.movesLeft,
                 players: nextPlayers,
                 properties: nextProperties,
                 yourHand: nextYourHand,
@@ -934,6 +940,10 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: housePlayed.seqNum,
+                movesLeft:
+                  selfPlayerId === housePlayed.playerId
+                    ? Math.max(0, current.movesLeft - 1)
+                    : current.movesLeft,
                 players: nextPlayers,
                 properties: nextProperties,
                 yourHand: nextYourHand,
@@ -1002,6 +1012,10 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: hotelPlayed.seqNum,
+                movesLeft:
+                  selfPlayerId === hotelPlayed.playerId
+                    ? Math.max(0, current.movesLeft - 1)
+                    : current.movesLeft,
                 players: nextPlayers,
                 properties: nextProperties,
                 yourHand: nextYourHand,
@@ -1060,6 +1074,7 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: playPassGoRes.seqNum,
+                movesLeft: Math.max(0, current.movesLeft - 1),
                 players: nextPlayers,
                 yourHand: nextYourHand,
                 lastAction: playPassGoRes.lastPlayedCard,
@@ -1161,6 +1176,9 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: playActionRes.seqNum,
+                movesLeft: isSelfPlay
+                  ? Math.max(0, current.movesLeft - 1)
+                  : current.movesLeft,
                 players: nextPlayers,
                 yourHand: nextYourHand,
                 lastAction: playActionRes.lastPlayedCard,
@@ -2905,7 +2923,14 @@ const GamePage = () => {
             ]
               .filter(Boolean)
               .join(" ")}
-            onClick={() => setIsSidebarCollapsed((current) => !current)}
+            onClick={(event) => {
+              const target = event.target as HTMLElement | null;
+              if (target?.closest(".game-sidebar-panels__content")) {
+                return;
+              }
+
+              setIsSidebarCollapsed((current) => !current);
+            }}
           >
             <div className="game-sidebar-card__header">
               <h2 className="game-sidebar-title">Game Panels</h2>
