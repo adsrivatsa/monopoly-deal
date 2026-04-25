@@ -127,7 +127,13 @@ func (c *Controller) CreateGame(ctx context.Context, tp token.Payload) error {
 		return errors.GameNotSupported
 	}
 
+	gameID, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+
 	g, err := c.store.CreateGame(ctx, store.CreateGameParams{
+		GameID:      gameID,
 		DisplayName: r.DisplayName,
 		Game:        r.Game,
 		GameState:   buf,

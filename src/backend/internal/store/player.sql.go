@@ -12,19 +12,27 @@ import (
 )
 
 const createPlayer = `-- name: CreatePlayer :one
-   INSERT INTO player(display_name, email, image_url)
-   VALUES ($1, $2, $3)
+   INSERT INTO player(player_id, display_name, email, image_url, refresh_token_id)
+   VALUES ($1, $2, $3, $4, $5)
 RETURNING player_id, display_name, email, image_url, refresh_token_id
 `
 
 type CreatePlayerParams struct {
-	DisplayName string `json:"display_name"`
-	Email       string `json:"email"`
-	ImageUrl    string `json:"image_url"`
+	PlayerID       uuid.UUID `json:"player_id"`
+	DisplayName    string    `json:"display_name"`
+	Email          string    `json:"email"`
+	ImageUrl       string    `json:"image_url"`
+	RefreshTokenID uuid.UUID `json:"refresh_token_id"`
 }
 
 func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error) {
-	row := q.db.QueryRow(ctx, createPlayer, arg.DisplayName, arg.Email, arg.ImageUrl)
+	row := q.db.QueryRow(ctx, createPlayer,
+		arg.PlayerID,
+		arg.DisplayName,
+		arg.Email,
+		arg.ImageUrl,
+		arg.RefreshTokenID,
+	)
 	var i Player
 	err := row.Scan(
 		&i.PlayerID,

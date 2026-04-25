@@ -1,6 +1,6 @@
 -- name: CreatePlayer :one
-   INSERT INTO player(display_name, email, image_url)
-   VALUES ($1, $2, $3)
+   INSERT INTO player(player_id, display_name, email, image_url, refresh_token_id)
+   VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: GetPlayer :one

@@ -2,20 +2,18 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS player
     (
-        player_id uuid
-            PRIMARY KEY DEFAULT uuidv7(),
+        player_id uuid PRIMARY KEY,
         display_name text NOT NULL,
         email text NOT NULL,
         image_url text NOT NULL,
-        refresh_token_id uuid NOT NULL DEFAULT uuidv7()
+        refresh_token_id uuid NOT NULL
     );
 
 CREATE TYPE game_type AS enum ('monopoly_deal');
 
 CREATE TABLE IF NOT EXISTS room
     (
-        room_id uuid
-            PRIMARY KEY DEFAULT uuidv7(),
+        room_id uuid PRIMARY KEY,
         display_name text NOT NULL,
         capacity int NOT NULL,
         occupied int NOT NULL DEFAULT 1,
@@ -36,8 +34,7 @@ CREATE TABLE IF NOT EXISTS room_player
 
 CREATE TABLE IF NOT EXISTS game
     (
-        game_id uuid
-            PRIMARY KEY DEFAULT uuidv7(),
+        game_id uuid PRIMARY KEY,
         display_name text NOT NULL,
         game game_type NOT NULL,
         game_state bytea NOT NULL,

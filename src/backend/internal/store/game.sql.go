@@ -36,19 +36,25 @@ func (q *Queries) CompleteGame(ctx context.Context, arg CompleteGameParams) (Gam
 }
 
 const createGame = `-- name: CreateGame :one
-   INSERT INTO game (display_name, game, game_state)
-   VALUES ($1, $2, $3)
+   INSERT INTO game (game_id, display_name, game, game_state)
+   VALUES ($1, $2, $3, $4)
 RETURNING game_id, display_name, game, game_state, completed, winner, created_at
 `
 
 type CreateGameParams struct {
-	DisplayName string   `json:"display_name"`
-	Game        GameType `json:"game"`
-	GameState   []byte   `json:"game_state"`
+	GameID      uuid.UUID `json:"game_id"`
+	DisplayName string    `json:"display_name"`
+	Game        GameType  `json:"game"`
+	GameState   []byte    `json:"game_state"`
 }
 
 func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (Game, error) {
-	row := q.db.QueryRow(ctx, createGame, arg.DisplayName, arg.Game, arg.GameState)
+	row := q.db.QueryRow(ctx, createGame,
+		arg.GameID,
+		arg.DisplayName,
+		arg.Game,
+		arg.GameState,
+	)
 	var i Game
 	err := row.Scan(
 		&i.GameID,

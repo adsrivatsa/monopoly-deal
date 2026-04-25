@@ -5,10 +5,28 @@ import (
 	"the-deal/internal/errors"
 	"the-deal/internal/store"
 	"the-deal/internal/token"
+
+	"github.com/google/uuid"
 )
 
 func (c *Controller) CreatePlayer(ctx context.Context, args CreatePlayerParams) (Player, error) {
-	p, err := c.store.CreatePlayer(ctx, args)
+	playerID, err := uuid.NewV7()
+	if err != nil {
+		return Player{}, err
+	}
+
+	refreshTokenID, err := uuid.NewRandom()
+	if err != nil {
+		return Player{}, err
+	}
+
+	p, err := c.store.CreatePlayer(ctx, store.CreatePlayerParams{
+		PlayerID:       playerID,
+		DisplayName:    args.DisplayName,
+		Email:          args.Email,
+		ImageUrl:       args.ImageUrl,
+		RefreshTokenID: refreshTokenID,
+	})
 	if err != nil {
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return p, errors.EntityNotFound(errors.EntityPlayer, err)

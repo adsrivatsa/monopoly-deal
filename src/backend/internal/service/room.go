@@ -132,7 +132,13 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, args Crea
 		return Room{}, err
 	}
 
+	roomID, err := uuid.NewV7()
+	if err != nil {
+		return Room{}, err
+	}
+
 	r, err := c.store.CreateRoom(ctx, store.CreateRoomParams{
+		RoomID:      roomID,
 		DisplayName: args.DisplayName,
 		Capacity:    args.Capacity,
 		Game:        args.Game,

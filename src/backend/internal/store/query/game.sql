@@ -1,6 +1,6 @@
 -- name: CreateGame :one
-   INSERT INTO game (display_name, game, game_state)
-   VALUES ($1, $2, $3)
+   INSERT INTO game (game_id, display_name, game, game_state)
+   VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: GetGameByPlayer :one

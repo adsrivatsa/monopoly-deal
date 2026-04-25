@@ -13,20 +13,22 @@ import (
 )
 
 const createRoom = `-- name: CreateRoom :one
-   INSERT INTO room (display_name, capacity, game, settings)
-   VALUES ($1, $2, $3, $4)
+   INSERT INTO room (room_id, display_name, capacity, game, settings)
+   VALUES ($1, $2, $3, $4, $5)
 RETURNING room_id, display_name, capacity, occupied, game, settings, created_at
 `
 
 type CreateRoomParams struct {
-	DisplayName string   `json:"display_name"`
-	Capacity    int32    `json:"capacity"`
-	Game        GameType `json:"game"`
-	Settings    []byte   `json:"settings"`
+	RoomID      uuid.UUID `json:"room_id"`
+	DisplayName string    `json:"display_name"`
+	Capacity    int32     `json:"capacity"`
+	Game        GameType  `json:"game"`
+	Settings    []byte    `json:"settings"`
 }
 
 func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
 	row := q.db.QueryRow(ctx, createRoom,
+		arg.RoomID,
 		arg.DisplayName,
 		arg.Capacity,
 		arg.Game,
