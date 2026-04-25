@@ -1,6 +1,6 @@
 -- name: CreateRoom :one
-   INSERT INTO room (display_name, capacity, game, settings)
-   VALUES ($1, $2, $3, $4)
+   INSERT INTO room (room_id, display_name, capacity, game, settings)
+   VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: GetRoom :one
