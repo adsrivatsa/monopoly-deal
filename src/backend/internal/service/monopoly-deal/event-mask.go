@@ -34,11 +34,6 @@ func (c *Controller) MaskEvents(tp token.Payload, msg *monopoly_deal_schema.Serv
 			}
 		}
 
-	case *monopoly_deal_schema.ServerMessage_DemandCreated:
-		if p.DemandCreated.Demand.PlayerId != tp.PlayerID.String() {
-			return nil
-		}
-
 	case *monopoly_deal_schema.ServerMessage_PendingRentCreated:
 		if p.PendingRentCreated.PendingRent.PlayerId != tp.PlayerID.String() {
 			return nil

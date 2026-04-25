@@ -7,6 +7,7 @@ import {
 type PropertyDemandOverlayProps = {
   demand: Demand;
   players: Player[];
+  selfPlayerId?: string;
   targetCardImageUrl?: string;
   sourceCardImageUrl?: string;
   canDeny: boolean;
@@ -17,6 +18,7 @@ type PropertyDemandOverlayProps = {
 const PropertyDemandOverlay = ({
   demand,
   players,
+  selfPlayerId,
   targetCardImageUrl,
   sourceCardImageUrl,
   canDeny,
@@ -24,25 +26,73 @@ const PropertyDemandOverlay = ({
   onDeny,
 }: PropertyDemandOverlayProps) => {
   const sourcePlayer = players.find((player) => player.playerId === demand.sourceId);
+  const targetPlayer = players.find((player) => player.playerId === demand.playerId);
+  const isTargetingSelf = !!selfPlayerId && demand.playerId === selfPlayerId;
+  const isSelfSource = !!selfPlayerId && demand.sourceId === selfPlayerId;
   const sourceName = sourcePlayer?.displayName ?? demand.sourceId;
+  const targetName = targetPlayer?.displayName ?? demand.playerId;
   const isSlyDealDemand =
     demand.demandSource === DemandSource.DEMAND_SOURCE_SLY_DEAL;
   const isForcedDealDemand =
     demand.demandSource === DemandSource.DEMAND_SOURCE_FORCED_DEAL;
   const hasReturnProperty = !!demand.propertyDemand?.sourceCardId;
-  const demandLine = isSlyDealDemand
-    ? demand.isActive
-      ? "is trying to steal your property:"
-      : "blocked your steal of their property:"
+  const sourceInlineName = (
+    <span className="md-demand-inline-player">
+      <img
+        className="md-demand-source__avatar md-demand-inline-player__avatar"
+        src={sourcePlayer?.avatarUrl ?? ""}
+        alt={sourceName}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+      <span className="md-demand-source__name">{sourceName}</span>
+    </span>
+  );
+  const targetInlineName = (
+    <span className="md-demand-inline-player">
+      <img
+        className="md-demand-source__avatar md-demand-inline-player__avatar"
+        src={targetPlayer?.avatarUrl ?? ""}
+        alt={targetName}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+      <span className="md-demand-source__name">{targetName}</span>
+    </span>
+  );
+  const sourceReference = isSelfSource ? "you" : sourceInlineName;
+  const demandEyebrow = isSlyDealDemand
+    ? "Property Steal"
     : isForcedDealDemand
+      ? "Property Swap"
+      : "Property Demand";
+  const demandLine = isTargetingSelf
+    ? isSlyDealDemand
       ? demand.isActive
-        ? "wants to swap properties:"
-        : "doesn't want to swap properties:"
-    : demand.isActive
-      ? hasReturnProperty
-        ? "wants your property, they're giving:"
-        : "wants your property:"
-      : "said no to your property ask:";
+        ? "is trying to steal your property:"
+        : "blocked your steal of their property:"
+      : isForcedDealDemand
+        ? demand.isActive
+          ? "wants to swap properties:"
+          : "doesn't want to swap properties:"
+      : demand.isActive
+        ? hasReturnProperty
+          ? "wants your property, they're giving:"
+          : "wants your property:"
+        : "said no to your property ask:"
+    : isSlyDealDemand
+      ? demand.isActive
+        ? "is answering a property steal from"
+        : "blocked a property steal from"
+      : isForcedDealDemand
+        ? demand.isActive
+          ? "is answering a property swap from"
+          : "blocked a property swap from"
+        : demand.isActive
+          ? "is answering a property demand from"
+          : "blocked a property demand from";
+  const demandActor = isTargetingSelf ? sourcePlayer : targetPlayer;
+  const demandActorName = sourceName;
   const firstExchangeImageUrl = demand.isActive
     ? sourceCardImageUrl
     : targetCardImageUrl;
@@ -56,20 +106,26 @@ const PropertyDemandOverlay = ({
       aria-live="polite"
       onPointerDown={(event) => event.stopPropagation()}
     >
-      <h3 className="md-demand__title">Property demand</h3>
-      <div className="md-demand-source">
-        <img
-          className="md-demand-source__avatar"
-          src={sourcePlayer?.avatarUrl ?? ""}
-          alt={sourcePlayer?.displayName ?? demand.sourceId}
-          loading="lazy"
-          referrerPolicy="no-referrer"
-        />
+      <p className="md-demand__eyebrow">{demandEyebrow}</p>
+      {isTargetingSelf ? (
+        <div className="md-demand-source">
+          <img
+            className="md-demand-source__avatar"
+            src={demandActor?.avatarUrl ?? ""}
+            alt={demandActorName}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+          <p className="md-demand__line md-demand-source__message">
+            <span className="md-demand-source__name">{demandActorName}</span> {demandLine}
+          </p>
+        </div>
+      ) : (
         <p className="md-demand__line md-demand-source__message">
-          <span className="md-demand-source__name">{sourceName}</span> {demandLine}
+          {targetInlineName} {demandLine} {sourceReference}.
         </p>
-      </div>
-      {hasReturnProperty ? (
+      )}
+      {isTargetingSelf && hasReturnProperty ? (
         <div className="md-demand-property-card">
           <div className="md-stack-box__cards" role="list" aria-label="Property exchange">
             {firstExchangeImageUrl ? (
@@ -106,7 +162,7 @@ const PropertyDemandOverlay = ({
             ) : null}
           </div>
         </div>
-      ) : targetCardImageUrl ? (
+      ) : isTargetingSelf && targetCardImageUrl ? (
         <div className="md-demand-property-card">
           <img
             className="md-demand-property-card__image"
@@ -117,26 +173,28 @@ const PropertyDemandOverlay = ({
           />
         </div>
       ) : null}
-      <div className="md-demand__actions">
-        <button
-          type="button"
-          className="md-demand__button"
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={() => onComply(demand.id)}
-        >
-          OK
-        </button>
-        <button
-          type="button"
-          className="md-demand__button md-demand__button--secondary"
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={() => onDeny(demand.id)}
-          disabled={!canDeny}
-          title={canDeny ? "Play Just Say No" : "Requires a Just Say No card"}
-        >
-          Just Say No
-        </button>
-      </div>
+      {isTargetingSelf ? (
+        <div className="md-demand__actions">
+          <button
+            type="button"
+            className="md-demand__button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => onComply(demand.id)}
+          >
+            OK
+          </button>
+          <button
+            type="button"
+            className="md-demand__button md-demand__button--secondary"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => onDeny(demand.id)}
+            disabled={!canDeny}
+            title={canDeny ? "Play Just Say No" : "Requires a Just Say No card"}
+          >
+            Just Say No
+          </button>
+        </div>
+      ) : null}
     </aside>
   );
 };

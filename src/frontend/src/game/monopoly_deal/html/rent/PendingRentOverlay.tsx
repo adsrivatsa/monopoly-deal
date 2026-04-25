@@ -32,7 +32,7 @@ const PendingRentOverlay = ({
       aria-live="polite"
       onPointerDown={(event) => event.stopPropagation()}
     >
-      <h3 className="md-demand__title">Pending rent</h3>
+      <p className="md-demand__eyebrow">Rent</p>
       <p className="md-demand__line">{targetLabel}:</p>
       <div className="md-rent-targets" role="list" aria-label="Rent targets">
         {targets.length === 0 ? (

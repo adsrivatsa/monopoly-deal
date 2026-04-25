@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   assetKeyToJSON,
-  Color,
   type Card,
 } from "../../../generated/monopoly_deal";
 
@@ -11,22 +10,6 @@ type GameCardViewProps = {
   isSelected?: boolean;
   className?: string;
   onClick?: (card: Card) => void;
-};
-
-const shouldFlipTwoColorWild = (card: Card): boolean => {
-  if (card.colors.length !== 2) {
-    return false;
-  }
-
-  const secondColor = card.colors[1];
-  if (
-    secondColor === Color.COLOR_UNSPECIFIED ||
-    secondColor === Color.UNRECOGNIZED
-  ) {
-    return false;
-  }
-
-  return card.activeColor === secondColor;
 };
 
 const GameCardView = ({
@@ -59,12 +42,8 @@ const GameCardView = ({
     if (hasImage) {
       classes.push("md-card--has-image");
     }
-    if (shouldFlipTwoColorWild(card)) {
-      classes.push("md-card--flipped");
-    }
-
     return classes.join(" ");
-  }, [card, className, hasImage, isSelected, onClick]);
+  }, [className, hasImage, isSelected, onClick]);
 
   const cardStyle = useMemo<CSSProperties>(() => {
     return {

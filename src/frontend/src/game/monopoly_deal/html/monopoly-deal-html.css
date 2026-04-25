@@ -43,11 +43,15 @@
   right: 10px;
   z-index: 20;
   pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .md-demand-stack {
   display: grid;
   gap: 0.45rem;
+  justify-items: end;
 }
 
 .md-demand {
@@ -142,6 +146,17 @@
   margin-top: 0;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+.md-demand-inline-player {
+  display: inline;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.md-demand-inline-player__avatar {
+  margin-right: 0.2rem;
+  vertical-align: text-bottom;
 }
 
 .md-demand-property-card {

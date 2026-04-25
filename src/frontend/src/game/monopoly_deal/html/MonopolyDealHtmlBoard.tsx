@@ -382,8 +382,11 @@ const MonopolyDealHtmlBoard = ({
     const selfDemands = selfPlayerId
       ? demands.filter((demand) => demand.playerId === selfPlayerId)
       : demands;
-    const prioritizedDemands = selfDemands.length > 0 ? selfDemands : demands;
-    return prioritizedDemands.slice(0, 3);
+    if (selfDemands.length > 0) {
+      return selfDemands.slice(0, 3);
+    }
+
+    return demands.slice(0, 2);
   }, [gameState?.demands, selfPlayerId]);
 
   const hasAnyDemand = visibleDemands.length > 0;
@@ -895,10 +898,12 @@ const MonopolyDealHtmlBoard = ({
         point.y = event.clientY;
       }
 
+      const pinchStartDistance = pinchStartDistanceRef.current;
+      const worldCenter = pinchWorldCenterRef.current;
       if (
         activeTouchPointsRef.current.size >= 2 &&
-        pinchStartDistanceRef.current &&
-        pinchWorldCenterRef.current
+        pinchStartDistance !== null &&
+        worldCenter !== null
       ) {
         withErrorHandling(() => {
           event.preventDefault();
@@ -912,7 +917,7 @@ const MonopolyDealHtmlBoard = ({
 
           const center = midpointBetweenPoints(first, second);
           const currentDistance = distanceBetweenPoints(first, second);
-          const scale = currentDistance / pinchStartDistanceRef.current;
+          const scale = currentDistance / pinchStartDistance;
           const candidateZoom = pinchStartZoomRef.current * scale;
           const nextZoom = Math.min(
             MAX_ZOOM,
@@ -923,7 +928,6 @@ const MonopolyDealHtmlBoard = ({
             x: center.x - rect.left,
             y: center.y - rect.top,
           };
-          const worldCenter = pinchWorldCenterRef.current;
           const candidatePan = {
             x: localCenter.x - worldCenter.x * nextZoom,
             y: localCenter.y - worldCenter.y * nextZoom,
@@ -2064,6 +2068,7 @@ const MonopolyDealHtmlBoard = ({
           <DemandOverlay
             demands={visibleDemands}
             players={players}
+            selfPlayerId={selfPlayerId}
             targetCardImageById={propertyCardImageById}
             propertySetCardsById={propertySetCardsById}
             canDeny={hasJustSayNo}
@@ -2225,7 +2230,7 @@ const MonopolyDealHtmlBoard = ({
           eyebrow={
             debtCollectorPicker.mode === "wild_rent"
               ? "Wild Rent"
-              : "Debt Collector"
+              : "SETTLE UP"
           }
           ariaLabel={
             debtCollectorPicker.mode === "wild_rent"

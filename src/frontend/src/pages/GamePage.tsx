@@ -1847,8 +1847,29 @@ const GamePage = () => {
     [currentTurnPlayerId, movesLeft, selfPlayerId],
   );
 
+  const notifyNoMovesLeftForCardPlay = useCallback(
+    (context: string, details?: Record<string, unknown>) => {
+      const isSelfTurn =
+        !!selfPlayerId &&
+        !!currentTurnPlayerId &&
+        selfPlayerId === currentTurnPlayerId;
+      if (!isSelfTurn || movesLeft > 0) {
+        return false;
+      }
+
+      console.log(`[game-ui] ${context} blocked; no moves left`, details ?? {});
+      notifyFrontendRule("You have no moves left this turn.", "NO_MOVES_LEFT");
+      return true;
+    },
+    [currentTurnPlayerId, movesLeft, notifyFrontendRule, selfPlayerId],
+  );
+
   const handlePlayMoneyCard = useCallback(
     (cardId: string) => {
+      if (notifyNoMovesLeftForCardPlay("play money", { cardId })) {
+        return;
+      }
+
       const card = initialGameState?.yourHand?.cards.find((candidate) => {
         return candidate.cardId === cardId;
       });
@@ -1873,11 +1894,21 @@ const GamePage = () => {
 
       sendGamePlayMoneyMessage(socket, cardId);
     },
-    [canDragMoneyCard, initialGameState, notifyFrontendRule, notifySocketUnavailable],
+    [
+      canDragMoneyCard,
+      initialGameState,
+      notifyFrontendRule,
+      notifyNoMovesLeftForCardPlay,
+      notifySocketUnavailable,
+    ],
   );
 
   const handlePlayPassGoCard = useCallback(
     (cardId: string) => {
+      if (notifyNoMovesLeftForCardPlay("action-pile play", { cardId })) {
+        return;
+      }
+
       const card = initialGameState?.yourHand?.cards.find((candidate) => {
         return candidate.cardId === cardId;
       });
@@ -1900,14 +1931,6 @@ const GamePage = () => {
           cardId,
         });
         notifyFrontendRule("It is not your turn.", "NOT_YOUR_TURN");
-        return;
-      }
-
-      if (movesLeft <= 0) {
-        console.log("[game-ui] action-pile play blocked; no moves left", {
-          cardId,
-        });
-        notifyFrontendRule("You have no moves left this turn.", "NO_MOVES_LEFT");
         return;
       }
 
@@ -1945,8 +1968,8 @@ const GamePage = () => {
     [
       currentTurnPlayerId,
       initialGameState,
-      movesLeft,
       notifyFrontendRule,
+      notifyNoMovesLeftForCardPlay,
       notifySocketUnavailable,
       selfPlayerId,
     ],
@@ -1981,6 +2004,10 @@ const GamePage = () => {
 
   const handlePlayPropertyCard = useCallback(
     (cardId: string, propertySetId?: string, activeColor?: Color) => {
+      if (notifyNoMovesLeftForCardPlay("play property", { cardId })) {
+        return;
+      }
+
       const card = initialGameState?.yourHand?.cards.find((candidate) => {
         return candidate.cardId === cardId;
       });
@@ -1990,7 +2017,7 @@ const GamePage = () => {
           cardId,
         });
         notifyFrontendRule(
-          "You cannot play that property card right now.",
+          "You can only play pure/wild property or a house/hotel there.",
           "PLAY_PROPERTY_FRONTEND_BLOCKED",
         );
         return;
@@ -2131,6 +2158,7 @@ const GamePage = () => {
       canPlayPropertyCard,
       initialGameState,
       notifyFrontendRule,
+      notifyNoMovesLeftForCardPlay,
       notifySocketUnavailable,
       pushErrorNotice,
       selfPlayerId,
@@ -2190,6 +2218,10 @@ const GamePage = () => {
 
   const handlePlayDebtCollectorCard = useCallback(
     (cardId: string, targetPlayerId: string) => {
+      if (notifyNoMovesLeftForCardPlay("play debt collector", { cardId, targetPlayerId })) {
+        return;
+      }
+
       const card = initialGameState?.yourHand?.cards.find((candidate) => {
         return candidate.cardId === cardId;
       });
@@ -2216,14 +2248,6 @@ const GamePage = () => {
           cardId,
         });
         notifyFrontendRule("It is not your turn.", "NOT_YOUR_TURN");
-        return;
-      }
-
-      if (movesLeft <= 0) {
-        console.log("[game-ui] play debt collector blocked; no moves left", {
-          cardId,
-        });
-        notifyFrontendRule("You have no moves left this turn.", "NO_MOVES_LEFT");
         return;
       }
 
@@ -2255,8 +2279,8 @@ const GamePage = () => {
     [
       currentTurnPlayerId,
       initialGameState,
-      movesLeft,
       notifyFrontendRule,
+      notifyNoMovesLeftForCardPlay,
       notifySocketUnavailable,
       selfPlayerId,
     ],
@@ -2264,6 +2288,10 @@ const GamePage = () => {
 
   const handlePlayWildRentCard = useCallback(
     (cardId: string, targetPlayerId: string) => {
+      if (notifyNoMovesLeftForCardPlay("play wild rent", { cardId, targetPlayerId })) {
+        return;
+      }
+
       const card = initialGameState?.yourHand?.cards.find((candidate) => {
         return candidate.cardId === cardId;
       });
@@ -2291,14 +2319,6 @@ const GamePage = () => {
           cardId,
         });
         notifyFrontendRule("It is not your turn.", "NOT_YOUR_TURN");
-        return;
-      }
-
-      if (movesLeft <= 0) {
-        console.log("[game-ui] play wild rent blocked; no moves left", {
-          cardId,
-        });
-        notifyFrontendRule("You have no moves left this turn.", "NO_MOVES_LEFT");
         return;
       }
 
@@ -2330,8 +2350,8 @@ const GamePage = () => {
     [
       currentTurnPlayerId,
       initialGameState,
-      movesLeft,
       notifyFrontendRule,
+      notifyNoMovesLeftForCardPlay,
       notifySocketUnavailable,
       selfPlayerId,
     ],
@@ -2339,6 +2359,16 @@ const GamePage = () => {
 
   const handlePlaySlyDealCard = useCallback(
     (cardId: string, targetPlayerId: string, targetCardId: string) => {
+      if (
+        notifyNoMovesLeftForCardPlay("play sly deal", {
+          cardId,
+          targetPlayerId,
+          targetCardId,
+        })
+      ) {
+        return;
+      }
+
       const card = initialGameState?.yourHand?.cards.find((candidate) => {
         return candidate.cardId === cardId;
       });
@@ -2364,12 +2394,6 @@ const GamePage = () => {
       if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
         console.log("[game-ui] play sly deal blocked; not your turn", { cardId });
         notifyFrontendRule("It is not your turn.", "NOT_YOUR_TURN");
-        return;
-      }
-
-      if (movesLeft <= 0) {
-        console.log("[game-ui] play sly deal blocked; no moves left", { cardId });
-        notifyFrontendRule("You have no moves left this turn.", "NO_MOVES_LEFT");
         return;
       }
 
@@ -2404,8 +2428,8 @@ const GamePage = () => {
     [
       currentTurnPlayerId,
       initialGameState,
-      movesLeft,
       notifyFrontendRule,
+      notifyNoMovesLeftForCardPlay,
       notifySocketUnavailable,
       selfPlayerId,
     ],
@@ -2418,6 +2442,17 @@ const GamePage = () => {
       sourceCardId: string,
       targetCardId: string,
     ) => {
+      if (
+        notifyNoMovesLeftForCardPlay("play forced deal", {
+          cardId,
+          targetPlayerId,
+          sourceCardId,
+          targetCardId,
+        })
+      ) {
+        return;
+      }
+
       const card = initialGameState?.yourHand?.cards.find((candidate) => {
         return candidate.cardId === cardId;
       });
@@ -2445,12 +2480,6 @@ const GamePage = () => {
       if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
         console.log("[game-ui] play forced deal blocked; not your turn", { cardId });
         notifyFrontendRule("It is not your turn.", "NOT_YOUR_TURN");
-        return;
-      }
-
-      if (movesLeft <= 0) {
-        console.log("[game-ui] play forced deal blocked; no moves left", { cardId });
-        notifyFrontendRule("You have no moves left this turn.", "NO_MOVES_LEFT");
         return;
       }
 
@@ -2493,8 +2522,8 @@ const GamePage = () => {
     [
       currentTurnPlayerId,
       initialGameState,
-      movesLeft,
       notifyFrontendRule,
+      notifyNoMovesLeftForCardPlay,
       notifySocketUnavailable,
       selfPlayerId,
     ],
@@ -2502,6 +2531,16 @@ const GamePage = () => {
 
   const handlePlayDealBreakerCard = useCallback(
     (cardId: string, targetPlayerId: string, propertySetId: string) => {
+      if (
+        notifyNoMovesLeftForCardPlay("play deal breaker", {
+          cardId,
+          targetPlayerId,
+          propertySetId,
+        })
+      ) {
+        return;
+      }
+
       const card = initialGameState?.yourHand?.cards.find((candidate) => {
         return candidate.cardId === cardId;
       });
@@ -2528,12 +2567,6 @@ const GamePage = () => {
       if (!selfPlayerId || !currentTurnPlayerId || selfPlayerId !== currentTurnPlayerId) {
         console.log("[game-ui] play deal breaker blocked; not your turn", { cardId });
         notifyFrontendRule("It is not your turn.", "NOT_YOUR_TURN");
-        return;
-      }
-
-      if (movesLeft <= 0) {
-        console.log("[game-ui] play deal breaker blocked; no moves left", { cardId });
-        notifyFrontendRule("You have no moves left this turn.", "NO_MOVES_LEFT");
         return;
       }
 
@@ -2568,8 +2601,8 @@ const GamePage = () => {
     [
       currentTurnPlayerId,
       initialGameState,
-      movesLeft,
       notifyFrontendRule,
+      notifyNoMovesLeftForCardPlay,
       notifySocketUnavailable,
       selfPlayerId,
     ],
@@ -2748,6 +2781,10 @@ const GamePage = () => {
   }, [initialGameState, notifyFrontendRule, notifySocketUnavailable]);
 
   const handlePlayDoubleTheRentCard = useCallback(() => {
+    if (notifyNoMovesLeftForCardPlay("play double-the-rent")) {
+      return;
+    }
+
     const card = initialGameState?.yourHand?.cards.find((candidate) => {
       return candidate.assetKey === AssetKey.ASSET_KEY_DOUBLE_THE_RENT;
     });
@@ -2766,14 +2803,6 @@ const GamePage = () => {
       return;
     }
 
-    if (movesLeft <= 0) {
-      console.log("[game-ui] play double-the-rent blocked; no moves left", {
-        cardId: card.cardId,
-      });
-      notifyFrontendRule("You have no moves left this turn.", "NO_MOVES_LEFT");
-      return;
-    }
-
     const socket = socketRef.current;
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       console.log("[game-ws] play double-the-rent skipped; socket not open");
@@ -2786,8 +2815,8 @@ const GamePage = () => {
   }, [
     currentTurnPlayerId,
     initialGameState,
-    movesLeft,
     notifyFrontendRule,
+    notifyNoMovesLeftForCardPlay,
     notifySocketUnavailable,
     selfPlayerId,
   ]);

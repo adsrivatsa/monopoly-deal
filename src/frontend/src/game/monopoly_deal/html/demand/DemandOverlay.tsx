@@ -11,6 +11,7 @@ import PropertySetDemandOverlay from "./PropertySetDemandOverlay";
 type DemandOverlayProps = {
   demands: Demand[];
   players: Player[];
+  selfPlayerId?: string;
   targetCardImageById: Record<string, string>;
   propertySetCardsById: Record<string, Card[]>;
   canDeny: boolean;
@@ -25,6 +26,7 @@ type DemandOverlayProps = {
 const DemandOverlay = ({
   demands,
   players,
+  selfPlayerId,
   targetCardImageById,
   propertySetCardsById,
   canDeny,
@@ -49,6 +51,7 @@ const DemandOverlay = ({
               key={demand.id}
               demand={demand}
               players={players}
+              selfPlayerId={selfPlayerId}
               canDeny={canDeny}
               isDemandActive={demand.isActive}
               isSelectingCards={isThisDemandSelecting}
@@ -66,6 +69,7 @@ const DemandOverlay = ({
               key={demand.id}
               demand={demand}
               players={players}
+              selfPlayerId={selfPlayerId}
               targetCardImageUrl={
                 demand.propertyDemand?.targetCardId
                   ? targetCardImageById[demand.propertyDemand.targetCardId]
@@ -89,6 +93,7 @@ const DemandOverlay = ({
               key={demand.id}
               demand={demand}
               players={players}
+              selfPlayerId={selfPlayerId}
               targetCardImageById={targetCardImageById}
               requestedCards={
                 demand.propertySetDemand?.propertySetId
