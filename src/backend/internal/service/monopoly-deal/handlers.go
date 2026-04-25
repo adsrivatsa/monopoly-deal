@@ -154,6 +154,9 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 	case *monopoly_deal_schema.ClientMessage_PlayHotel:
 		events, err = c.handlePlayHotel(&game, tp, p)
 	}
+	if err != nil {
+		return err
+	}
 
 	gameState, err := game.EncodeMsgpack()
 	if err != nil {
