@@ -9,21 +9,27 @@ import (
 type ActionKind string
 
 const (
-	ActionKindUnspecified  ActionKind = "unspecified"
-	ActionKindPlayMoney    ActionKind = "play_money"
-	ActionKindPlayProperty ActionKind = "play_property"
-	ActionKindPlayHouse    ActionKind = "play_house"
-	ActionKindPlayHotel    ActionKind = "play_hotel"
-	ActionKindPlayPassGo   ActionKind = "play_pass_go"
+	ActionKindUnspecified        ActionKind = "unspecified"
+	ActionKindPlayMoney          ActionKind = "play_money"
+	ActionKindPlayProperty       ActionKind = "play_property"
+	ActionKindPlayHouse          ActionKind = "play_house"
+	ActionKindPlayHotel          ActionKind = "play_hotel"
+	ActionKindPlayPassGo         ActionKind = "play_pass_go"
+	ActionKindDemandCreated      ActionKind = "demand_created"
+	ActionKindPendingRentCreated ActionKind = "pending_rent_created"
+	ActionKindDemandComplied     ActionKind = "demand_complied"
 )
 
 var ActionKindProtoMap = map[ActionKind]monopoly_deal_schema.ActionKind{
-	ActionKindUnspecified:  monopoly_deal_schema.ActionKind_ACTION_KIND_UNSPECIFIED,
-	ActionKindPlayMoney:    monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_MONEY,
-	ActionKindPlayProperty: monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_PROPERTY,
-	ActionKindPlayHouse:    monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_HOUSE,
-	ActionKindPlayHotel:    monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_HOTEL,
-	ActionKindPlayPassGo:   monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_PASS_GO,
+	ActionKindUnspecified:        monopoly_deal_schema.ActionKind_ACTION_KIND_UNSPECIFIED,
+	ActionKindPlayMoney:          monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_MONEY,
+	ActionKindPlayProperty:       monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_PROPERTY,
+	ActionKindPlayHouse:          monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_HOUSE,
+	ActionKindPlayHotel:          monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_HOTEL,
+	ActionKindPlayPassGo:         monopoly_deal_schema.ActionKind_ACTION_KIND_PLAY_PASS_GO,
+	ActionKindDemandCreated:      monopoly_deal_schema.ActionKind_ACTION_KIND_DEMANDS_CREATED,
+	ActionKindPendingRentCreated: monopoly_deal_schema.ActionKind_ACTION_KIND_PENDING_RENT_CREATED,
+	ActionKindDemandComplied:     monopoly_deal_schema.ActionKind_ACTION_KIND_DEMAND_COMPLIED,
 }
 
 func (a ActionKind) Proto() monopoly_deal_schema.ActionKind {
@@ -224,18 +230,18 @@ type ActionPlayPassGo struct {
 	Version        int        `msgpack:"b"`
 	SeqNum         int        `msgpack:"c"`
 	PlayerID       uuid.UUID  `msgpack:"d"`
-	Cards          Cards      `msgpack:"e"`
-	LastPlayedCard Card       `msgpack:"f"`
+	LastPlayedCard Card       `msgpack:"e"`
+	Cards          Cards      `msgpack:"f"`
 }
 
-func NewActionPlayPassGo(seqNum int, playerID uuid.UUID, cards Cards, lastPlayedCard Card) *ActionPlayPassGo {
+func NewActionPlayPassGo(seqNum int, playerID uuid.UUID, lastPlayedCard Card, cards Cards) *ActionPlayPassGo {
 	return &ActionPlayPassGo{
 		Kind:           ActionKindPlayPassGo,
 		Version:        1,
 		SeqNum:         seqNum,
 		PlayerID:       playerID,
-		Cards:          cards,
 		LastPlayedCard: lastPlayedCard,
+		Cards:          cards,
 	}
 }
 
@@ -262,6 +268,229 @@ func (a *ActionPlayPassGo) Proto() *monopoly_deal_schema.Action {
 				LastPlayedCard: a.LastPlayedCard.Proto(),
 				Cards:          a.Cards.Proto(),
 			},
+		},
+	}
+}
+
+type ActionDemandsCreated struct {
+	Kind           ActionKind `msgpack:"a"`
+	Version        int        `msgpack:"b"`
+	SeqNum         int        `msgpack:"c"`
+	PlayerID       uuid.UUID  `msgpack:"d"`
+	LastPlayedCard *Card      `msgpack:"e"`
+	Demands        []Demand   `msgpack:"f"`
+}
+
+func NewActionDemandsCreated(seqNum int, playerID uuid.UUID, lastPlayedCard *Card, demands ...Demand) *ActionDemandsCreated {
+	return &ActionDemandsCreated{
+		Kind:           ActionKindDemandCreated,
+		Version:        1,
+		SeqNum:         seqNum,
+		PlayerID:       playerID,
+		LastPlayedCard: lastPlayedCard,
+		Demands:        demands,
+	}
+}
+
+func (a *ActionDemandsCreated) GetKind() ActionKind {
+	return a.Kind
+}
+
+func (a *ActionDemandsCreated) GetVersion() int {
+	return a.Version
+}
+
+func (a *ActionDemandsCreated) GetSeqNum() int {
+	return a.SeqNum
+}
+
+func (a *ActionDemandsCreated) Proto() *monopoly_deal_schema.Action {
+	lastPlayedCard := new(monopoly_deal_schema.Card)
+	if a.LastPlayedCard != nil {
+		lastPlayedCard = a.LastPlayedCard.Proto()
+	}
+
+	demands := make([]*monopoly_deal_schema.Demand, len(a.Demands))
+	for i, demand := range a.Demands {
+		demands[i] = demand.Proto()
+	}
+
+	return &monopoly_deal_schema.Action{
+		PlayerId:       a.PlayerID.String(),
+		Kind:           a.Kind.Proto(),
+		SeqNum:         int32(a.SeqNum),
+		TurnDeadlineMs: 0, // Added by caller
+		Payload: &monopoly_deal_schema.Action_ActionDemandsCreated{
+			ActionDemandsCreated: &monopoly_deal_schema.ActionDemandsCreated{
+				LastPlayedCard: lastPlayedCard,
+				Demands:        demands,
+			},
+		},
+	}
+}
+
+type ActionPendingRentCreated struct {
+	Kind           ActionKind  `msgpack:"a"`
+	Version        int         `msgpack:"b"`
+	SeqNum         int         `msgpack:"c"`
+	PlayerID       uuid.UUID   `msgpack:"d"`
+	LastPlayedCard Card        `msgpack:"e"`
+	PendingRent    PendingRent `msgpack:"f"`
+}
+
+func NewActionPendingRentCreated(seqNum int, playerID uuid.UUID, lastPlayerCard Card, pendingRent PendingRent) *ActionPendingRentCreated {
+	return &ActionPendingRentCreated{
+		Kind:           ActionKindPendingRentCreated,
+		Version:        1,
+		SeqNum:         seqNum,
+		PlayerID:       playerID,
+		LastPlayedCard: lastPlayerCard,
+		PendingRent:    pendingRent,
+	}
+}
+
+func (a *ActionPendingRentCreated) GetKind() ActionKind {
+	return a.Kind
+}
+
+func (a *ActionPendingRentCreated) GetVersion() int {
+	return a.Version
+}
+
+func (a *ActionPendingRentCreated) GetSeqNum() int {
+	return a.SeqNum
+}
+
+func (a *ActionPendingRentCreated) Proto() *monopoly_deal_schema.Action {
+	return &monopoly_deal_schema.Action{
+		PlayerId:       a.PlayerID.String(),
+		Kind:           a.Kind.Proto(),
+		SeqNum:         int32(a.SeqNum),
+		TurnDeadlineMs: 0, // Added by caller
+		Payload: &monopoly_deal_schema.Action_ActionPendingRentCreated{
+			ActionPendingRentCreated: &monopoly_deal_schema.ActionPendingRentCreated{
+				LastCardPlayed: a.LastPlayedCard.Proto(),
+				PendingRent:    a.PendingRent.Proto(),
+			},
+		},
+	}
+}
+
+type TransferCards struct {
+	SourceID     uuid.UUID    `msgpack:"a"`
+	TargetID     uuid.UUID    `msgpack:"b"`
+	Cards        Cards        `msgpack:"c"`
+	PropertySets PropertySets `msgpack:"d"`
+	SourceSets   int          `msgpack:"e"`
+	SourceMoney  int          `msgpack:"f"`
+	TargetSets   int          `msgpack:"g"`
+	TargetMoney  int          `msgpack:"h"`
+}
+
+type TransferProperty struct {
+	SourceID           uuid.UUID    `msgpack:"a"`
+	TargetID           uuid.UUID    `msgpack:"b"`
+	SourcePropertySets PropertySets `msgpack:"c"`
+	TargetPropertySets PropertySets `msgpack:"d"`
+}
+
+type TransferPropertySet struct {
+	SourceID    uuid.UUID   `msgpack:"a"`
+	TargetID    uuid.UUID   `msgpack:"b"`
+	PropertySet PropertySet `msgpack:"c"`
+}
+
+type ActionDemandComplied struct {
+	Kind                ActionKind           `msgpack:"a"`
+	Version             int                  `msgpack:"b"`
+	SeqNum              int                  `msgpack:"c"`
+	PlayerID            uuid.UUID            `msgpack:"d"`
+	DemandID            Identifier           `msgpack:"e"`
+	TransferCards       *TransferCards       `msgpack:"f"`
+	TransferProperty    *TransferProperty    `msgpack:"g"`
+	TransferPropertySet *TransferPropertySet `msgpack:"h"`
+}
+
+func NewActionDemandComplied(seqNum int, playerID uuid.UUID, demandID Identifier, transferCards *TransferCards, transferProperty *TransferProperty, transferPropertySet *TransferPropertySet) *ActionDemandComplied {
+	return &ActionDemandComplied{
+		Kind:                ActionKindDemandComplied,
+		Version:             1,
+		SeqNum:              seqNum,
+		PlayerID:            playerID,
+		DemandID:            demandID,
+		TransferCards:       transferCards,
+		TransferProperty:    transferProperty,
+		TransferPropertySet: transferPropertySet,
+	}
+}
+
+func (a *ActionDemandComplied) GetKind() ActionKind {
+	return a.Kind
+}
+
+func (a *ActionDemandComplied) GetVersion() int {
+	return a.Version
+}
+
+func (a *ActionDemandComplied) GetSeqNum() int {
+	return a.SeqNum
+}
+
+func (a *ActionDemandComplied) Proto() *monopoly_deal_schema.Action {
+	var demandComplied *monopoly_deal_schema.ActionDemandComplied
+
+	if a.TransferCards != nil {
+		demandComplied = &monopoly_deal_schema.ActionDemandComplied{
+			DemandId: string(a.DemandID),
+			Transfer: &monopoly_deal_schema.ActionDemandComplied_TransferCards{
+				TransferCards: &monopoly_deal_schema.TransferCards{
+					SourceId:     a.TransferCards.SourceID.String(),
+					TargetId:     a.TransferCards.TargetID.String(),
+					Cards:        a.TransferCards.Cards.Proto(),
+					PropertySets: a.TransferCards.PropertySets.Proto(a.TransferCards.TargetID),
+					SourceSets:   int32(a.TransferCards.SourceSets),
+					SourceMoney:  int32(a.TransferCards.SourceMoney),
+					TargetSets:   int32(a.TransferCards.TargetSets),
+					TargetMoney:  int32(a.TransferCards.TargetMoney),
+				},
+			},
+		}
+	}
+
+	if a.TransferProperty != nil {
+		demandComplied = &monopoly_deal_schema.ActionDemandComplied{
+			DemandId: string(a.DemandID),
+			Transfer: &monopoly_deal_schema.ActionDemandComplied_TransferProperty{
+				TransferProperty: &monopoly_deal_schema.TransferProperty{
+					SourceId:           a.TransferProperty.SourceID.String(),
+					TargetId:           a.TransferProperty.TargetID.String(),
+					SourcePropertySets: a.TransferProperty.SourcePropertySets.Proto(a.TransferProperty.SourceID),
+					TargetPropertySets: a.TransferProperty.TargetPropertySets.Proto(a.TransferProperty.TargetID),
+				},
+			},
+		}
+	}
+
+	if a.TransferPropertySet != nil {
+		demandComplied = &monopoly_deal_schema.ActionDemandComplied{
+			DemandId: string(a.DemandID),
+			Transfer: &monopoly_deal_schema.ActionDemandComplied_TransferPropertySet{
+				TransferPropertySet: &monopoly_deal_schema.TransferPropertySet{
+					SourceId:    a.TransferPropertySet.SourceID.String(),
+					TargetId:    a.TransferPropertySet.TargetID.String(),
+					PropertySet: a.TransferPropertySet.PropertySet.Proto(a.TransferPropertySet.TargetID),
+				},
+			},
+		}
+	}
+
+	return &monopoly_deal_schema.Action{
+		PlayerId:       a.PlayerID.String(),
+		Kind:           a.Kind.Proto(),
+		SeqNum:         int32(a.SeqNum),
+		TurnDeadlineMs: 0, // Added by caller
+		Payload: &monopoly_deal_schema.Action_ActionDemandComplied{
+			ActionDemandComplied: demandComplied,
 		},
 	}
 }
