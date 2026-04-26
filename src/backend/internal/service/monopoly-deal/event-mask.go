@@ -15,18 +15,25 @@ func (c *Controller) MaskEvents(tp token.Payload, msg *monopoly_deal_schema.Serv
 	action := actionWrap.Action
 
 	switch p := action.Payload.(type) {
-	//case *monopoly_deal_schema.ServerMessage_StartTurnRes:
-	//	if p.StartTurnRes.PlayerId != tp.PlayerID.String() {
-	//		msg = &monopoly_deal_schema.ServerMessage{
-	//			Payload: &monopoly_deal_schema.ServerMessage_StartTurnMaskedRes{
-	//				StartTurnMaskedRes: &monopoly_deal_schema.StartTurnMaskedRes{
-	//					SeqNum:   msg.GetStartTurnRes().GetSeqNum(),
-	//					PlayerId: msg.GetStartTurnRes().GetPlayerId(),
-	//					NumCards: int32(len(msg.GetStartTurnRes().GetCards())),
-	//				},
-	//			},
-	//		}
-	//	}
+	case *monopoly_deal_schema.Action_ActionStartTurn:
+		if action.PlayerId != tp.PlayerID.String() {
+			msg = &monopoly_deal_schema.ServerMessage{
+				Payload: &monopoly_deal_schema.ServerMessage_Action{
+					Action: &monopoly_deal_schema.Action{
+						PlayerId:       action.PlayerId,
+						Kind:           action.Kind,
+						SeqNum:         action.SeqNum,
+						TurnDeadlineMs: action.TurnDeadlineMs,
+						Payload: &monopoly_deal_schema.Action_MaskedActionStartTurn{
+							MaskedActionStartTurn: &monopoly_deal_schema.MaskedActionStartTurn{
+								NumCards:  int32(len(p.ActionStartTurn.GetCards())),
+								MovesLeft: p.ActionStartTurn.GetMovesLeft(),
+							},
+						},
+					},
+				},
+			}
+		}
 
 	case *monopoly_deal_schema.Action_ActionPlayPassGo:
 		if action.PlayerId != tp.PlayerID.String() {
@@ -48,28 +55,35 @@ func (c *Controller) MaskEvents(tp token.Payload, msg *monopoly_deal_schema.Serv
 			}
 		}
 
-		//case *monopoly_deal_schema.ServerMessage_PendingRentCreated:
-		//	if p.PendingRentCreated.PendingRent.PlayerId != tp.PlayerID.String() {
-		//		return nil
-		//	}
-		//
-		//case *monopoly_deal_schema.ServerMessage_PendingRentResolved:
-		//	if p.PendingRentResolved.PlayerId != tp.PlayerID.String() {
-		//		return nil
-		//	}
-		//
-		//case *monopoly_deal_schema.ServerMessage_DiscardCardsRes:
-		//	if p.DiscardCardsRes.PlayerId != tp.PlayerID.String() {
-		//		msg = &monopoly_deal_schema.ServerMessage{
-		//			Payload: &monopoly_deal_schema.ServerMessage_DiscardCardsMaskedRes{
-		//				DiscardCardsMaskedRes: &monopoly_deal_schema.DiscardCardsMaskedRes{
-		//					SeqNum:   msg.GetDiscardCardsRes().GetSeqNum(),
-		//					PlayerId: msg.GetDiscardCardsRes().GetPlayerId(),
-		//					NumCards: int32(len(msg.GetDiscardCardsRes().GetCards())),
-		//				},
-		//			},
-		//		}
-		//	}
+	//case *monopoly_deal_schema.ServerMessage_PendingRentCreated:
+	//	if p.PendingRentCreated.PendingRent.PlayerId != tp.PlayerID.String() {
+	//		return nil
+	//	}
+	//
+	//case *monopoly_deal_schema.ServerMessage_PendingRentResolved:
+	//	if p.PendingRentResolved.PlayerId != tp.PlayerID.String() {
+	//		return nil
+	//	}
+	//
+
+	case *monopoly_deal_schema.Action_ActionDiscardCards:
+		if action.PlayerId != tp.PlayerID.String() {
+			msg = &monopoly_deal_schema.ServerMessage{
+				Payload: &monopoly_deal_schema.ServerMessage_Action{
+					Action: &monopoly_deal_schema.Action{
+						PlayerId:       action.PlayerId,
+						Kind:           action.Kind,
+						SeqNum:         action.SeqNum,
+						TurnDeadlineMs: action.TurnDeadlineMs,
+						Payload: &monopoly_deal_schema.Action_MaskedActionDiscardCards{
+							MaskedActionDiscardCards: &monopoly_deal_schema.MaskedActionDiscardCards{
+								NumCards: int32(len(p.ActionDiscardCards.Cards)),
+							},
+						},
+					},
+				},
+			}
+		}
 
 	}
 

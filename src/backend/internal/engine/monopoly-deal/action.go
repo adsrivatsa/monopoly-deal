@@ -18,6 +18,9 @@ const (
 	ActionKindDemandCreated      ActionKind = "demand_created"
 	ActionKindPendingRentCreated ActionKind = "pending_rent_created"
 	ActionKindDemandComplied     ActionKind = "demand_complied"
+	ActionKindDiscardCards       ActionKind = "discard_cards"
+	ActionKindStartTurn          ActionKind = "start_turn"
+	ActionKindRearrangeCard      ActionKind = "rearrange_card"
 )
 
 var ActionKindProtoMap = map[ActionKind]monopoly_deal_schema.ActionKind{
@@ -30,6 +33,9 @@ var ActionKindProtoMap = map[ActionKind]monopoly_deal_schema.ActionKind{
 	ActionKindDemandCreated:      monopoly_deal_schema.ActionKind_ACTION_KIND_DEMANDS_CREATED,
 	ActionKindPendingRentCreated: monopoly_deal_schema.ActionKind_ACTION_KIND_PENDING_RENT_CREATED,
 	ActionKindDemandComplied:     monopoly_deal_schema.ActionKind_ACTION_KIND_DEMAND_COMPLIED,
+	ActionKindDiscardCards:       monopoly_deal_schema.ActionKind_ACTION_KIND_DISCARD_CARDS,
+	ActionKindStartTurn:          monopoly_deal_schema.ActionKind_ACTION_KIND_START_TURN,
+	ActionKindRearrangeCard:      monopoly_deal_schema.ActionKind_ACTION_KIND_REARRANGE_CARD,
 }
 
 func (a ActionKind) Proto() monopoly_deal_schema.ActionKind {
@@ -278,16 +284,18 @@ type ActionDemandsCreated struct {
 	SeqNum         int        `msgpack:"c"`
 	PlayerID       uuid.UUID  `msgpack:"d"`
 	LastPlayedCard *Card      `msgpack:"e"`
+	DeniedDemand   *Demand    `msgpack:"g"`
 	Demands        []Demand   `msgpack:"f"`
 }
 
-func NewActionDemandsCreated(seqNum int, playerID uuid.UUID, lastPlayedCard *Card, demands ...Demand) *ActionDemandsCreated {
+func NewActionDemandsCreated(seqNum int, playerID uuid.UUID, lastPlayedCard *Card, deniedDemand *Demand, demands ...Demand) *ActionDemandsCreated {
 	return &ActionDemandsCreated{
 		Kind:           ActionKindDemandCreated,
 		Version:        1,
 		SeqNum:         seqNum,
 		PlayerID:       playerID,
 		LastPlayedCard: lastPlayedCard,
+		DeniedDemand:   deniedDemand,
 		Demands:        demands,
 	}
 }
@@ -315,6 +323,11 @@ func (a *ActionDemandsCreated) Proto() *monopoly_deal_schema.Action {
 		demands[i] = demand.Proto()
 	}
 
+	var deniedDemand *monopoly_deal_schema.Demand
+	if a.DeniedDemand != nil {
+		deniedDemand = a.DeniedDemand.Proto()
+	}
+
 	return &monopoly_deal_schema.Action{
 		PlayerId:       a.PlayerID.String(),
 		Kind:           a.Kind.Proto(),
@@ -323,6 +336,7 @@ func (a *ActionDemandsCreated) Proto() *monopoly_deal_schema.Action {
 		Payload: &monopoly_deal_schema.Action_ActionDemandsCreated{
 			ActionDemandsCreated: &monopoly_deal_schema.ActionDemandsCreated{
 				LastPlayedCard: lastPlayedCard,
+				DeniedDemand:   deniedDemand,
 				Demands:        demands,
 			},
 		},
@@ -491,6 +505,152 @@ func (a *ActionDemandComplied) Proto() *monopoly_deal_schema.Action {
 		TurnDeadlineMs: 0, // Added by caller
 		Payload: &monopoly_deal_schema.Action_ActionDemandComplied{
 			ActionDemandComplied: demandComplied,
+		},
+	}
+}
+
+type ActionDiscardCards struct {
+	Kind     ActionKind `msgpack:"a"`
+	Version  int        `msgpack:"b"`
+	SeqNum   int        `msgpack:"c"`
+	PlayerID uuid.UUID  `msgpack:"d"`
+	Cards    Cards      `msgpack:"e"`
+}
+
+func NewActionDiscardCards(seqNum int, playerID uuid.UUID, cards ...Card) *ActionDiscardCards {
+	return &ActionDiscardCards{
+		Kind:     ActionKindDiscardCards,
+		Version:  1,
+		SeqNum:   seqNum,
+		PlayerID: playerID,
+		Cards:    cards,
+	}
+}
+
+func (a *ActionDiscardCards) GetKind() ActionKind {
+	return a.Kind
+}
+
+func (a *ActionDiscardCards) GetVersion() int {
+	return a.Version
+}
+
+func (a *ActionDiscardCards) GetSeqNum() int {
+	return a.SeqNum
+}
+
+func (a *ActionDiscardCards) Proto() *monopoly_deal_schema.Action {
+	return &monopoly_deal_schema.Action{
+		PlayerId:       a.PlayerID.String(),
+		Kind:           a.Kind.Proto(),
+		SeqNum:         int32(a.SeqNum),
+		TurnDeadlineMs: 0, // Added by caller
+		Payload: &monopoly_deal_schema.Action_ActionDiscardCards{
+			ActionDiscardCards: &monopoly_deal_schema.ActionDiscardCards{
+				Cards: a.Cards.Proto(),
+			},
+		},
+	}
+}
+
+type ActionStartTurn struct {
+	Kind      ActionKind `msgpack:"a"`
+	Version   int        `msgpack:"b"`
+	SeqNum    int        `msgpack:"c"`
+	PlayerID  uuid.UUID  `msgpack:"d"`
+	Cards     Cards      `msgpack:"e"`
+	MovesLeft int        `msgpack:"f"`
+}
+
+func NewActionStartTurn(seqNum int, playerID uuid.UUID, cards Cards, movesLeft int) *ActionStartTurn {
+	return &ActionStartTurn{
+		Kind:      ActionKindStartTurn,
+		Version:   1,
+		SeqNum:    seqNum,
+		PlayerID:  playerID,
+		Cards:     cards,
+		MovesLeft: movesLeft,
+	}
+}
+
+func (a *ActionStartTurn) GetKind() ActionKind {
+	return a.Kind
+}
+
+func (a *ActionStartTurn) GetVersion() int {
+	return a.Version
+}
+
+func (a *ActionStartTurn) GetSeqNum() int {
+	return a.SeqNum
+}
+
+func (a *ActionStartTurn) Proto() *monopoly_deal_schema.Action {
+	return &monopoly_deal_schema.Action{
+		PlayerId:       a.PlayerID.String(),
+		Kind:           a.Kind.Proto(),
+		SeqNum:         int32(a.SeqNum),
+		TurnDeadlineMs: 0, // Added by caller
+		Payload: &monopoly_deal_schema.Action_ActionStartTurn{
+			ActionStartTurn: &monopoly_deal_schema.ActionStartTurn{
+				Cards:     a.Cards.Proto(),
+				MovesLeft: int32(a.MovesLeft),
+			},
+		},
+	}
+}
+
+type ActionRearrangeCard struct {
+	Kind        ActionKind  `msgpack:"a"`
+	Version     int         `msgpack:"b"`
+	SeqNum      int         `msgpack:"c"`
+	PlayerID    uuid.UUID   `msgpack:"d"`
+	Card        *Card       `msgpack:"e"`
+	PropertySet PropertySet `msgpack:"f"`
+	Sets        int         `msgpack:"g"`
+}
+
+func NewActionRearrangeCard(seqNum int, playerID uuid.UUID, card *Card, propertySet PropertySet, numSets int) *ActionRearrangeCard {
+	return &ActionRearrangeCard{
+		Kind:        ActionKindRearrangeCard,
+		Version:     1,
+		SeqNum:      seqNum,
+		PlayerID:    playerID,
+		Card:        card,
+		PropertySet: propertySet,
+		Sets:        numSets,
+	}
+}
+
+func (a *ActionRearrangeCard) GetKind() ActionKind {
+	return a.Kind
+}
+
+func (a *ActionRearrangeCard) GetVersion() int {
+	return a.Version
+}
+
+func (a *ActionRearrangeCard) GetSeqNum() int {
+	return a.SeqNum
+}
+
+func (a *ActionRearrangeCard) Proto() *monopoly_deal_schema.Action {
+	var card *monopoly_deal_schema.Card
+	if a.Card != nil {
+		card = a.Card.Proto()
+	}
+
+	return &monopoly_deal_schema.Action{
+		PlayerId:       a.PlayerID.String(),
+		Kind:           a.Kind.Proto(),
+		SeqNum:         int32(a.SeqNum),
+		TurnDeadlineMs: 0,
+		Payload: &monopoly_deal_schema.Action_ActionRearrangeCard{
+			ActionRearrangeCard: &monopoly_deal_schema.ActionRearrangeCard{
+				Card:        card,
+				PropertySet: a.PropertySet.Proto(a.PlayerID),
+				Sets:        int32(a.Sets),
+			},
 		},
 	}
 }

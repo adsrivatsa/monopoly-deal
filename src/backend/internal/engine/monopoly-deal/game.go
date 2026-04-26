@@ -324,143 +324,6 @@ func (g *Game) getPayableCards(playerID uuid.UUID) Cards {
 	return payable
 }
 
-func (g *Game) CompleteTurn(playerID uuid.UUID) (Cards, uuid.UUID, error) {
-	err := g.checkPlayer(playerID)
-	if err != nil {
-		return nil, uuid.UUID{}, err
-	}
-
-	err = g.checkTurn(playerID)
-	if err != nil {
-		return nil, uuid.UUID{}, err
-	}
-
-	err = g.checkDemands()
-	if err != nil {
-		return nil, uuid.UUID{}, err
-	}
-
-	err = g.checkPendingRent()
-	if err != nil {
-		return nil, uuid.UUID{}, err
-	}
-
-	hand := g.Hands[playerID]
-	if hand.Len() > g.Config.MaxHandSize {
-		return nil, uuid.UUID{}, errors.PlayerHandHasTooManyCards
-	}
-
-	properties := g.Properties[playerID]
-	if !properties.Valid() {
-		return nil, uuid.UUID{}, errors.InvalidPropertySets
-	}
-
-	n := len(g.Players)
-	g.CurrPlayerIdx = (g.CurrPlayerIdx + 1) % n
-	g.MovesLeft = g.Config.MovesPerTurn
-
-	nextPlayerID := g.Players[g.CurrPlayerIdx]
-	drawn := g.startTurn(nextPlayerID)
-
-	g.SequenceNum++
-
-	return drawn, nextPlayerID, nil
-}
-
-func (g *Game) startTurn(playerID uuid.UUID) Cards {
-	hand := g.Hands[playerID]
-	drawCount := g.Config.PassGoDraw
-	if hand.Len() == 0 {
-		drawCount = g.Config.StartNumCards
-	}
-
-	drawn := g.drawCards(playerID, drawCount)
-	return drawn
-}
-
-func (g *Game) StartTurn(playerID uuid.UUID) (Cards, error) {
-	err := g.checkPlayer(playerID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = g.checkTurn(playerID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = g.checkDemands()
-	if err != nil {
-		return nil, err
-	}
-
-	err = g.checkPendingRent()
-	if err != nil {
-		return nil, err
-	}
-
-	drawn := g.startTurn(playerID)
-
-	g.SequenceNum++
-
-	return drawn, nil
-}
-
-func (g *Game) DiscardCards(playerID uuid.UUID, cardIDs ...Identifier) (Cards, error) {
-	err := g.checkPlayer(playerID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = g.checkTurn(playerID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = g.checkDemands()
-	if err != nil {
-		return nil, err
-	}
-
-	err = g.checkPendingRent()
-	if err != nil {
-		return nil, err
-	}
-
-	//if g.MovesLeft > 0 {
-	//	return errors.CannotDiscardYet
-	//}
-
-	if len(cardIDs) == 0 {
-		return nil, errors.InvalidAmountOfCards
-	}
-
-	hand := g.Hands[playerID]
-	inHand := make(map[Identifier]struct{}, len(hand))
-	for _, card := range hand {
-		inHand[card.ID] = struct{}{}
-	}
-
-	for _, cardID := range cardIDs {
-		if _, ok := inHand[cardID]; !ok {
-			return nil, errors.PlayerDoesNotHaveCard
-		}
-	}
-
-	cards := make(Cards, 0, len(inHand))
-	for _, cardID := range cardIDs {
-		card, err := g.discardHand(playerID, cardID)
-		if err != nil {
-			return nil, err
-		}
-		cards = append(cards, card)
-	}
-
-	g.SequenceNum++
-
-	return cards, nil
-}
-
 func (g *Game) PlayMoney(playerID uuid.UUID, cardID Identifier) (*ActionPlayMoney, error) {
 	err := g.checkPlayer(playerID)
 	if err != nil {
@@ -824,7 +687,7 @@ func (g *Game) PlayItsMyBirthday(playerID uuid.UUID, cardID Identifier) (*Action
 	}
 	g.Demands = demandsMap
 
-	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, demandsSlice...)
+	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, nil, demandsSlice...)
 
 	g.LastAction = card
 	g.CompleteMove()
@@ -886,7 +749,7 @@ func (g *Game) PlayDebtCollector(playerID uuid.UUID, targetID uuid.UUID, cardID 
 	demand := NewPaymentDemand(demandID, playerID, targetID, g.Config.DebtCollectorAmount, DemansSourceDebtCollector)
 	g.Demands = map[Identifier]Demand{demandID: demand}
 
-	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, demand)
+	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, nil, demand)
 
 	g.LastAction = card
 	g.CompleteMove()
@@ -1147,7 +1010,7 @@ func (g *Game) PlaySlyDeal(playerID uuid.UUID, targetID uuid.UUID, cardID Identi
 	demand := NewPropertyDemand(demandID, playerID, targetID, nil, targetCardID, DemandSourceSlyDeal)
 	g.Demands = map[Identifier]Demand{demandID: demand}
 
-	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, demand)
+	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, nil, demand)
 
 	g.LastAction = card
 	g.CompleteMove()
@@ -1221,7 +1084,7 @@ func (g *Game) PlayForcedDeal(playerID uuid.UUID, targetID uuid.UUID, cardID, so
 	demand := NewPropertyDemand(demandID, playerID, targetID, &sourceCardID, targetCardID, DemandSourceForcedDeal)
 	g.Demands = map[Identifier]Demand{demandID: demand}
 
-	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, demand)
+	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, nil, demand)
 
 	g.LastAction = card
 	g.CompleteMove()
@@ -1288,7 +1151,7 @@ func (g *Game) PlayDealBreaker(playerID uuid.UUID, targetID uuid.UUID, cardID Id
 	demand := NewPropertySetDemand(demandID, playerID, targetID, setID, DemandSourceDealBreaker)
 	g.Demands = map[Identifier]Demand{demandID: demand}
 
-	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, demand)
+	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, nil, demand)
 
 	g.LastAction = card
 	g.CompleteMove()
@@ -1336,7 +1199,7 @@ func (g *Game) ResolvePendingRent(playerID uuid.UUID) (*ActionDemandsCreated, er
 
 	g.PendingRent = nil
 
-	action := NewActionDemandsCreated(g.SequenceNum, playerID, nil, demandsSlice...)
+	action := NewActionDemandsCreated(g.SequenceNum, playerID, nil, nil, demandsSlice...)
 
 	g.SequenceNum++
 
@@ -1716,48 +1579,239 @@ func (g *Game) ComplyPropertySetDemand(playerID uuid.UUID, demandID Identifier) 
 	return action, nil
 }
 
-// TODO ----------------------------------------------------------------------------------------------------------------------------------
-
-func (g *Game) RearrangeProperty(playerID uuid.UUID, cardID Identifier, targetSetIDPtr *Identifier, activeColorPtr *Color) (PropertySet, int, Card, error) {
+func (g *Game) DenyDemand(playerID uuid.UUID, demandID Identifier, cardID Identifier) (*ActionDemandsCreated, error) {
 	err := g.checkPlayer(playerID)
 	if err != nil {
-		return PropertySet{}, 0, Card{}, err
+		return nil, err
+	}
+
+	isCurrentPlayer := g.Players[g.CurrPlayerIdx] == playerID
+	if isCurrentPlayer {
+		err = g.checkMoves()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	card, err := g.checkCard(cardID, CategoryAction)
+	if err != nil {
+		return nil, err
+	}
+
+	if card.AssetKey != AssetKeyJustSayNo {
+		return nil, errors.InvalidCardForAction
+	}
+
+	demand, ok := g.Demands[demandID]
+	if !ok {
+		return nil, errors.DemandDoesNotExist
+	}
+
+	deniedDemand := demand
+
+	_, err = g.discardHand(playerID, cardID)
+	if err != nil {
+		return nil, err
+	}
+
+	id := g.IDGenerator.New()
+	demand.Deny(id)
+	delete(g.Demands, demandID)
+	g.Demands[id] = demand
+
+	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, &deniedDemand, demand)
+
+	g.LastAction = card
+	if isCurrentPlayer {
+		g.CompleteMove()
+	}
+	g.SequenceNum++
+
+	return action, nil
+}
+
+func (g *Game) DiscardCards(playerID uuid.UUID, cardIDs ...Identifier) (*ActionDiscardCards, error) {
+	err := g.checkPlayer(playerID)
+	if err != nil {
+		return nil, err
 	}
 
 	err = g.checkTurn(playerID)
 	if err != nil {
-		return PropertySet{}, 0, Card{}, err
+		return nil, err
 	}
 
 	err = g.checkDemands()
 	if err != nil {
-		return PropertySet{}, 0, Card{}, err
+		return nil, err
 	}
 
 	err = g.checkPendingRent()
 	if err != nil {
-		return PropertySet{}, 0, Card{}, err
+		return nil, err
+	}
+
+	//if g.MovesLeft > 0 {
+	//	return errors.CannotDiscardYet
+	//}
+
+	if len(cardIDs) == 0 {
+		return nil, errors.InvalidAmountOfCards
+	}
+
+	hand := g.Hands[playerID]
+	inHand := make(map[Identifier]struct{}, len(hand))
+	for _, card := range hand {
+		inHand[card.ID] = struct{}{}
+	}
+
+	for _, cardID := range cardIDs {
+		if _, ok := inHand[cardID]; !ok {
+			return nil, errors.PlayerDoesNotHaveCard
+		}
+	}
+
+	cards := make(Cards, 0, len(inHand))
+	for _, cardID := range cardIDs {
+		card, err := g.discardHand(playerID, cardID)
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, card)
+	}
+
+	action := NewActionDiscardCards(g.SequenceNum, playerID, cards...)
+
+	g.SequenceNum++
+
+	return action, nil
+}
+
+func (g *Game) CompleteTurn(playerID uuid.UUID) (*ActionStartTurn, error) {
+	err := g.checkPlayer(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkTurn(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkDemands()
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkPendingRent()
+	if err != nil {
+		return nil, err
+	}
+
+	hand := g.Hands[playerID]
+	if hand.Len() > g.Config.MaxHandSize {
+		return nil, errors.PlayerHandHasTooManyCards
+	}
+
+	properties := g.Properties[playerID]
+	if !properties.Valid() {
+		return nil, errors.InvalidPropertySets
+	}
+
+	n := len(g.Players)
+	g.CurrPlayerIdx = (g.CurrPlayerIdx + 1) % n
+	g.MovesLeft = g.Config.MovesPerTurn
+
+	nextPlayerID := g.Players[g.CurrPlayerIdx]
+	action := g.startTurn(nextPlayerID)
+
+	g.SequenceNum++
+
+	return action, nil
+}
+
+func (g *Game) startTurn(playerID uuid.UUID) *ActionStartTurn {
+	hand := g.Hands[playerID]
+	drawCount := g.Config.PassGoDraw
+	if hand.Len() == 0 {
+		drawCount = g.Config.StartNumCards
+	}
+
+	drawn := g.drawCards(playerID, drawCount)
+
+	action := NewActionStartTurn(g.SequenceNum, playerID, drawn, g.Config.MovesPerTurn)
+
+	return action
+}
+
+func (g *Game) StartTurn(playerID uuid.UUID) (*ActionStartTurn, error) {
+	err := g.checkPlayer(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkTurn(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkDemands()
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkPendingRent()
+	if err != nil {
+		return nil, err
+	}
+
+	action := g.startTurn(playerID)
+
+	g.SequenceNum++
+
+	return action, nil
+}
+
+func (g *Game) RearrangeProperty(playerID uuid.UUID, cardID Identifier, targetSetIDPtr *Identifier, activeColorPtr *Color) (*ActionRearrangeCard, error) {
+	err := g.checkPlayer(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkTurn(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkDemands()
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkPendingRent()
+	if err != nil {
+		return nil, err
 	}
 
 	properties := g.Properties[playerID]
 	sourceSetIdx, sourceCardIdx := properties.IndexByCardID(cardID)
 	if sourceSetIdx == -1 || sourceCardIdx == -1 {
-		return PropertySet{}, 0, Card{}, errors.PlayerDoesNotHaveCard
+		return nil, errors.PlayerDoesNotHaveCard
 	}
 
 	sourceSet := properties[sourceSetIdx]
 
 	if sourceSet.IsLocked() && sourceCardIdx != sourceSet.Cards.Len()-1 {
-		return PropertySet{}, 0, Card{}, errors.InvalidCardForAction
+		return nil, errors.InvalidCardForAction
 	}
 
 	card := sourceSet.Cards[sourceCardIdx]
 	if card.Category != CategoryPureProperty && card.Category != CategoryWildProperty {
-		return PropertySet{}, 0, Card{}, errors.InvalidCardForAction
+		return nil, errors.InvalidCardForAction
 	}
 
 	if activeColorPtr != nil && !card.HasColor(*activeColorPtr) {
-		return PropertySet{}, 0, Card{}, errors.CardCannotBeAssignedToSet
+		return nil, errors.CardCannotBeAssignedToSet
 	}
 
 	var targetSetIdx int
@@ -1767,16 +1821,18 @@ func (g *Game) RearrangeProperty(playerID uuid.UUID, cardID Identifier, targetSe
 		targetSetID := *targetSetIDPtr
 		targetSetIdx = properties.IndexBySetID(targetSetID)
 		if targetSetIdx == -1 {
-			return PropertySet{}, 0, Card{}, errors.PropertySetDoesntExist
+			return nil, errors.PropertySetDoesntExist
 		}
 
 		if sourceSetIdx == targetSetIdx {
 			if activeColorPtr == nil {
-				return properties[targetSetIdx], properties.CompleteCount(), Card{}, nil
+				action := NewActionRearrangeCard(g.SequenceNum, playerID, nil, properties[targetSetIdx], properties.CompleteCount())
+				g.SequenceNum++
+				return action, nil
 			}
 
 			if sourceSet.Cards.Len() != 1 {
-				return PropertySet{}, 0, Card{}, errors.InvalidCardForAction
+				return nil, errors.InvalidCardForAction
 			}
 
 			sourceSet.Color = *activeColorPtr
@@ -1784,22 +1840,24 @@ func (g *Game) RearrangeProperty(playerID uuid.UUID, cardID Identifier, targetSe
 			properties[sourceSetIdx] = sourceSet
 			g.Properties[playerID] = properties
 
-			return sourceSet, properties.CompleteCount(), Card{}, nil
+			action := NewActionRearrangeCard(g.SequenceNum, playerID, nil, sourceSet, properties.CompleteCount())
+			g.SequenceNum++
+			return action, nil
 		}
 
 		targetSet = properties[targetSetIdx]
 		if targetSet.IsComplete() {
-			return PropertySet{}, 0, Card{}, errors.PropertySetIsComplete
+			return nil, errors.PropertySetIsComplete
 		}
 
 		if !card.HasColor(targetSet.Color) {
-			return PropertySet{}, 0, Card{}, errors.CardCannotBeAssignedToSet
+			return nil, errors.CardCannotBeAssignedToSet
 		}
 	}
 
 	card, ok := sourceSet.Cards.RemoveByIdx(sourceCardIdx)
 	if !ok {
-		return PropertySet{}, 0, Card{}, errors.PlayerDoesNotHaveCard
+		return nil, errors.PlayerDoesNotHaveCard
 	}
 
 	properties[sourceSetIdx] = sourceSet
@@ -1824,57 +1882,11 @@ func (g *Game) RearrangeProperty(playerID uuid.UUID, cardID Identifier, targetSe
 	properties.Clean()
 	g.Properties[playerID] = properties
 
+	action := NewActionRearrangeCard(g.SequenceNum, playerID, card, targetSet, properties.CompleteCount())
+
 	g.SequenceNum++
 
-	return targetSet, properties.CompleteCount(), card, nil
-}
-
-func (g *Game) DenyDemand(playerID uuid.UUID, demandID Identifier, cardID Identifier) (Demand, Card, error) {
-	err := g.checkPlayer(playerID)
-	if err != nil {
-		return Demand{}, Card{}, err
-	}
-
-	isCurrentPlayer := g.Players[g.CurrPlayerIdx] == playerID
-	if isCurrentPlayer {
-		err = g.checkMoves()
-		if err != nil {
-			return Demand{}, Card{}, err
-		}
-	}
-
-	card, err := g.checkCard(cardID, CategoryAction)
-	if err != nil {
-		return Demand{}, Card{}, err
-	}
-
-	if card.AssetKey != AssetKeyJustSayNo {
-		return Demand{}, Card{}, errors.InvalidCardForAction
-	}
-
-	demand, ok := g.Demands[demandID]
-	if !ok {
-		return Demand{}, Card{}, errors.DemandDoesNotExist
-	}
-
-	_, err = g.discardHand(playerID, cardID)
-	if err != nil {
-		return Demand{}, Card{}, err
-	}
-
-	id := g.IDGenerator.New()
-	demand.Deny(id)
-	delete(g.Demands, demandID)
-	g.Demands[id] = demand
-
-	g.LastAction = card
-
-	if isCurrentPlayer {
-		g.CompleteMove()
-	}
-	g.SequenceNum++
-
-	return demand, card, nil
+	return action, nil
 }
 
 func (g *Game) CheckWinConditions(playerID uuid.UUID) (int, int, bool, error) {

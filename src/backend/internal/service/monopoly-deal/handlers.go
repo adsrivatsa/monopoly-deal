@@ -146,17 +146,14 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		action, events, err = c.handleComplyPropertyDemand(&game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand:
 		action, events, err = c.handleComplyPropertySetDemand(&game, tp, p)
-
-	case *monopoly_deal_schema.ClientMessage_CompleteTurn:
-		events, err = c.handleCompleteTurn(&game, tp)
-
-	case *monopoly_deal_schema.ClientMessage_RearrangeCard:
-		events, err = c.handleRearrangeCard(&game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_DiscardCards:
-		events, err = c.handleDiscardCards(&game, tp, p)
-
 	case *monopoly_deal_schema.ClientMessage_DenyDemand:
-		events, err = c.handleDenyDemand(&game, tp, p)
+		action, events, err = c.handleDenyDemand(&game, tp, p)
+	case *monopoly_deal_schema.ClientMessage_DiscardCards:
+		action, events, err = c.handleDiscardCards(&game, tp, p)
+	case *monopoly_deal_schema.ClientMessage_CompleteTurn:
+		action, events, err = c.handleCompleteTurn(&game, tp)
+	case *monopoly_deal_schema.ClientMessage_RearrangeCard:
+		action, events, err = c.handleRearrangeCard(&game, tp, p)
 
 	}
 	if err != nil {
@@ -176,23 +173,20 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		return err
 	}
 
-	// TODO - remove
-	if action != nil {
-		buf, err = msgpack.Marshal(action)
-		if err != nil {
-			return err
-		}
+	buf, err = msgpack.Marshal(action)
+	if err != nil {
+		return err
+	}
 
-		_, err = c.store.CreateGameHistory(ctx, store.CreateGameHistoryParams{
-			GameID:        g.GameID,
-			SeqNum:        int16(action.GetSeqNum()),
-			ActionKind:    string(action.GetKind()),
-			ActionVersion: int32(action.GetVersion()),
-			Action:        buf,
-		})
-		if err != nil {
-			return err
-		}
+	_, err = c.store.CreateGameHistory(ctx, store.CreateGameHistoryParams{
+		GameID:        g.GameID,
+		SeqNum:        int16(action.GetSeqNum()),
+		ActionKind:    string(action.GetKind()),
+		ActionVersion: int32(action.GetVersion()),
+		Action:        buf,
+	})
+	if err != nil {
+		return err
 	}
 
 	completeSets, moneyValue, didWin, err := game.CheckWinConditions(tp.PlayerID)
@@ -557,29 +551,58 @@ func (c *Controller) handleComplyPropertySetDemand(game *monopoly_deal.Game, tp 
 	}, nil
 }
 
-// TODO ----------------------------------------------------------------------------------------------------------------------------------
-
-func (c *Controller) handleCompleteTurn(game *monopoly_deal.Game, tp token.Payload) ([]*monopoly_deal_schema.ServerMessage, error) {
-	drawn, nextPlayerID, err := game.CompleteTurn(tp.PlayerID)
+func (c *Controller) handleDenyDemand(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_DenyDemand) (monopoly_deal.Action, []*monopoly_deal_schema.ServerMessage, error) {
+	demandID := monopoly_deal.Identifier(msg.DenyDemand.DemandId)
+	cardID := monopoly_deal.Identifier(msg.DenyDemand.CardId)
+	action, err := game.DenyDemand(tp.PlayerID, demandID, cardID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return []*monopoly_deal_schema.ServerMessage{
+	return action, []*monopoly_deal_schema.ServerMessage{
 		{
-			Payload: &monopoly_deal_schema.ServerMessage_StartTurnRes{
-				StartTurnRes: &monopoly_deal_schema.StartTurnRes{
-					SeqNum:    int32(game.SequenceNum),
-					PlayerId:  nextPlayerID.String(),
-					Cards:     drawn.Proto(),
-					MovesLeft: int32(game.Config.MovesPerTurn),
-				},
+			Payload: &monopoly_deal_schema.ServerMessage_Action{
+				Action: action.Proto(),
 			},
 		},
 	}, nil
 }
 
-func (c *Controller) handleRearrangeCard(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_RearrangeCard) ([]*monopoly_deal_schema.ServerMessage, error) {
+func (c *Controller) handleDiscardCards(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_DiscardCards) (monopoly_deal.Action, []*monopoly_deal_schema.ServerMessage, error) {
+	cardIDs := make([]monopoly_deal.Identifier, 0, len(game.Cards))
+	for _, cardID := range msg.DiscardCards.CardIds {
+		cardIDs = append(cardIDs, monopoly_deal.Identifier(cardID))
+	}
+	action, err := game.DiscardCards(tp.PlayerID, cardIDs...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return action, []*monopoly_deal_schema.ServerMessage{
+		{
+			Payload: &monopoly_deal_schema.ServerMessage_Action{
+				Action: action.Proto(),
+			},
+		},
+	}, nil
+}
+
+func (c *Controller) handleCompleteTurn(game *monopoly_deal.Game, tp token.Payload) (monopoly_deal.Action, []*monopoly_deal_schema.ServerMessage, error) {
+	action, err := game.CompleteTurn(tp.PlayerID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return action, []*monopoly_deal_schema.ServerMessage{
+		{
+			Payload: &monopoly_deal_schema.ServerMessage_Action{
+				Action: action.Proto(),
+			},
+		},
+	}, nil
+}
+
+func (c *Controller) handleRearrangeCard(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_RearrangeCard) (monopoly_deal.Action, []*monopoly_deal_schema.ServerMessage, error) {
 	cardID := monopoly_deal.Identifier(msg.RearrangeCard.CardId)
 	var targetSetID *monopoly_deal.Identifier
 	if msg.RearrangeCard.PropertySetId != nil {
@@ -591,81 +614,15 @@ func (c *Controller) handleRearrangeCard(game *monopoly_deal.Game, tp token.Payl
 		id := monopoly_deal.ColorFromProto(*msg.RearrangeCard.Color)
 		color = &id
 	}
-	propertySet, sets, card, err := game.RearrangeProperty(tp.PlayerID, cardID, targetSetID, color)
+	action, err := game.RearrangeProperty(tp.PlayerID, cardID, targetSetID, color)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return []*monopoly_deal_schema.ServerMessage{{
-		Payload: &monopoly_deal_schema.ServerMessage_RearrangeCardRes{
-			RearrangeCardRes: &monopoly_deal_schema.RearrangeCardRes{
-				SeqNum:      int32(game.SequenceNum),
-				PlayerId:    tp.PlayerID.String(),
-				Card:        card.Proto(),
-				PropertySet: propertySet.Proto(tp.PlayerID),
-				Sets:        int32(sets),
-			},
-		},
-	},
-	}, nil
-}
-
-func (c *Controller) handleDiscardCards(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_DiscardCards) ([]*monopoly_deal_schema.ServerMessage, error) {
-	cardIDs := make([]monopoly_deal.Identifier, 0, len(game.Cards))
-	for _, cardID := range msg.DiscardCards.CardIds {
-		cardIDs = append(cardIDs, monopoly_deal.Identifier(cardID))
-	}
-	cards, err := game.DiscardCards(tp.PlayerID, cardIDs...)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*monopoly_deal_schema.ServerMessage{
+	return action, []*monopoly_deal_schema.ServerMessage{
 		{
-			Payload: &monopoly_deal_schema.ServerMessage_DiscardCardsRes{
-				DiscardCardsRes: &monopoly_deal_schema.DiscardCardsRes{
-					SeqNum:   int32(game.SequenceNum),
-					PlayerId: tp.PlayerID.String(),
-					Cards:    cards.Proto(),
-				},
-			},
-		},
-	}, nil
-}
-
-func (c *Controller) handleDenyDemand(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_DenyDemand) ([]*monopoly_deal_schema.ServerMessage, error) {
-	demandID := monopoly_deal.Identifier(msg.DenyDemand.DemandId)
-	cardID := monopoly_deal.Identifier(msg.DenyDemand.CardId)
-	demand, card, err := game.DenyDemand(tp.PlayerID, demandID, cardID)
-	if err != nil {
-		return nil, err
-	}
-
-	targetUUID, _ := game.IDTranslator.GetUUID(demand.TargetID)
-
-	return []*monopoly_deal_schema.ServerMessage{
-		{
-			Payload: &monopoly_deal_schema.ServerMessage_PlayActionRes{
-				PlayActionRes: &monopoly_deal_schema.PlayActionRes{
-					SeqNum:         int32(game.SequenceNum),
-					PlayerId:       tp.PlayerID.String(),
-					LastPlayedCard: card.Proto(),
-				},
-			},
-		},
-		{
-			Payload: &monopoly_deal_schema.ServerMessage_DemandCreated{
-				DemandCreated: &monopoly_deal_schema.DemandCreated{
-					Demand: demand.Proto(tp.PlayerID, targetUUID),
-				},
-			},
-		},
-		{
-			Payload: &monopoly_deal_schema.ServerMessage_DemandDenied{
-				DemandDenied: &monopoly_deal_schema.DemandDenied{
-					SeqNum:   int32(game.SequenceNum),
-					DemandId: string(demandID),
-				},
+			Payload: &monopoly_deal_schema.ServerMessage_Action{
+				Action: action.Proto(),
 			},
 		},
 	}, nil

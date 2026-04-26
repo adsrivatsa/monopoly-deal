@@ -229,20 +229,9 @@ enum ActionKind {
   ACTION_KIND_DEMANDS_CREATED = 6;
   ACTION_KIND_PENDING_RENT_CREATED = 7;
   ACTION_KIND_DEMAND_COMPLIED = 8;
-}
-
-message StartTurnRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  repeated Card cards = 3;
-  int32 moves_left = 4;
-  int64 deadline_ms = 5;
-}
-
-message StartTurnMaskedRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  int32 num_cards = 3;
+  ACTION_KIND_DISCARD_CARDS = 9;
+  ACTION_KIND_START_TURN = 10;
+  ACTION_KIND_REARRANGE_CARD = 11;
 }
 
 message PlayMoney {
@@ -299,7 +288,8 @@ message MaskedActionPlayPassGo {
 
 message ActionDemandsCreated {
   optional Card last_played_card = 1;
-  repeated Demand demands = 2;
+  optional Demand denied_demand = 2;
+  repeated Demand demands = 3;
 }
 
 message PlayItsMyBirthday {
@@ -402,10 +392,35 @@ message ActionDemandComplied {
   }
 }
 
-// =========================
+message DenyDemand {
+  string demand_id = 1;
+  string card_id = 2;
+}
+
+message DiscardCards {
+  repeated string card_ids = 1;
+}
+
+message ActionDiscardCards {
+  repeated Card cards = 1;
+}
+
+message MaskedActionDiscardCards {
+  int32 num_cards = 1;
+}
 
 message CompleteTurn {
 
+}
+
+message ActionStartTurn {
+  repeated Card cards = 1;
+  int32 moves_left = 2;
+}
+
+message MaskedActionStartTurn {
+  int32 num_cards = 1;
+  int32 moves_left = 2;
 }
 
 message RearrangeCard {
@@ -414,49 +429,11 @@ message RearrangeCard {
   optional Color color = 3;
 }
 
-message RearrangeCardRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  Card card = 3;
-  PropertySet property_set = 4;
-  int32 sets = 5;
+message ActionRearrangeCard {
+  optional Card card = 1;
+  PropertySet property_set = 2;
+  int32 sets = 3;
 }
-
-message DiscardCards {
-  repeated string card_ids = 1;
-}
-
-message DiscardCardsRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  repeated Card cards = 3;
-}
-
-message DiscardCardsMaskedRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  int32 num_cards = 3;
-}
-
-message DenyDemand {
-  string demand_id = 1;
-  string card_id = 2;
-}
-
-message DemandDenied {
-  int32 seq_num = 1;
-  string demand_id = 2;
-}
-
-
-
-
-
-
-
-
-
-
 
 message WonGame {
   string player_id = 1;
@@ -480,6 +457,11 @@ message Action {
     ActionPendingRentCreated action_pending_rent_created = 12;
     ActionPendingRentResolved action_pending_rent_resolved = 13;
     ActionDemandComplied action_demand_complied = 14;
+    ActionDiscardCards action_discard_cards = 15;
+    MaskedActionDiscardCards masked_action_discard_cards = 16;
+    ActionStartTurn action_start_turn = 17;
+    MaskedActionStartTurn masked_action_start_turn = 18;
+    ActionRearrangeCard action_rearrange_card = 19;
   }
 }
 
@@ -519,19 +501,8 @@ message ServerMessage {
     Error error = 1;
     ChatReceived chat_received = 2;
     GameState game_state = 3;
-    StartTurnRes start_turn_res = 4;
-    StartTurnMaskedRes start_turn_masked_res = 5;
-
-    RearrangeCardRes rearrange_card_res = 11;
-    DiscardCardsRes discard_cards_res = 12;
-    DiscardCardsMaskedRes discard_cards_masked_res = 13;
-    DemandDenied demand_denied = 14;
-    TransferProperty transfer_property = 16;
-    TransferPropertySet transfer_property_set = 17;
-
-    TransferCards transfer_cards = 23;
-    WonGame won_game = 24;
-    Action action = 25;
-    ActionHistory action_history = 26;
+    WonGame won_game = 4;
+    Action action = 5;
+    ActionHistory action_history = 6;
   }
 }
