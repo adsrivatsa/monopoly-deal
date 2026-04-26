@@ -49,3 +49,13 @@ CREATE TABLE IF NOT EXISTS game_player
         player_id uuid NOT NULL,
         PRIMARY KEY (game_id, player_id)
     );
+
+CREATE TABLE IF NOT EXISTS game_history
+    (
+        game_id uuid NOT NULL REFERENCES game (game_id),
+        seq_num int2 NOT NULL,
+        action_kind text NOT NULL,
+        action_version int NOT NULL,
+        action bytea NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT NOW()
+    );
