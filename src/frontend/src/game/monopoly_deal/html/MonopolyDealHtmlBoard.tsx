@@ -508,6 +508,15 @@ const MonopolyDealHtmlBoard = ({
   const isSelectedPaymentDemandActive =
     selectedPaymentDemand?.demandKind === DemandKind.DEMAND_KIND_PAYMENT &&
     selectedPaymentDemand?.isActive === true;
+  const shouldShowPaymentMoneyPicker =
+    isSelectingPaymentCards && isSelectedPaymentDemandActive;
+  const selfMoneyCards = useMemo(() => {
+    if (!selfPlayerId) {
+      return [] as Card[];
+    }
+
+    return moneyByPlayer[selfPlayerId] ?? [];
+  }, [moneyByPlayer, selfPlayerId]);
 
   const isSelectingDealCards = !!dealPicker;
   const canSelectHandCards =
@@ -2160,18 +2169,31 @@ const MonopolyDealHtmlBoard = ({
 
         <div className="md-hand-main">
           <GameCardStackBox
-            title="Your hand"
-            cards={yourHand}
+            title={shouldShowPaymentMoneyPicker ? "Your money" : "Your hand"}
+            cards={shouldShowPaymentMoneyPicker ? selfMoneyCards : yourHand}
             assetImageByKey={assetImageByKey}
             layout="spread"
-            emptyLabel="Waiting for cards"
-            selectableCards={isDiscardRequired || canSelectHandCards}
+            emptyLabel={
+              shouldShowPaymentMoneyPicker
+                ? "No money cards available"
+                : "Waiting for cards"
+            }
+            selectableCards={
+              shouldShowPaymentMoneyPicker || isDiscardRequired || canSelectHandCards
+            }
             selectedCardIds={
-              isDiscardRequired
+              shouldShowPaymentMoneyPicker
+                ? selectedPaymentCardIds
+                : isDiscardRequired
                 ? selectedDiscardCardIds
                 : selectedHandPlacementCardIds
             }
             onCardClick={(card) => {
+              if (shouldShowPaymentMoneyPicker) {
+                onToggleSelectedPaymentCard(card);
+                return;
+              }
+
               if (isDiscardRequired) {
                 onToggleDiscardCard(card.cardId);
                 return;

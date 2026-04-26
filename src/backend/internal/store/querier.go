@@ -13,6 +13,7 @@ import (
 type Querier interface {
 	CompleteGame(ctx context.Context, arg CompleteGameParams) (Game, error)
 	CreateGame(ctx context.Context, arg CreateGameParams) (Game, error)
+	CreateGameHistory(ctx context.Context, arg CreateGameHistoryParams) (GameHistory, error)
 	CreateGamePlayer(ctx context.Context, arg CreateGamePlayerParams) (GamePlayer, error)
 	CreateGamePlayersFromRoom(ctx context.Context, arg CreateGamePlayersFromRoomParams) error
 	CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error)
@@ -32,6 +33,7 @@ type Querier interface {
 	GetRoomByPlayer(ctx context.Context, playerID uuid.UUID) (Room, error)
 	GetRoomPlayer(ctx context.Context, playerID uuid.UUID) (RoomPlayer, error)
 	IncrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
+	ListGameHistory(ctx context.Context, arg ListGameHistoryParams) ([]GameHistory, error)
 	ListRooms(ctx context.Context, arg ListRoomsParams) ([]ListRoomsRow, error)
 	ToggleRoomPlayerIsReady(ctx context.Context, arg ToggleRoomPlayerIsReadyParams) (RoomPlayer, error)
 	UpdateGameState(ctx context.Context, arg UpdateGameStateParams) (Game, error)

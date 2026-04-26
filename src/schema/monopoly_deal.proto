@@ -218,6 +218,16 @@ message GameState {
   int64 deadline_ms = 13;
 }
 
+enum ActionKind {
+  ACTION_KIND_UNSPECIFIED = 0;
+
+  ACTION_KIND_PLAY_MONEY = 1;
+  ACTION_KIND_PLAY_PROPERTY = 2;
+  ACTION_KIND_PLAY_HOUSE = 3;
+  ACTION_KIND_PLAY_HOTEL = 4;
+  ACTION_KIND_PLAY_PASS_GO = 5;
+}
+
 message StartTurnRes {
   int32 seq_num = 1;
   string player_id = 2;
@@ -232,23 +242,12 @@ message StartTurnMaskedRes {
   int32 num_cards = 3;
 }
 
-//message DiscardCards {
-//  repeated string card_ids = 1;
-//}
-//
-//message DiscardCardsRes {
-//  // TODO
-//}
-
 message PlayMoney {
   string card_id = 1;
 }
 
-message PlayMoneyRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  Card card = 3;
-  int64 deadline_ms = 4;
+message ActionPlayMoney {
+  Card card = 1;
 }
 
 message PlayProperty {
@@ -257,35 +256,48 @@ message PlayProperty {
   optional Color active_color = 3;
 }
 
-message PlayPropertyRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  PropertySet property_set = 3;
-  int64 deadline_ms = 4;
+message ActionPlayProperty {
+  PropertySet property_set = 1;
 }
 
-message CompleteTurn {
+message PlayHouse {
+  string card_id = 1;
+  string property_set_id = 2;
+}
 
+message ActionPlayHouse {
+  Card card = 1;
+  PropertySet property_set = 2;
+}
+
+message PlayHotel {
+  string card_id = 1;
+  string property_set_id = 2;
+}
+
+message ActionPlayHotel {
+  Card card = 1;
+  PropertySet property_set = 2;
 }
 
 message PlayPassGo {
   string card_id = 1;
 }
 
-message PlayPassGoRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  repeated Card cards = 3;
-  Card last_played_card = 4;
-  int64 deadline_ms = 5;
+message ActionPlayPassGo {
+  Card last_played_card = 1;
+  repeated Card cards = 2;
 }
 
-message PlayPassGoMaskedRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  int32 num_cards = 3;
-  Card last_played_card = 4;
+message MaskedActionPlayPassGo {
+  Card last_played_card = 1;
+  int32 num_cards = 2;
 }
+
+message CompleteTurn {
+
+}
+
 
 message PlayItsMyBirthday {
   string card_id = 1;
@@ -441,34 +453,29 @@ message TransferPropertySet {
   PropertySet property_set = 4;
 }
 
-message PlayHouse {
-  string card_id = 1;
-  string property_set_id = 2;
-}
-
-message HousePlayed {
-  int32 seq_num = 1;
-  string player_id = 2;
-  Card card = 3;
-  PropertySet property_set = 4;
-}
-
-message PlayHotel {
-  string card_id = 1;
-  string property_set_id = 2;
-}
-
-message HotelPlayed {
-  int32 seq_num = 1;
-  string player_id = 2;
-  Card card = 3;
-  PropertySet property_set = 4;
-}
-
 message WonGame {
   string player_id = 1;
   int32 num_completed_sets = 2;
   int32 money = 3;
+}
+
+message Action {
+  string player_id = 1;
+  ActionKind kind = 2;
+  int32 seq_num = 3;
+  int64 turn_deadline_ms = 4;
+  oneof payload {
+    ActionPlayMoney action_play_money = 5;
+    ActionPlayProperty action_play_property = 6;
+    ActionPlayHouse action_play_house = 7;
+    ActionPlayHotel action_play_hotel = 8;
+    ActionPlayPassGo action_play_pass_go = 9;
+    MaskedActionPlayPassGo masked_action_played_pass_go = 10;
+  }
+}
+
+message ActionHistory {
+  Action action = 1;
 }
 
 message ClientMessage {
@@ -505,10 +512,7 @@ message ServerMessage {
     GameState game_state = 3;
     StartTurnRes start_turn_res = 4;
     StartTurnMaskedRes start_turn_masked_res = 5;
-    PlayMoneyRes play_money_res = 6;
-    PlayPropertyRes play_property_res = 7;
-    PlayPassGoRes play_pass_go_res = 8;
-    PlayPassGoMaskedRes play_pass_go_masked_res = 9;
+
     PendingRentResolved pending_rent_resolved = 10;
     RearrangeCardRes rearrange_card_res = 11;
     DiscardCardsRes discard_cards_res = 12;
@@ -517,12 +521,13 @@ message ServerMessage {
     CompliedDemand complied_demand = 15;
     TransferProperty transfer_property = 16;
     TransferPropertySet transfer_property_set = 17;
-    HousePlayed house_played = 18;
-    HotelPlayed hotel_played = 19;
+
     PlayActionRes play_action_res = 20;
     DemandCreated demand_created = 21;
     PendingRentCreated pending_rent_created = 22;
     TransferCards transfer_cards = 23;
     WonGame won_game = 24;
+    Action action = 25;
+    ActionHistory action_history = 26;
   }
 }

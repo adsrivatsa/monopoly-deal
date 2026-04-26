@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	stderrors "errors"
+	"fmt"
 	"net/http"
 	"the-deal/internal/errors"
 	"the-deal/internal/schema"
@@ -51,6 +52,13 @@ func (s *Server) MonopolyDealSocket(w http.ResponseWriter, r *http.Request) {
 	callback := func(message *schema.ServerMessage) {
 		sock.send(message)
 	}
+
+	go func() {
+		err := s.services.ListGameHistory(ctx, tp, callback)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 
 	err = s.services.ListenGameEvents(ctx, tp, callback)
 	if err != nil {

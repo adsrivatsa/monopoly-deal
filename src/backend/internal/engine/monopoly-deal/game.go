@@ -498,81 +498,83 @@ func (g *Game) DiscardCards(playerUUID uuid.UUID, cardIDs ...Identifier) (Cards,
 	return cards, nil
 }
 
-func (g *Game) PlayMoney(playerUUID uuid.UUID, cardID Identifier) (Card, error) {
+func (g *Game) PlayMoney(playerUUID uuid.UUID, cardID Identifier) (*ActionPlayMoney, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 
 	err = g.checkTurn(playerID)
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 
 	err = g.checkMoves()
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 
 	card, err := g.checkCard(cardID, CategoryMoney, CategoryAction)
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 
 	err = g.checkDemands()
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 
 	err = g.checkPendingRent()
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 
 	_, err = g.discardHand(playerID, cardID)
 	if err != nil {
-		return Card{}, err
+		return nil, err
 	}
 
 	money := g.Money[playerID]
 	money.Add(card)
 	g.Money[playerID] = money
 
+	action := NewActionPlayMoney(g.SequenceNum, playerUUID, card)
+
 	g.CompleteMove()
 	g.SequenceNum++
 
-	return card, nil
+	return action, nil
 }
 
-func (g *Game) PlayProperty(playerUUID uuid.UUID, cardID Identifier, propSetIDPtr *Identifier, activeColorPtr *Color) (PropertySet, error) {
+func (g *Game) PlayProperty(playerUUID uuid.UUID, cardID Identifier, propSetIDPtr *Identifier, activeColorPtr *Color) (*ActionPlayProperty, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return PropertySet{}, err
+		return nil, err
 	}
 
 	err = g.checkTurn(playerID)
 	if err != nil {
-		return PropertySet{}, err
+		return nil, err
 	}
 
 	err = g.checkMoves()
 	if err != nil {
-		return PropertySet{}, err
+		return nil, err
 	}
 
 	card, err := g.checkCard(cardID, CategoryPureProperty, CategoryWildProperty)
 	if err != nil {
-		return PropertySet{}, err
+		return nil, err
 	}
 
 	err = g.checkDemands()
 	if err != nil {
-		return PropertySet{}, err
+		return nil, err
 	}
 
 	err = g.checkPendingRent()
 	if err != nil {
-		return PropertySet{}, err
+		return nil, err
 	}
 
 	var setIdx int
@@ -586,24 +588,24 @@ func (g *Game) PlayProperty(playerUUID uuid.UUID, cardID Identifier, propSetIDPt
 
 		setIdx = properties.IndexBySetID(propSetID)
 		if setIdx == -1 {
-			return PropertySet{}, errors.PropertySetDoesntExist
+			return nil, errors.PropertySetDoesntExist
 		}
 
 		propSet = properties[setIdx]
 
 		if propSet.IsComplete() {
-			return PropertySet{}, errors.PropertySetIsComplete
+			return nil, errors.PropertySetIsComplete
 		}
 
 		if !card.HasColor(propSet.Color) {
-			return PropertySet{}, errors.CardCannotBeAssignedToSet
+			return nil, errors.CardCannotBeAssignedToSet
 		}
 
 		resolvedColor = propSet.Color
 	} else {
 		if activeColorPtr != nil {
 			if !card.HasColor(*activeColorPtr) {
-				return PropertySet{}, errors.CardCannotBeAssignedToSet
+				return nil, errors.CardCannotBeAssignedToSet
 			}
 			resolvedColor = *activeColorPtr
 		}
@@ -614,7 +616,7 @@ func (g *Game) PlayProperty(playerUUID uuid.UUID, cardID Identifier, propSetIDPt
 
 	_, err = g.discardHand(playerID, cardID)
 	if err != nil {
-		return PropertySet{}, err
+		return nil, err
 	}
 
 	card.ActiveColor = resolvedColor
@@ -630,122 +632,128 @@ func (g *Game) PlayProperty(playerUUID uuid.UUID, cardID Identifier, propSetIDPt
 	}
 	g.Properties[playerID] = properties
 
+	action := NewActionPlayProperty(g.SequenceNum, playerUUID, propSet)
+
 	g.CompleteMove()
 	g.SequenceNum++
 
-	return propSet, nil
+	return action, nil
 }
 
-func (g *Game) PlayHouse(playerUUID uuid.UUID, cardID, propSetID Identifier) (PropertySet, Card, error) {
+func (g *Game) PlayHouse(playerUUID uuid.UUID, cardID, propSetID Identifier) (*ActionPlayHouse, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	card, err := g.checkCard(cardID, CategoryAction)
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	if card.AssetKey != AssetKeyHouse {
-		return PropertySet{}, Card{}, errors.InvalidCardForAction
+		return nil, errors.InvalidCardForAction
 	}
 
 	err = g.checkDemands()
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	err = g.checkPendingRent()
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	properties := g.Properties[playerID]
 	setIdx := properties.IndexBySetID(propSetID)
 	if setIdx == -1 {
-		return PropertySet{}, Card{}, errors.PropertySetDoesntExist
+		return nil, errors.PropertySetDoesntExist
 	}
 
 	propSet := properties[setIdx]
 
 	if !propSet.IsComplete() {
-		return PropertySet{}, Card{}, errors.PropertySetIsNotComplete
+		return nil, errors.PropertySetIsNotComplete
 	}
 
 	if propSet.IsLocked() {
-		return PropertySet{}, Card{}, errors.PropertySetHasHouse
+		return nil, errors.PropertySetHasHouse
 	}
 
 	_, err = g.discardHand(playerID, cardID)
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	propSet.Cards.Add(card)
 	properties[setIdx] = propSet
 	g.Properties[playerID] = properties
 
+	action := NewActionPlayHouse(g.SequenceNum, playerUUID, card, propSet)
+
 	g.CompleteMove()
 	g.SequenceNum++
 
-	return propSet, card, nil
+	return action, nil
 }
 
-func (g *Game) PlayHotel(playerUUID uuid.UUID, cardID, propSetID Identifier) (PropertySet, Card, error) {
+func (g *Game) PlayHotel(playerUUID uuid.UUID, cardID, propSetID Identifier) (*ActionPlayHotel, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	card, err := g.checkCard(cardID, CategoryAction)
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	if card.AssetKey != AssetKeyHotel {
-		return PropertySet{}, Card{}, errors.InvalidCardForAction
+		return nil, errors.InvalidCardForAction
 	}
 
 	err = g.checkDemands()
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	err = g.checkPendingRent()
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	properties := g.Properties[playerID]
 	setIdx := properties.IndexBySetID(propSetID)
 	if setIdx == -1 {
-		return PropertySet{}, Card{}, errors.PropertySetDoesntExist
+		return nil, errors.PropertySetDoesntExist
 	}
 
 	propSet := properties[setIdx]
 
 	if !propSet.IsComplete() {
-		return PropertySet{}, Card{}, errors.PropertySetIsNotComplete
+		return nil, errors.PropertySetIsNotComplete
 	}
 
 	if propSet.IsLocked() {
-		return PropertySet{}, Card{}, errors.PropertySetHasHotel
+		return nil, errors.PropertySetHasHotel
 	}
 
 	_, err = g.discardHand(playerID, cardID)
 	if err != nil {
-		return PropertySet{}, Card{}, err
+		return nil, err
 	}
 
 	propSet.Cards.Add(card)
 	properties[setIdx] = propSet
 	g.Properties[playerID] = properties
 
+	action := NewActionPlayHotel(g.SequenceNum, playerUUID, card, propSet)
+
 	g.CompleteMove()
 	g.SequenceNum++
 
-	return propSet, card, nil
+	return action, nil
 }
 
 func (g *Game) RearrangeProperty(playerUUID uuid.UUID, cardID Identifier, targetSetIDPtr *Identifier, activeColorPtr *Color) (PropertySet, int, Card, error) {
@@ -859,7 +867,7 @@ func (g *Game) RearrangeProperty(playerUUID uuid.UUID, cardID Identifier, target
 	return targetSet, properties.CompleteCount(), card, nil
 }
 
-func (g *Game) PlayPassGo(playerUUID uuid.UUID, cardID Identifier) (Cards, error) {
+func (g *Game) PlayPassGo(playerUUID uuid.UUID, cardID Identifier) (*ActionPlayPassGo, error) {
 	playerID, err := g.checkPlayer(playerUUID)
 	if err != nil {
 		return nil, err
@@ -903,10 +911,12 @@ func (g *Game) PlayPassGo(playerUUID uuid.UUID, cardID Identifier) (Cards, error
 
 	g.LastAction = card
 
+	action := NewActionPlayPassGo(g.SequenceNum, playerUUID, cards, card)
+
 	g.CompleteMove()
 	g.SequenceNum++
 
-	return cards, nil
+	return action, nil
 }
 
 func (g *Game) PlayDoubleTheRent(playerUUID uuid.UUID, cardID Identifier) (PendingRent, Card, error) {

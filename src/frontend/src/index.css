@@ -1229,8 +1229,14 @@ h1 {
 }
 
 .game-chat-panel {
-  flex: 0 0 48%;
+  flex: 0 0 35%;
   min-height: 0;
+}
+
+.game-action-history-panel {
+  flex: 0 0 40%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .game-sidebar-panels {
@@ -1277,9 +1283,31 @@ h1 {
 }
 
 .game-players-card {
-  flex: 1 1 auto;
+  flex: 1 1 25%;
   min-height: 0;
   overflow: hidden;
+}
+
+.game-action-history-list {
+  margin-top: 0.65rem;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.game-action-history-line {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--foreground);
+  border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--muted) 80%, transparent);
+  padding: 0.35rem 0.45rem;
+  overflow-wrap: anywhere;
 }
 
 .game-sidebar-card {

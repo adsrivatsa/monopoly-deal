@@ -109,16 +109,22 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 	}
 
 	var events []*monopoly_deal_schema.ServerMessage
+	var action monopoly_deal.Action
 
 	switch p := msg.MonopolyDealMessage.GetPayload().(type) {
 	case *monopoly_deal_schema.ClientMessage_PlayMoney:
-		events, err = c.handlePlayMoney(&game, tp, p)
+		action, events, err = c.handlePlayMoney(&game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayProperty:
-		events, err = c.handlePlayProperty(&game, tp, p)
+		action, events, err = c.handlePlayProperty(&game, tp, p)
+	case *monopoly_deal_schema.ClientMessage_PlayHouse:
+		action, events, err = c.handlePlayHouse(&game, tp, p)
+	case *monopoly_deal_schema.ClientMessage_PlayHotel:
+		action, events, err = c.handlePlayHotel(&game, tp, p)
+	case *monopoly_deal_schema.ClientMessage_PlayPassGo:
+		action, events, err = c.handlePlayPassGo(&game, tp, p)
+
 	case *monopoly_deal_schema.ClientMessage_CompleteTurn:
 		events, err = c.handleCompleteTurn(&game, tp)
-	case *monopoly_deal_schema.ClientMessage_PlayPassGo:
-		events, err = c.handlePlayPassGo(&game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday:
 		events, err = c.handlePlayItsMyBirthday(&game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_ComplyPaymentDemand:
@@ -149,26 +155,41 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		events, err = c.handlePlayDealBreaker(&game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand:
 		events, err = c.handleComplyPropertySetDemand(&game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayHouse:
-		events, err = c.handlePlayHouse(&game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayHotel:
-		events, err = c.handlePlayHotel(&game, tp, p)
 	}
 	if err != nil {
 		return err
 	}
 
-	gameState, err := game.EncodeMsgpack()
+	buf, err := game.EncodeMsgpack()
 	if err != nil {
 		return err
 	}
 
 	g, err = c.store.UpdateGameState(ctx, store.UpdateGameStateParams{
-		GameState: gameState,
+		GameState: buf,
 		GameID:    g.GameID,
 	})
 	if err != nil {
 		return err
+	}
+
+	// TODO - remove
+	if action != nil {
+		buf, err = msgpack.Marshal(action)
+		if err != nil {
+			return err
+		}
+
+		_, err = c.store.CreateGameHistory(ctx, store.CreateGameHistoryParams{
+			GameID:        g.GameID,
+			SeqNum:        int16(action.GetSeqNum()),
+			ActionKind:    string(action.GetKind()),
+			ActionVersion: int32(action.GetVersion()),
+			Action:        buf,
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	completeSets, moneyValue, didWin, err := game.CheckWinConditions(tp.PlayerID)
@@ -203,7 +224,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 			},
 		}
 
-		buf, err := proto.Marshal(wrappedEvent)
+		buf, err = proto.Marshal(wrappedEvent)
 		if err != nil {
 			return err
 		}
@@ -217,28 +238,23 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 	return nil
 }
 
-func (c *Controller) handlePlayMoney(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayMoney) ([]*monopoly_deal_schema.ServerMessage, error) {
+func (c *Controller) handlePlayMoney(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayMoney) (monopoly_deal.Action, []*monopoly_deal_schema.ServerMessage, error) {
 	cardID := monopoly_deal.Identifier(msg.PlayMoney.CardId)
-	card, err := game.PlayMoney(tp.PlayerID, cardID)
+	action, err := game.PlayMoney(tp.PlayerID, cardID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return []*monopoly_deal_schema.ServerMessage{
+	return action, []*monopoly_deal_schema.ServerMessage{
 		{
-			Payload: &monopoly_deal_schema.ServerMessage_PlayMoneyRes{
-				PlayMoneyRes: &monopoly_deal_schema.PlayMoneyRes{
-					SeqNum:   int32(game.SequenceNum),
-					PlayerId: tp.PlayerID.String(),
-					Card:     card.Proto(),
-				},
+			Payload: &monopoly_deal_schema.ServerMessage_Action{
+				Action: action.Proto(),
 			},
 		},
 	}, nil
-
 }
 
-func (c *Controller) handlePlayProperty(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayProperty) ([]*monopoly_deal_schema.ServerMessage, error) {
+func (c *Controller) handlePlayProperty(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayProperty) (monopoly_deal.Action, []*monopoly_deal_schema.ServerMessage, error) {
 	cardID := monopoly_deal.Identifier(msg.PlayProperty.CardId)
 	var propSetID *monopoly_deal.Identifier
 	if msg.PlayProperty.PropertySetId != nil {
@@ -250,19 +266,65 @@ func (c *Controller) handlePlayProperty(game *monopoly_deal.Game, tp token.Paylo
 		id := monopoly_deal.ColorFromProto(*msg.PlayProperty.ActiveColor)
 		propSetColor = &id
 	}
-	propSet, err := game.PlayProperty(tp.PlayerID, cardID, propSetID, propSetColor)
+	action, err := game.PlayProperty(tp.PlayerID, cardID, propSetID, propSetColor)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return []*monopoly_deal_schema.ServerMessage{
+	return action, []*monopoly_deal_schema.ServerMessage{
 		{
-			Payload: &monopoly_deal_schema.ServerMessage_PlayPropertyRes{
-				PlayPropertyRes: &monopoly_deal_schema.PlayPropertyRes{
-					SeqNum:      int32(game.SequenceNum),
-					PlayerId:    tp.PlayerID.String(),
-					PropertySet: propSet.Proto(tp.PlayerID),
-				},
+			Payload: &monopoly_deal_schema.ServerMessage_Action{
+				Action: action.Proto(),
+			},
+		},
+	}, nil
+}
+
+func (c *Controller) handlePlayHouse(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayHouse) (monopoly_deal.Action, []*monopoly_deal_schema.ServerMessage, error) {
+	cardID := monopoly_deal.Identifier(msg.PlayHouse.CardId)
+	propertySetID := monopoly_deal.Identifier(msg.PlayHouse.PropertySetId)
+	action, err := game.PlayHouse(tp.PlayerID, cardID, propertySetID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return action, []*monopoly_deal_schema.ServerMessage{
+		{
+			Payload: &monopoly_deal_schema.ServerMessage_Action{
+				Action: action.Proto(),
+			},
+		},
+	}, nil
+}
+
+func (c *Controller) handlePlayHotel(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayHotel) (monopoly_deal.Action, []*monopoly_deal_schema.ServerMessage, error) {
+	cardID := monopoly_deal.Identifier(msg.PlayHotel.CardId)
+	propertySetID := monopoly_deal.Identifier(msg.PlayHotel.PropertySetId)
+	action, err := game.PlayHotel(tp.PlayerID, cardID, propertySetID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return action, []*monopoly_deal_schema.ServerMessage{
+		{
+			Payload: &monopoly_deal_schema.ServerMessage_Action{
+				Action: action.Proto(),
+			},
+		},
+	}, nil
+}
+
+func (c *Controller) handlePlayPassGo(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayPassGo) (monopoly_deal.Action, []*monopoly_deal_schema.ServerMessage, error) {
+	cardID := monopoly_deal.Identifier(msg.PlayPassGo.CardId)
+	action, err := game.PlayPassGo(tp.PlayerID, cardID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return action, []*monopoly_deal_schema.ServerMessage{
+		{
+			Payload: &monopoly_deal_schema.ServerMessage_Action{
+				Action: action.Proto(),
 			},
 		},
 	}, nil
@@ -287,28 +349,6 @@ func (c *Controller) handleCompleteTurn(game *monopoly_deal.Game, tp token.Paylo
 		},
 	}, nil
 }
-
-func (c *Controller) handlePlayPassGo(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayPassGo) ([]*monopoly_deal_schema.ServerMessage, error) {
-	cardID := monopoly_deal.Identifier(msg.PlayPassGo.CardId)
-	drawn, err := game.PlayPassGo(tp.PlayerID, cardID)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*monopoly_deal_schema.ServerMessage{
-		{
-			Payload: &monopoly_deal_schema.ServerMessage_PlayPassGoRes{
-				PlayPassGoRes: &monopoly_deal_schema.PlayPassGoRes{
-					SeqNum:         int32(game.SequenceNum),
-					PlayerId:       tp.PlayerID.String(),
-					Cards:          drawn.Proto(),
-					LastPlayedCard: game.LastAction.Proto(),
-				},
-			},
-		},
-	}, nil
-}
-
 func (c *Controller) handlePlayItsMyBirthday(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday) ([]*monopoly_deal_schema.ServerMessage, error) {
 	cardID := monopoly_deal.Identifier(msg.PlayItsMyBirthday.CardId)
 	demands, card, err := game.PlayItsMyBirthday(tp.PlayerID, cardID)
@@ -818,50 +858,6 @@ func (c *Controller) handleComplyPropertySetDemand(game *monopoly_deal.Game, tp 
 					SourceId:    sourceUUID.String(),
 					TargetId:    tp.PlayerID.String(),
 					PropertySet: propertySet.Proto(sourceUUID),
-				},
-			},
-		},
-	}, nil
-}
-
-func (c *Controller) handlePlayHouse(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayHouse) ([]*monopoly_deal_schema.ServerMessage, error) {
-	cardID := monopoly_deal.Identifier(msg.PlayHouse.CardId)
-	propertySetID := monopoly_deal.Identifier(msg.PlayHouse.PropertySetId)
-	propertySet, card, err := game.PlayHouse(tp.PlayerID, cardID, propertySetID)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*monopoly_deal_schema.ServerMessage{
-		{
-			Payload: &monopoly_deal_schema.ServerMessage_HousePlayed{
-				HousePlayed: &monopoly_deal_schema.HousePlayed{
-					SeqNum:      int32(game.SequenceNum),
-					PlayerId:    tp.PlayerID.String(),
-					Card:        card.Proto(),
-					PropertySet: propertySet.Proto(tp.PlayerID),
-				},
-			},
-		},
-	}, nil
-}
-
-func (c *Controller) handlePlayHotel(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_PlayHotel) ([]*monopoly_deal_schema.ServerMessage, error) {
-	cardID := monopoly_deal.Identifier(msg.PlayHotel.CardId)
-	propertySetID := monopoly_deal.Identifier(msg.PlayHotel.PropertySetId)
-	propertySet, card, err := game.PlayHotel(tp.PlayerID, cardID, propertySetID)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*monopoly_deal_schema.ServerMessage{
-		{
-			Payload: &monopoly_deal_schema.ServerMessage_HotelPlayed{
-				HotelPlayed: &monopoly_deal_schema.HotelPlayed{
-					SeqNum:      int32(game.SequenceNum),
-					PlayerId:    tp.PlayerID.String(),
-					Card:        card.Proto(),
-					PropertySet: propertySet.Proto(tp.PlayerID),
 				},
 			},
 		},

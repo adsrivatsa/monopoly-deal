@@ -7,55 +7,69 @@ import (
 )
 
 func (c *Controller) MaskEvents(tp token.Payload, msg *monopoly_deal_schema.ServerMessage) *schema.ServerMessage {
-	switch p := msg.Payload.(type) {
-	case *monopoly_deal_schema.ServerMessage_StartTurnRes:
-		if p.StartTurnRes.PlayerId != tp.PlayerID.String() {
+	actionWrap, ok := msg.GetPayload().(*monopoly_deal_schema.ServerMessage_Action)
+	if !ok {
+		return nil
+	}
+
+	action := actionWrap.Action
+
+	switch p := action.Payload.(type) {
+	//case *monopoly_deal_schema.ServerMessage_StartTurnRes:
+	//	if p.StartTurnRes.PlayerId != tp.PlayerID.String() {
+	//		msg = &monopoly_deal_schema.ServerMessage{
+	//			Payload: &monopoly_deal_schema.ServerMessage_StartTurnMaskedRes{
+	//				StartTurnMaskedRes: &monopoly_deal_schema.StartTurnMaskedRes{
+	//					SeqNum:   msg.GetStartTurnRes().GetSeqNum(),
+	//					PlayerId: msg.GetStartTurnRes().GetPlayerId(),
+	//					NumCards: int32(len(msg.GetStartTurnRes().GetCards())),
+	//				},
+	//			},
+	//		}
+	//	}
+
+	case *monopoly_deal_schema.Action_ActionPlayPassGo:
+		if action.PlayerId != tp.PlayerID.String() {
 			msg = &monopoly_deal_schema.ServerMessage{
-				Payload: &monopoly_deal_schema.ServerMessage_StartTurnMaskedRes{
-					StartTurnMaskedRes: &monopoly_deal_schema.StartTurnMaskedRes{
-						SeqNum:   msg.GetStartTurnRes().GetSeqNum(),
-						PlayerId: msg.GetStartTurnRes().GetPlayerId(),
-						NumCards: int32(len(msg.GetStartTurnRes().GetCards())),
-					},
-				},
-			}
-		}
-	case *monopoly_deal_schema.ServerMessage_PlayPassGoRes:
-		if p.PlayPassGoRes.PlayerId != tp.PlayerID.String() {
-			msg = &monopoly_deal_schema.ServerMessage{
-				Payload: &monopoly_deal_schema.ServerMessage_PlayPassGoMaskedRes{
-					PlayPassGoMaskedRes: &monopoly_deal_schema.PlayPassGoMaskedRes{
-						SeqNum:         msg.GetPlayPassGoRes().GetSeqNum(),
-						PlayerId:       msg.GetPlayPassGoRes().GetPlayerId(),
-						NumCards:       int32(len(msg.GetPlayPassGoRes().GetCards())),
-						LastPlayedCard: msg.GetPlayPassGoRes().GetLastPlayedCard(),
+				Payload: &monopoly_deal_schema.ServerMessage_Action{
+					Action: &monopoly_deal_schema.Action{
+						PlayerId:       action.PlayerId,
+						Kind:           action.Kind,
+						SeqNum:         action.SeqNum,
+						TurnDeadlineMs: action.TurnDeadlineMs,
+						Payload: &monopoly_deal_schema.Action_MaskedActionPlayedPassGo{
+							MaskedActionPlayedPassGo: &monopoly_deal_schema.MaskedActionPlayPassGo{
+								LastPlayedCard: p.ActionPlayPassGo.GetLastPlayedCard(),
+								NumCards:       int32(len(p.ActionPlayPassGo.GetCards())),
+							},
+						},
 					},
 				},
 			}
 		}
 
-	case *monopoly_deal_schema.ServerMessage_PendingRentCreated:
-		if p.PendingRentCreated.PendingRent.PlayerId != tp.PlayerID.String() {
-			return nil
-		}
-
-	case *monopoly_deal_schema.ServerMessage_PendingRentResolved:
-		if p.PendingRentResolved.PlayerId != tp.PlayerID.String() {
-			return nil
-		}
-
-	case *monopoly_deal_schema.ServerMessage_DiscardCardsRes:
-		if p.DiscardCardsRes.PlayerId != tp.PlayerID.String() {
-			msg = &monopoly_deal_schema.ServerMessage{
-				Payload: &monopoly_deal_schema.ServerMessage_DiscardCardsMaskedRes{
-					DiscardCardsMaskedRes: &monopoly_deal_schema.DiscardCardsMaskedRes{
-						SeqNum:   msg.GetDiscardCardsRes().GetSeqNum(),
-						PlayerId: msg.GetDiscardCardsRes().GetPlayerId(),
-						NumCards: int32(len(msg.GetDiscardCardsRes().GetCards())),
-					},
-				},
-			}
-		}
+		//case *monopoly_deal_schema.ServerMessage_PendingRentCreated:
+		//	if p.PendingRentCreated.PendingRent.PlayerId != tp.PlayerID.String() {
+		//		return nil
+		//	}
+		//
+		//case *monopoly_deal_schema.ServerMessage_PendingRentResolved:
+		//	if p.PendingRentResolved.PlayerId != tp.PlayerID.String() {
+		//		return nil
+		//	}
+		//
+		//case *monopoly_deal_schema.ServerMessage_DiscardCardsRes:
+		//	if p.DiscardCardsRes.PlayerId != tp.PlayerID.String() {
+		//		msg = &monopoly_deal_schema.ServerMessage{
+		//			Payload: &monopoly_deal_schema.ServerMessage_DiscardCardsMaskedRes{
+		//				DiscardCardsMaskedRes: &monopoly_deal_schema.DiscardCardsMaskedRes{
+		//					SeqNum:   msg.GetDiscardCardsRes().GetSeqNum(),
+		//					PlayerId: msg.GetDiscardCardsRes().GetPlayerId(),
+		//					NumCards: int32(len(msg.GetDiscardCardsRes().GetCards())),
+		//				},
+		//			},
+		//		}
+		//	}
 
 	}
 

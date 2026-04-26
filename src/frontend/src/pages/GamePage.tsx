@@ -53,6 +53,11 @@ type GameChatMessage = {
   text: string;
 };
 
+type ActionHistoryEntry = {
+  id: string;
+  text: string;
+};
+
 type GameErrorNotice = ErrorToastNotice;
 
 type WonGameResult = WonGame & {
@@ -310,6 +315,7 @@ const GamePage = () => {
     {},
   );
   const [chatMessages, setChatMessages] = useState<GameChatMessage[]>([]);
+  const [actionHistoryEntries, setActionHistoryEntries] = useState<ActionHistoryEntry[]>([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [errorNotices, setErrorNotices] = useState<GameErrorNotice[]>([]);
   const [selectedDiscardCardIds, setSelectedDiscardCardIds] = useState<Set<string>>(
@@ -611,6 +617,19 @@ const GamePage = () => {
             });
           }
 
+          const actionHistory = message.monopolyDealMessage?.actionHistory;
+          if (actionHistory) {
+            setActionHistoryEntries((current) => {
+              return [
+                ...current,
+                {
+                  id: `action-history-${Date.now()}-${current.length}`,
+                  text: JSON.stringify(actionHistory.action) ?? "{}",
+                },
+              ];
+            });
+          }
+
           const wonGameMessage = message.monopolyDealMessage?.wonGame as
             | WonGameResult
             | undefined;
@@ -714,17 +733,28 @@ const GamePage = () => {
             });
           }
 
-          const playMoneyRes = message.monopolyDealMessage?.playMoneyRes;
+          const action = message.monopolyDealMessage?.action;
+          const actionPlayerId = action?.playerId;
+          const actionPlayMoney = action?.actionPlayMoney;
           if (
-            playMoneyRes &&
+            actionPlayMoney &&
             selfPlayerId &&
-            playMoneyRes.playerId === selfPlayerId
+            actionPlayerId === selfPlayerId
           ) {
             setMovesLeft((current) => Math.max(0, current - 1));
           }
 
-          if (playMoneyRes?.card) {
-            const playedMoneyCard = playMoneyRes.card;
+          if (actionPlayMoney?.card && actionPlayerId) {
+            const playedMoneyCard = actionPlayMoney.card;
+            setActionHistoryEntries((current) => {
+              return [
+                ...current,
+                {
+                  id: `action-history-${Date.now()}-${current.length}`,
+                  text: JSON.stringify({ actionPlayMoney }) ?? "{}",
+                },
+              ];
+            });
             setInitialGameState((current) => {
               if (!current) {
                 return current;
@@ -732,12 +762,12 @@ const GamePage = () => {
 
               const nextMoney = [...current.money];
               const moneyIndex = nextMoney.findIndex(
-                (pile) => pile.playerId === playMoneyRes.playerId,
+                (pile) => pile.playerId === actionPlayerId,
               );
 
               if (moneyIndex === -1) {
                 nextMoney.push({
-                  playerId: playMoneyRes.playerId,
+                  playerId: actionPlayerId,
                   cards: [playedMoneyCard],
                 });
               } else {
@@ -748,7 +778,7 @@ const GamePage = () => {
                 };
               }
 
-              const isSelfPlay = selfPlayerId === playMoneyRes.playerId;
+              const isSelfPlay = selfPlayerId === actionPlayerId;
               const nextYourHand = isSelfPlay
                 ? {
                     ...current.yourHand,
@@ -760,7 +790,7 @@ const GamePage = () => {
                 : current.yourHand;
 
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== playMoneyRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -773,7 +803,7 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: playMoneyRes.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 movesLeft: isSelfPlay
                   ? Math.max(0, current.movesLeft - 1)
                   : current.movesLeft,
@@ -785,7 +815,7 @@ const GamePage = () => {
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== playMoneyRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -798,17 +828,26 @@ const GamePage = () => {
             });
           }
 
-          const playPropertyRes = message.monopolyDealMessage?.playPropertyRes;
+          const actionPlayProperty = action?.actionPlayProperty;
           if (
-            playPropertyRes &&
+            actionPlayProperty &&
             selfPlayerId &&
-            playPropertyRes.playerId === selfPlayerId
+            actionPlayerId === selfPlayerId
           ) {
             setMovesLeft((current) => Math.max(0, current - 1));
           }
 
-          if (playPropertyRes?.propertySet) {
-            const playedPropertySet = playPropertyRes.propertySet;
+          if (actionPlayProperty?.propertySet && actionPlayerId) {
+            const playedPropertySet = actionPlayProperty.propertySet;
+            setActionHistoryEntries((current) => {
+              return [
+                ...current,
+                {
+                  id: `action-history-${Date.now()}-${current.length}`,
+                  text: JSON.stringify({ actionPlayProperty }) ?? "{}",
+                },
+              ];
+            });
             let nextCompletedSetsForPlayer: number | null = null;
             setInitialGameState((current) => {
               if (!current) {
@@ -832,7 +871,7 @@ const GamePage = () => {
                 nextProperties[propertyIndex] = playedPropertySet;
               }
 
-              const isSelfPlay = selfPlayerId === playPropertyRes.playerId;
+              const isSelfPlay = selfPlayerId === actionPlayerId;
               const nextYourHand =
                 isSelfPlay && playedCardId
                   ? {
@@ -845,7 +884,7 @@ const GamePage = () => {
                   : current.yourHand;
 
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== playPropertyRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -866,7 +905,7 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: playPropertyRes.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 movesLeft: isSelfPlay
                   ? Math.max(0, current.movesLeft - 1)
                   : current.movesLeft,
@@ -878,7 +917,7 @@ const GamePage = () => {
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== playPropertyRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -892,31 +931,31 @@ const GamePage = () => {
             });
           }
 
-          const housePlayed = message.monopolyDealMessage?.housePlayed;
-          if (housePlayed) {
-            if (selfPlayerId && housePlayed.playerId === selfPlayerId) {
+          const actionPlayHouse = action?.actionPlayHouse;
+          if (actionPlayHouse && actionPlayerId) {
+            if (selfPlayerId && actionPlayerId === selfPlayerId) {
               setMovesLeft((current) => Math.max(0, current - 1));
             }
 
             setInitialGameState((current) => {
-              if (!current || !housePlayed.propertySet) {
+              if (!current || !actionPlayHouse.propertySet) {
                 return current;
               }
 
               const nextProperties = [...current.properties];
               const propertyIndex = nextProperties.findIndex((propertySet) => {
-                return propertySet.propertySetId === housePlayed.propertySet?.propertySetId;
+                return propertySet.propertySetId === actionPlayHouse.propertySet?.propertySetId;
               });
 
               if (propertyIndex === -1) {
-                nextProperties.push(housePlayed.propertySet);
+                nextProperties.push(actionPlayHouse.propertySet);
               } else {
-                nextProperties[propertyIndex] = housePlayed.propertySet;
+                nextProperties[propertyIndex] = actionPlayHouse.propertySet;
               }
 
-              const playedCardId = housePlayed.card?.cardId;
+              const playedCardId = actionPlayHouse.card?.cardId;
               const nextYourHand =
-                selfPlayerId === housePlayed.playerId && playedCardId
+                selfPlayerId === actionPlayerId && playedCardId
                   ? {
                       ...current.yourHand,
                       cards:
@@ -927,7 +966,7 @@ const GamePage = () => {
                   : current.yourHand;
 
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== housePlayed.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -939,9 +978,9 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: housePlayed.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 movesLeft:
-                  selfPlayerId === housePlayed.playerId
+                  selfPlayerId === actionPlayerId
                     ? Math.max(0, current.movesLeft - 1)
                     : current.movesLeft,
                 players: nextPlayers,
@@ -952,7 +991,7 @@ const GamePage = () => {
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== housePlayed.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -964,31 +1003,31 @@ const GamePage = () => {
             });
           }
 
-          const hotelPlayed = message.monopolyDealMessage?.hotelPlayed;
-          if (hotelPlayed) {
-            if (selfPlayerId && hotelPlayed.playerId === selfPlayerId) {
+          const actionPlayHotel = action?.actionPlayHotel;
+          if (actionPlayHotel && actionPlayerId) {
+            if (selfPlayerId && actionPlayerId === selfPlayerId) {
               setMovesLeft((current) => Math.max(0, current - 1));
             }
 
             setInitialGameState((current) => {
-              if (!current || !hotelPlayed.propertySet) {
+              if (!current || !actionPlayHotel.propertySet) {
                 return current;
               }
 
               const nextProperties = [...current.properties];
               const propertyIndex = nextProperties.findIndex((propertySet) => {
-                return propertySet.propertySetId === hotelPlayed.propertySet?.propertySetId;
+                return propertySet.propertySetId === actionPlayHotel.propertySet?.propertySetId;
               });
 
               if (propertyIndex === -1) {
-                nextProperties.push(hotelPlayed.propertySet);
+                nextProperties.push(actionPlayHotel.propertySet);
               } else {
-                nextProperties[propertyIndex] = hotelPlayed.propertySet;
+                nextProperties[propertyIndex] = actionPlayHotel.propertySet;
               }
 
-              const playedCardId = hotelPlayed.card?.cardId;
+              const playedCardId = actionPlayHotel.card?.cardId;
               const nextYourHand =
-                selfPlayerId === hotelPlayed.playerId && playedCardId
+                selfPlayerId === actionPlayerId && playedCardId
                   ? {
                       ...current.yourHand,
                       cards:
@@ -999,7 +1038,7 @@ const GamePage = () => {
                   : current.yourHand;
 
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== hotelPlayed.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -1011,9 +1050,9 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: hotelPlayed.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 movesLeft:
-                  selfPlayerId === hotelPlayed.playerId
+                  selfPlayerId === actionPlayerId
                     ? Math.max(0, current.movesLeft - 1)
                     : current.movesLeft,
                 players: nextPlayers,
@@ -1024,7 +1063,7 @@ const GamePage = () => {
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== hotelPlayed.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -1036,11 +1075,12 @@ const GamePage = () => {
             });
           }
 
-          const playPassGoRes = message.monopolyDealMessage?.playPassGoRes;
+          const actionPlayPassGo = action?.actionPlayPassGo;
           if (
-            playPassGoRes &&
+            actionPlayPassGo &&
+            actionPlayerId &&
             selfPlayerId &&
-            playPassGoRes.playerId === selfPlayerId
+            actionPlayerId === selfPlayerId
           ) {
             setMovesLeft((current) => Math.max(0, current - 1));
 
@@ -1049,19 +1089,19 @@ const GamePage = () => {
                 return current;
               }
 
-              const playedCardId = playPassGoRes.lastPlayedCard?.cardId;
+              const playedCardId = actionPlayPassGo.lastPlayedCard?.cardId;
               const nextYourHand = {
                 ...current.yourHand,
                 cards: [
                   ...(current.yourHand?.cards.filter((card) => {
                     return card.cardId !== playedCardId;
                   }) ?? []),
-                  ...playPassGoRes.cards,
+                  ...actionPlayPassGo.cards,
                 ],
               };
-              const handDelta = playPassGoRes.cards.length - 1;
+              const handDelta = actionPlayPassGo.cards.length - 1;
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== playPassGoRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -1073,39 +1113,38 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: playPassGoRes.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 movesLeft: Math.max(0, current.movesLeft - 1),
                 players: nextPlayers,
                 yourHand: nextYourHand,
-                lastAction: playPassGoRes.lastPlayedCard,
+                lastAction: actionPlayPassGo.lastPlayedCard,
               };
             });
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== playPassGoRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
                 return {
                   ...player,
-                  handCards: Math.max(0, player.handCards + playPassGoRes.cards.length - 1),
+                  handCards: Math.max(0, player.handCards + actionPlayPassGo.cards.length - 1),
                 };
               });
             });
           }
 
-          const playPassGoMaskedRes =
-            message.monopolyDealMessage?.playPassGoMaskedRes;
-          if (playPassGoMaskedRes) {
+          const maskedActionPlayPassGo = action?.maskedActionPlayedPassGo;
+          if (maskedActionPlayPassGo && actionPlayerId) {
             setInitialGameState((current) => {
               if (!current) {
                 return current;
               }
 
-              const handDelta = playPassGoMaskedRes.numCards - 1;
+              const handDelta = maskedActionPlayPassGo.numCards - 1;
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== playPassGoMaskedRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -1117,21 +1156,21 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: playPassGoMaskedRes.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 players: nextPlayers,
-                lastAction: playPassGoMaskedRes.lastPlayedCard,
+                lastAction: maskedActionPlayPassGo.lastPlayedCard,
               };
             });
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== playPassGoMaskedRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
                 return {
                   ...player,
-                  handCards: Math.max(0, player.handCards + playPassGoMaskedRes.numCards - 1),
+                  handCards: Math.max(0, player.handCards + maskedActionPlayPassGo.numCards - 1),
                 };
               });
             });
@@ -2962,6 +3001,21 @@ const GamePage = () => {
                 .join(" ")}
               aria-hidden={isSidebarCollapsed}
             >
+                <section className="game-sidebar-card game-action-history-panel">
+                  <h2 className="game-sidebar-title">Action history</h2>
+                  <div className="game-action-history-list" role="log" aria-live="polite">
+                    {actionHistoryEntries.length === 0 ? (
+                      <p className="game-sidebar-empty">No actions yet.</p>
+                    ) : (
+                      actionHistoryEntries.map((entry) => (
+                        <p className="game-action-history-line" key={entry.id}>
+                          {entry.text}
+                        </p>
+                      ))
+                    )}
+                  </div>
+                </section>
+
                 <ChatBox
                   title="Game chat"
                   messages={chatMessages}

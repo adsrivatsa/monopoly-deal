@@ -77,6 +77,15 @@ type Game struct {
 	CreatedAt   time.Time  `json:"created_at"`
 }
 
+type GameHistory struct {
+	GameID        uuid.UUID `json:"game_id"`
+	SeqNum        int16     `json:"seq_num"`
+	ActionKind    string    `json:"action_kind"`
+	ActionVersion int32     `json:"action_version"`
+	Action        []byte    `json:"action"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
 type GamePlayer struct {
 	GameID   uuid.UUID `json:"game_id"`
 	PlayerID uuid.UUID `json:"player_id"`
