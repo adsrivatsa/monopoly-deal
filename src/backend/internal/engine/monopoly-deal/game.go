@@ -1882,7 +1882,7 @@ func (g *Game) RearrangeProperty(playerID uuid.UUID, cardID Identifier, targetSe
 	properties.Clean()
 	g.Properties[playerID] = properties
 
-	action := NewActionRearrangeCard(g.SequenceNum, playerID, card, targetSet, properties.CompleteCount())
+	action := NewActionRearrangeCard(g.SequenceNum, playerID, &card, targetSet, properties.CompleteCount())
 
 	g.SequenceNum++
 
