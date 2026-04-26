@@ -861,11 +861,11 @@ export interface MaskedActionPlayPassGo {
   numCards: number;
 }
 
-export interface CompleteTurn {
-}
-
 export interface PlayItsMyBirthday {
   cardId: string;
+}
+
+export interface CompleteTurn {
 }
 
 export interface PlayDebtCollector {
@@ -3956,49 +3956,6 @@ export const MaskedActionPlayPassGo: MessageFns<MaskedActionPlayPassGo> = {
   },
 };
 
-function createBaseCompleteTurn(): CompleteTurn {
-  return {};
-}
-
-export const CompleteTurn: MessageFns<CompleteTurn> = {
-  encode(_: CompleteTurn, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): CompleteTurn {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseCompleteTurn();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(_: any): CompleteTurn {
-    return {};
-  },
-
-  toJSON(_: CompleteTurn): unknown {
-    const obj: any = {};
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<CompleteTurn>, I>>(base?: I): CompleteTurn {
-    return CompleteTurn.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<CompleteTurn>, I>>(_: I): CompleteTurn {
-    const message = createBaseCompleteTurn();
-    return message;
-  },
-};
-
 function createBasePlayItsMyBirthday(): PlayItsMyBirthday {
   return { cardId: "" };
 }
@@ -4059,6 +4016,49 @@ export const PlayItsMyBirthday: MessageFns<PlayItsMyBirthday> = {
   fromPartial<I extends Exact<DeepPartial<PlayItsMyBirthday>, I>>(object: I): PlayItsMyBirthday {
     const message = createBasePlayItsMyBirthday();
     message.cardId = object.cardId ?? "";
+    return message;
+  },
+};
+
+function createBaseCompleteTurn(): CompleteTurn {
+  return {};
+}
+
+export const CompleteTurn: MessageFns<CompleteTurn> = {
+  encode(_: CompleteTurn, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CompleteTurn {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCompleteTurn();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): CompleteTurn {
+    return {};
+  },
+
+  toJSON(_: CompleteTurn): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CompleteTurn>, I>>(base?: I): CompleteTurn {
+    return CompleteTurn.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CompleteTurn>, I>>(_: I): CompleteTurn {
+    const message = createBaseCompleteTurn();
     return message;
   },
 };

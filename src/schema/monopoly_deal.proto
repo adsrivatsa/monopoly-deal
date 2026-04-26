@@ -294,14 +294,18 @@ message MaskedActionPlayPassGo {
   int32 num_cards = 2;
 }
 
+
+message PlayItsMyBirthday {
+  string card_id = 1;
+}
+
+// =========================
+
 message CompleteTurn {
 
 }
 
 
-message PlayItsMyBirthday {
-  string card_id = 1;
-}
 
 message PlayDebtCollector {
   string card_id = 1;
