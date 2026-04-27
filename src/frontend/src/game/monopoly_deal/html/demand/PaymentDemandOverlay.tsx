@@ -78,6 +78,18 @@ const PaymentDemandOverlay = ({
     </span>
   );
   const sourceReference = isSelfSource ? "you" : sourceInlineName;
+  const sourceInlineActor = isSelfSource ? (
+    <span className="md-demand-inline-player">
+      <img
+        className="md-demand-source__avatar md-demand-inline-player__avatar"
+        src={sourcePlayer?.avatarUrl ?? ""}
+        alt={sourceName}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+      <span className="md-demand-source__name">You</span>
+    </span>
+  ) : sourceInlineName;
   const demandEyebrow = isBirthdayDemand
     ? "Party Bill"
     : isDebtCollector
@@ -153,7 +165,9 @@ const PaymentDemandOverlay = ({
             )
           : (
               <>
-                didn't pay rent to {sourceReference}.
+                {isSelfSource
+                  ? <>didn't pay rent to {targetName}, they're responding.</>
+                  : <>didn't pay rent to {sourceReference}.</>}
               </>
             )
         : isDemandActive
@@ -168,6 +182,7 @@ const PaymentDemandOverlay = ({
               </>
             );
   const demandActorName = sourceName;
+  const shouldUseSelfInactiveRentNarration = isRent && !isDemandActive && isSelfSource;
 
   return (
     <aside
@@ -195,7 +210,15 @@ const PaymentDemandOverlay = ({
         </p>
       ) : (
         <p className="md-demand__line md-demand-source__message">
-          {targetInlineName} {spectatorDemandLine}
+          {shouldUseSelfInactiveRentNarration ? (
+            <>
+              {sourceInlineActor} didn't pay rent to {targetInlineName}, they're responding.
+            </>
+          ) : (
+            <>
+              {targetInlineName} {spectatorDemandLine}
+            </>
+          )}
         </p>
       )}
       {isTargetingSelf ? (

@@ -40,8 +40,6 @@ const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
     String(appConfig.room.create.capacity.min),
   );
 
-  console.log(getDefaultSettingsForGame(game));
-
   const defaultSettings = stringifyGameSettings(
     game,
     getDefaultSettingsForGame(game),

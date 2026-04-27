@@ -3,6 +3,7 @@ import { type PendingRent, type Player } from "../../../../generated/monopoly_de
 type PendingRentOverlayProps = {
   pendingRent: PendingRent;
   players: Player[];
+  selfPlayerId?: string;
   canDouble: boolean;
   onDouble: () => void;
   onRent: () => void;
@@ -11,10 +12,18 @@ type PendingRentOverlayProps = {
 const PendingRentOverlay = ({
   pendingRent,
   players,
+  selfPlayerId,
   canDouble,
   onDouble,
   onRent,
 }: PendingRentOverlayProps) => {
+  const renter = players.find((player) => player.playerId === pendingRent.playerId);
+  const renterName = renter?.displayName ?? pendingRent.playerId;
+  const selfPlayer = selfPlayerId
+    ? players.find((player) => player.playerId === selfPlayerId)
+    : undefined;
+  const isSelfRenter = !!selfPlayerId && pendingRent.playerId === selfPlayerId;
+  const isSelfTarget = !!selfPlayerId && pendingRent.targetIds.includes(selfPlayerId);
   const targets = pendingRent.targetIds.map((targetId) => {
     const player = players.find((candidate) => candidate.playerId === targetId);
     return {
@@ -25,6 +34,62 @@ const PendingRentOverlay = ({
   });
   const totalAmount = pendingRent.baseAmount * Math.max(1, pendingRent.multiplier);
   const targetLabel = targets.length === 1 ? "Target" : "Targets";
+  const primaryTarget = targets[0];
+
+  if (!isSelfRenter) {
+    return (
+      <aside
+        className="md-demand md-demand--payment"
+        aria-live="polite"
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <p className="md-demand__eyebrow">Rent</p>
+        {isSelfTarget ? (
+          <p className="md-demand__line md-demand__line--rent-warning">
+            <img
+              className="md-rent-target__avatar"
+              src={renter?.avatarUrl ?? ""}
+              alt={renterName}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />{" "}
+            <strong>{renterName}</strong> is about to rent{" "}
+            <img
+              className="md-rent-target__avatar"
+              src={selfPlayer?.avatarUrl ?? ""}
+              alt={selfPlayer?.displayName ?? "You"}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />{" "}
+            <strong>you</strong>!
+          </p>
+        ) : primaryTarget ? (
+          <p className="md-demand__line md-demand__line--rent-warning">
+            <img
+              className="md-rent-target__avatar"
+              src={renter?.avatarUrl ?? ""}
+              alt={renterName}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />{" "}
+            <strong>{renterName}</strong> is about to rent{" "}
+            <img
+              className="md-rent-target__avatar"
+              src={primaryTarget.avatarUrl}
+              alt={primaryTarget.displayName}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />{" "}
+            <strong>{primaryTarget.displayName}</strong>!
+          </p>
+        ) : (
+          <p className="md-demand__line">
+            <strong>{renterName}</strong> is about to rent!
+          </p>
+        )}
+      </aside>
+    );
+  }
 
   return (
     <aside
