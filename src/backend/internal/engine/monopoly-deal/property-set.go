@@ -64,12 +64,12 @@ func (ps *PropertySet) Rent() int {
 	n := ps.Cards.Len()
 
 	additional := 0
-	if ps.HasHouseLast() {
+	if ps.HasHotelLast() {
+		n = n - 2
+		additional = 7
+	} else if ps.HasHouseLast() {
 		n = n - 1
 		additional = 3
-	} else if ps.HasHotelLast() {
-		n = n - 2
-		additional = 4
 	}
 
 	return Rent[ps.Color][n] + additional

@@ -451,49 +451,42 @@ func (a *ActionDemandComplied) GetSeqNum() int {
 }
 
 func (a *ActionDemandComplied) Proto() *monopoly_deal_schema.Action {
-	var demandComplied *monopoly_deal_schema.ActionDemandComplied
+	demandComplied := &monopoly_deal_schema.ActionDemandComplied{
+		DemandId: string(a.DemandID),
+	}
 
 	if a.TransferCards != nil {
-		demandComplied = &monopoly_deal_schema.ActionDemandComplied{
-			DemandId: string(a.DemandID),
-			Transfer: &monopoly_deal_schema.ActionDemandComplied_TransferCards{
-				TransferCards: &monopoly_deal_schema.TransferCards{
-					SourceId:     a.TransferCards.SourceID.String(),
-					TargetId:     a.TransferCards.TargetID.String(),
-					Cards:        a.TransferCards.Cards.Proto(),
-					PropertySets: a.TransferCards.PropertySets.Proto(a.TransferCards.TargetID),
-					SourceSets:   int32(a.TransferCards.SourceSets),
-					SourceMoney:  int32(a.TransferCards.SourceMoney),
-					TargetSets:   int32(a.TransferCards.TargetSets),
-					TargetMoney:  int32(a.TransferCards.TargetMoney),
-				},
+		demandComplied.Transfer = &monopoly_deal_schema.ActionDemandComplied_TransferCards{
+			TransferCards: &monopoly_deal_schema.TransferCards{
+				SourceId:     a.TransferCards.SourceID.String(),
+				TargetId:     a.TransferCards.TargetID.String(),
+				Cards:        a.TransferCards.Cards.Proto(),
+				PropertySets: a.TransferCards.PropertySets.Proto(a.TransferCards.TargetID),
+				SourceSets:   int32(a.TransferCards.SourceSets),
+				SourceMoney:  int32(a.TransferCards.SourceMoney),
+				TargetSets:   int32(a.TransferCards.TargetSets),
+				TargetMoney:  int32(a.TransferCards.TargetMoney),
 			},
 		}
 	}
 
 	if a.TransferProperty != nil {
-		demandComplied = &monopoly_deal_schema.ActionDemandComplied{
-			DemandId: string(a.DemandID),
-			Transfer: &monopoly_deal_schema.ActionDemandComplied_TransferProperty{
-				TransferProperty: &monopoly_deal_schema.TransferProperty{
-					SourceId:           a.TransferProperty.SourceID.String(),
-					TargetId:           a.TransferProperty.TargetID.String(),
-					SourcePropertySets: a.TransferProperty.SourcePropertySets.Proto(a.TransferProperty.SourceID),
-					TargetPropertySets: a.TransferProperty.TargetPropertySets.Proto(a.TransferProperty.TargetID),
-				},
+		demandComplied.Transfer = &monopoly_deal_schema.ActionDemandComplied_TransferProperty{
+			TransferProperty: &monopoly_deal_schema.TransferProperty{
+				SourceId:           a.TransferProperty.SourceID.String(),
+				TargetId:           a.TransferProperty.TargetID.String(),
+				SourcePropertySets: a.TransferProperty.SourcePropertySets.Proto(a.TransferProperty.SourceID),
+				TargetPropertySets: a.TransferProperty.TargetPropertySets.Proto(a.TransferProperty.TargetID),
 			},
 		}
 	}
 
 	if a.TransferPropertySet != nil {
-		demandComplied = &monopoly_deal_schema.ActionDemandComplied{
-			DemandId: string(a.DemandID),
-			Transfer: &monopoly_deal_schema.ActionDemandComplied_TransferPropertySet{
-				TransferPropertySet: &monopoly_deal_schema.TransferPropertySet{
-					SourceId:    a.TransferPropertySet.SourceID.String(),
-					TargetId:    a.TransferPropertySet.TargetID.String(),
-					PropertySet: a.TransferPropertySet.PropertySet.Proto(a.TransferPropertySet.TargetID),
-				},
+		demandComplied.Transfer = &monopoly_deal_schema.ActionDemandComplied_TransferPropertySet{
+			TransferPropertySet: &monopoly_deal_schema.TransferPropertySet{
+				SourceId:    a.TransferPropertySet.SourceID.String(),
+				TargetId:    a.TransferPropertySet.TargetID.String(),
+				PropertySet: a.TransferPropertySet.PropertySet.Proto(a.TransferPropertySet.TargetID),
 			},
 		}
 	}

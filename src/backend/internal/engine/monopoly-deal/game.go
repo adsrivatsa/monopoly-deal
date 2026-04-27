@@ -561,8 +561,12 @@ func (g *Game) PlayHotel(playerID uuid.UUID, cardID, propSetID Identifier) (*Act
 		return nil, errors.PropertySetIsNotComplete
 	}
 
-	if propSet.IsLocked() {
+	if propSet.HasHotelLast() {
 		return nil, errors.PropertySetHasHotel
+	}
+
+	if !propSet.HasHouseLast() {
+		return nil, errors.PropertySetHasNoHouse
 	}
 
 	_, err = g.discardHand(playerID, cardID)
@@ -1185,11 +1189,8 @@ func (g *Game) ResolvePendingRent(playerID uuid.UUID) (*ActionDemandsCreated, er
 	pendingRent := g.PendingRent
 
 	demandsMap := make(map[Identifier]Demand)
-	demandsSlice := make([]Demand, 0)
-	for _, targetID := range g.Players {
-		if playerID == targetID {
-			continue
-		}
+	demandsSlice := make([]Demand, 0, len(pendingRent.TargetIDs))
+	for _, targetID := range pendingRent.TargetIDs {
 		id := g.IDGenerator.New()
 		demand := NewPaymentDemand(id, pendingRent.SourceID, targetID, pendingRent.BaseAmount*pendingRent.Multiplier, DemandSourceRent)
 		demandsMap[id] = demand

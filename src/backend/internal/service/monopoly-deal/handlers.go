@@ -102,8 +102,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 	lock.Lock()
 	defer lock.Unlock()
 
-	var game monopoly_deal.Game
-	err = msgpack.Unmarshal(g.GameState, &game)
+	game, err := monopoly_deal.DecodeMsgpack(g.GameState)
 	if err != nil {
 		return err
 	}
@@ -112,47 +111,47 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 
 	switch p := msg.MonopolyDealMessage.GetPayload().(type) {
 	case *monopoly_deal_schema.ClientMessage_PlayMoney:
-		action, err = c.handlePlayMoney(&game, tp, p)
+		action, err = c.handlePlayMoney(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayProperty:
-		action, err = c.handlePlayProperty(&game, tp, p)
+		action, err = c.handlePlayProperty(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayHouse:
-		action, err = c.handlePlayHouse(&game, tp, p)
+		action, err = c.handlePlayHouse(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayHotel:
-		action, err = c.handlePlayHotel(&game, tp, p)
+		action, err = c.handlePlayHotel(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayPassGo:
-		action, err = c.handlePlayPassGo(&game, tp, p)
+		action, err = c.handlePlayPassGo(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday:
-		action, err = c.handlePlayItsMyBirthday(&game, tp, p)
+		action, err = c.handlePlayItsMyBirthday(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayDebtCollector:
-		action, err = c.handlePlayDebtCollector(&game, tp, p)
+		action, err = c.handlePlayDebtCollector(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayRent:
-		action, err = c.handlePlayRent(&game, tp, p)
+		action, err = c.handlePlayRent(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayWildRent:
-		action, err = c.handlePlayWildRent(&game, tp, p)
+		action, err = c.handlePlayWildRent(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayDoubleTheRent:
-		action, err = c.handleDoubleTheRent(&game, tp, p)
+		action, err = c.handleDoubleTheRent(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlaySlyDeal:
-		action, err = c.handlerMonopolyDealPlaySlyDeal(&game, tp, p)
+		action, err = c.handlerMonopolyDealPlaySlyDeal(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayForcedDeal:
-		action, err = c.handlePlayForcedDeal(&game, tp, p)
+		action, err = c.handlePlayForcedDeal(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_PlayDealBreaker:
-		action, err = c.handlePlayDealBreaker(&game, tp, p)
+		action, err = c.handlePlayDealBreaker(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_ResolvePendingRent:
-		action, err = c.handleResolveRent(&game, tp)
+		action, err = c.handleResolveRent(game, tp)
 	case *monopoly_deal_schema.ClientMessage_ComplyPaymentDemand:
-		action, err = c.handleComplyPaymentDemand(&game, tp, p)
+		action, err = c.handleComplyPaymentDemand(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_ComplyPropertyDemand:
-		action, err = c.handleComplyPropertyDemand(&game, tp, p)
+		action, err = c.handleComplyPropertyDemand(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand:
-		action, err = c.handleComplyPropertySetDemand(&game, tp, p)
+		action, err = c.handleComplyPropertySetDemand(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_DenyDemand:
-		action, err = c.handleDenyDemand(&game, tp, p)
+		action, err = c.handleDenyDemand(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_DiscardCards:
-		action, err = c.handleDiscardCards(&game, tp, p)
+		action, err = c.handleDiscardCards(game, tp, p)
 	case *monopoly_deal_schema.ClientMessage_CompleteTurn:
-		action, err = c.handleCompleteTurn(&game, tp)
+		action, err = c.handleCompleteTurn(game, tp)
 	case *monopoly_deal_schema.ClientMessage_RearrangeCard:
-		action, err = c.handleRearrangeCard(&game, tp, p)
+		action, err = c.handleRearrangeCard(game, tp, p)
 	}
 	if err != nil {
 		return err
