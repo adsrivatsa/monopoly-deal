@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   createRoom,
   CreateRoomParams,
+  getGame,
   getRoom,
   leaveRoom,
   listRooms,
@@ -36,7 +37,6 @@ import CreateRoomModal from "../components/ui/create-room-modal";
 const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 350;
 const ROOMS_POLL_INTERVAL_MS = 10000;
-const ROOMS_POLL_INTERVAL_SECONDS = ROOMS_POLL_INTERVAL_MS / 1000;
 
 const gameFilterOptions: Array<{ value: Game; label: string }> =
   supportedGames.map((game) => {
@@ -78,6 +78,33 @@ const LobbyPage = () => {
   useEffect(() => {
     setOffset(0);
   }, [debouncedSearch, gameFilter]);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchActiveGame = async () => {
+      const result = await getGame();
+
+      if (!active) {
+        return;
+      }
+
+      if (!result.ok) {
+        if (result.isTokenError) {
+          navigate("/login", { replace: true });
+        }
+        return;
+      }
+
+      navigate(`/game/${result.data.game_id}`, { replace: true });
+    };
+
+    void fetchActiveGame();
+
+    return () => {
+      active = false;
+    };
+  }, [navigate]);
 
   useEffect(() => {
     let active = true;
@@ -324,9 +351,6 @@ const LobbyPage = () => {
           </div>
 
           <div className="lobby-refresh-indicator" role="status" aria-live="polite">
-            <span className="lobby-refresh-label">
-              Refreshing every {ROOMS_POLL_INTERVAL_SECONDS} seconds
-            </span>
             <div className="lobby-refresh-row">
               <div className="lobby-refresh-track" aria-hidden="true">
                 <span key={refreshCycle} className="lobby-refresh-bar" />

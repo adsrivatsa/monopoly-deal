@@ -12,6 +12,7 @@ func (s *Server) gameRoutes() *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Post("/", s.CreateGame)
+	router.Get("/", s.GetGame)
 	router.Get("/socket", s.GameSocket)
 
 	return router
@@ -33,6 +34,24 @@ func (s *Server) CreateGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	WriteHTTP(w, http.StatusOK, nil)
+}
+
+func (s *Server) GetGame(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	tp, err := tokenFromRequest(r, token.AccessToken)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	g, err := s.services.GetGame(ctx, tp)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	WriteHTTP(w, http.StatusOK, g)
 }
 
 func (s *Server) GameSocket(w http.ResponseWriter, r *http.Request) {

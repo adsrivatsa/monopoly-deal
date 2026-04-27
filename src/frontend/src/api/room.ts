@@ -102,6 +102,25 @@ export type StartGameResult =
   | { ok: true }
   | { ok: false; error: ApiErrorPayload | null; isTokenError: boolean };
 
+export type GameResponse = {
+  game_id: string;
+  display_name: string;
+  game: Game;
+  game_state: string | number[];
+  completed: boolean;
+  winner: string | null;
+  created_at: string;
+};
+
+export type GetGameResult =
+  | { ok: true; data: GameResponse }
+  | {
+      ok: false;
+      error: ApiErrorPayload | null;
+      isTokenError: boolean;
+      isNotFound: boolean;
+    };
+
 const defaultListRoomsParams: ListRoomsParams = {
   limit: 10,
   offset: 0,
@@ -278,4 +297,22 @@ export const startGame = async (): Promise<StartGameResult> => {
   }
 
   return { ok: true };
+};
+
+export const getGame = async (): Promise<GetGameResult> => {
+  const response = await apiFetch("/game", {
+    method: "GET",
+  });
+
+  if (response.status !== 200) {
+    const error = await readApiError(response);
+    return {
+      ok: false,
+      error,
+      isTokenError: isTokenErrorCode(error?.code),
+      isNotFound: response.status === 404,
+    };
+  }
+
+  return { ok: true, data: (await response.json()) as GameResponse };
 };

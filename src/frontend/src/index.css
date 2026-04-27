@@ -326,15 +326,6 @@ h1 {
   margin: 0 0 0.85rem;
 }
 
-.lobby-refresh-label {
-  display: block;
-  margin: 0 0 0.4rem;
-  color: var(--muted-foreground);
-  font-size: 0.76rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .lobby-refresh-row {
   display: flex;
   align-items: center;

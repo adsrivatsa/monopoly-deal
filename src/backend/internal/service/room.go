@@ -132,6 +132,14 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, args Crea
 		return Room{}, err
 	}
 
+	_, err = c.store.GetGameByPlayer(ctx, tp.PlayerID)
+	if err == nil {
+		return Room{}, errors.EntityAlreadyExists(errors.EntityGame)
+	}
+	if errors.DBErrorCode(err) != errors.NoDataFound {
+		return Room{}, err
+	}
+
 	roomID, err := uuid.NewV7()
 	if err != nil {
 		return Room{}, err
