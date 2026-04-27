@@ -35,6 +35,8 @@ import CreateRoomModal from "../components/ui/create-room-modal";
 
 const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 350;
+const ROOMS_POLL_INTERVAL_MS = 10000;
+const ROOMS_POLL_INTERVAL_SECONDS = ROOMS_POLL_INTERVAL_MS / 1000;
 
 const gameFilterOptions: Array<{ value: Game; label: string }> =
   supportedGames.map((game) => {
@@ -55,6 +57,8 @@ const LobbyPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState<ApiErrorPayload | null>(null);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
+  const [refreshCycle, setRefreshCycle] = useState(0);
+  const [manualRefreshCount, setManualRefreshCount] = useState(0);
   const [activeRoom, setActiveRoom] = useState<{
     roomId: string;
     displayName: string;
@@ -107,9 +111,26 @@ const LobbyPage = () => {
 
   useEffect(() => {
     let active = true;
+    let isFetching = false;
+    let pollTimeout: number | null = null;
 
-    const fetchRooms = async () => {
-      setIsLoading(true);
+    const scheduleNextPoll = () => {
+      setRefreshCycle((value) => value + 1);
+      pollTimeout = window.setTimeout(() => {
+        void fetchRooms(false);
+      }, ROOMS_POLL_INTERVAL_MS);
+    };
+
+    const fetchRooms = async (withLoadingState: boolean) => {
+      if (isFetching) {
+        return;
+      }
+
+      isFetching = true;
+
+      if (withLoadingState) {
+        setIsLoading(true);
+      }
 
       try {
         const result = await listRooms({
@@ -143,18 +164,27 @@ const LobbyPage = () => {
         setRooms(result.data.rooms);
         setTotalCount(result.data.total_count);
       } finally {
-        if (active) {
+        if (active && withLoadingState) {
           setIsLoading(false);
+        }
+
+        isFetching = false;
+
+        if (active) {
+          scheduleNextPoll();
         }
       }
     };
 
-    void fetchRooms();
+    void fetchRooms(true);
 
     return () => {
       active = false;
+      if (pollTimeout !== null) {
+        window.clearTimeout(pollTimeout);
+      }
     };
-  }, [debouncedSearch, gameFilter, navigate, offset]);
+  }, [debouncedSearch, gameFilter, manualRefreshCount, navigate, offset]);
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
@@ -291,6 +321,24 @@ const LobbyPage = () => {
                 );
               })}
             </select>
+          </div>
+
+          <div className="lobby-refresh-indicator" role="status" aria-live="polite">
+            <span className="lobby-refresh-label">
+              Refreshing every {ROOMS_POLL_INTERVAL_SECONDS} seconds
+            </span>
+            <div className="lobby-refresh-row">
+              <div className="lobby-refresh-track" aria-hidden="true">
+                <span key={refreshCycle} className="lobby-refresh-bar" />
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setManualRefreshCount((value) => value + 1)}
+              >
+                Refresh
+              </Button>
+            </div>
           </div>
 
           <Table>
