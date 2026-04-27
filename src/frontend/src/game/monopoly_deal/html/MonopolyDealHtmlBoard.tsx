@@ -246,6 +246,59 @@ const isPropertySetLocked = (propertySet: PropertySet): boolean => {
   });
 };
 
+const BASE_RENT_BY_COLOR: Partial<Record<Color, Record<number, number>>> = {
+  [Color.COLOR_UNSPECIFIED]: { 0: 0 },
+  [Color.COLOR_BROWN]: { 1: 1, 2: 2 },
+  [Color.COLOR_SKY]: { 1: 1, 2: 2, 3: 3 },
+  [Color.COLOR_PINK]: { 1: 1, 2: 2, 3: 4 },
+  [Color.COLOR_ORANGE]: { 1: 1, 2: 3, 3: 5 },
+  [Color.COLOR_RED]: { 1: 2, 2: 3, 3: 6 },
+  [Color.COLOR_YELLOW]: { 1: 2, 2: 4, 3: 6 },
+  [Color.COLOR_GREEN]: { 1: 2, 2: 4, 3: 7 },
+  [Color.COLOR_BLUE]: { 1: 3, 2: 8 },
+  [Color.COLOR_UTILITY]: { 1: 1, 2: 2 },
+  [Color.COLOR_RAILROAD]: { 1: 1, 2: 2, 3: 3, 4: 4 },
+};
+
+const getBaseRentForPropertySet = (propertySet: PropertySet): number => {
+  const rentByCount = BASE_RENT_BY_COLOR[propertySet.color];
+  if (!rentByCount) {
+    return 0;
+  }
+
+  const propertyCount = countPropertyCards(propertySet);
+  if (propertyCount <= 0) {
+    return 0;
+  }
+
+  const direct = rentByCount[propertyCount];
+  if (typeof direct === "number") {
+    return direct;
+  }
+
+  const maxCount = Math.max(...Object.keys(rentByCount).map(Number));
+  return rentByCount[maxCount] ?? 0;
+};
+
+const getRentBonusLabels = (propertySet: PropertySet): string[] => {
+  const hasHouse = propertySet.cards.some((card) => {
+    return card.assetKey === AssetKey.ASSET_KEY_HOUSE;
+  });
+  const hasHotel = propertySet.cards.some((card) => {
+    return card.assetKey === AssetKey.ASSET_KEY_HOTEL;
+  });
+
+  const labels: string[] = [];
+  if (hasHouse) {
+    labels.push("+3M");
+  }
+  if (hasHotel) {
+    labels.push("+4M");
+  }
+
+  return labels;
+};
+
 const clampPan = (
   pan: Pan,
   zoom: number,
@@ -1784,6 +1837,9 @@ const MonopolyDealHtmlBoard = ({
 
   const renderPlayerBoard = (player: Player) => {
     const playerMoney = moneyByPlayer[player.playerId] ?? [];
+    const playerMoneyTotal = playerMoney.reduce((total, card) => {
+      return total + (card.value ?? 0);
+    }, 0);
     const propertySets = propertySetsByPlayer[player.playerId] ?? [];
     const isCurrentPlayer = player.playerId === currentPlayerId;
     const isSelfBoard = !!selfPlayerId && player.playerId === selfPlayerId;
@@ -1836,7 +1892,7 @@ const MonopolyDealHtmlBoard = ({
           <div>
             <p className="md-player-board__name">{player.displayName}</p>
             <p className="md-player-board__stats">
-              ${player.money} total · {player.completedSets} sets ·{" "}
+              ${playerMoneyTotal}M total · {player.completedSets} sets ·{" "}
               {player.handCards} in hand
             </p>
           </div>
@@ -1860,7 +1916,7 @@ const MonopolyDealHtmlBoard = ({
             }}
           >
             <GameCardStackBox
-              title="Money"
+              title={`Money · $${playerMoneyTotal}M`}
               cards={playerMoney}
               assetImageByKey={assetImageByKey}
               layout="stack"
@@ -1939,7 +1995,10 @@ const MonopolyDealHtmlBoard = ({
               }}
             >
               <GameCardStackBox
-                title={`Set ${index + 1}`}
+                title={`Set ${index + 1} · Rent $${getBaseRentForPropertySet(propertySet)}M${(() => {
+                  const rentBonuses = getRentBonusLabels(propertySet);
+                  return rentBonuses.length > 0 ? ` ${rentBonuses.join(" ")}` : "";
+                })()}`}
                 cards={propertySet.cards}
                 assetImageByKey={assetImageByKey}
                 layout="stack"
@@ -2081,6 +2140,7 @@ const MonopolyDealHtmlBoard = ({
           <PendingRentOverlay
             pendingRent={pendingRent}
             players={players}
+            selfPlayerId={selfPlayerId ?? undefined}
             canDouble={hasDoubleTheRent && hasMovesLeft}
             onDouble={onPendingRentDouble}
             onRent={onPendingRentRent}
@@ -2216,9 +2276,10 @@ const MonopolyDealHtmlBoard = ({
             className="md-demand__button md-hand-turn-button"
             onClick={isDiscardRequired ? onSubmitDiscard : onPassTurn}
             disabled={
-              isDiscardRequired
+              !isSelfTurn ||
+              (isDiscardRequired
                 ? selectedDiscardCardIds.size !== requiredDiscardCount
-                : false
+                : false)
             }
           >
             {isDiscardRequired

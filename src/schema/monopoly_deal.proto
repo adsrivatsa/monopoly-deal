@@ -226,20 +226,12 @@ enum ActionKind {
   ACTION_KIND_PLAY_HOUSE = 3;
   ACTION_KIND_PLAY_HOTEL = 4;
   ACTION_KIND_PLAY_PASS_GO = 5;
-}
-
-message StartTurnRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  repeated Card cards = 3;
-  int32 moves_left = 4;
-  int64 deadline_ms = 5;
-}
-
-message StartTurnMaskedRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  int32 num_cards = 3;
+  ACTION_KIND_DEMANDS_CREATED = 6;
+  ACTION_KIND_PENDING_RENT_CREATED = 7;
+  ACTION_KIND_DEMAND_COMPLIED = 8;
+  ACTION_KIND_DISCARD_CARDS = 9;
+  ACTION_KIND_START_TURN = 10;
+  ACTION_KIND_REARRANGE_CARD = 11;
 }
 
 message PlayMoney {
@@ -294,22 +286,32 @@ message MaskedActionPlayPassGo {
   int32 num_cards = 2;
 }
 
+message ActionDemandsCreated {
+  optional Card last_played_card = 1;
+  optional Demand denied_demand = 2;
+  repeated Demand demands = 3;
+}
 
 message PlayItsMyBirthday {
   string card_id = 1;
 }
 
-// =========================
-
-message CompleteTurn {
-
-}
-
-
-
 message PlayDebtCollector {
   string card_id = 1;
   string target_id = 2;
+}
+
+message ActionPendingRentCreated {
+  Card last_card_played = 1;
+  PendingRent pending_rent = 2;
+}
+
+message ResolvePendingRent {
+
+}
+
+message ActionPendingRentResolved {
+  repeated Demand demands = 1;
 }
 
 message PlayRent {
@@ -325,96 +327,6 @@ message PlayDoubleTheRent {
   string card_id = 1;
 }
 
-message PlayActionRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  Card last_played_card = 3;
-  int64 deadline_ms = 4;
-}
-
-message DemandCreated {
-  Demand demand = 1;
-  int64 deadline_ms = 2;
-}
-
-message ComplyPaymentDemand {
-  string demand_id = 1;
-  repeated string card_ids = 2;
-}
-
-message CompliedDemand {
-  int32 seq_num = 1;
-  string demand_id = 2;
-  string player_id = 3;
-  int64 deadline_ms = 4;
-}
-
-message PendingRentCreated {
-  PendingRent pending_rent = 1;
-  int64 deadline_ms = 2;
-}
-
-message ResolvePendingRent {
-
-}
-
-message PendingRentResolved {
-  int32 seq_num = 1;
-  string player_id = 2;
-  int64 deadline_ms = 3;
-}
-
-message TransferCards {
-  string source_id = 1;
-  string target_id = 2;
-  repeated Card cards = 3;
-  repeated PropertySet property_sets = 4;
-  int32 source_sets = 5;
-  int32 source_money = 6;
-  int32 target_sets = 7;
-  int32 target_money = 8;
-}
-
-message RearrangeCard {
-  string card_id = 1;
-  optional string property_set_id = 2;
-  optional Color color = 3;
-}
-
-message RearrangeCardRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  Card card = 3;
-  PropertySet property_set = 4;
-  int32 sets = 5;
-}
-
-message DiscardCards {
-  repeated string card_ids = 1;
-}
-
-message DiscardCardsRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  repeated Card cards = 3;
-}
-
-message DiscardCardsMaskedRes {
-  int32 seq_num = 1;
-  string player_id = 2;
-  int32 num_cards = 3;
-}
-
-message DenyDemand {
-  string demand_id = 1;
-  string card_id = 2;
-}
-
-message DemandDenied {
-  int32 seq_num = 1;
-  string demand_id = 2;
-}
-
 message PlaySlyDeal {
   string card_id = 1;
   string target_id = 2;
@@ -428,33 +340,99 @@ message PlayForcedDeal {
   string target_card_id = 4;
 }
 
-message ComplyPropertyDemand {
-  string demand_id = 1;
-}
-
-message TransferProperty {
-  int32 seq_num = 1;
-  string source_id = 2;
-  string target_id = 3;
-  repeated PropertySet source_property_sets = 4;
-  repeated PropertySet target_property_sets = 5;
-}
-
 message PlayDealBreaker {
   string card_id = 1;
   string target_id = 2;
   string property_set_id = 3;
 }
 
+message ComplyPaymentDemand {
+  string demand_id = 1;
+  repeated string card_ids = 2;
+}
+
+message ComplyPropertyDemand {
+  string demand_id = 1;
+}
+
 message ComplyPropertySetDemand {
   string demand_id = 1;
 }
 
+message TransferCards {
+  string source_id = 1;
+  string target_id = 2;
+  repeated Card cards = 3;
+  repeated PropertySet property_sets = 4;
+  int32 source_sets = 5;
+  int32 source_money = 6;
+  int32 target_sets = 7;
+  int32 target_money = 8;
+}
+
+message TransferProperty {
+  string source_id = 1;
+  string target_id = 2;
+  repeated PropertySet source_property_sets = 3;
+  repeated PropertySet target_property_sets = 4;
+}
+
 message TransferPropertySet {
-  int32 seq_num = 1;
-  string source_id = 2;
-  string target_id = 3;
-  PropertySet property_set = 4;
+  string source_id = 1;
+  string target_id = 2;
+  PropertySet property_set = 3;
+}
+
+message ActionDemandComplied {
+  string demand_id = 1;
+  oneof transfer {
+    TransferCards transfer_cards = 2;
+    TransferProperty transfer_property = 3;
+    TransferPropertySet transfer_property_set = 4;
+  }
+}
+
+message DenyDemand {
+  string demand_id = 1;
+  string card_id = 2;
+}
+
+message DiscardCards {
+  repeated string card_ids = 1;
+}
+
+message ActionDiscardCards {
+  repeated Card cards = 1;
+}
+
+message MaskedActionDiscardCards {
+  int32 num_cards = 1;
+}
+
+message CompleteTurn {
+
+}
+
+message ActionStartTurn {
+  repeated Card cards = 1;
+  int32 moves_left = 2;
+}
+
+message MaskedActionStartTurn {
+  int32 num_cards = 1;
+  int32 moves_left = 2;
+}
+
+message RearrangeCard {
+  string card_id = 1;
+  optional string property_set_id = 2;
+  optional Color color = 3;
+}
+
+message ActionRearrangeCard {
+  optional Card card = 1;
+  PropertySet property_set = 2;
+  int32 sets = 3;
 }
 
 message WonGame {
@@ -475,6 +453,15 @@ message Action {
     ActionPlayHotel action_play_hotel = 8;
     ActionPlayPassGo action_play_pass_go = 9;
     MaskedActionPlayPassGo masked_action_played_pass_go = 10;
+    ActionDemandsCreated action_demands_created = 11;
+    ActionPendingRentCreated action_pending_rent_created = 12;
+    ActionPendingRentResolved action_pending_rent_resolved = 13;
+    ActionDemandComplied action_demand_complied = 14;
+    ActionDiscardCards action_discard_cards = 15;
+    MaskedActionDiscardCards masked_action_discard_cards = 16;
+    ActionStartTurn action_start_turn = 17;
+    MaskedActionStartTurn masked_action_start_turn = 18;
+    ActionRearrangeCard action_rearrange_card = 19;
   }
 }
 
@@ -514,24 +501,8 @@ message ServerMessage {
     Error error = 1;
     ChatReceived chat_received = 2;
     GameState game_state = 3;
-    StartTurnRes start_turn_res = 4;
-    StartTurnMaskedRes start_turn_masked_res = 5;
-
-    PendingRentResolved pending_rent_resolved = 10;
-    RearrangeCardRes rearrange_card_res = 11;
-    DiscardCardsRes discard_cards_res = 12;
-    DiscardCardsMaskedRes discard_cards_masked_res = 13;
-    DemandDenied demand_denied = 14;
-    CompliedDemand complied_demand = 15;
-    TransferProperty transfer_property = 16;
-    TransferPropertySet transfer_property_set = 17;
-
-    PlayActionRes play_action_res = 20;
-    DemandCreated demand_created = 21;
-    PendingRentCreated pending_rent_created = 22;
-    TransferCards transfer_cards = 23;
-    WonGame won_game = 24;
-    Action action = 25;
-    ActionHistory action_history = 26;
+    WonGame won_game = 4;
+    Action action = 5;
+    ActionHistory action_history = 6;
   }
 }

@@ -117,6 +117,13 @@
   color: var(--foreground);
 }
 
+.md-demand__line--rent-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-wrap: wrap;
+}
+
 .md-demand-source {
   margin-top: 0.18rem;
   display: grid;
@@ -695,6 +702,9 @@
   width: min(290px, 92vw);
   border: 1px solid color-mix(in oklab, var(--border) 86%, transparent);
   border-radius: 10px;
+  clip-path: inset(0 round 10px);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  overflow: hidden;
   background: color-mix(in oklab, var(--card) 96%, transparent);
   padding: 0.6rem;
 }

@@ -64,12 +64,12 @@ func (ps *PropertySet) Rent() int {
 	n := ps.Cards.Len()
 
 	additional := 0
-	if ps.HasHouseLast() {
+	if ps.HasHotelLast() {
+		n = n - 2
+		additional = 7
+	} else if ps.HasHouseLast() {
 		n = n - 1
 		additional = 3
-	} else if ps.HasHotelLast() {
-		n = n - 2
-		additional = 4
 	}
 
 	return Rent[ps.Color][n] + additional
@@ -106,14 +106,14 @@ func (ps *PropertySet) Index(cardID Identifier) int {
 
 type PropertySets []PropertySet
 
-func (ps *PropertySets) Proto(playerUUID uuid.UUID) []*monopoly_deal_schema.PropertySet {
+func (ps *PropertySets) Proto(playerID uuid.UUID) []*monopoly_deal_schema.PropertySet {
 	if ps == nil {
 		return nil
 	}
 
 	sets := make([]*monopoly_deal_schema.PropertySet, len(*ps))
 	for i, p := range *ps {
-		sets[i] = p.Proto(playerUUID)
+		sets[i] = p.Proto(playerID)
 	}
 	return sets
 }

@@ -485,31 +485,49 @@ func (DemandSource) EnumDescriptor() ([]byte, []int) {
 type ActionKind int32
 
 const (
-	ActionKind_ACTION_KIND_UNSPECIFIED   ActionKind = 0
-	ActionKind_ACTION_KIND_PLAY_MONEY    ActionKind = 1
-	ActionKind_ACTION_KIND_PLAY_PROPERTY ActionKind = 2
-	ActionKind_ACTION_KIND_PLAY_HOUSE    ActionKind = 3
-	ActionKind_ACTION_KIND_PLAY_HOTEL    ActionKind = 4
-	ActionKind_ACTION_KIND_PLAY_PASS_GO  ActionKind = 5
+	ActionKind_ACTION_KIND_UNSPECIFIED          ActionKind = 0
+	ActionKind_ACTION_KIND_PLAY_MONEY           ActionKind = 1
+	ActionKind_ACTION_KIND_PLAY_PROPERTY        ActionKind = 2
+	ActionKind_ACTION_KIND_PLAY_HOUSE           ActionKind = 3
+	ActionKind_ACTION_KIND_PLAY_HOTEL           ActionKind = 4
+	ActionKind_ACTION_KIND_PLAY_PASS_GO         ActionKind = 5
+	ActionKind_ACTION_KIND_DEMANDS_CREATED      ActionKind = 6
+	ActionKind_ACTION_KIND_PENDING_RENT_CREATED ActionKind = 7
+	ActionKind_ACTION_KIND_DEMAND_COMPLIED      ActionKind = 8
+	ActionKind_ACTION_KIND_DISCARD_CARDS        ActionKind = 9
+	ActionKind_ACTION_KIND_START_TURN           ActionKind = 10
+	ActionKind_ACTION_KIND_REARRANGE_CARD       ActionKind = 11
 )
 
 // Enum value maps for ActionKind.
 var (
 	ActionKind_name = map[int32]string{
-		0: "ACTION_KIND_UNSPECIFIED",
-		1: "ACTION_KIND_PLAY_MONEY",
-		2: "ACTION_KIND_PLAY_PROPERTY",
-		3: "ACTION_KIND_PLAY_HOUSE",
-		4: "ACTION_KIND_PLAY_HOTEL",
-		5: "ACTION_KIND_PLAY_PASS_GO",
+		0:  "ACTION_KIND_UNSPECIFIED",
+		1:  "ACTION_KIND_PLAY_MONEY",
+		2:  "ACTION_KIND_PLAY_PROPERTY",
+		3:  "ACTION_KIND_PLAY_HOUSE",
+		4:  "ACTION_KIND_PLAY_HOTEL",
+		5:  "ACTION_KIND_PLAY_PASS_GO",
+		6:  "ACTION_KIND_DEMANDS_CREATED",
+		7:  "ACTION_KIND_PENDING_RENT_CREATED",
+		8:  "ACTION_KIND_DEMAND_COMPLIED",
+		9:  "ACTION_KIND_DISCARD_CARDS",
+		10: "ACTION_KIND_START_TURN",
+		11: "ACTION_KIND_REARRANGE_CARD",
 	}
 	ActionKind_value = map[string]int32{
-		"ACTION_KIND_UNSPECIFIED":   0,
-		"ACTION_KIND_PLAY_MONEY":    1,
-		"ACTION_KIND_PLAY_PROPERTY": 2,
-		"ACTION_KIND_PLAY_HOUSE":    3,
-		"ACTION_KIND_PLAY_HOTEL":    4,
-		"ACTION_KIND_PLAY_PASS_GO":  5,
+		"ACTION_KIND_UNSPECIFIED":          0,
+		"ACTION_KIND_PLAY_MONEY":           1,
+		"ACTION_KIND_PLAY_PROPERTY":        2,
+		"ACTION_KIND_PLAY_HOUSE":           3,
+		"ACTION_KIND_PLAY_HOTEL":           4,
+		"ACTION_KIND_PLAY_PASS_GO":         5,
+		"ACTION_KIND_DEMANDS_CREATED":      6,
+		"ACTION_KIND_PENDING_RENT_CREATED": 7,
+		"ACTION_KIND_DEMAND_COMPLIED":      8,
+		"ACTION_KIND_DISCARD_CARDS":        9,
+		"ACTION_KIND_START_TURN":           10,
+		"ACTION_KIND_REARRANGE_CARD":       11,
 	}
 )
 
@@ -1574,142 +1592,6 @@ func (x *GameState) GetDeadlineMs() int64 {
 	return 0
 }
 
-type StartTurnRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	Cards         []*Card                `protobuf:"bytes,3,rep,name=cards,proto3" json:"cards,omitempty"`
-	MovesLeft     int32                  `protobuf:"varint,4,opt,name=moves_left,json=movesLeft,proto3" json:"moves_left,omitempty"`
-	DeadlineMs    int64                  `protobuf:"varint,5,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StartTurnRes) Reset() {
-	*x = StartTurnRes{}
-	mi := &file_monopoly_deal_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StartTurnRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StartTurnRes) ProtoMessage() {}
-
-func (x *StartTurnRes) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StartTurnRes.ProtoReflect.Descriptor instead.
-func (*StartTurnRes) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *StartTurnRes) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
-}
-
-func (x *StartTurnRes) GetPlayerId() string {
-	if x != nil {
-		return x.PlayerId
-	}
-	return ""
-}
-
-func (x *StartTurnRes) GetCards() []*Card {
-	if x != nil {
-		return x.Cards
-	}
-	return nil
-}
-
-func (x *StartTurnRes) GetMovesLeft() int32 {
-	if x != nil {
-		return x.MovesLeft
-	}
-	return 0
-}
-
-func (x *StartTurnRes) GetDeadlineMs() int64 {
-	if x != nil {
-		return x.DeadlineMs
-	}
-	return 0
-}
-
-type StartTurnMaskedRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	NumCards      int32                  `protobuf:"varint,3,opt,name=num_cards,json=numCards,proto3" json:"num_cards,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StartTurnMaskedRes) Reset() {
-	*x = StartTurnMaskedRes{}
-	mi := &file_monopoly_deal_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StartTurnMaskedRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StartTurnMaskedRes) ProtoMessage() {}
-
-func (x *StartTurnMaskedRes) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StartTurnMaskedRes.ProtoReflect.Descriptor instead.
-func (*StartTurnMaskedRes) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *StartTurnMaskedRes) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
-}
-
-func (x *StartTurnMaskedRes) GetPlayerId() string {
-	if x != nil {
-		return x.PlayerId
-	}
-	return ""
-}
-
-func (x *StartTurnMaskedRes) GetNumCards() int32 {
-	if x != nil {
-		return x.NumCards
-	}
-	return 0
-}
-
 type PlayMoney struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
@@ -1719,7 +1601,7 @@ type PlayMoney struct {
 
 func (x *PlayMoney) Reset() {
 	*x = PlayMoney{}
-	mi := &file_monopoly_deal_proto_msgTypes[17]
+	mi := &file_monopoly_deal_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1731,7 +1613,7 @@ func (x *PlayMoney) String() string {
 func (*PlayMoney) ProtoMessage() {}
 
 func (x *PlayMoney) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[17]
+	mi := &file_monopoly_deal_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1744,7 +1626,7 @@ func (x *PlayMoney) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayMoney.ProtoReflect.Descriptor instead.
 func (*PlayMoney) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{17}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *PlayMoney) GetCardId() string {
@@ -1763,7 +1645,7 @@ type ActionPlayMoney struct {
 
 func (x *ActionPlayMoney) Reset() {
 	*x = ActionPlayMoney{}
-	mi := &file_monopoly_deal_proto_msgTypes[18]
+	mi := &file_monopoly_deal_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1775,7 +1657,7 @@ func (x *ActionPlayMoney) String() string {
 func (*ActionPlayMoney) ProtoMessage() {}
 
 func (x *ActionPlayMoney) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[18]
+	mi := &file_monopoly_deal_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1788,7 +1670,7 @@ func (x *ActionPlayMoney) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActionPlayMoney.ProtoReflect.Descriptor instead.
 func (*ActionPlayMoney) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{18}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ActionPlayMoney) GetCard() *Card {
@@ -1809,7 +1691,7 @@ type PlayProperty struct {
 
 func (x *PlayProperty) Reset() {
 	*x = PlayProperty{}
-	mi := &file_monopoly_deal_proto_msgTypes[19]
+	mi := &file_monopoly_deal_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1821,7 +1703,7 @@ func (x *PlayProperty) String() string {
 func (*PlayProperty) ProtoMessage() {}
 
 func (x *PlayProperty) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[19]
+	mi := &file_monopoly_deal_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1834,7 +1716,7 @@ func (x *PlayProperty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayProperty.ProtoReflect.Descriptor instead.
 func (*PlayProperty) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{19}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *PlayProperty) GetCardId() string {
@@ -1867,7 +1749,7 @@ type ActionPlayProperty struct {
 
 func (x *ActionPlayProperty) Reset() {
 	*x = ActionPlayProperty{}
-	mi := &file_monopoly_deal_proto_msgTypes[20]
+	mi := &file_monopoly_deal_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1879,7 +1761,7 @@ func (x *ActionPlayProperty) String() string {
 func (*ActionPlayProperty) ProtoMessage() {}
 
 func (x *ActionPlayProperty) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[20]
+	mi := &file_monopoly_deal_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1892,7 +1774,7 @@ func (x *ActionPlayProperty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActionPlayProperty.ProtoReflect.Descriptor instead.
 func (*ActionPlayProperty) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{20}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ActionPlayProperty) GetPropertySet() *PropertySet {
@@ -1912,7 +1794,7 @@ type PlayHouse struct {
 
 func (x *PlayHouse) Reset() {
 	*x = PlayHouse{}
-	mi := &file_monopoly_deal_proto_msgTypes[21]
+	mi := &file_monopoly_deal_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1924,7 +1806,7 @@ func (x *PlayHouse) String() string {
 func (*PlayHouse) ProtoMessage() {}
 
 func (x *PlayHouse) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[21]
+	mi := &file_monopoly_deal_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1937,7 +1819,7 @@ func (x *PlayHouse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayHouse.ProtoReflect.Descriptor instead.
 func (*PlayHouse) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{21}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *PlayHouse) GetCardId() string {
@@ -1964,7 +1846,7 @@ type ActionPlayHouse struct {
 
 func (x *ActionPlayHouse) Reset() {
 	*x = ActionPlayHouse{}
-	mi := &file_monopoly_deal_proto_msgTypes[22]
+	mi := &file_monopoly_deal_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1976,7 +1858,7 @@ func (x *ActionPlayHouse) String() string {
 func (*ActionPlayHouse) ProtoMessage() {}
 
 func (x *ActionPlayHouse) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[22]
+	mi := &file_monopoly_deal_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1989,7 +1871,7 @@ func (x *ActionPlayHouse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActionPlayHouse.ProtoReflect.Descriptor instead.
 func (*ActionPlayHouse) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{22}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ActionPlayHouse) GetCard() *Card {
@@ -2016,7 +1898,7 @@ type PlayHotel struct {
 
 func (x *PlayHotel) Reset() {
 	*x = PlayHotel{}
-	mi := &file_monopoly_deal_proto_msgTypes[23]
+	mi := &file_monopoly_deal_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2028,7 +1910,7 @@ func (x *PlayHotel) String() string {
 func (*PlayHotel) ProtoMessage() {}
 
 func (x *PlayHotel) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[23]
+	mi := &file_monopoly_deal_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2041,7 +1923,7 @@ func (x *PlayHotel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayHotel.ProtoReflect.Descriptor instead.
 func (*PlayHotel) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{23}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *PlayHotel) GetCardId() string {
@@ -2068,7 +1950,7 @@ type ActionPlayHotel struct {
 
 func (x *ActionPlayHotel) Reset() {
 	*x = ActionPlayHotel{}
-	mi := &file_monopoly_deal_proto_msgTypes[24]
+	mi := &file_monopoly_deal_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2080,7 +1962,7 @@ func (x *ActionPlayHotel) String() string {
 func (*ActionPlayHotel) ProtoMessage() {}
 
 func (x *ActionPlayHotel) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[24]
+	mi := &file_monopoly_deal_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2093,7 +1975,7 @@ func (x *ActionPlayHotel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActionPlayHotel.ProtoReflect.Descriptor instead.
 func (*ActionPlayHotel) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{24}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ActionPlayHotel) GetCard() *Card {
@@ -2119,7 +2001,7 @@ type PlayPassGo struct {
 
 func (x *PlayPassGo) Reset() {
 	*x = PlayPassGo{}
-	mi := &file_monopoly_deal_proto_msgTypes[25]
+	mi := &file_monopoly_deal_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2131,7 +2013,7 @@ func (x *PlayPassGo) String() string {
 func (*PlayPassGo) ProtoMessage() {}
 
 func (x *PlayPassGo) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[25]
+	mi := &file_monopoly_deal_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2144,7 +2026,7 @@ func (x *PlayPassGo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayPassGo.ProtoReflect.Descriptor instead.
 func (*PlayPassGo) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{25}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *PlayPassGo) GetCardId() string {
@@ -2164,7 +2046,7 @@ type ActionPlayPassGo struct {
 
 func (x *ActionPlayPassGo) Reset() {
 	*x = ActionPlayPassGo{}
-	mi := &file_monopoly_deal_proto_msgTypes[26]
+	mi := &file_monopoly_deal_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2176,7 +2058,7 @@ func (x *ActionPlayPassGo) String() string {
 func (*ActionPlayPassGo) ProtoMessage() {}
 
 func (x *ActionPlayPassGo) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[26]
+	mi := &file_monopoly_deal_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2189,7 +2071,7 @@ func (x *ActionPlayPassGo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActionPlayPassGo.ProtoReflect.Descriptor instead.
 func (*ActionPlayPassGo) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{26}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ActionPlayPassGo) GetLastPlayedCard() *Card {
@@ -2216,7 +2098,7 @@ type MaskedActionPlayPassGo struct {
 
 func (x *MaskedActionPlayPassGo) Reset() {
 	*x = MaskedActionPlayPassGo{}
-	mi := &file_monopoly_deal_proto_msgTypes[27]
+	mi := &file_monopoly_deal_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2228,7 +2110,7 @@ func (x *MaskedActionPlayPassGo) String() string {
 func (*MaskedActionPlayPassGo) ProtoMessage() {}
 
 func (x *MaskedActionPlayPassGo) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[27]
+	mi := &file_monopoly_deal_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2241,7 +2123,7 @@ func (x *MaskedActionPlayPassGo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MaskedActionPlayPassGo.ProtoReflect.Descriptor instead.
 func (*MaskedActionPlayPassGo) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{27}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *MaskedActionPlayPassGo) GetLastPlayedCard() *Card {
@@ -2258,6 +2140,66 @@ func (x *MaskedActionPlayPassGo) GetNumCards() int32 {
 	return 0
 }
 
+type ActionDemandsCreated struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	LastPlayedCard *Card                  `protobuf:"bytes,1,opt,name=last_played_card,json=lastPlayedCard,proto3,oneof" json:"last_played_card,omitempty"`
+	DeniedDemand   *Demand                `protobuf:"bytes,2,opt,name=denied_demand,json=deniedDemand,proto3,oneof" json:"denied_demand,omitempty"`
+	Demands        []*Demand              `protobuf:"bytes,3,rep,name=demands,proto3" json:"demands,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ActionDemandsCreated) Reset() {
+	*x = ActionDemandsCreated{}
+	mi := &file_monopoly_deal_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActionDemandsCreated) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActionDemandsCreated) ProtoMessage() {}
+
+func (x *ActionDemandsCreated) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActionDemandsCreated.ProtoReflect.Descriptor instead.
+func (*ActionDemandsCreated) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *ActionDemandsCreated) GetLastPlayedCard() *Card {
+	if x != nil {
+		return x.LastPlayedCard
+	}
+	return nil
+}
+
+func (x *ActionDemandsCreated) GetDeniedDemand() *Demand {
+	if x != nil {
+		return x.DeniedDemand
+	}
+	return nil
+}
+
+func (x *ActionDemandsCreated) GetDemands() []*Demand {
+	if x != nil {
+		return x.Demands
+	}
+	return nil
+}
+
 type PlayItsMyBirthday struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
@@ -2267,7 +2209,7 @@ type PlayItsMyBirthday struct {
 
 func (x *PlayItsMyBirthday) Reset() {
 	*x = PlayItsMyBirthday{}
-	mi := &file_monopoly_deal_proto_msgTypes[28]
+	mi := &file_monopoly_deal_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2279,7 +2221,7 @@ func (x *PlayItsMyBirthday) String() string {
 func (*PlayItsMyBirthday) ProtoMessage() {}
 
 func (x *PlayItsMyBirthday) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[28]
+	mi := &file_monopoly_deal_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2292,7 +2234,7 @@ func (x *PlayItsMyBirthday) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayItsMyBirthday.ProtoReflect.Descriptor instead.
 func (*PlayItsMyBirthday) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{28}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *PlayItsMyBirthday) GetCardId() string {
@@ -2300,42 +2242,6 @@ func (x *PlayItsMyBirthday) GetCardId() string {
 		return x.CardId
 	}
 	return ""
-}
-
-type CompleteTurn struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CompleteTurn) Reset() {
-	*x = CompleteTurn{}
-	mi := &file_monopoly_deal_proto_msgTypes[29]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CompleteTurn) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CompleteTurn) ProtoMessage() {}
-
-func (x *CompleteTurn) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[29]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CompleteTurn.ProtoReflect.Descriptor instead.
-func (*CompleteTurn) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{29}
 }
 
 type PlayDebtCollector struct {
@@ -2348,7 +2254,7 @@ type PlayDebtCollector struct {
 
 func (x *PlayDebtCollector) Reset() {
 	*x = PlayDebtCollector{}
-	mi := &file_monopoly_deal_proto_msgTypes[30]
+	mi := &file_monopoly_deal_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2360,7 +2266,7 @@ func (x *PlayDebtCollector) String() string {
 func (*PlayDebtCollector) ProtoMessage() {}
 
 func (x *PlayDebtCollector) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[30]
+	mi := &file_monopoly_deal_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2373,7 +2279,7 @@ func (x *PlayDebtCollector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayDebtCollector.ProtoReflect.Descriptor instead.
 func (*PlayDebtCollector) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{30}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *PlayDebtCollector) GetCardId() string {
@@ -2390,6 +2296,138 @@ func (x *PlayDebtCollector) GetTargetId() string {
 	return ""
 }
 
+type ActionPendingRentCreated struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	LastCardPlayed *Card                  `protobuf:"bytes,1,opt,name=last_card_played,json=lastCardPlayed,proto3" json:"last_card_played,omitempty"`
+	PendingRent    *PendingRent           `protobuf:"bytes,2,opt,name=pending_rent,json=pendingRent,proto3" json:"pending_rent,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ActionPendingRentCreated) Reset() {
+	*x = ActionPendingRentCreated{}
+	mi := &file_monopoly_deal_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActionPendingRentCreated) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActionPendingRentCreated) ProtoMessage() {}
+
+func (x *ActionPendingRentCreated) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActionPendingRentCreated.ProtoReflect.Descriptor instead.
+func (*ActionPendingRentCreated) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *ActionPendingRentCreated) GetLastCardPlayed() *Card {
+	if x != nil {
+		return x.LastCardPlayed
+	}
+	return nil
+}
+
+func (x *ActionPendingRentCreated) GetPendingRent() *PendingRent {
+	if x != nil {
+		return x.PendingRent
+	}
+	return nil
+}
+
+type ResolvePendingRent struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResolvePendingRent) Reset() {
+	*x = ResolvePendingRent{}
+	mi := &file_monopoly_deal_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResolvePendingRent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResolvePendingRent) ProtoMessage() {}
+
+func (x *ResolvePendingRent) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResolvePendingRent.ProtoReflect.Descriptor instead.
+func (*ResolvePendingRent) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{30}
+}
+
+type ActionPendingRentResolved struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Demands       []*Demand              `protobuf:"bytes,1,rep,name=demands,proto3" json:"demands,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActionPendingRentResolved) Reset() {
+	*x = ActionPendingRentResolved{}
+	mi := &file_monopoly_deal_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActionPendingRentResolved) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActionPendingRentResolved) ProtoMessage() {}
+
+func (x *ActionPendingRentResolved) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActionPendingRentResolved.ProtoReflect.Descriptor instead.
+func (*ActionPendingRentResolved) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *ActionPendingRentResolved) GetDemands() []*Demand {
+	if x != nil {
+		return x.Demands
+	}
+	return nil
+}
+
 type PlayRent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
@@ -2399,7 +2437,7 @@ type PlayRent struct {
 
 func (x *PlayRent) Reset() {
 	*x = PlayRent{}
-	mi := &file_monopoly_deal_proto_msgTypes[31]
+	mi := &file_monopoly_deal_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2411,7 +2449,7 @@ func (x *PlayRent) String() string {
 func (*PlayRent) ProtoMessage() {}
 
 func (x *PlayRent) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[31]
+	mi := &file_monopoly_deal_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2424,7 +2462,7 @@ func (x *PlayRent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayRent.ProtoReflect.Descriptor instead.
 func (*PlayRent) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{31}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *PlayRent) GetCardId() string {
@@ -2444,7 +2482,7 @@ type PlayWildRent struct {
 
 func (x *PlayWildRent) Reset() {
 	*x = PlayWildRent{}
-	mi := &file_monopoly_deal_proto_msgTypes[32]
+	mi := &file_monopoly_deal_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2456,7 +2494,7 @@ func (x *PlayWildRent) String() string {
 func (*PlayWildRent) ProtoMessage() {}
 
 func (x *PlayWildRent) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[32]
+	mi := &file_monopoly_deal_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2469,7 +2507,7 @@ func (x *PlayWildRent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayWildRent.ProtoReflect.Descriptor instead.
 func (*PlayWildRent) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{32}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *PlayWildRent) GetCardId() string {
@@ -2495,7 +2533,7 @@ type PlayDoubleTheRent struct {
 
 func (x *PlayDoubleTheRent) Reset() {
 	*x = PlayDoubleTheRent{}
-	mi := &file_monopoly_deal_proto_msgTypes[33]
+	mi := &file_monopoly_deal_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2507,7 +2545,7 @@ func (x *PlayDoubleTheRent) String() string {
 func (*PlayDoubleTheRent) ProtoMessage() {}
 
 func (x *PlayDoubleTheRent) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[33]
+	mi := &file_monopoly_deal_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2520,7 +2558,7 @@ func (x *PlayDoubleTheRent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayDoubleTheRent.ProtoReflect.Descriptor instead.
 func (*PlayDoubleTheRent) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{33}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *PlayDoubleTheRent) GetCardId() string {
@@ -2530,96 +2568,29 @@ func (x *PlayDoubleTheRent) GetCardId() string {
 	return ""
 }
 
-type PlayActionRes struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum         int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	PlayerId       string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	LastPlayedCard *Card                  `protobuf:"bytes,3,opt,name=last_played_card,json=lastPlayedCard,proto3" json:"last_played_card,omitempty"`
-	DeadlineMs     int64                  `protobuf:"varint,4,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *PlayActionRes) Reset() {
-	*x = PlayActionRes{}
-	mi := &file_monopoly_deal_proto_msgTypes[34]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PlayActionRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PlayActionRes) ProtoMessage() {}
-
-func (x *PlayActionRes) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[34]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PlayActionRes.ProtoReflect.Descriptor instead.
-func (*PlayActionRes) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{34}
-}
-
-func (x *PlayActionRes) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
-}
-
-func (x *PlayActionRes) GetPlayerId() string {
-	if x != nil {
-		return x.PlayerId
-	}
-	return ""
-}
-
-func (x *PlayActionRes) GetLastPlayedCard() *Card {
-	if x != nil {
-		return x.LastPlayedCard
-	}
-	return nil
-}
-
-func (x *PlayActionRes) GetDeadlineMs() int64 {
-	if x != nil {
-		return x.DeadlineMs
-	}
-	return 0
-}
-
-type DemandCreated struct {
+type PlaySlyDeal struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Demand        *Demand                `protobuf:"bytes,1,opt,name=demand,proto3" json:"demand,omitempty"`
-	DeadlineMs    int64                  `protobuf:"varint,2,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
+	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
+	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	TargetCardId  string                 `protobuf:"bytes,3,opt,name=target_card_id,json=targetCardId,proto3" json:"target_card_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *DemandCreated) Reset() {
-	*x = DemandCreated{}
+func (x *PlaySlyDeal) Reset() {
+	*x = PlaySlyDeal{}
 	mi := &file_monopoly_deal_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DemandCreated) String() string {
+func (x *PlaySlyDeal) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DemandCreated) ProtoMessage() {}
+func (*PlaySlyDeal) ProtoMessage() {}
 
-func (x *DemandCreated) ProtoReflect() protoreflect.Message {
+func (x *PlaySlyDeal) ProtoReflect() protoreflect.Message {
 	mi := &file_monopoly_deal_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2631,23 +2602,158 @@ func (x *DemandCreated) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DemandCreated.ProtoReflect.Descriptor instead.
-func (*DemandCreated) Descriptor() ([]byte, []int) {
+// Deprecated: Use PlaySlyDeal.ProtoReflect.Descriptor instead.
+func (*PlaySlyDeal) Descriptor() ([]byte, []int) {
 	return file_monopoly_deal_proto_rawDescGZIP(), []int{35}
 }
 
-func (x *DemandCreated) GetDemand() *Demand {
+func (x *PlaySlyDeal) GetCardId() string {
 	if x != nil {
-		return x.Demand
+		return x.CardId
 	}
-	return nil
+	return ""
 }
 
-func (x *DemandCreated) GetDeadlineMs() int64 {
+func (x *PlaySlyDeal) GetTargetId() string {
 	if x != nil {
-		return x.DeadlineMs
+		return x.TargetId
 	}
-	return 0
+	return ""
+}
+
+func (x *PlaySlyDeal) GetTargetCardId() string {
+	if x != nil {
+		return x.TargetCardId
+	}
+	return ""
+}
+
+type PlayForcedDeal struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
+	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	SourceCardId  string                 `protobuf:"bytes,3,opt,name=source_card_id,json=sourceCardId,proto3" json:"source_card_id,omitempty"`
+	TargetCardId  string                 `protobuf:"bytes,4,opt,name=target_card_id,json=targetCardId,proto3" json:"target_card_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayForcedDeal) Reset() {
+	*x = PlayForcedDeal{}
+	mi := &file_monopoly_deal_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayForcedDeal) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayForcedDeal) ProtoMessage() {}
+
+func (x *PlayForcedDeal) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayForcedDeal.ProtoReflect.Descriptor instead.
+func (*PlayForcedDeal) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *PlayForcedDeal) GetCardId() string {
+	if x != nil {
+		return x.CardId
+	}
+	return ""
+}
+
+func (x *PlayForcedDeal) GetTargetId() string {
+	if x != nil {
+		return x.TargetId
+	}
+	return ""
+}
+
+func (x *PlayForcedDeal) GetSourceCardId() string {
+	if x != nil {
+		return x.SourceCardId
+	}
+	return ""
+}
+
+func (x *PlayForcedDeal) GetTargetCardId() string {
+	if x != nil {
+		return x.TargetCardId
+	}
+	return ""
+}
+
+type PlayDealBreaker struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
+	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	PropertySetId string                 `protobuf:"bytes,3,opt,name=property_set_id,json=propertySetId,proto3" json:"property_set_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayDealBreaker) Reset() {
+	*x = PlayDealBreaker{}
+	mi := &file_monopoly_deal_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayDealBreaker) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayDealBreaker) ProtoMessage() {}
+
+func (x *PlayDealBreaker) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayDealBreaker.ProtoReflect.Descriptor instead.
+func (*PlayDealBreaker) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *PlayDealBreaker) GetCardId() string {
+	if x != nil {
+		return x.CardId
+	}
+	return ""
+}
+
+func (x *PlayDealBreaker) GetTargetId() string {
+	if x != nil {
+		return x.TargetId
+	}
+	return ""
+}
+
+func (x *PlayDealBreaker) GetPropertySetId() string {
+	if x != nil {
+		return x.PropertySetId
+	}
+	return ""
 }
 
 type ComplyPaymentDemand struct {
@@ -2660,7 +2766,7 @@ type ComplyPaymentDemand struct {
 
 func (x *ComplyPaymentDemand) Reset() {
 	*x = ComplyPaymentDemand{}
-	mi := &file_monopoly_deal_proto_msgTypes[36]
+	mi := &file_monopoly_deal_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2672,7 +2778,7 @@ func (x *ComplyPaymentDemand) String() string {
 func (*ComplyPaymentDemand) ProtoMessage() {}
 
 func (x *ComplyPaymentDemand) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[36]
+	mi := &file_monopoly_deal_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2685,7 +2791,7 @@ func (x *ComplyPaymentDemand) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComplyPaymentDemand.ProtoReflect.Descriptor instead.
 func (*ComplyPaymentDemand) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{36}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *ComplyPaymentDemand) GetDemandId() string {
@@ -2702,31 +2808,28 @@ func (x *ComplyPaymentDemand) GetCardIds() []string {
 	return nil
 }
 
-type CompliedDemand struct {
+type ComplyPropertyDemand struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	DemandId      string                 `protobuf:"bytes,2,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
-	PlayerId      string                 `protobuf:"bytes,3,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	DeadlineMs    int64                  `protobuf:"varint,4,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
+	DemandId      string                 `protobuf:"bytes,1,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CompliedDemand) Reset() {
-	*x = CompliedDemand{}
-	mi := &file_monopoly_deal_proto_msgTypes[37]
+func (x *ComplyPropertyDemand) Reset() {
+	*x = ComplyPropertyDemand{}
+	mi := &file_monopoly_deal_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CompliedDemand) String() string {
+func (x *ComplyPropertyDemand) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CompliedDemand) ProtoMessage() {}
+func (*ComplyPropertyDemand) ProtoMessage() {}
 
-func (x *CompliedDemand) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[37]
+func (x *ComplyPropertyDemand) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2737,150 +2840,39 @@ func (x *CompliedDemand) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CompliedDemand.ProtoReflect.Descriptor instead.
-func (*CompliedDemand) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{37}
+// Deprecated: Use ComplyPropertyDemand.ProtoReflect.Descriptor instead.
+func (*ComplyPropertyDemand) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{39}
 }
 
-func (x *CompliedDemand) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
-}
-
-func (x *CompliedDemand) GetDemandId() string {
+func (x *ComplyPropertyDemand) GetDemandId() string {
 	if x != nil {
 		return x.DemandId
 	}
 	return ""
 }
 
-func (x *CompliedDemand) GetPlayerId() string {
-	if x != nil {
-		return x.PlayerId
-	}
-	return ""
-}
-
-func (x *CompliedDemand) GetDeadlineMs() int64 {
-	if x != nil {
-		return x.DeadlineMs
-	}
-	return 0
-}
-
-type PendingRentCreated struct {
+type ComplyPropertySetDemand struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PendingRent   *PendingRent           `protobuf:"bytes,1,opt,name=pending_rent,json=pendingRent,proto3" json:"pending_rent,omitempty"`
-	DeadlineMs    int64                  `protobuf:"varint,2,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
+	DemandId      string                 `protobuf:"bytes,1,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PendingRentCreated) Reset() {
-	*x = PendingRentCreated{}
-	mi := &file_monopoly_deal_proto_msgTypes[38]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PendingRentCreated) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PendingRentCreated) ProtoMessage() {}
-
-func (x *PendingRentCreated) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[38]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PendingRentCreated.ProtoReflect.Descriptor instead.
-func (*PendingRentCreated) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{38}
-}
-
-func (x *PendingRentCreated) GetPendingRent() *PendingRent {
-	if x != nil {
-		return x.PendingRent
-	}
-	return nil
-}
-
-func (x *PendingRentCreated) GetDeadlineMs() int64 {
-	if x != nil {
-		return x.DeadlineMs
-	}
-	return 0
-}
-
-type ResolvePendingRent struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ResolvePendingRent) Reset() {
-	*x = ResolvePendingRent{}
-	mi := &file_monopoly_deal_proto_msgTypes[39]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ResolvePendingRent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ResolvePendingRent) ProtoMessage() {}
-
-func (x *ResolvePendingRent) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[39]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ResolvePendingRent.ProtoReflect.Descriptor instead.
-func (*ResolvePendingRent) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{39}
-}
-
-type PendingRentResolved struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	DeadlineMs    int64                  `protobuf:"varint,3,opt,name=deadline_ms,json=deadlineMs,proto3" json:"deadline_ms,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PendingRentResolved) Reset() {
-	*x = PendingRentResolved{}
+func (x *ComplyPropertySetDemand) Reset() {
+	*x = ComplyPropertySetDemand{}
 	mi := &file_monopoly_deal_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PendingRentResolved) String() string {
+func (x *ComplyPropertySetDemand) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PendingRentResolved) ProtoMessage() {}
+func (*ComplyPropertySetDemand) ProtoMessage() {}
 
-func (x *PendingRentResolved) ProtoReflect() protoreflect.Message {
+func (x *ComplyPropertySetDemand) ProtoReflect() protoreflect.Message {
 	mi := &file_monopoly_deal_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2892,30 +2884,16 @@ func (x *PendingRentResolved) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PendingRentResolved.ProtoReflect.Descriptor instead.
-func (*PendingRentResolved) Descriptor() ([]byte, []int) {
+// Deprecated: Use ComplyPropertySetDemand.ProtoReflect.Descriptor instead.
+func (*ComplyPropertySetDemand) Descriptor() ([]byte, []int) {
 	return file_monopoly_deal_proto_rawDescGZIP(), []int{40}
 }
 
-func (x *PendingRentResolved) GetSeqNum() int32 {
+func (x *ComplyPropertySetDemand) GetDemandId() string {
 	if x != nil {
-		return x.SeqNum
-	}
-	return 0
-}
-
-func (x *PendingRentResolved) GetPlayerId() string {
-	if x != nil {
-		return x.PlayerId
+		return x.DemandId
 	}
 	return ""
-}
-
-func (x *PendingRentResolved) GetDeadlineMs() int64 {
-	if x != nil {
-		return x.DeadlineMs
-	}
-	return 0
 }
 
 type TransferCards struct {
@@ -3018,596 +2996,19 @@ func (x *TransferCards) GetTargetMoney() int32 {
 	return 0
 }
 
-type RearrangeCard struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
-	PropertySetId *string                `protobuf:"bytes,2,opt,name=property_set_id,json=propertySetId,proto3,oneof" json:"property_set_id,omitempty"`
-	Color         *Color                 `protobuf:"varint,3,opt,name=color,proto3,enum=the_deal.schema.monopoly_deal.Color,oneof" json:"color,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RearrangeCard) Reset() {
-	*x = RearrangeCard{}
-	mi := &file_monopoly_deal_proto_msgTypes[42]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RearrangeCard) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RearrangeCard) ProtoMessage() {}
-
-func (x *RearrangeCard) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[42]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RearrangeCard.ProtoReflect.Descriptor instead.
-func (*RearrangeCard) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{42}
-}
-
-func (x *RearrangeCard) GetCardId() string {
-	if x != nil {
-		return x.CardId
-	}
-	return ""
-}
-
-func (x *RearrangeCard) GetPropertySetId() string {
-	if x != nil && x.PropertySetId != nil {
-		return *x.PropertySetId
-	}
-	return ""
-}
-
-func (x *RearrangeCard) GetColor() Color {
-	if x != nil && x.Color != nil {
-		return *x.Color
-	}
-	return Color_COLOR_UNSPECIFIED
-}
-
-type RearrangeCardRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	Card          *Card                  `protobuf:"bytes,3,opt,name=card,proto3" json:"card,omitempty"`
-	PropertySet   *PropertySet           `protobuf:"bytes,4,opt,name=property_set,json=propertySet,proto3" json:"property_set,omitempty"`
-	Sets          int32                  `protobuf:"varint,5,opt,name=sets,proto3" json:"sets,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RearrangeCardRes) Reset() {
-	*x = RearrangeCardRes{}
-	mi := &file_monopoly_deal_proto_msgTypes[43]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RearrangeCardRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RearrangeCardRes) ProtoMessage() {}
-
-func (x *RearrangeCardRes) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[43]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RearrangeCardRes.ProtoReflect.Descriptor instead.
-func (*RearrangeCardRes) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{43}
-}
-
-func (x *RearrangeCardRes) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
-}
-
-func (x *RearrangeCardRes) GetPlayerId() string {
-	if x != nil {
-		return x.PlayerId
-	}
-	return ""
-}
-
-func (x *RearrangeCardRes) GetCard() *Card {
-	if x != nil {
-		return x.Card
-	}
-	return nil
-}
-
-func (x *RearrangeCardRes) GetPropertySet() *PropertySet {
-	if x != nil {
-		return x.PropertySet
-	}
-	return nil
-}
-
-func (x *RearrangeCardRes) GetSets() int32 {
-	if x != nil {
-		return x.Sets
-	}
-	return 0
-}
-
-type DiscardCards struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CardIds       []string               `protobuf:"bytes,1,rep,name=card_ids,json=cardIds,proto3" json:"card_ids,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DiscardCards) Reset() {
-	*x = DiscardCards{}
-	mi := &file_monopoly_deal_proto_msgTypes[44]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DiscardCards) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DiscardCards) ProtoMessage() {}
-
-func (x *DiscardCards) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[44]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DiscardCards.ProtoReflect.Descriptor instead.
-func (*DiscardCards) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{44}
-}
-
-func (x *DiscardCards) GetCardIds() []string {
-	if x != nil {
-		return x.CardIds
-	}
-	return nil
-}
-
-type DiscardCardsRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	Cards         []*Card                `protobuf:"bytes,3,rep,name=cards,proto3" json:"cards,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DiscardCardsRes) Reset() {
-	*x = DiscardCardsRes{}
-	mi := &file_monopoly_deal_proto_msgTypes[45]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DiscardCardsRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DiscardCardsRes) ProtoMessage() {}
-
-func (x *DiscardCardsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[45]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DiscardCardsRes.ProtoReflect.Descriptor instead.
-func (*DiscardCardsRes) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{45}
-}
-
-func (x *DiscardCardsRes) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
-}
-
-func (x *DiscardCardsRes) GetPlayerId() string {
-	if x != nil {
-		return x.PlayerId
-	}
-	return ""
-}
-
-func (x *DiscardCardsRes) GetCards() []*Card {
-	if x != nil {
-		return x.Cards
-	}
-	return nil
-}
-
-type DiscardCardsMaskedRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
-	NumCards      int32                  `protobuf:"varint,3,opt,name=num_cards,json=numCards,proto3" json:"num_cards,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DiscardCardsMaskedRes) Reset() {
-	*x = DiscardCardsMaskedRes{}
-	mi := &file_monopoly_deal_proto_msgTypes[46]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DiscardCardsMaskedRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DiscardCardsMaskedRes) ProtoMessage() {}
-
-func (x *DiscardCardsMaskedRes) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[46]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DiscardCardsMaskedRes.ProtoReflect.Descriptor instead.
-func (*DiscardCardsMaskedRes) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{46}
-}
-
-func (x *DiscardCardsMaskedRes) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
-}
-
-func (x *DiscardCardsMaskedRes) GetPlayerId() string {
-	if x != nil {
-		return x.PlayerId
-	}
-	return ""
-}
-
-func (x *DiscardCardsMaskedRes) GetNumCards() int32 {
-	if x != nil {
-		return x.NumCards
-	}
-	return 0
-}
-
-type DenyDemand struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DemandId      string                 `protobuf:"bytes,1,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
-	CardId        string                 `protobuf:"bytes,2,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DenyDemand) Reset() {
-	*x = DenyDemand{}
-	mi := &file_monopoly_deal_proto_msgTypes[47]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DenyDemand) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DenyDemand) ProtoMessage() {}
-
-func (x *DenyDemand) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[47]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DenyDemand.ProtoReflect.Descriptor instead.
-func (*DenyDemand) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{47}
-}
-
-func (x *DenyDemand) GetDemandId() string {
-	if x != nil {
-		return x.DemandId
-	}
-	return ""
-}
-
-func (x *DenyDemand) GetCardId() string {
-	if x != nil {
-		return x.CardId
-	}
-	return ""
-}
-
-type DemandDenied struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	DemandId      string                 `protobuf:"bytes,2,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DemandDenied) Reset() {
-	*x = DemandDenied{}
-	mi := &file_monopoly_deal_proto_msgTypes[48]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DemandDenied) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DemandDenied) ProtoMessage() {}
-
-func (x *DemandDenied) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[48]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DemandDenied.ProtoReflect.Descriptor instead.
-func (*DemandDenied) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{48}
-}
-
-func (x *DemandDenied) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
-}
-
-func (x *DemandDenied) GetDemandId() string {
-	if x != nil {
-		return x.DemandId
-	}
-	return ""
-}
-
-type PlaySlyDeal struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
-	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
-	TargetCardId  string                 `protobuf:"bytes,3,opt,name=target_card_id,json=targetCardId,proto3" json:"target_card_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PlaySlyDeal) Reset() {
-	*x = PlaySlyDeal{}
-	mi := &file_monopoly_deal_proto_msgTypes[49]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PlaySlyDeal) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PlaySlyDeal) ProtoMessage() {}
-
-func (x *PlaySlyDeal) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[49]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PlaySlyDeal.ProtoReflect.Descriptor instead.
-func (*PlaySlyDeal) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{49}
-}
-
-func (x *PlaySlyDeal) GetCardId() string {
-	if x != nil {
-		return x.CardId
-	}
-	return ""
-}
-
-func (x *PlaySlyDeal) GetTargetId() string {
-	if x != nil {
-		return x.TargetId
-	}
-	return ""
-}
-
-func (x *PlaySlyDeal) GetTargetCardId() string {
-	if x != nil {
-		return x.TargetCardId
-	}
-	return ""
-}
-
-type PlayForcedDeal struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
-	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
-	SourceCardId  string                 `protobuf:"bytes,3,opt,name=source_card_id,json=sourceCardId,proto3" json:"source_card_id,omitempty"`
-	TargetCardId  string                 `protobuf:"bytes,4,opt,name=target_card_id,json=targetCardId,proto3" json:"target_card_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PlayForcedDeal) Reset() {
-	*x = PlayForcedDeal{}
-	mi := &file_monopoly_deal_proto_msgTypes[50]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PlayForcedDeal) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PlayForcedDeal) ProtoMessage() {}
-
-func (x *PlayForcedDeal) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[50]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PlayForcedDeal.ProtoReflect.Descriptor instead.
-func (*PlayForcedDeal) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{50}
-}
-
-func (x *PlayForcedDeal) GetCardId() string {
-	if x != nil {
-		return x.CardId
-	}
-	return ""
-}
-
-func (x *PlayForcedDeal) GetTargetId() string {
-	if x != nil {
-		return x.TargetId
-	}
-	return ""
-}
-
-func (x *PlayForcedDeal) GetSourceCardId() string {
-	if x != nil {
-		return x.SourceCardId
-	}
-	return ""
-}
-
-func (x *PlayForcedDeal) GetTargetCardId() string {
-	if x != nil {
-		return x.TargetCardId
-	}
-	return ""
-}
-
-type ComplyPropertyDemand struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DemandId      string                 `protobuf:"bytes,1,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ComplyPropertyDemand) Reset() {
-	*x = ComplyPropertyDemand{}
-	mi := &file_monopoly_deal_proto_msgTypes[51]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ComplyPropertyDemand) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ComplyPropertyDemand) ProtoMessage() {}
-
-func (x *ComplyPropertyDemand) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[51]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ComplyPropertyDemand.ProtoReflect.Descriptor instead.
-func (*ComplyPropertyDemand) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{51}
-}
-
-func (x *ComplyPropertyDemand) GetDemandId() string {
-	if x != nil {
-		return x.DemandId
-	}
-	return ""
-}
-
 type TransferProperty struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum             int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	SourceId           string                 `protobuf:"bytes,2,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
-	TargetId           string                 `protobuf:"bytes,3,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
-	SourcePropertySets []*PropertySet         `protobuf:"bytes,4,rep,name=source_property_sets,json=sourcePropertySets,proto3" json:"source_property_sets,omitempty"`
-	TargetPropertySets []*PropertySet         `protobuf:"bytes,5,rep,name=target_property_sets,json=targetPropertySets,proto3" json:"target_property_sets,omitempty"`
+	SourceId           string                 `protobuf:"bytes,1,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
+	TargetId           string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	SourcePropertySets []*PropertySet         `protobuf:"bytes,3,rep,name=source_property_sets,json=sourcePropertySets,proto3" json:"source_property_sets,omitempty"`
+	TargetPropertySets []*PropertySet         `protobuf:"bytes,4,rep,name=target_property_sets,json=targetPropertySets,proto3" json:"target_property_sets,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
 
 func (x *TransferProperty) Reset() {
 	*x = TransferProperty{}
-	mi := &file_monopoly_deal_proto_msgTypes[52]
+	mi := &file_monopoly_deal_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3619,7 +3020,7 @@ func (x *TransferProperty) String() string {
 func (*TransferProperty) ProtoMessage() {}
 
 func (x *TransferProperty) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[52]
+	mi := &file_monopoly_deal_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3632,14 +3033,7 @@ func (x *TransferProperty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferProperty.ProtoReflect.Descriptor instead.
 func (*TransferProperty) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{52}
-}
-
-func (x *TransferProperty) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *TransferProperty) GetSourceId() string {
@@ -3670,123 +3064,18 @@ func (x *TransferProperty) GetTargetPropertySets() []*PropertySet {
 	return nil
 }
 
-type PlayDealBreaker struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
-	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
-	PropertySetId string                 `protobuf:"bytes,3,opt,name=property_set_id,json=propertySetId,proto3" json:"property_set_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PlayDealBreaker) Reset() {
-	*x = PlayDealBreaker{}
-	mi := &file_monopoly_deal_proto_msgTypes[53]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PlayDealBreaker) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PlayDealBreaker) ProtoMessage() {}
-
-func (x *PlayDealBreaker) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[53]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PlayDealBreaker.ProtoReflect.Descriptor instead.
-func (*PlayDealBreaker) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{53}
-}
-
-func (x *PlayDealBreaker) GetCardId() string {
-	if x != nil {
-		return x.CardId
-	}
-	return ""
-}
-
-func (x *PlayDealBreaker) GetTargetId() string {
-	if x != nil {
-		return x.TargetId
-	}
-	return ""
-}
-
-func (x *PlayDealBreaker) GetPropertySetId() string {
-	if x != nil {
-		return x.PropertySetId
-	}
-	return ""
-}
-
-type ComplyPropertySetDemand struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DemandId      string                 `protobuf:"bytes,1,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ComplyPropertySetDemand) Reset() {
-	*x = ComplyPropertySetDemand{}
-	mi := &file_monopoly_deal_proto_msgTypes[54]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ComplyPropertySetDemand) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ComplyPropertySetDemand) ProtoMessage() {}
-
-func (x *ComplyPropertySetDemand) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[54]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ComplyPropertySetDemand.ProtoReflect.Descriptor instead.
-func (*ComplyPropertySetDemand) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{54}
-}
-
-func (x *ComplyPropertySetDemand) GetDemandId() string {
-	if x != nil {
-		return x.DemandId
-	}
-	return ""
-}
-
 type TransferPropertySet struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SeqNum        int32                  `protobuf:"varint,1,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`
-	SourceId      string                 `protobuf:"bytes,2,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
-	TargetId      string                 `protobuf:"bytes,3,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
-	PropertySet   *PropertySet           `protobuf:"bytes,4,opt,name=property_set,json=propertySet,proto3" json:"property_set,omitempty"`
+	SourceId      string                 `protobuf:"bytes,1,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
+	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	PropertySet   *PropertySet           `protobuf:"bytes,3,opt,name=property_set,json=propertySet,proto3" json:"property_set,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TransferPropertySet) Reset() {
 	*x = TransferPropertySet{}
-	mi := &file_monopoly_deal_proto_msgTypes[55]
+	mi := &file_monopoly_deal_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3798,7 +3087,7 @@ func (x *TransferPropertySet) String() string {
 func (*TransferPropertySet) ProtoMessage() {}
 
 func (x *TransferPropertySet) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[55]
+	mi := &file_monopoly_deal_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3811,14 +3100,7 @@ func (x *TransferPropertySet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferPropertySet.ProtoReflect.Descriptor instead.
 func (*TransferPropertySet) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{55}
-}
-
-func (x *TransferPropertySet) GetSeqNum() int32 {
-	if x != nil {
-		return x.SeqNum
-	}
-	return 0
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *TransferPropertySet) GetSourceId() string {
@@ -3842,6 +3124,556 @@ func (x *TransferPropertySet) GetPropertySet() *PropertySet {
 	return nil
 }
 
+type ActionDemandComplied struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	DemandId string                 `protobuf:"bytes,1,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
+	// Types that are valid to be assigned to Transfer:
+	//
+	//	*ActionDemandComplied_TransferCards
+	//	*ActionDemandComplied_TransferProperty
+	//	*ActionDemandComplied_TransferPropertySet
+	Transfer      isActionDemandComplied_Transfer `protobuf_oneof:"transfer"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActionDemandComplied) Reset() {
+	*x = ActionDemandComplied{}
+	mi := &file_monopoly_deal_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActionDemandComplied) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActionDemandComplied) ProtoMessage() {}
+
+func (x *ActionDemandComplied) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActionDemandComplied.ProtoReflect.Descriptor instead.
+func (*ActionDemandComplied) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *ActionDemandComplied) GetDemandId() string {
+	if x != nil {
+		return x.DemandId
+	}
+	return ""
+}
+
+func (x *ActionDemandComplied) GetTransfer() isActionDemandComplied_Transfer {
+	if x != nil {
+		return x.Transfer
+	}
+	return nil
+}
+
+func (x *ActionDemandComplied) GetTransferCards() *TransferCards {
+	if x != nil {
+		if x, ok := x.Transfer.(*ActionDemandComplied_TransferCards); ok {
+			return x.TransferCards
+		}
+	}
+	return nil
+}
+
+func (x *ActionDemandComplied) GetTransferProperty() *TransferProperty {
+	if x != nil {
+		if x, ok := x.Transfer.(*ActionDemandComplied_TransferProperty); ok {
+			return x.TransferProperty
+		}
+	}
+	return nil
+}
+
+func (x *ActionDemandComplied) GetTransferPropertySet() *TransferPropertySet {
+	if x != nil {
+		if x, ok := x.Transfer.(*ActionDemandComplied_TransferPropertySet); ok {
+			return x.TransferPropertySet
+		}
+	}
+	return nil
+}
+
+type isActionDemandComplied_Transfer interface {
+	isActionDemandComplied_Transfer()
+}
+
+type ActionDemandComplied_TransferCards struct {
+	TransferCards *TransferCards `protobuf:"bytes,2,opt,name=transfer_cards,json=transferCards,proto3,oneof"`
+}
+
+type ActionDemandComplied_TransferProperty struct {
+	TransferProperty *TransferProperty `protobuf:"bytes,3,opt,name=transfer_property,json=transferProperty,proto3,oneof"`
+}
+
+type ActionDemandComplied_TransferPropertySet struct {
+	TransferPropertySet *TransferPropertySet `protobuf:"bytes,4,opt,name=transfer_property_set,json=transferPropertySet,proto3,oneof"`
+}
+
+func (*ActionDemandComplied_TransferCards) isActionDemandComplied_Transfer() {}
+
+func (*ActionDemandComplied_TransferProperty) isActionDemandComplied_Transfer() {}
+
+func (*ActionDemandComplied_TransferPropertySet) isActionDemandComplied_Transfer() {}
+
+type DenyDemand struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DemandId      string                 `protobuf:"bytes,1,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
+	CardId        string                 `protobuf:"bytes,2,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DenyDemand) Reset() {
+	*x = DenyDemand{}
+	mi := &file_monopoly_deal_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DenyDemand) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DenyDemand) ProtoMessage() {}
+
+func (x *DenyDemand) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DenyDemand.ProtoReflect.Descriptor instead.
+func (*DenyDemand) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *DenyDemand) GetDemandId() string {
+	if x != nil {
+		return x.DemandId
+	}
+	return ""
+}
+
+func (x *DenyDemand) GetCardId() string {
+	if x != nil {
+		return x.CardId
+	}
+	return ""
+}
+
+type DiscardCards struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CardIds       []string               `protobuf:"bytes,1,rep,name=card_ids,json=cardIds,proto3" json:"card_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DiscardCards) Reset() {
+	*x = DiscardCards{}
+	mi := &file_monopoly_deal_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DiscardCards) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DiscardCards) ProtoMessage() {}
+
+func (x *DiscardCards) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DiscardCards.ProtoReflect.Descriptor instead.
+func (*DiscardCards) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *DiscardCards) GetCardIds() []string {
+	if x != nil {
+		return x.CardIds
+	}
+	return nil
+}
+
+type ActionDiscardCards struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cards         []*Card                `protobuf:"bytes,1,rep,name=cards,proto3" json:"cards,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActionDiscardCards) Reset() {
+	*x = ActionDiscardCards{}
+	mi := &file_monopoly_deal_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActionDiscardCards) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActionDiscardCards) ProtoMessage() {}
+
+func (x *ActionDiscardCards) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActionDiscardCards.ProtoReflect.Descriptor instead.
+func (*ActionDiscardCards) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *ActionDiscardCards) GetCards() []*Card {
+	if x != nil {
+		return x.Cards
+	}
+	return nil
+}
+
+type MaskedActionDiscardCards struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NumCards      int32                  `protobuf:"varint,1,opt,name=num_cards,json=numCards,proto3" json:"num_cards,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MaskedActionDiscardCards) Reset() {
+	*x = MaskedActionDiscardCards{}
+	mi := &file_monopoly_deal_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MaskedActionDiscardCards) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MaskedActionDiscardCards) ProtoMessage() {}
+
+func (x *MaskedActionDiscardCards) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MaskedActionDiscardCards.ProtoReflect.Descriptor instead.
+func (*MaskedActionDiscardCards) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *MaskedActionDiscardCards) GetNumCards() int32 {
+	if x != nil {
+		return x.NumCards
+	}
+	return 0
+}
+
+type CompleteTurn struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteTurn) Reset() {
+	*x = CompleteTurn{}
+	mi := &file_monopoly_deal_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteTurn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteTurn) ProtoMessage() {}
+
+func (x *CompleteTurn) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteTurn.ProtoReflect.Descriptor instead.
+func (*CompleteTurn) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{49}
+}
+
+type ActionStartTurn struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cards         []*Card                `protobuf:"bytes,1,rep,name=cards,proto3" json:"cards,omitempty"`
+	MovesLeft     int32                  `protobuf:"varint,2,opt,name=moves_left,json=movesLeft,proto3" json:"moves_left,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActionStartTurn) Reset() {
+	*x = ActionStartTurn{}
+	mi := &file_monopoly_deal_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActionStartTurn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActionStartTurn) ProtoMessage() {}
+
+func (x *ActionStartTurn) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActionStartTurn.ProtoReflect.Descriptor instead.
+func (*ActionStartTurn) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *ActionStartTurn) GetCards() []*Card {
+	if x != nil {
+		return x.Cards
+	}
+	return nil
+}
+
+func (x *ActionStartTurn) GetMovesLeft() int32 {
+	if x != nil {
+		return x.MovesLeft
+	}
+	return 0
+}
+
+type MaskedActionStartTurn struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NumCards      int32                  `protobuf:"varint,1,opt,name=num_cards,json=numCards,proto3" json:"num_cards,omitempty"`
+	MovesLeft     int32                  `protobuf:"varint,2,opt,name=moves_left,json=movesLeft,proto3" json:"moves_left,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MaskedActionStartTurn) Reset() {
+	*x = MaskedActionStartTurn{}
+	mi := &file_monopoly_deal_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MaskedActionStartTurn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MaskedActionStartTurn) ProtoMessage() {}
+
+func (x *MaskedActionStartTurn) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MaskedActionStartTurn.ProtoReflect.Descriptor instead.
+func (*MaskedActionStartTurn) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *MaskedActionStartTurn) GetNumCards() int32 {
+	if x != nil {
+		return x.NumCards
+	}
+	return 0
+}
+
+func (x *MaskedActionStartTurn) GetMovesLeft() int32 {
+	if x != nil {
+		return x.MovesLeft
+	}
+	return 0
+}
+
+type RearrangeCard struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CardId        string                 `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"card_id,omitempty"`
+	PropertySetId *string                `protobuf:"bytes,2,opt,name=property_set_id,json=propertySetId,proto3,oneof" json:"property_set_id,omitempty"`
+	Color         *Color                 `protobuf:"varint,3,opt,name=color,proto3,enum=the_deal.schema.monopoly_deal.Color,oneof" json:"color,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RearrangeCard) Reset() {
+	*x = RearrangeCard{}
+	mi := &file_monopoly_deal_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RearrangeCard) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RearrangeCard) ProtoMessage() {}
+
+func (x *RearrangeCard) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RearrangeCard.ProtoReflect.Descriptor instead.
+func (*RearrangeCard) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *RearrangeCard) GetCardId() string {
+	if x != nil {
+		return x.CardId
+	}
+	return ""
+}
+
+func (x *RearrangeCard) GetPropertySetId() string {
+	if x != nil && x.PropertySetId != nil {
+		return *x.PropertySetId
+	}
+	return ""
+}
+
+func (x *RearrangeCard) GetColor() Color {
+	if x != nil && x.Color != nil {
+		return *x.Color
+	}
+	return Color_COLOR_UNSPECIFIED
+}
+
+type ActionRearrangeCard struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Card          *Card                  `protobuf:"bytes,1,opt,name=card,proto3,oneof" json:"card,omitempty"`
+	PropertySet   *PropertySet           `protobuf:"bytes,2,opt,name=property_set,json=propertySet,proto3" json:"property_set,omitempty"`
+	Sets          int32                  `protobuf:"varint,3,opt,name=sets,proto3" json:"sets,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActionRearrangeCard) Reset() {
+	*x = ActionRearrangeCard{}
+	mi := &file_monopoly_deal_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActionRearrangeCard) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActionRearrangeCard) ProtoMessage() {}
+
+func (x *ActionRearrangeCard) ProtoReflect() protoreflect.Message {
+	mi := &file_monopoly_deal_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActionRearrangeCard.ProtoReflect.Descriptor instead.
+func (*ActionRearrangeCard) Descriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *ActionRearrangeCard) GetCard() *Card {
+	if x != nil {
+		return x.Card
+	}
+	return nil
+}
+
+func (x *ActionRearrangeCard) GetPropertySet() *PropertySet {
+	if x != nil {
+		return x.PropertySet
+	}
+	return nil
+}
+
+func (x *ActionRearrangeCard) GetSets() int32 {
+	if x != nil {
+		return x.Sets
+	}
+	return 0
+}
+
 type WonGame struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	PlayerId         string                 `protobuf:"bytes,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
@@ -3853,7 +3685,7 @@ type WonGame struct {
 
 func (x *WonGame) Reset() {
 	*x = WonGame{}
-	mi := &file_monopoly_deal_proto_msgTypes[56]
+	mi := &file_monopoly_deal_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3865,7 +3697,7 @@ func (x *WonGame) String() string {
 func (*WonGame) ProtoMessage() {}
 
 func (x *WonGame) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[56]
+	mi := &file_monopoly_deal_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3878,7 +3710,7 @@ func (x *WonGame) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WonGame.ProtoReflect.Descriptor instead.
 func (*WonGame) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{56}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *WonGame) GetPlayerId() string {
@@ -3916,6 +3748,15 @@ type Action struct {
 	//	*Action_ActionPlayHotel
 	//	*Action_ActionPlayPassGo
 	//	*Action_MaskedActionPlayedPassGo
+	//	*Action_ActionDemandsCreated
+	//	*Action_ActionPendingRentCreated
+	//	*Action_ActionPendingRentResolved
+	//	*Action_ActionDemandComplied
+	//	*Action_ActionDiscardCards
+	//	*Action_MaskedActionDiscardCards
+	//	*Action_ActionStartTurn
+	//	*Action_MaskedActionStartTurn
+	//	*Action_ActionRearrangeCard
 	Payload       isAction_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -3923,7 +3764,7 @@ type Action struct {
 
 func (x *Action) Reset() {
 	*x = Action{}
-	mi := &file_monopoly_deal_proto_msgTypes[57]
+	mi := &file_monopoly_deal_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3935,7 +3776,7 @@ func (x *Action) String() string {
 func (*Action) ProtoMessage() {}
 
 func (x *Action) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[57]
+	mi := &file_monopoly_deal_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3948,7 +3789,7 @@ func (x *Action) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Action.ProtoReflect.Descriptor instead.
 func (*Action) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{57}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *Action) GetPlayerId() string {
@@ -4040,6 +3881,87 @@ func (x *Action) GetMaskedActionPlayedPassGo() *MaskedActionPlayPassGo {
 	return nil
 }
 
+func (x *Action) GetActionDemandsCreated() *ActionDemandsCreated {
+	if x != nil {
+		if x, ok := x.Payload.(*Action_ActionDemandsCreated); ok {
+			return x.ActionDemandsCreated
+		}
+	}
+	return nil
+}
+
+func (x *Action) GetActionPendingRentCreated() *ActionPendingRentCreated {
+	if x != nil {
+		if x, ok := x.Payload.(*Action_ActionPendingRentCreated); ok {
+			return x.ActionPendingRentCreated
+		}
+	}
+	return nil
+}
+
+func (x *Action) GetActionPendingRentResolved() *ActionPendingRentResolved {
+	if x != nil {
+		if x, ok := x.Payload.(*Action_ActionPendingRentResolved); ok {
+			return x.ActionPendingRentResolved
+		}
+	}
+	return nil
+}
+
+func (x *Action) GetActionDemandComplied() *ActionDemandComplied {
+	if x != nil {
+		if x, ok := x.Payload.(*Action_ActionDemandComplied); ok {
+			return x.ActionDemandComplied
+		}
+	}
+	return nil
+}
+
+func (x *Action) GetActionDiscardCards() *ActionDiscardCards {
+	if x != nil {
+		if x, ok := x.Payload.(*Action_ActionDiscardCards); ok {
+			return x.ActionDiscardCards
+		}
+	}
+	return nil
+}
+
+func (x *Action) GetMaskedActionDiscardCards() *MaskedActionDiscardCards {
+	if x != nil {
+		if x, ok := x.Payload.(*Action_MaskedActionDiscardCards); ok {
+			return x.MaskedActionDiscardCards
+		}
+	}
+	return nil
+}
+
+func (x *Action) GetActionStartTurn() *ActionStartTurn {
+	if x != nil {
+		if x, ok := x.Payload.(*Action_ActionStartTurn); ok {
+			return x.ActionStartTurn
+		}
+	}
+	return nil
+}
+
+func (x *Action) GetMaskedActionStartTurn() *MaskedActionStartTurn {
+	if x != nil {
+		if x, ok := x.Payload.(*Action_MaskedActionStartTurn); ok {
+			return x.MaskedActionStartTurn
+		}
+	}
+	return nil
+}
+
+func (x *Action) GetActionRearrangeCard() *ActionRearrangeCard {
+	if x != nil {
+		if x, ok := x.Payload.(*Action_ActionRearrangeCard); ok {
+			return x.ActionRearrangeCard
+		}
+	}
+	return nil
+}
+
 type isAction_Payload interface {
 	isAction_Payload()
 }
@@ -4068,6 +3990,42 @@ type Action_MaskedActionPlayedPassGo struct {
 	MaskedActionPlayedPassGo *MaskedActionPlayPassGo `protobuf:"bytes,10,opt,name=masked_action_played_pass_go,json=maskedActionPlayedPassGo,proto3,oneof"`
 }
 
+type Action_ActionDemandsCreated struct {
+	ActionDemandsCreated *ActionDemandsCreated `protobuf:"bytes,11,opt,name=action_demands_created,json=actionDemandsCreated,proto3,oneof"`
+}
+
+type Action_ActionPendingRentCreated struct {
+	ActionPendingRentCreated *ActionPendingRentCreated `protobuf:"bytes,12,opt,name=action_pending_rent_created,json=actionPendingRentCreated,proto3,oneof"`
+}
+
+type Action_ActionPendingRentResolved struct {
+	ActionPendingRentResolved *ActionPendingRentResolved `protobuf:"bytes,13,opt,name=action_pending_rent_resolved,json=actionPendingRentResolved,proto3,oneof"`
+}
+
+type Action_ActionDemandComplied struct {
+	ActionDemandComplied *ActionDemandComplied `protobuf:"bytes,14,opt,name=action_demand_complied,json=actionDemandComplied,proto3,oneof"`
+}
+
+type Action_ActionDiscardCards struct {
+	ActionDiscardCards *ActionDiscardCards `protobuf:"bytes,15,opt,name=action_discard_cards,json=actionDiscardCards,proto3,oneof"`
+}
+
+type Action_MaskedActionDiscardCards struct {
+	MaskedActionDiscardCards *MaskedActionDiscardCards `protobuf:"bytes,16,opt,name=masked_action_discard_cards,json=maskedActionDiscardCards,proto3,oneof"`
+}
+
+type Action_ActionStartTurn struct {
+	ActionStartTurn *ActionStartTurn `protobuf:"bytes,17,opt,name=action_start_turn,json=actionStartTurn,proto3,oneof"`
+}
+
+type Action_MaskedActionStartTurn struct {
+	MaskedActionStartTurn *MaskedActionStartTurn `protobuf:"bytes,18,opt,name=masked_action_start_turn,json=maskedActionStartTurn,proto3,oneof"`
+}
+
+type Action_ActionRearrangeCard struct {
+	ActionRearrangeCard *ActionRearrangeCard `protobuf:"bytes,19,opt,name=action_rearrange_card,json=actionRearrangeCard,proto3,oneof"`
+}
+
 func (*Action_ActionPlayMoney) isAction_Payload() {}
 
 func (*Action_ActionPlayProperty) isAction_Payload() {}
@@ -4080,6 +4038,24 @@ func (*Action_ActionPlayPassGo) isAction_Payload() {}
 
 func (*Action_MaskedActionPlayedPassGo) isAction_Payload() {}
 
+func (*Action_ActionDemandsCreated) isAction_Payload() {}
+
+func (*Action_ActionPendingRentCreated) isAction_Payload() {}
+
+func (*Action_ActionPendingRentResolved) isAction_Payload() {}
+
+func (*Action_ActionDemandComplied) isAction_Payload() {}
+
+func (*Action_ActionDiscardCards) isAction_Payload() {}
+
+func (*Action_MaskedActionDiscardCards) isAction_Payload() {}
+
+func (*Action_ActionStartTurn) isAction_Payload() {}
+
+func (*Action_MaskedActionStartTurn) isAction_Payload() {}
+
+func (*Action_ActionRearrangeCard) isAction_Payload() {}
+
 type ActionHistory struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Action        *Action                `protobuf:"bytes,1,opt,name=action,proto3" json:"action,omitempty"`
@@ -4089,7 +4065,7 @@ type ActionHistory struct {
 
 func (x *ActionHistory) Reset() {
 	*x = ActionHistory{}
-	mi := &file_monopoly_deal_proto_msgTypes[58]
+	mi := &file_monopoly_deal_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4101,7 +4077,7 @@ func (x *ActionHistory) String() string {
 func (*ActionHistory) ProtoMessage() {}
 
 func (x *ActionHistory) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[58]
+	mi := &file_monopoly_deal_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4114,7 +4090,7 @@ func (x *ActionHistory) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActionHistory.ProtoReflect.Descriptor instead.
 func (*ActionHistory) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{58}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *ActionHistory) GetAction() *Action {
@@ -4157,7 +4133,7 @@ type ClientMessage struct {
 
 func (x *ClientMessage) Reset() {
 	*x = ClientMessage{}
-	mi := &file_monopoly_deal_proto_msgTypes[59]
+	mi := &file_monopoly_deal_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4169,7 +4145,7 @@ func (x *ClientMessage) String() string {
 func (*ClientMessage) ProtoMessage() {}
 
 func (x *ClientMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[59]
+	mi := &file_monopoly_deal_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4182,7 +4158,7 @@ func (x *ClientMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClientMessage.ProtoReflect.Descriptor instead.
 func (*ClientMessage) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{59}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *ClientMessage) GetPayload() isClientMessage_Payload {
@@ -4533,20 +4509,6 @@ type ServerMessage struct {
 	//	*ServerMessage_Error
 	//	*ServerMessage_ChatReceived
 	//	*ServerMessage_GameState
-	//	*ServerMessage_StartTurnRes
-	//	*ServerMessage_StartTurnMaskedRes
-	//	*ServerMessage_PendingRentResolved
-	//	*ServerMessage_RearrangeCardRes
-	//	*ServerMessage_DiscardCardsRes
-	//	*ServerMessage_DiscardCardsMaskedRes
-	//	*ServerMessage_DemandDenied
-	//	*ServerMessage_CompliedDemand
-	//	*ServerMessage_TransferProperty
-	//	*ServerMessage_TransferPropertySet
-	//	*ServerMessage_PlayActionRes
-	//	*ServerMessage_DemandCreated
-	//	*ServerMessage_PendingRentCreated
-	//	*ServerMessage_TransferCards
 	//	*ServerMessage_WonGame
 	//	*ServerMessage_Action
 	//	*ServerMessage_ActionHistory
@@ -4557,7 +4519,7 @@ type ServerMessage struct {
 
 func (x *ServerMessage) Reset() {
 	*x = ServerMessage{}
-	mi := &file_monopoly_deal_proto_msgTypes[60]
+	mi := &file_monopoly_deal_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4569,7 +4531,7 @@ func (x *ServerMessage) String() string {
 func (*ServerMessage) ProtoMessage() {}
 
 func (x *ServerMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_monopoly_deal_proto_msgTypes[60]
+	mi := &file_monopoly_deal_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4582,7 +4544,7 @@ func (x *ServerMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerMessage.ProtoReflect.Descriptor instead.
 func (*ServerMessage) Descriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{60}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *ServerMessage) GetPayload() isServerMessage_Payload {
@@ -4614,132 +4576,6 @@ func (x *ServerMessage) GetGameState() *GameState {
 	if x != nil {
 		if x, ok := x.Payload.(*ServerMessage_GameState); ok {
 			return x.GameState
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetStartTurnRes() *StartTurnRes {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_StartTurnRes); ok {
-			return x.StartTurnRes
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetStartTurnMaskedRes() *StartTurnMaskedRes {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_StartTurnMaskedRes); ok {
-			return x.StartTurnMaskedRes
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetPendingRentResolved() *PendingRentResolved {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_PendingRentResolved); ok {
-			return x.PendingRentResolved
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetRearrangeCardRes() *RearrangeCardRes {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_RearrangeCardRes); ok {
-			return x.RearrangeCardRes
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetDiscardCardsRes() *DiscardCardsRes {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_DiscardCardsRes); ok {
-			return x.DiscardCardsRes
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetDiscardCardsMaskedRes() *DiscardCardsMaskedRes {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_DiscardCardsMaskedRes); ok {
-			return x.DiscardCardsMaskedRes
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetDemandDenied() *DemandDenied {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_DemandDenied); ok {
-			return x.DemandDenied
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetCompliedDemand() *CompliedDemand {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_CompliedDemand); ok {
-			return x.CompliedDemand
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetTransferProperty() *TransferProperty {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_TransferProperty); ok {
-			return x.TransferProperty
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetTransferPropertySet() *TransferPropertySet {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_TransferPropertySet); ok {
-			return x.TransferPropertySet
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetPlayActionRes() *PlayActionRes {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_PlayActionRes); ok {
-			return x.PlayActionRes
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetDemandCreated() *DemandCreated {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_DemandCreated); ok {
-			return x.DemandCreated
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetPendingRentCreated() *PendingRentCreated {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_PendingRentCreated); ok {
-			return x.PendingRentCreated
-		}
-	}
-	return nil
-}
-
-func (x *ServerMessage) GetTransferCards() *TransferCards {
-	if x != nil {
-		if x, ok := x.Payload.(*ServerMessage_TransferCards); ok {
-			return x.TransferCards
 		}
 	}
 	return nil
@@ -4788,72 +4624,16 @@ type ServerMessage_GameState struct {
 	GameState *GameState `protobuf:"bytes,3,opt,name=game_state,json=gameState,proto3,oneof"`
 }
 
-type ServerMessage_StartTurnRes struct {
-	StartTurnRes *StartTurnRes `protobuf:"bytes,4,opt,name=start_turn_res,json=startTurnRes,proto3,oneof"`
-}
-
-type ServerMessage_StartTurnMaskedRes struct {
-	StartTurnMaskedRes *StartTurnMaskedRes `protobuf:"bytes,5,opt,name=start_turn_masked_res,json=startTurnMaskedRes,proto3,oneof"`
-}
-
-type ServerMessage_PendingRentResolved struct {
-	PendingRentResolved *PendingRentResolved `protobuf:"bytes,10,opt,name=pending_rent_resolved,json=pendingRentResolved,proto3,oneof"`
-}
-
-type ServerMessage_RearrangeCardRes struct {
-	RearrangeCardRes *RearrangeCardRes `protobuf:"bytes,11,opt,name=rearrange_card_res,json=rearrangeCardRes,proto3,oneof"`
-}
-
-type ServerMessage_DiscardCardsRes struct {
-	DiscardCardsRes *DiscardCardsRes `protobuf:"bytes,12,opt,name=discard_cards_res,json=discardCardsRes,proto3,oneof"`
-}
-
-type ServerMessage_DiscardCardsMaskedRes struct {
-	DiscardCardsMaskedRes *DiscardCardsMaskedRes `protobuf:"bytes,13,opt,name=discard_cards_masked_res,json=discardCardsMaskedRes,proto3,oneof"`
-}
-
-type ServerMessage_DemandDenied struct {
-	DemandDenied *DemandDenied `protobuf:"bytes,14,opt,name=demand_denied,json=demandDenied,proto3,oneof"`
-}
-
-type ServerMessage_CompliedDemand struct {
-	CompliedDemand *CompliedDemand `protobuf:"bytes,15,opt,name=complied_demand,json=compliedDemand,proto3,oneof"`
-}
-
-type ServerMessage_TransferProperty struct {
-	TransferProperty *TransferProperty `protobuf:"bytes,16,opt,name=transfer_property,json=transferProperty,proto3,oneof"`
-}
-
-type ServerMessage_TransferPropertySet struct {
-	TransferPropertySet *TransferPropertySet `protobuf:"bytes,17,opt,name=transfer_property_set,json=transferPropertySet,proto3,oneof"`
-}
-
-type ServerMessage_PlayActionRes struct {
-	PlayActionRes *PlayActionRes `protobuf:"bytes,20,opt,name=play_action_res,json=playActionRes,proto3,oneof"`
-}
-
-type ServerMessage_DemandCreated struct {
-	DemandCreated *DemandCreated `protobuf:"bytes,21,opt,name=demand_created,json=demandCreated,proto3,oneof"`
-}
-
-type ServerMessage_PendingRentCreated struct {
-	PendingRentCreated *PendingRentCreated `protobuf:"bytes,22,opt,name=pending_rent_created,json=pendingRentCreated,proto3,oneof"`
-}
-
-type ServerMessage_TransferCards struct {
-	TransferCards *TransferCards `protobuf:"bytes,23,opt,name=transfer_cards,json=transferCards,proto3,oneof"`
-}
-
 type ServerMessage_WonGame struct {
-	WonGame *WonGame `protobuf:"bytes,24,opt,name=won_game,json=wonGame,proto3,oneof"`
+	WonGame *WonGame `protobuf:"bytes,4,opt,name=won_game,json=wonGame,proto3,oneof"`
 }
 
 type ServerMessage_Action struct {
-	Action *Action `protobuf:"bytes,25,opt,name=action,proto3,oneof"`
+	Action *Action `protobuf:"bytes,5,opt,name=action,proto3,oneof"`
 }
 
 type ServerMessage_ActionHistory struct {
-	ActionHistory *ActionHistory `protobuf:"bytes,26,opt,name=action_history,json=actionHistory,proto3,oneof"`
+	ActionHistory *ActionHistory `protobuf:"bytes,6,opt,name=action_history,json=actionHistory,proto3,oneof"`
 }
 
 func (*ServerMessage_Error) isServerMessage_Payload() {}
@@ -4861,34 +4641,6 @@ func (*ServerMessage_Error) isServerMessage_Payload() {}
 func (*ServerMessage_ChatReceived) isServerMessage_Payload() {}
 
 func (*ServerMessage_GameState) isServerMessage_Payload() {}
-
-func (*ServerMessage_StartTurnRes) isServerMessage_Payload() {}
-
-func (*ServerMessage_StartTurnMaskedRes) isServerMessage_Payload() {}
-
-func (*ServerMessage_PendingRentResolved) isServerMessage_Payload() {}
-
-func (*ServerMessage_RearrangeCardRes) isServerMessage_Payload() {}
-
-func (*ServerMessage_DiscardCardsRes) isServerMessage_Payload() {}
-
-func (*ServerMessage_DiscardCardsMaskedRes) isServerMessage_Payload() {}
-
-func (*ServerMessage_DemandDenied) isServerMessage_Payload() {}
-
-func (*ServerMessage_CompliedDemand) isServerMessage_Payload() {}
-
-func (*ServerMessage_TransferProperty) isServerMessage_Payload() {}
-
-func (*ServerMessage_TransferPropertySet) isServerMessage_Payload() {}
-
-func (*ServerMessage_PlayActionRes) isServerMessage_Payload() {}
-
-func (*ServerMessage_DemandCreated) isServerMessage_Payload() {}
-
-func (*ServerMessage_PendingRentCreated) isServerMessage_Payload() {}
-
-func (*ServerMessage_TransferCards) isServerMessage_Payload() {}
 
 func (*ServerMessage_WonGame) isServerMessage_Payload() {}
 
@@ -4989,19 +4741,7 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\rmax_hand_size\x18\f \x01(\x05R\vmaxHandSize\x12\x1f\n" +
 	"\vdeadline_ms\x18\r \x01(\x03R\n" +
 	"deadlineMsB\x0f\n" +
-	"\r_pending_rent\"\xbf\x01\n" +
-	"\fStartTurnRes\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x129\n" +
-	"\x05cards\x18\x03 \x03(\v2#.the_deal.schema.monopoly_deal.CardR\x05cards\x12\x1d\n" +
-	"\n" +
-	"moves_left\x18\x04 \x01(\x05R\tmovesLeft\x12\x1f\n" +
-	"\vdeadline_ms\x18\x05 \x01(\x03R\n" +
-	"deadlineMs\"g\n" +
-	"\x12StartTurnMaskedRes\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12\x1b\n" +
-	"\tnum_cards\x18\x03 \x01(\x05R\bnumCards\"$\n" +
+	"\r_pending_rent\"$\n" +
 	"\tPlayMoney\x12\x17\n" +
 	"\acard_id\x18\x01 \x01(\tR\x06cardId\"J\n" +
 	"\x0fActionPlayMoney\x127\n" +
@@ -5034,49 +4774,51 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\x05cards\x18\x02 \x03(\v2#.the_deal.schema.monopoly_deal.CardR\x05cards\"\x84\x01\n" +
 	"\x16MaskedActionPlayPassGo\x12M\n" +
 	"\x10last_played_card\x18\x01 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x0elastPlayedCard\x12\x1b\n" +
-	"\tnum_cards\x18\x02 \x01(\x05R\bnumCards\",\n" +
+	"\tnum_cards\x18\x02 \x01(\x05R\bnumCards\"\xa3\x02\n" +
+	"\x14ActionDemandsCreated\x12R\n" +
+	"\x10last_played_card\x18\x01 \x01(\v2#.the_deal.schema.monopoly_deal.CardH\x00R\x0elastPlayedCard\x88\x01\x01\x12O\n" +
+	"\rdenied_demand\x18\x02 \x01(\v2%.the_deal.schema.monopoly_deal.DemandH\x01R\fdeniedDemand\x88\x01\x01\x12?\n" +
+	"\ademands\x18\x03 \x03(\v2%.the_deal.schema.monopoly_deal.DemandR\ademandsB\x13\n" +
+	"\x11_last_played_cardB\x10\n" +
+	"\x0e_denied_demand\",\n" +
 	"\x11PlayItsMyBirthday\x12\x17\n" +
-	"\acard_id\x18\x01 \x01(\tR\x06cardId\"\x0e\n" +
-	"\fCompleteTurn\"I\n" +
+	"\acard_id\x18\x01 \x01(\tR\x06cardId\"I\n" +
 	"\x11PlayDebtCollector\x12\x17\n" +
 	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1b\n" +
-	"\ttarget_id\x18\x02 \x01(\tR\btargetId\"#\n" +
+	"\ttarget_id\x18\x02 \x01(\tR\btargetId\"\xb8\x01\n" +
+	"\x18ActionPendingRentCreated\x12M\n" +
+	"\x10last_card_played\x18\x01 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x0elastCardPlayed\x12M\n" +
+	"\fpending_rent\x18\x02 \x01(\v2*.the_deal.schema.monopoly_deal.PendingRentR\vpendingRent\"\x14\n" +
+	"\x12ResolvePendingRent\"\\\n" +
+	"\x19ActionPendingRentResolved\x12?\n" +
+	"\ademands\x18\x01 \x03(\v2%.the_deal.schema.monopoly_deal.DemandR\ademands\"#\n" +
 	"\bPlayRent\x12\x17\n" +
 	"\acard_id\x18\x01 \x01(\tR\x06cardId\"D\n" +
 	"\fPlayWildRent\x12\x17\n" +
 	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1b\n" +
 	"\ttarget_id\x18\x02 \x01(\tR\btargetId\",\n" +
 	"\x11PlayDoubleTheRent\x12\x17\n" +
-	"\acard_id\x18\x01 \x01(\tR\x06cardId\"\xb5\x01\n" +
-	"\rPlayActionRes\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12M\n" +
-	"\x10last_played_card\x18\x03 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x0elastPlayedCard\x12\x1f\n" +
-	"\vdeadline_ms\x18\x04 \x01(\x03R\n" +
-	"deadlineMs\"o\n" +
-	"\rDemandCreated\x12=\n" +
-	"\x06demand\x18\x01 \x01(\v2%.the_deal.schema.monopoly_deal.DemandR\x06demand\x12\x1f\n" +
-	"\vdeadline_ms\x18\x02 \x01(\x03R\n" +
-	"deadlineMs\"M\n" +
+	"\acard_id\x18\x01 \x01(\tR\x06cardId\"i\n" +
+	"\vPlaySlyDeal\x12\x17\n" +
+	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1b\n" +
+	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x12$\n" +
+	"\x0etarget_card_id\x18\x03 \x01(\tR\ftargetCardId\"\x92\x01\n" +
+	"\x0ePlayForcedDeal\x12\x17\n" +
+	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1b\n" +
+	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x12$\n" +
+	"\x0esource_card_id\x18\x03 \x01(\tR\fsourceCardId\x12$\n" +
+	"\x0etarget_card_id\x18\x04 \x01(\tR\ftargetCardId\"o\n" +
+	"\x0fPlayDealBreaker\x12\x17\n" +
+	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1b\n" +
+	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x12&\n" +
+	"\x0fproperty_set_id\x18\x03 \x01(\tR\rpropertySetId\"M\n" +
 	"\x13ComplyPaymentDemand\x12\x1b\n" +
 	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\x12\x19\n" +
-	"\bcard_ids\x18\x02 \x03(\tR\acardIds\"\x84\x01\n" +
-	"\x0eCompliedDemand\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tdemand_id\x18\x02 \x01(\tR\bdemandId\x12\x1b\n" +
-	"\tplayer_id\x18\x03 \x01(\tR\bplayerId\x12\x1f\n" +
-	"\vdeadline_ms\x18\x04 \x01(\x03R\n" +
-	"deadlineMs\"\x84\x01\n" +
-	"\x12PendingRentCreated\x12M\n" +
-	"\fpending_rent\x18\x01 \x01(\v2*.the_deal.schema.monopoly_deal.PendingRentR\vpendingRent\x12\x1f\n" +
-	"\vdeadline_ms\x18\x02 \x01(\x03R\n" +
-	"deadlineMs\"\x14\n" +
-	"\x12ResolvePendingRent\"l\n" +
-	"\x13PendingRentResolved\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12\x1f\n" +
-	"\vdeadline_ms\x18\x03 \x01(\x03R\n" +
-	"deadlineMs\"\xdd\x02\n" +
+	"\bcard_ids\x18\x02 \x03(\tR\acardIds\"3\n" +
+	"\x14ComplyPropertyDemand\x12\x1b\n" +
+	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\"6\n" +
+	"\x17ComplyPropertySetDemand\x12\x1b\n" +
+	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\"\xdd\x02\n" +
 	"\rTransferCards\x12\x1b\n" +
 	"\tsource_id\x18\x01 \x01(\tR\bsourceId\x12\x1b\n" +
 	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x129\n" +
@@ -5087,68 +4829,57 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\fsource_money\x18\x06 \x01(\x05R\vsourceMoney\x12\x1f\n" +
 	"\vtarget_sets\x18\a \x01(\x05R\n" +
 	"targetSets\x12!\n" +
-	"\ftarget_money\x18\b \x01(\x05R\vtargetMoney\"\xb4\x01\n" +
+	"\ftarget_money\x18\b \x01(\x05R\vtargetMoney\"\x88\x02\n" +
+	"\x10TransferProperty\x12\x1b\n" +
+	"\tsource_id\x18\x01 \x01(\tR\bsourceId\x12\x1b\n" +
+	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x12\\\n" +
+	"\x14source_property_sets\x18\x03 \x03(\v2*.the_deal.schema.monopoly_deal.PropertySetR\x12sourcePropertySets\x12\\\n" +
+	"\x14target_property_sets\x18\x04 \x03(\v2*.the_deal.schema.monopoly_deal.PropertySetR\x12targetPropertySets\"\x9e\x01\n" +
+	"\x13TransferPropertySet\x12\x1b\n" +
+	"\tsource_id\x18\x01 \x01(\tR\bsourceId\x12\x1b\n" +
+	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x12M\n" +
+	"\fproperty_set\x18\x03 \x01(\v2*.the_deal.schema.monopoly_deal.PropertySetR\vpropertySet\"\xe0\x02\n" +
+	"\x14ActionDemandComplied\x12\x1b\n" +
+	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\x12U\n" +
+	"\x0etransfer_cards\x18\x02 \x01(\v2,.the_deal.schema.monopoly_deal.TransferCardsH\x00R\rtransferCards\x12^\n" +
+	"\x11transfer_property\x18\x03 \x01(\v2/.the_deal.schema.monopoly_deal.TransferPropertyH\x00R\x10transferProperty\x12h\n" +
+	"\x15transfer_property_set\x18\x04 \x01(\v22.the_deal.schema.monopoly_deal.TransferPropertySetH\x00R\x13transferPropertySetB\n" +
+	"\n" +
+	"\btransfer\"B\n" +
+	"\n" +
+	"DenyDemand\x12\x1b\n" +
+	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\x12\x17\n" +
+	"\acard_id\x18\x02 \x01(\tR\x06cardId\")\n" +
+	"\fDiscardCards\x12\x19\n" +
+	"\bcard_ids\x18\x01 \x03(\tR\acardIds\"O\n" +
+	"\x12ActionDiscardCards\x129\n" +
+	"\x05cards\x18\x01 \x03(\v2#.the_deal.schema.monopoly_deal.CardR\x05cards\"7\n" +
+	"\x18MaskedActionDiscardCards\x12\x1b\n" +
+	"\tnum_cards\x18\x01 \x01(\x05R\bnumCards\"\x0e\n" +
+	"\fCompleteTurn\"k\n" +
+	"\x0fActionStartTurn\x129\n" +
+	"\x05cards\x18\x01 \x03(\v2#.the_deal.schema.monopoly_deal.CardR\x05cards\x12\x1d\n" +
+	"\n" +
+	"moves_left\x18\x02 \x01(\x05R\tmovesLeft\"S\n" +
+	"\x15MaskedActionStartTurn\x12\x1b\n" +
+	"\tnum_cards\x18\x01 \x01(\x05R\bnumCards\x12\x1d\n" +
+	"\n" +
+	"moves_left\x18\x02 \x01(\x05R\tmovesLeft\"\xb4\x01\n" +
 	"\rRearrangeCard\x12\x17\n" +
 	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12+\n" +
 	"\x0fproperty_set_id\x18\x02 \x01(\tH\x00R\rpropertySetId\x88\x01\x01\x12?\n" +
 	"\x05color\x18\x03 \x01(\x0e2$.the_deal.schema.monopoly_deal.ColorH\x01R\x05color\x88\x01\x01B\x12\n" +
 	"\x10_property_set_idB\b\n" +
-	"\x06_color\"\xe4\x01\n" +
-	"\x10RearrangeCardRes\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x127\n" +
-	"\x04card\x18\x03 \x01(\v2#.the_deal.schema.monopoly_deal.CardR\x04card\x12M\n" +
-	"\fproperty_set\x18\x04 \x01(\v2*.the_deal.schema.monopoly_deal.PropertySetR\vpropertySet\x12\x12\n" +
-	"\x04sets\x18\x05 \x01(\x05R\x04sets\")\n" +
-	"\fDiscardCards\x12\x19\n" +
-	"\bcard_ids\x18\x01 \x03(\tR\acardIds\"\x82\x01\n" +
-	"\x0fDiscardCardsRes\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x129\n" +
-	"\x05cards\x18\x03 \x03(\v2#.the_deal.schema.monopoly_deal.CardR\x05cards\"j\n" +
-	"\x15DiscardCardsMaskedRes\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12\x1b\n" +
-	"\tnum_cards\x18\x03 \x01(\x05R\bnumCards\"B\n" +
-	"\n" +
-	"DenyDemand\x12\x1b\n" +
-	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\x12\x17\n" +
-	"\acard_id\x18\x02 \x01(\tR\x06cardId\"D\n" +
-	"\fDemandDenied\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tdemand_id\x18\x02 \x01(\tR\bdemandId\"i\n" +
-	"\vPlaySlyDeal\x12\x17\n" +
-	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1b\n" +
-	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x12$\n" +
-	"\x0etarget_card_id\x18\x03 \x01(\tR\ftargetCardId\"\x92\x01\n" +
-	"\x0ePlayForcedDeal\x12\x17\n" +
-	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1b\n" +
-	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x12$\n" +
-	"\x0esource_card_id\x18\x03 \x01(\tR\fsourceCardId\x12$\n" +
-	"\x0etarget_card_id\x18\x04 \x01(\tR\ftargetCardId\"3\n" +
-	"\x14ComplyPropertyDemand\x12\x1b\n" +
-	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\"\xa1\x02\n" +
-	"\x10TransferProperty\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tsource_id\x18\x02 \x01(\tR\bsourceId\x12\x1b\n" +
-	"\ttarget_id\x18\x03 \x01(\tR\btargetId\x12\\\n" +
-	"\x14source_property_sets\x18\x04 \x03(\v2*.the_deal.schema.monopoly_deal.PropertySetR\x12sourcePropertySets\x12\\\n" +
-	"\x14target_property_sets\x18\x05 \x03(\v2*.the_deal.schema.monopoly_deal.PropertySetR\x12targetPropertySets\"o\n" +
-	"\x0fPlayDealBreaker\x12\x17\n" +
-	"\acard_id\x18\x01 \x01(\tR\x06cardId\x12\x1b\n" +
-	"\ttarget_id\x18\x02 \x01(\tR\btargetId\x12&\n" +
-	"\x0fproperty_set_id\x18\x03 \x01(\tR\rpropertySetId\"6\n" +
-	"\x17ComplyPropertySetDemand\x12\x1b\n" +
-	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\"\xb7\x01\n" +
-	"\x13TransferPropertySet\x12\x17\n" +
-	"\aseq_num\x18\x01 \x01(\x05R\x06seqNum\x12\x1b\n" +
-	"\tsource_id\x18\x02 \x01(\tR\bsourceId\x12\x1b\n" +
-	"\ttarget_id\x18\x03 \x01(\tR\btargetId\x12M\n" +
-	"\fproperty_set\x18\x04 \x01(\v2*.the_deal.schema.monopoly_deal.PropertySetR\vpropertySet\"j\n" +
+	"\x06_color\"\xbf\x01\n" +
+	"\x13ActionRearrangeCard\x12<\n" +
+	"\x04card\x18\x01 \x01(\v2#.the_deal.schema.monopoly_deal.CardH\x00R\x04card\x88\x01\x01\x12M\n" +
+	"\fproperty_set\x18\x02 \x01(\v2*.the_deal.schema.monopoly_deal.PropertySetR\vpropertySet\x12\x12\n" +
+	"\x04sets\x18\x03 \x01(\x05R\x04setsB\a\n" +
+	"\x05_card\"j\n" +
 	"\aWonGame\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12,\n" +
 	"\x12num_completed_sets\x18\x02 \x01(\x05R\x10numCompletedSets\x12\x14\n" +
-	"\x05money\x18\x03 \x01(\x05R\x05money\"\x8e\x06\n" +
+	"\x05money\x18\x03 \x01(\x05R\x05money\"\xf9\r\n" +
 	"\x06Action\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12=\n" +
 	"\x04kind\x18\x02 \x01(\x0e2).the_deal.schema.monopoly_deal.ActionKindR\x04kind\x12\x17\n" +
@@ -5160,7 +4891,16 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\x11action_play_hotel\x18\b \x01(\v2..the_deal.schema.monopoly_deal.ActionPlayHotelH\x00R\x0factionPlayHotel\x12`\n" +
 	"\x13action_play_pass_go\x18\t \x01(\v2/.the_deal.schema.monopoly_deal.ActionPlayPassGoH\x00R\x10actionPlayPassGo\x12w\n" +
 	"\x1cmasked_action_played_pass_go\x18\n" +
-	" \x01(\v25.the_deal.schema.monopoly_deal.MaskedActionPlayPassGoH\x00R\x18maskedActionPlayedPassGoB\t\n" +
+	" \x01(\v25.the_deal.schema.monopoly_deal.MaskedActionPlayPassGoH\x00R\x18maskedActionPlayedPassGo\x12k\n" +
+	"\x16action_demands_created\x18\v \x01(\v23.the_deal.schema.monopoly_deal.ActionDemandsCreatedH\x00R\x14actionDemandsCreated\x12x\n" +
+	"\x1baction_pending_rent_created\x18\f \x01(\v27.the_deal.schema.monopoly_deal.ActionPendingRentCreatedH\x00R\x18actionPendingRentCreated\x12{\n" +
+	"\x1caction_pending_rent_resolved\x18\r \x01(\v28.the_deal.schema.monopoly_deal.ActionPendingRentResolvedH\x00R\x19actionPendingRentResolved\x12k\n" +
+	"\x16action_demand_complied\x18\x0e \x01(\v23.the_deal.schema.monopoly_deal.ActionDemandCompliedH\x00R\x14actionDemandComplied\x12e\n" +
+	"\x14action_discard_cards\x18\x0f \x01(\v21.the_deal.schema.monopoly_deal.ActionDiscardCardsH\x00R\x12actionDiscardCards\x12x\n" +
+	"\x1bmasked_action_discard_cards\x18\x10 \x01(\v27.the_deal.schema.monopoly_deal.MaskedActionDiscardCardsH\x00R\x18maskedActionDiscardCards\x12\\\n" +
+	"\x11action_start_turn\x18\x11 \x01(\v2..the_deal.schema.monopoly_deal.ActionStartTurnH\x00R\x0factionStartTurn\x12o\n" +
+	"\x18masked_action_start_turn\x18\x12 \x01(\v24.the_deal.schema.monopoly_deal.MaskedActionStartTurnH\x00R\x15maskedActionStartTurn\x12h\n" +
+	"\x15action_rearrange_card\x18\x13 \x01(\v22.the_deal.schema.monopoly_deal.ActionRearrangeCardH\x00R\x13actionRearrangeCardB\t\n" +
 	"\apayload\"N\n" +
 	"\rActionHistory\x12=\n" +
 	"\x06action\x18\x01 \x01(\v2%.the_deal.schema.monopoly_deal.ActionR\x06action\"\xb1\x0f\n" +
@@ -5193,30 +4933,15 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"play_house\x18\x15 \x01(\v2(.the_deal.schema.monopoly_deal.PlayHouseH\x00R\tplayHouse\x12I\n" +
 	"\n" +
 	"play_hotel\x18\x16 \x01(\v2(.the_deal.schema.monopoly_deal.PlayHotelH\x00R\tplayHotelB\t\n" +
-	"\apayload\"\x90\x0e\n" +
+	"\apayload\"\xd4\x03\n" +
 	"\rServerMessage\x12<\n" +
 	"\x05error\x18\x01 \x01(\v2$.the_deal.schema.monopoly_deal.ErrorH\x00R\x05error\x12R\n" +
 	"\rchat_received\x18\x02 \x01(\v2+.the_deal.schema.monopoly_deal.ChatReceivedH\x00R\fchatReceived\x12I\n" +
 	"\n" +
-	"game_state\x18\x03 \x01(\v2(.the_deal.schema.monopoly_deal.GameStateH\x00R\tgameState\x12S\n" +
-	"\x0estart_turn_res\x18\x04 \x01(\v2+.the_deal.schema.monopoly_deal.StartTurnResH\x00R\fstartTurnRes\x12f\n" +
-	"\x15start_turn_masked_res\x18\x05 \x01(\v21.the_deal.schema.monopoly_deal.StartTurnMaskedResH\x00R\x12startTurnMaskedRes\x12h\n" +
-	"\x15pending_rent_resolved\x18\n" +
-	" \x01(\v22.the_deal.schema.monopoly_deal.PendingRentResolvedH\x00R\x13pendingRentResolved\x12_\n" +
-	"\x12rearrange_card_res\x18\v \x01(\v2/.the_deal.schema.monopoly_deal.RearrangeCardResH\x00R\x10rearrangeCardRes\x12\\\n" +
-	"\x11discard_cards_res\x18\f \x01(\v2..the_deal.schema.monopoly_deal.DiscardCardsResH\x00R\x0fdiscardCardsRes\x12o\n" +
-	"\x18discard_cards_masked_res\x18\r \x01(\v24.the_deal.schema.monopoly_deal.DiscardCardsMaskedResH\x00R\x15discardCardsMaskedRes\x12R\n" +
-	"\rdemand_denied\x18\x0e \x01(\v2+.the_deal.schema.monopoly_deal.DemandDeniedH\x00R\fdemandDenied\x12X\n" +
-	"\x0fcomplied_demand\x18\x0f \x01(\v2-.the_deal.schema.monopoly_deal.CompliedDemandH\x00R\x0ecompliedDemand\x12^\n" +
-	"\x11transfer_property\x18\x10 \x01(\v2/.the_deal.schema.monopoly_deal.TransferPropertyH\x00R\x10transferProperty\x12h\n" +
-	"\x15transfer_property_set\x18\x11 \x01(\v22.the_deal.schema.monopoly_deal.TransferPropertySetH\x00R\x13transferPropertySet\x12V\n" +
-	"\x0fplay_action_res\x18\x14 \x01(\v2,.the_deal.schema.monopoly_deal.PlayActionResH\x00R\rplayActionRes\x12U\n" +
-	"\x0edemand_created\x18\x15 \x01(\v2,.the_deal.schema.monopoly_deal.DemandCreatedH\x00R\rdemandCreated\x12e\n" +
-	"\x14pending_rent_created\x18\x16 \x01(\v21.the_deal.schema.monopoly_deal.PendingRentCreatedH\x00R\x12pendingRentCreated\x12U\n" +
-	"\x0etransfer_cards\x18\x17 \x01(\v2,.the_deal.schema.monopoly_deal.TransferCardsH\x00R\rtransferCards\x12C\n" +
-	"\bwon_game\x18\x18 \x01(\v2&.the_deal.schema.monopoly_deal.WonGameH\x00R\awonGame\x12?\n" +
-	"\x06action\x18\x19 \x01(\v2%.the_deal.schema.monopoly_deal.ActionH\x00R\x06action\x12U\n" +
-	"\x0eaction_history\x18\x1a \x01(\v2,.the_deal.schema.monopoly_deal.ActionHistoryH\x00R\ractionHistoryB\t\n" +
+	"game_state\x18\x03 \x01(\v2(.the_deal.schema.monopoly_deal.GameStateH\x00R\tgameState\x12C\n" +
+	"\bwon_game\x18\x04 \x01(\v2&.the_deal.schema.monopoly_deal.WonGameH\x00R\awonGame\x12?\n" +
+	"\x06action\x18\x05 \x01(\v2%.the_deal.schema.monopoly_deal.ActionH\x00R\x06action\x12U\n" +
+	"\x0eaction_history\x18\x06 \x01(\v2,.the_deal.schema.monopoly_deal.ActionHistoryH\x00R\ractionHistoryB\t\n" +
 	"\apayload*\xc6\v\n" +
 	"\bAssetKey\x12\x19\n" +
 	"\x15ASSET_KEY_UNSPECIFIED\x10\x00\x12\x14\n" +
@@ -5314,7 +5039,7 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\x16DEMAND_SOURCE_SLY_DEAL\x10\x04\x12\x1e\n" +
 	"\x1aDEMAND_SOURCE_DEAL_BREAKER\x10\x05\x12\x1d\n" +
 	"\x19DEMAND_SOURCE_JUST_SAY_NO\x10\x06\x12 \n" +
-	"\x1cDEMAND_SOURCE_DEBT_COLLECTOR\x10\a*\xba\x01\n" +
+	"\x1cDEMAND_SOURCE_DEBT_COLLECTOR\x10\a*\xfd\x02\n" +
 	"\n" +
 	"ActionKind\x12\x1b\n" +
 	"\x17ACTION_KIND_UNSPECIFIED\x10\x00\x12\x1a\n" +
@@ -5322,7 +5047,14 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\x19ACTION_KIND_PLAY_PROPERTY\x10\x02\x12\x1a\n" +
 	"\x16ACTION_KIND_PLAY_HOUSE\x10\x03\x12\x1a\n" +
 	"\x16ACTION_KIND_PLAY_HOTEL\x10\x04\x12\x1c\n" +
-	"\x18ACTION_KIND_PLAY_PASS_GO\x10\x05BDZBthe-deal/internal/schema/monopoly_deal_schema;monopoly_deal_schemab\x06proto3"
+	"\x18ACTION_KIND_PLAY_PASS_GO\x10\x05\x12\x1f\n" +
+	"\x1bACTION_KIND_DEMANDS_CREATED\x10\x06\x12$\n" +
+	" ACTION_KIND_PENDING_RENT_CREATED\x10\a\x12\x1f\n" +
+	"\x1bACTION_KIND_DEMAND_COMPLIED\x10\b\x12\x1d\n" +
+	"\x19ACTION_KIND_DISCARD_CARDS\x10\t\x12\x1a\n" +
+	"\x16ACTION_KIND_START_TURN\x10\n" +
+	"\x12\x1e\n" +
+	"\x1aACTION_KIND_REARRANGE_CARD\x10\vBDZBthe-deal/internal/schema/monopoly_deal_schema;monopoly_deal_schemab\x06proto3"
 
 var (
 	file_monopoly_deal_proto_rawDescOnce sync.Once
@@ -5337,75 +5069,73 @@ func file_monopoly_deal_proto_rawDescGZIP() []byte {
 }
 
 var file_monopoly_deal_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_monopoly_deal_proto_msgTypes = make([]protoimpl.MessageInfo, 61)
+var file_monopoly_deal_proto_msgTypes = make([]protoimpl.MessageInfo, 59)
 var file_monopoly_deal_proto_goTypes = []any{
-	(AssetKey)(0),                   // 0: the_deal.schema.monopoly_deal.AssetKey
-	(Category)(0),                   // 1: the_deal.schema.monopoly_deal.Category
-	(Color)(0),                      // 2: the_deal.schema.monopoly_deal.Color
-	(DemandKind)(0),                 // 3: the_deal.schema.monopoly_deal.DemandKind
-	(DemandSource)(0),               // 4: the_deal.schema.monopoly_deal.DemandSource
-	(ActionKind)(0),                 // 5: the_deal.schema.monopoly_deal.ActionKind
-	(*Error)(nil),                   // 6: the_deal.schema.monopoly_deal.Error
-	(*Chat)(nil),                    // 7: the_deal.schema.monopoly_deal.Chat
-	(*ChatReceived)(nil),            // 8: the_deal.schema.monopoly_deal.ChatReceived
-	(*Card)(nil),                    // 9: the_deal.schema.monopoly_deal.Card
-	(*Player)(nil),                  // 10: the_deal.schema.monopoly_deal.Player
-	(*Hand)(nil),                    // 11: the_deal.schema.monopoly_deal.Hand
-	(*Money)(nil),                   // 12: the_deal.schema.monopoly_deal.Money
-	(*PropertySet)(nil),             // 13: the_deal.schema.monopoly_deal.PropertySet
-	(*PaymentDemand)(nil),           // 14: the_deal.schema.monopoly_deal.PaymentDemand
-	(*PropertyDemand)(nil),          // 15: the_deal.schema.monopoly_deal.PropertyDemand
-	(*PropertySetDemand)(nil),       // 16: the_deal.schema.monopoly_deal.PropertySetDemand
-	(*Demand)(nil),                  // 17: the_deal.schema.monopoly_deal.Demand
-	(*PendingRent)(nil),             // 18: the_deal.schema.monopoly_deal.PendingRent
-	(*AssetImage)(nil),              // 19: the_deal.schema.monopoly_deal.AssetImage
-	(*GameState)(nil),               // 20: the_deal.schema.monopoly_deal.GameState
-	(*StartTurnRes)(nil),            // 21: the_deal.schema.monopoly_deal.StartTurnRes
-	(*StartTurnMaskedRes)(nil),      // 22: the_deal.schema.monopoly_deal.StartTurnMaskedRes
-	(*PlayMoney)(nil),               // 23: the_deal.schema.monopoly_deal.PlayMoney
-	(*ActionPlayMoney)(nil),         // 24: the_deal.schema.monopoly_deal.ActionPlayMoney
-	(*PlayProperty)(nil),            // 25: the_deal.schema.monopoly_deal.PlayProperty
-	(*ActionPlayProperty)(nil),      // 26: the_deal.schema.monopoly_deal.ActionPlayProperty
-	(*PlayHouse)(nil),               // 27: the_deal.schema.monopoly_deal.PlayHouse
-	(*ActionPlayHouse)(nil),         // 28: the_deal.schema.monopoly_deal.ActionPlayHouse
-	(*PlayHotel)(nil),               // 29: the_deal.schema.monopoly_deal.PlayHotel
-	(*ActionPlayHotel)(nil),         // 30: the_deal.schema.monopoly_deal.ActionPlayHotel
-	(*PlayPassGo)(nil),              // 31: the_deal.schema.monopoly_deal.PlayPassGo
-	(*ActionPlayPassGo)(nil),        // 32: the_deal.schema.monopoly_deal.ActionPlayPassGo
-	(*MaskedActionPlayPassGo)(nil),  // 33: the_deal.schema.monopoly_deal.MaskedActionPlayPassGo
-	(*PlayItsMyBirthday)(nil),       // 34: the_deal.schema.monopoly_deal.PlayItsMyBirthday
-	(*CompleteTurn)(nil),            // 35: the_deal.schema.monopoly_deal.CompleteTurn
-	(*PlayDebtCollector)(nil),       // 36: the_deal.schema.monopoly_deal.PlayDebtCollector
-	(*PlayRent)(nil),                // 37: the_deal.schema.monopoly_deal.PlayRent
-	(*PlayWildRent)(nil),            // 38: the_deal.schema.monopoly_deal.PlayWildRent
-	(*PlayDoubleTheRent)(nil),       // 39: the_deal.schema.monopoly_deal.PlayDoubleTheRent
-	(*PlayActionRes)(nil),           // 40: the_deal.schema.monopoly_deal.PlayActionRes
-	(*DemandCreated)(nil),           // 41: the_deal.schema.monopoly_deal.DemandCreated
-	(*ComplyPaymentDemand)(nil),     // 42: the_deal.schema.monopoly_deal.ComplyPaymentDemand
-	(*CompliedDemand)(nil),          // 43: the_deal.schema.monopoly_deal.CompliedDemand
-	(*PendingRentCreated)(nil),      // 44: the_deal.schema.monopoly_deal.PendingRentCreated
-	(*ResolvePendingRent)(nil),      // 45: the_deal.schema.monopoly_deal.ResolvePendingRent
-	(*PendingRentResolved)(nil),     // 46: the_deal.schema.monopoly_deal.PendingRentResolved
-	(*TransferCards)(nil),           // 47: the_deal.schema.monopoly_deal.TransferCards
-	(*RearrangeCard)(nil),           // 48: the_deal.schema.monopoly_deal.RearrangeCard
-	(*RearrangeCardRes)(nil),        // 49: the_deal.schema.monopoly_deal.RearrangeCardRes
-	(*DiscardCards)(nil),            // 50: the_deal.schema.monopoly_deal.DiscardCards
-	(*DiscardCardsRes)(nil),         // 51: the_deal.schema.monopoly_deal.DiscardCardsRes
-	(*DiscardCardsMaskedRes)(nil),   // 52: the_deal.schema.monopoly_deal.DiscardCardsMaskedRes
-	(*DenyDemand)(nil),              // 53: the_deal.schema.monopoly_deal.DenyDemand
-	(*DemandDenied)(nil),            // 54: the_deal.schema.monopoly_deal.DemandDenied
-	(*PlaySlyDeal)(nil),             // 55: the_deal.schema.monopoly_deal.PlaySlyDeal
-	(*PlayForcedDeal)(nil),          // 56: the_deal.schema.monopoly_deal.PlayForcedDeal
-	(*ComplyPropertyDemand)(nil),    // 57: the_deal.schema.monopoly_deal.ComplyPropertyDemand
-	(*TransferProperty)(nil),        // 58: the_deal.schema.monopoly_deal.TransferProperty
-	(*PlayDealBreaker)(nil),         // 59: the_deal.schema.monopoly_deal.PlayDealBreaker
-	(*ComplyPropertySetDemand)(nil), // 60: the_deal.schema.monopoly_deal.ComplyPropertySetDemand
-	(*TransferPropertySet)(nil),     // 61: the_deal.schema.monopoly_deal.TransferPropertySet
-	(*WonGame)(nil),                 // 62: the_deal.schema.monopoly_deal.WonGame
-	(*Action)(nil),                  // 63: the_deal.schema.monopoly_deal.Action
-	(*ActionHistory)(nil),           // 64: the_deal.schema.monopoly_deal.ActionHistory
-	(*ClientMessage)(nil),           // 65: the_deal.schema.monopoly_deal.ClientMessage
-	(*ServerMessage)(nil),           // 66: the_deal.schema.monopoly_deal.ServerMessage
+	(AssetKey)(0),                     // 0: the_deal.schema.monopoly_deal.AssetKey
+	(Category)(0),                     // 1: the_deal.schema.monopoly_deal.Category
+	(Color)(0),                        // 2: the_deal.schema.monopoly_deal.Color
+	(DemandKind)(0),                   // 3: the_deal.schema.monopoly_deal.DemandKind
+	(DemandSource)(0),                 // 4: the_deal.schema.monopoly_deal.DemandSource
+	(ActionKind)(0),                   // 5: the_deal.schema.monopoly_deal.ActionKind
+	(*Error)(nil),                     // 6: the_deal.schema.monopoly_deal.Error
+	(*Chat)(nil),                      // 7: the_deal.schema.monopoly_deal.Chat
+	(*ChatReceived)(nil),              // 8: the_deal.schema.monopoly_deal.ChatReceived
+	(*Card)(nil),                      // 9: the_deal.schema.monopoly_deal.Card
+	(*Player)(nil),                    // 10: the_deal.schema.monopoly_deal.Player
+	(*Hand)(nil),                      // 11: the_deal.schema.monopoly_deal.Hand
+	(*Money)(nil),                     // 12: the_deal.schema.monopoly_deal.Money
+	(*PropertySet)(nil),               // 13: the_deal.schema.monopoly_deal.PropertySet
+	(*PaymentDemand)(nil),             // 14: the_deal.schema.monopoly_deal.PaymentDemand
+	(*PropertyDemand)(nil),            // 15: the_deal.schema.monopoly_deal.PropertyDemand
+	(*PropertySetDemand)(nil),         // 16: the_deal.schema.monopoly_deal.PropertySetDemand
+	(*Demand)(nil),                    // 17: the_deal.schema.monopoly_deal.Demand
+	(*PendingRent)(nil),               // 18: the_deal.schema.monopoly_deal.PendingRent
+	(*AssetImage)(nil),                // 19: the_deal.schema.monopoly_deal.AssetImage
+	(*GameState)(nil),                 // 20: the_deal.schema.monopoly_deal.GameState
+	(*PlayMoney)(nil),                 // 21: the_deal.schema.monopoly_deal.PlayMoney
+	(*ActionPlayMoney)(nil),           // 22: the_deal.schema.monopoly_deal.ActionPlayMoney
+	(*PlayProperty)(nil),              // 23: the_deal.schema.monopoly_deal.PlayProperty
+	(*ActionPlayProperty)(nil),        // 24: the_deal.schema.monopoly_deal.ActionPlayProperty
+	(*PlayHouse)(nil),                 // 25: the_deal.schema.monopoly_deal.PlayHouse
+	(*ActionPlayHouse)(nil),           // 26: the_deal.schema.monopoly_deal.ActionPlayHouse
+	(*PlayHotel)(nil),                 // 27: the_deal.schema.monopoly_deal.PlayHotel
+	(*ActionPlayHotel)(nil),           // 28: the_deal.schema.monopoly_deal.ActionPlayHotel
+	(*PlayPassGo)(nil),                // 29: the_deal.schema.monopoly_deal.PlayPassGo
+	(*ActionPlayPassGo)(nil),          // 30: the_deal.schema.monopoly_deal.ActionPlayPassGo
+	(*MaskedActionPlayPassGo)(nil),    // 31: the_deal.schema.monopoly_deal.MaskedActionPlayPassGo
+	(*ActionDemandsCreated)(nil),      // 32: the_deal.schema.monopoly_deal.ActionDemandsCreated
+	(*PlayItsMyBirthday)(nil),         // 33: the_deal.schema.monopoly_deal.PlayItsMyBirthday
+	(*PlayDebtCollector)(nil),         // 34: the_deal.schema.monopoly_deal.PlayDebtCollector
+	(*ActionPendingRentCreated)(nil),  // 35: the_deal.schema.monopoly_deal.ActionPendingRentCreated
+	(*ResolvePendingRent)(nil),        // 36: the_deal.schema.monopoly_deal.ResolvePendingRent
+	(*ActionPendingRentResolved)(nil), // 37: the_deal.schema.monopoly_deal.ActionPendingRentResolved
+	(*PlayRent)(nil),                  // 38: the_deal.schema.monopoly_deal.PlayRent
+	(*PlayWildRent)(nil),              // 39: the_deal.schema.monopoly_deal.PlayWildRent
+	(*PlayDoubleTheRent)(nil),         // 40: the_deal.schema.monopoly_deal.PlayDoubleTheRent
+	(*PlaySlyDeal)(nil),               // 41: the_deal.schema.monopoly_deal.PlaySlyDeal
+	(*PlayForcedDeal)(nil),            // 42: the_deal.schema.monopoly_deal.PlayForcedDeal
+	(*PlayDealBreaker)(nil),           // 43: the_deal.schema.monopoly_deal.PlayDealBreaker
+	(*ComplyPaymentDemand)(nil),       // 44: the_deal.schema.monopoly_deal.ComplyPaymentDemand
+	(*ComplyPropertyDemand)(nil),      // 45: the_deal.schema.monopoly_deal.ComplyPropertyDemand
+	(*ComplyPropertySetDemand)(nil),   // 46: the_deal.schema.monopoly_deal.ComplyPropertySetDemand
+	(*TransferCards)(nil),             // 47: the_deal.schema.monopoly_deal.TransferCards
+	(*TransferProperty)(nil),          // 48: the_deal.schema.monopoly_deal.TransferProperty
+	(*TransferPropertySet)(nil),       // 49: the_deal.schema.monopoly_deal.TransferPropertySet
+	(*ActionDemandComplied)(nil),      // 50: the_deal.schema.monopoly_deal.ActionDemandComplied
+	(*DenyDemand)(nil),                // 51: the_deal.schema.monopoly_deal.DenyDemand
+	(*DiscardCards)(nil),              // 52: the_deal.schema.monopoly_deal.DiscardCards
+	(*ActionDiscardCards)(nil),        // 53: the_deal.schema.monopoly_deal.ActionDiscardCards
+	(*MaskedActionDiscardCards)(nil),  // 54: the_deal.schema.monopoly_deal.MaskedActionDiscardCards
+	(*CompleteTurn)(nil),              // 55: the_deal.schema.monopoly_deal.CompleteTurn
+	(*ActionStartTurn)(nil),           // 56: the_deal.schema.monopoly_deal.ActionStartTurn
+	(*MaskedActionStartTurn)(nil),     // 57: the_deal.schema.monopoly_deal.MaskedActionStartTurn
+	(*RearrangeCard)(nil),             // 58: the_deal.schema.monopoly_deal.RearrangeCard
+	(*ActionRearrangeCard)(nil),       // 59: the_deal.schema.monopoly_deal.ActionRearrangeCard
+	(*WonGame)(nil),                   // 60: the_deal.schema.monopoly_deal.WonGame
+	(*Action)(nil),                    // 61: the_deal.schema.monopoly_deal.Action
+	(*ActionHistory)(nil),             // 62: the_deal.schema.monopoly_deal.ActionHistory
+	(*ClientMessage)(nil),             // 63: the_deal.schema.monopoly_deal.ClientMessage
+	(*ServerMessage)(nil),             // 64: the_deal.schema.monopoly_deal.ServerMessage
 }
 var file_monopoly_deal_proto_depIdxs = []int32{
 	0,  // 0: the_deal.schema.monopoly_deal.Card.asset_key:type_name -> the_deal.schema.monopoly_deal.AssetKey
@@ -5430,84 +5160,85 @@ var file_monopoly_deal_proto_depIdxs = []int32{
 	18, // 19: the_deal.schema.monopoly_deal.GameState.pending_rent:type_name -> the_deal.schema.monopoly_deal.PendingRent
 	9,  // 20: the_deal.schema.monopoly_deal.GameState.last_action:type_name -> the_deal.schema.monopoly_deal.Card
 	19, // 21: the_deal.schema.monopoly_deal.GameState.asset_images:type_name -> the_deal.schema.monopoly_deal.AssetImage
-	9,  // 22: the_deal.schema.monopoly_deal.StartTurnRes.cards:type_name -> the_deal.schema.monopoly_deal.Card
-	9,  // 23: the_deal.schema.monopoly_deal.ActionPlayMoney.card:type_name -> the_deal.schema.monopoly_deal.Card
-	2,  // 24: the_deal.schema.monopoly_deal.PlayProperty.active_color:type_name -> the_deal.schema.monopoly_deal.Color
-	13, // 25: the_deal.schema.monopoly_deal.ActionPlayProperty.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	9,  // 26: the_deal.schema.monopoly_deal.ActionPlayHouse.card:type_name -> the_deal.schema.monopoly_deal.Card
-	13, // 27: the_deal.schema.monopoly_deal.ActionPlayHouse.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	9,  // 28: the_deal.schema.monopoly_deal.ActionPlayHotel.card:type_name -> the_deal.schema.monopoly_deal.Card
-	13, // 29: the_deal.schema.monopoly_deal.ActionPlayHotel.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	9,  // 30: the_deal.schema.monopoly_deal.ActionPlayPassGo.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
-	9,  // 31: the_deal.schema.monopoly_deal.ActionPlayPassGo.cards:type_name -> the_deal.schema.monopoly_deal.Card
-	9,  // 32: the_deal.schema.monopoly_deal.MaskedActionPlayPassGo.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
-	9,  // 33: the_deal.schema.monopoly_deal.PlayActionRes.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
-	17, // 34: the_deal.schema.monopoly_deal.DemandCreated.demand:type_name -> the_deal.schema.monopoly_deal.Demand
-	18, // 35: the_deal.schema.monopoly_deal.PendingRentCreated.pending_rent:type_name -> the_deal.schema.monopoly_deal.PendingRent
-	9,  // 36: the_deal.schema.monopoly_deal.TransferCards.cards:type_name -> the_deal.schema.monopoly_deal.Card
-	13, // 37: the_deal.schema.monopoly_deal.TransferCards.property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	2,  // 38: the_deal.schema.monopoly_deal.RearrangeCard.color:type_name -> the_deal.schema.monopoly_deal.Color
-	9,  // 39: the_deal.schema.monopoly_deal.RearrangeCardRes.card:type_name -> the_deal.schema.monopoly_deal.Card
-	13, // 40: the_deal.schema.monopoly_deal.RearrangeCardRes.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	9,  // 41: the_deal.schema.monopoly_deal.DiscardCardsRes.cards:type_name -> the_deal.schema.monopoly_deal.Card
-	13, // 42: the_deal.schema.monopoly_deal.TransferProperty.source_property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	13, // 43: the_deal.schema.monopoly_deal.TransferProperty.target_property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	13, // 44: the_deal.schema.monopoly_deal.TransferPropertySet.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	5,  // 45: the_deal.schema.monopoly_deal.Action.kind:type_name -> the_deal.schema.monopoly_deal.ActionKind
-	24, // 46: the_deal.schema.monopoly_deal.Action.action_play_money:type_name -> the_deal.schema.monopoly_deal.ActionPlayMoney
-	26, // 47: the_deal.schema.monopoly_deal.Action.action_play_property:type_name -> the_deal.schema.monopoly_deal.ActionPlayProperty
-	28, // 48: the_deal.schema.monopoly_deal.Action.action_play_house:type_name -> the_deal.schema.monopoly_deal.ActionPlayHouse
-	30, // 49: the_deal.schema.monopoly_deal.Action.action_play_hotel:type_name -> the_deal.schema.monopoly_deal.ActionPlayHotel
-	32, // 50: the_deal.schema.monopoly_deal.Action.action_play_pass_go:type_name -> the_deal.schema.monopoly_deal.ActionPlayPassGo
-	33, // 51: the_deal.schema.monopoly_deal.Action.masked_action_played_pass_go:type_name -> the_deal.schema.monopoly_deal.MaskedActionPlayPassGo
-	63, // 52: the_deal.schema.monopoly_deal.ActionHistory.action:type_name -> the_deal.schema.monopoly_deal.Action
-	7,  // 53: the_deal.schema.monopoly_deal.ClientMessage.chat:type_name -> the_deal.schema.monopoly_deal.Chat
-	23, // 54: the_deal.schema.monopoly_deal.ClientMessage.play_money:type_name -> the_deal.schema.monopoly_deal.PlayMoney
-	25, // 55: the_deal.schema.monopoly_deal.ClientMessage.play_property:type_name -> the_deal.schema.monopoly_deal.PlayProperty
-	35, // 56: the_deal.schema.monopoly_deal.ClientMessage.complete_turn:type_name -> the_deal.schema.monopoly_deal.CompleteTurn
-	31, // 57: the_deal.schema.monopoly_deal.ClientMessage.play_pass_go:type_name -> the_deal.schema.monopoly_deal.PlayPassGo
-	34, // 58: the_deal.schema.monopoly_deal.ClientMessage.play_its_my_birthday:type_name -> the_deal.schema.monopoly_deal.PlayItsMyBirthday
-	36, // 59: the_deal.schema.monopoly_deal.ClientMessage.play_debt_collector:type_name -> the_deal.schema.monopoly_deal.PlayDebtCollector
-	37, // 60: the_deal.schema.monopoly_deal.ClientMessage.play_rent:type_name -> the_deal.schema.monopoly_deal.PlayRent
-	38, // 61: the_deal.schema.monopoly_deal.ClientMessage.play_wild_rent:type_name -> the_deal.schema.monopoly_deal.PlayWildRent
-	39, // 62: the_deal.schema.monopoly_deal.ClientMessage.play_double_the_rent:type_name -> the_deal.schema.monopoly_deal.PlayDoubleTheRent
-	45, // 63: the_deal.schema.monopoly_deal.ClientMessage.resolve_pending_rent:type_name -> the_deal.schema.monopoly_deal.ResolvePendingRent
-	48, // 64: the_deal.schema.monopoly_deal.ClientMessage.rearrange_card:type_name -> the_deal.schema.monopoly_deal.RearrangeCard
-	50, // 65: the_deal.schema.monopoly_deal.ClientMessage.discard_cards:type_name -> the_deal.schema.monopoly_deal.DiscardCards
-	53, // 66: the_deal.schema.monopoly_deal.ClientMessage.deny_demand:type_name -> the_deal.schema.monopoly_deal.DenyDemand
-	55, // 67: the_deal.schema.monopoly_deal.ClientMessage.play_sly_deal:type_name -> the_deal.schema.monopoly_deal.PlaySlyDeal
-	57, // 68: the_deal.schema.monopoly_deal.ClientMessage.comply_property_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPropertyDemand
-	56, // 69: the_deal.schema.monopoly_deal.ClientMessage.play_forced_deal:type_name -> the_deal.schema.monopoly_deal.PlayForcedDeal
-	59, // 70: the_deal.schema.monopoly_deal.ClientMessage.play_deal_breaker:type_name -> the_deal.schema.monopoly_deal.PlayDealBreaker
-	60, // 71: the_deal.schema.monopoly_deal.ClientMessage.comply_property_set_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPropertySetDemand
-	42, // 72: the_deal.schema.monopoly_deal.ClientMessage.comply_payment_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPaymentDemand
-	27, // 73: the_deal.schema.monopoly_deal.ClientMessage.play_house:type_name -> the_deal.schema.monopoly_deal.PlayHouse
-	29, // 74: the_deal.schema.monopoly_deal.ClientMessage.play_hotel:type_name -> the_deal.schema.monopoly_deal.PlayHotel
-	6,  // 75: the_deal.schema.monopoly_deal.ServerMessage.error:type_name -> the_deal.schema.monopoly_deal.Error
-	8,  // 76: the_deal.schema.monopoly_deal.ServerMessage.chat_received:type_name -> the_deal.schema.monopoly_deal.ChatReceived
-	20, // 77: the_deal.schema.monopoly_deal.ServerMessage.game_state:type_name -> the_deal.schema.monopoly_deal.GameState
-	21, // 78: the_deal.schema.monopoly_deal.ServerMessage.start_turn_res:type_name -> the_deal.schema.monopoly_deal.StartTurnRes
-	22, // 79: the_deal.schema.monopoly_deal.ServerMessage.start_turn_masked_res:type_name -> the_deal.schema.monopoly_deal.StartTurnMaskedRes
-	46, // 80: the_deal.schema.monopoly_deal.ServerMessage.pending_rent_resolved:type_name -> the_deal.schema.monopoly_deal.PendingRentResolved
-	49, // 81: the_deal.schema.monopoly_deal.ServerMessage.rearrange_card_res:type_name -> the_deal.schema.monopoly_deal.RearrangeCardRes
-	51, // 82: the_deal.schema.monopoly_deal.ServerMessage.discard_cards_res:type_name -> the_deal.schema.monopoly_deal.DiscardCardsRes
-	52, // 83: the_deal.schema.monopoly_deal.ServerMessage.discard_cards_masked_res:type_name -> the_deal.schema.monopoly_deal.DiscardCardsMaskedRes
-	54, // 84: the_deal.schema.monopoly_deal.ServerMessage.demand_denied:type_name -> the_deal.schema.monopoly_deal.DemandDenied
-	43, // 85: the_deal.schema.monopoly_deal.ServerMessage.complied_demand:type_name -> the_deal.schema.monopoly_deal.CompliedDemand
-	58, // 86: the_deal.schema.monopoly_deal.ServerMessage.transfer_property:type_name -> the_deal.schema.monopoly_deal.TransferProperty
-	61, // 87: the_deal.schema.monopoly_deal.ServerMessage.transfer_property_set:type_name -> the_deal.schema.monopoly_deal.TransferPropertySet
-	40, // 88: the_deal.schema.monopoly_deal.ServerMessage.play_action_res:type_name -> the_deal.schema.monopoly_deal.PlayActionRes
-	41, // 89: the_deal.schema.monopoly_deal.ServerMessage.demand_created:type_name -> the_deal.schema.monopoly_deal.DemandCreated
-	44, // 90: the_deal.schema.monopoly_deal.ServerMessage.pending_rent_created:type_name -> the_deal.schema.monopoly_deal.PendingRentCreated
-	47, // 91: the_deal.schema.monopoly_deal.ServerMessage.transfer_cards:type_name -> the_deal.schema.monopoly_deal.TransferCards
-	62, // 92: the_deal.schema.monopoly_deal.ServerMessage.won_game:type_name -> the_deal.schema.monopoly_deal.WonGame
-	63, // 93: the_deal.schema.monopoly_deal.ServerMessage.action:type_name -> the_deal.schema.monopoly_deal.Action
-	64, // 94: the_deal.schema.monopoly_deal.ServerMessage.action_history:type_name -> the_deal.schema.monopoly_deal.ActionHistory
-	95, // [95:95] is the sub-list for method output_type
-	95, // [95:95] is the sub-list for method input_type
-	95, // [95:95] is the sub-list for extension type_name
-	95, // [95:95] is the sub-list for extension extendee
-	0,  // [0:95] is the sub-list for field type_name
+	9,  // 22: the_deal.schema.monopoly_deal.ActionPlayMoney.card:type_name -> the_deal.schema.monopoly_deal.Card
+	2,  // 23: the_deal.schema.monopoly_deal.PlayProperty.active_color:type_name -> the_deal.schema.monopoly_deal.Color
+	13, // 24: the_deal.schema.monopoly_deal.ActionPlayProperty.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	9,  // 25: the_deal.schema.monopoly_deal.ActionPlayHouse.card:type_name -> the_deal.schema.monopoly_deal.Card
+	13, // 26: the_deal.schema.monopoly_deal.ActionPlayHouse.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	9,  // 27: the_deal.schema.monopoly_deal.ActionPlayHotel.card:type_name -> the_deal.schema.monopoly_deal.Card
+	13, // 28: the_deal.schema.monopoly_deal.ActionPlayHotel.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	9,  // 29: the_deal.schema.monopoly_deal.ActionPlayPassGo.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
+	9,  // 30: the_deal.schema.monopoly_deal.ActionPlayPassGo.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	9,  // 31: the_deal.schema.monopoly_deal.MaskedActionPlayPassGo.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
+	9,  // 32: the_deal.schema.monopoly_deal.ActionDemandsCreated.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
+	17, // 33: the_deal.schema.monopoly_deal.ActionDemandsCreated.denied_demand:type_name -> the_deal.schema.monopoly_deal.Demand
+	17, // 34: the_deal.schema.monopoly_deal.ActionDemandsCreated.demands:type_name -> the_deal.schema.monopoly_deal.Demand
+	9,  // 35: the_deal.schema.monopoly_deal.ActionPendingRentCreated.last_card_played:type_name -> the_deal.schema.monopoly_deal.Card
+	18, // 36: the_deal.schema.monopoly_deal.ActionPendingRentCreated.pending_rent:type_name -> the_deal.schema.monopoly_deal.PendingRent
+	17, // 37: the_deal.schema.monopoly_deal.ActionPendingRentResolved.demands:type_name -> the_deal.schema.monopoly_deal.Demand
+	9,  // 38: the_deal.schema.monopoly_deal.TransferCards.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	13, // 39: the_deal.schema.monopoly_deal.TransferCards.property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	13, // 40: the_deal.schema.monopoly_deal.TransferProperty.source_property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	13, // 41: the_deal.schema.monopoly_deal.TransferProperty.target_property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	13, // 42: the_deal.schema.monopoly_deal.TransferPropertySet.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	47, // 43: the_deal.schema.monopoly_deal.ActionDemandComplied.transfer_cards:type_name -> the_deal.schema.monopoly_deal.TransferCards
+	48, // 44: the_deal.schema.monopoly_deal.ActionDemandComplied.transfer_property:type_name -> the_deal.schema.monopoly_deal.TransferProperty
+	49, // 45: the_deal.schema.monopoly_deal.ActionDemandComplied.transfer_property_set:type_name -> the_deal.schema.monopoly_deal.TransferPropertySet
+	9,  // 46: the_deal.schema.monopoly_deal.ActionDiscardCards.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	9,  // 47: the_deal.schema.monopoly_deal.ActionStartTurn.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	2,  // 48: the_deal.schema.monopoly_deal.RearrangeCard.color:type_name -> the_deal.schema.monopoly_deal.Color
+	9,  // 49: the_deal.schema.monopoly_deal.ActionRearrangeCard.card:type_name -> the_deal.schema.monopoly_deal.Card
+	13, // 50: the_deal.schema.monopoly_deal.ActionRearrangeCard.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	5,  // 51: the_deal.schema.monopoly_deal.Action.kind:type_name -> the_deal.schema.monopoly_deal.ActionKind
+	22, // 52: the_deal.schema.monopoly_deal.Action.action_play_money:type_name -> the_deal.schema.monopoly_deal.ActionPlayMoney
+	24, // 53: the_deal.schema.monopoly_deal.Action.action_play_property:type_name -> the_deal.schema.monopoly_deal.ActionPlayProperty
+	26, // 54: the_deal.schema.monopoly_deal.Action.action_play_house:type_name -> the_deal.schema.monopoly_deal.ActionPlayHouse
+	28, // 55: the_deal.schema.monopoly_deal.Action.action_play_hotel:type_name -> the_deal.schema.monopoly_deal.ActionPlayHotel
+	30, // 56: the_deal.schema.monopoly_deal.Action.action_play_pass_go:type_name -> the_deal.schema.monopoly_deal.ActionPlayPassGo
+	31, // 57: the_deal.schema.monopoly_deal.Action.masked_action_played_pass_go:type_name -> the_deal.schema.monopoly_deal.MaskedActionPlayPassGo
+	32, // 58: the_deal.schema.monopoly_deal.Action.action_demands_created:type_name -> the_deal.schema.monopoly_deal.ActionDemandsCreated
+	35, // 59: the_deal.schema.monopoly_deal.Action.action_pending_rent_created:type_name -> the_deal.schema.monopoly_deal.ActionPendingRentCreated
+	37, // 60: the_deal.schema.monopoly_deal.Action.action_pending_rent_resolved:type_name -> the_deal.schema.monopoly_deal.ActionPendingRentResolved
+	50, // 61: the_deal.schema.monopoly_deal.Action.action_demand_complied:type_name -> the_deal.schema.monopoly_deal.ActionDemandComplied
+	53, // 62: the_deal.schema.monopoly_deal.Action.action_discard_cards:type_name -> the_deal.schema.monopoly_deal.ActionDiscardCards
+	54, // 63: the_deal.schema.monopoly_deal.Action.masked_action_discard_cards:type_name -> the_deal.schema.monopoly_deal.MaskedActionDiscardCards
+	56, // 64: the_deal.schema.monopoly_deal.Action.action_start_turn:type_name -> the_deal.schema.monopoly_deal.ActionStartTurn
+	57, // 65: the_deal.schema.monopoly_deal.Action.masked_action_start_turn:type_name -> the_deal.schema.monopoly_deal.MaskedActionStartTurn
+	59, // 66: the_deal.schema.monopoly_deal.Action.action_rearrange_card:type_name -> the_deal.schema.monopoly_deal.ActionRearrangeCard
+	61, // 67: the_deal.schema.monopoly_deal.ActionHistory.action:type_name -> the_deal.schema.monopoly_deal.Action
+	7,  // 68: the_deal.schema.monopoly_deal.ClientMessage.chat:type_name -> the_deal.schema.monopoly_deal.Chat
+	21, // 69: the_deal.schema.monopoly_deal.ClientMessage.play_money:type_name -> the_deal.schema.monopoly_deal.PlayMoney
+	23, // 70: the_deal.schema.monopoly_deal.ClientMessage.play_property:type_name -> the_deal.schema.monopoly_deal.PlayProperty
+	55, // 71: the_deal.schema.monopoly_deal.ClientMessage.complete_turn:type_name -> the_deal.schema.monopoly_deal.CompleteTurn
+	29, // 72: the_deal.schema.monopoly_deal.ClientMessage.play_pass_go:type_name -> the_deal.schema.monopoly_deal.PlayPassGo
+	33, // 73: the_deal.schema.monopoly_deal.ClientMessage.play_its_my_birthday:type_name -> the_deal.schema.monopoly_deal.PlayItsMyBirthday
+	34, // 74: the_deal.schema.monopoly_deal.ClientMessage.play_debt_collector:type_name -> the_deal.schema.monopoly_deal.PlayDebtCollector
+	38, // 75: the_deal.schema.monopoly_deal.ClientMessage.play_rent:type_name -> the_deal.schema.monopoly_deal.PlayRent
+	39, // 76: the_deal.schema.monopoly_deal.ClientMessage.play_wild_rent:type_name -> the_deal.schema.monopoly_deal.PlayWildRent
+	40, // 77: the_deal.schema.monopoly_deal.ClientMessage.play_double_the_rent:type_name -> the_deal.schema.monopoly_deal.PlayDoubleTheRent
+	36, // 78: the_deal.schema.monopoly_deal.ClientMessage.resolve_pending_rent:type_name -> the_deal.schema.monopoly_deal.ResolvePendingRent
+	58, // 79: the_deal.schema.monopoly_deal.ClientMessage.rearrange_card:type_name -> the_deal.schema.monopoly_deal.RearrangeCard
+	52, // 80: the_deal.schema.monopoly_deal.ClientMessage.discard_cards:type_name -> the_deal.schema.monopoly_deal.DiscardCards
+	51, // 81: the_deal.schema.monopoly_deal.ClientMessage.deny_demand:type_name -> the_deal.schema.monopoly_deal.DenyDemand
+	41, // 82: the_deal.schema.monopoly_deal.ClientMessage.play_sly_deal:type_name -> the_deal.schema.monopoly_deal.PlaySlyDeal
+	45, // 83: the_deal.schema.monopoly_deal.ClientMessage.comply_property_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPropertyDemand
+	42, // 84: the_deal.schema.monopoly_deal.ClientMessage.play_forced_deal:type_name -> the_deal.schema.monopoly_deal.PlayForcedDeal
+	43, // 85: the_deal.schema.monopoly_deal.ClientMessage.play_deal_breaker:type_name -> the_deal.schema.monopoly_deal.PlayDealBreaker
+	46, // 86: the_deal.schema.monopoly_deal.ClientMessage.comply_property_set_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPropertySetDemand
+	44, // 87: the_deal.schema.monopoly_deal.ClientMessage.comply_payment_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPaymentDemand
+	25, // 88: the_deal.schema.monopoly_deal.ClientMessage.play_house:type_name -> the_deal.schema.monopoly_deal.PlayHouse
+	27, // 89: the_deal.schema.monopoly_deal.ClientMessage.play_hotel:type_name -> the_deal.schema.monopoly_deal.PlayHotel
+	6,  // 90: the_deal.schema.monopoly_deal.ServerMessage.error:type_name -> the_deal.schema.monopoly_deal.Error
+	8,  // 91: the_deal.schema.monopoly_deal.ServerMessage.chat_received:type_name -> the_deal.schema.monopoly_deal.ChatReceived
+	20, // 92: the_deal.schema.monopoly_deal.ServerMessage.game_state:type_name -> the_deal.schema.monopoly_deal.GameState
+	60, // 93: the_deal.schema.monopoly_deal.ServerMessage.won_game:type_name -> the_deal.schema.monopoly_deal.WonGame
+	61, // 94: the_deal.schema.monopoly_deal.ServerMessage.action:type_name -> the_deal.schema.monopoly_deal.Action
+	62, // 95: the_deal.schema.monopoly_deal.ServerMessage.action_history:type_name -> the_deal.schema.monopoly_deal.ActionHistory
+	96, // [96:96] is the sub-list for method output_type
+	96, // [96:96] is the sub-list for method input_type
+	96, // [96:96] is the sub-list for extension type_name
+	96, // [96:96] is the sub-list for extension extendee
+	0,  // [0:96] is the sub-list for field type_name
 }
 
 func init() { file_monopoly_deal_proto_init() }
@@ -5522,17 +5253,33 @@ func file_monopoly_deal_proto_init() {
 		(*Demand_PropertySetDemand)(nil),
 	}
 	file_monopoly_deal_proto_msgTypes[14].OneofWrappers = []any{}
-	file_monopoly_deal_proto_msgTypes[19].OneofWrappers = []any{}
-	file_monopoly_deal_proto_msgTypes[42].OneofWrappers = []any{}
-	file_monopoly_deal_proto_msgTypes[57].OneofWrappers = []any{
+	file_monopoly_deal_proto_msgTypes[17].OneofWrappers = []any{}
+	file_monopoly_deal_proto_msgTypes[26].OneofWrappers = []any{}
+	file_monopoly_deal_proto_msgTypes[44].OneofWrappers = []any{
+		(*ActionDemandComplied_TransferCards)(nil),
+		(*ActionDemandComplied_TransferProperty)(nil),
+		(*ActionDemandComplied_TransferPropertySet)(nil),
+	}
+	file_monopoly_deal_proto_msgTypes[52].OneofWrappers = []any{}
+	file_monopoly_deal_proto_msgTypes[53].OneofWrappers = []any{}
+	file_monopoly_deal_proto_msgTypes[55].OneofWrappers = []any{
 		(*Action_ActionPlayMoney)(nil),
 		(*Action_ActionPlayProperty)(nil),
 		(*Action_ActionPlayHouse)(nil),
 		(*Action_ActionPlayHotel)(nil),
 		(*Action_ActionPlayPassGo)(nil),
 		(*Action_MaskedActionPlayedPassGo)(nil),
+		(*Action_ActionDemandsCreated)(nil),
+		(*Action_ActionPendingRentCreated)(nil),
+		(*Action_ActionPendingRentResolved)(nil),
+		(*Action_ActionDemandComplied)(nil),
+		(*Action_ActionDiscardCards)(nil),
+		(*Action_MaskedActionDiscardCards)(nil),
+		(*Action_ActionStartTurn)(nil),
+		(*Action_MaskedActionStartTurn)(nil),
+		(*Action_ActionRearrangeCard)(nil),
 	}
-	file_monopoly_deal_proto_msgTypes[59].OneofWrappers = []any{
+	file_monopoly_deal_proto_msgTypes[57].OneofWrappers = []any{
 		(*ClientMessage_Chat)(nil),
 		(*ClientMessage_PlayMoney)(nil),
 		(*ClientMessage_PlayProperty)(nil),
@@ -5556,24 +5303,10 @@ func file_monopoly_deal_proto_init() {
 		(*ClientMessage_PlayHouse)(nil),
 		(*ClientMessage_PlayHotel)(nil),
 	}
-	file_monopoly_deal_proto_msgTypes[60].OneofWrappers = []any{
+	file_monopoly_deal_proto_msgTypes[58].OneofWrappers = []any{
 		(*ServerMessage_Error)(nil),
 		(*ServerMessage_ChatReceived)(nil),
 		(*ServerMessage_GameState)(nil),
-		(*ServerMessage_StartTurnRes)(nil),
-		(*ServerMessage_StartTurnMaskedRes)(nil),
-		(*ServerMessage_PendingRentResolved)(nil),
-		(*ServerMessage_RearrangeCardRes)(nil),
-		(*ServerMessage_DiscardCardsRes)(nil),
-		(*ServerMessage_DiscardCardsMaskedRes)(nil),
-		(*ServerMessage_DemandDenied)(nil),
-		(*ServerMessage_CompliedDemand)(nil),
-		(*ServerMessage_TransferProperty)(nil),
-		(*ServerMessage_TransferPropertySet)(nil),
-		(*ServerMessage_PlayActionRes)(nil),
-		(*ServerMessage_DemandCreated)(nil),
-		(*ServerMessage_PendingRentCreated)(nil),
-		(*ServerMessage_TransferCards)(nil),
 		(*ServerMessage_WonGame)(nil),
 		(*ServerMessage_Action)(nil),
 		(*ServerMessage_ActionHistory)(nil),
@@ -5584,7 +5317,7 @@ func file_monopoly_deal_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_monopoly_deal_proto_rawDesc), len(file_monopoly_deal_proto_rawDesc)),
 			NumEnums:      6,
-			NumMessages:   61,
+			NumMessages:   59,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

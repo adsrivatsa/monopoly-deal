@@ -1,25 +1,25 @@
 package monopoly_deal
 
 import (
+	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
 type GameSnapshot struct {
-	Config        Settings                    `json:"config" msgpack:"a"`
-	IDGenerator   IdentifierGenerator         `json:"id_generator" msgpack:"b"`
-	IDTranslator  IdentifierTranslator        `json:"id_translator" msgpack:"c"`
-	Deck          Deck                        `json:"deck" msgpack:"d"`
-	Cards         map[Identifier]Card         `json:"cards" msgpack:"e"`
-	Players       []Identifier                `json:"players" msgpack:"f"`
-	CurrPlayerIdx int                         `json:"curr_player_idx" msgpack:"g"`
-	MovesLeft     int                         `json:"moves_left" msgpack:"h"`
-	Hands         map[Identifier]Cards        `json:"hands" msgpack:"i"`
-	Money         map[Identifier]Cards        `json:"money" msgpack:"j"`
-	Properties    map[Identifier]PropertySets `json:"properties" msgpack:"k"`
-	Demands       map[Identifier]Demand       `json:"demands" msgpack:"l"`
-	PendingRent   *PendingRent                `json:"pending_rent" msgpack:"m"`
-	LastAction    Card                        `json:"last_action" msgpack:"n"`
-	SequenceNum   int                         `json:"sequence_num" msgpack:"o"`
+	Config        Settings                   `json:"config" msgpack:"a"`
+	IDGenerator   IdentifierGenerator        `json:"id_generator" msgpack:"b"`
+	Deck          Deck                       `json:"deck" msgpack:"d"`
+	Cards         map[Identifier]Card        `json:"cards" msgpack:"e"`
+	Players       []uuid.UUID                `json:"players" msgpack:"f"`
+	CurrPlayerIdx int                        `json:"curr_player_idx" msgpack:"g"`
+	MovesLeft     int                        `json:"moves_left" msgpack:"h"`
+	Hands         map[uuid.UUID]Cards        `json:"hands" msgpack:"i"`
+	Money         map[uuid.UUID]Cards        `json:"money" msgpack:"j"`
+	Properties    map[uuid.UUID]PropertySets `json:"properties" msgpack:"k"`
+	Demands       map[Identifier]Demand      `json:"demands" msgpack:"l"`
+	PendingRent   *PendingRent               `json:"pending_rent" msgpack:"m"`
+	LastAction    Card                       `json:"last_action" msgpack:"n"`
+	SequenceNum   int                        `json:"sequence_num" msgpack:"o"`
 }
 
 func (g *Game) EncodeMsgpack() ([]byte, error) {
@@ -74,7 +74,7 @@ func clonePendingRent(pr *PendingRent) *PendingRent {
 	}
 
 	out := *pr
-	out.TargetIDs = append([]Identifier(nil), pr.TargetIDs...)
+	out.TargetIDs = append([]uuid.UUID(nil), pr.TargetIDs...)
 	return &out
 }
 
@@ -86,17 +86,17 @@ func (g *Game) Snapshot() (GameSnapshot, error) {
 		cards[id] = copyCard
 	}
 
-	hands := make(map[Identifier]Cards, len(g.Hands))
+	hands := make(map[uuid.UUID]Cards, len(g.Hands))
 	for id, hand := range g.Hands {
 		hands[id] = cloneCards(hand)
 	}
 
-	money := make(map[Identifier]Cards, len(g.Money))
+	money := make(map[uuid.UUID]Cards, len(g.Money))
 	for id, pile := range g.Money {
 		money[id] = cloneCards(pile)
 	}
 
-	properties := make(map[Identifier]PropertySets, len(g.Properties))
+	properties := make(map[uuid.UUID]PropertySets, len(g.Properties))
 	for id, sets := range g.Properties {
 		properties[id] = clonePropertySets(sets)
 	}
@@ -104,7 +104,6 @@ func (g *Game) Snapshot() (GameSnapshot, error) {
 	return GameSnapshot{
 		Config:        g.Config,
 		IDGenerator:   *g.IDGenerator,
-		IDTranslator:  g.IDTranslator,
 		Deck:          Deck{Cards: cloneCards(g.Deck.Cards)},
 		Cards:         cards,
 		Players:       g.Players,
@@ -128,17 +127,17 @@ func NewGameFromSnapshot(s GameSnapshot) (*Game, error) {
 		cards[id] = copyCard
 	}
 
-	hands := make(map[Identifier]Cards, len(s.Hands))
+	hands := make(map[uuid.UUID]Cards, len(s.Hands))
 	for id, hand := range s.Hands {
 		hands[id] = cloneCards(hand)
 	}
 
-	money := make(map[Identifier]Cards, len(s.Money))
+	money := make(map[uuid.UUID]Cards, len(s.Money))
 	for id, pile := range s.Money {
 		money[id] = cloneCards(pile)
 	}
 
-	properties := make(map[Identifier]PropertySets, len(s.Properties))
+	properties := make(map[uuid.UUID]PropertySets, len(s.Properties))
 	for id, sets := range s.Properties {
 		properties[id] = clonePropertySets(sets)
 	}
@@ -147,7 +146,6 @@ func NewGameFromSnapshot(s GameSnapshot) (*Game, error) {
 	return &Game{
 		Config:        s.Config,
 		IDGenerator:   &idGenerator,
-		IDTranslator:  s.IDTranslator,
 		Deck:          Deck{Cards: cloneCards(s.Deck.Cards)},
 		Cards:         cards,
 		Players:       s.Players,

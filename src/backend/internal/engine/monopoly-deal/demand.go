@@ -70,8 +70,8 @@ func (ds DemandSource) Proto() monopoly_deal_schema.DemandSource {
 type Demand struct {
 	ID          Identifier        `json:"id" msgpack:"i"`
 	Kind        DemandKind        `json:"kind" msgpack:"a"`
-	SourceID    Identifier        `json:"source_id" msgpack:"b"`
-	TargetID    Identifier        `json:"target_id" msgpack:"c"`
+	SourceID    uuid.UUID         `json:"source_id" msgpack:"b"`
+	TargetID    uuid.UUID         `json:"target_id" msgpack:"c"`
 	Payment     PaymentDemand     `json:"payment" msgpack:"d"`
 	Property    PropertyDemand    `json:"property" msgpack:"e"`
 	PropertySet PropertySetDemand `json:"property_set" msgpack:"f"`
@@ -79,7 +79,7 @@ type Demand struct {
 	Source      DemandSource      `json:"source" msgpack:"h"`
 }
 
-func NewPaymentDemand(id Identifier, sourceID, targetID Identifier, amount int, source DemandSource) Demand {
+func NewPaymentDemand(id Identifier, sourceID, targetID uuid.UUID, amount int, source DemandSource) Demand {
 	return Demand{
 		ID:       id,
 		Kind:     DemandKindPayment,
@@ -93,19 +93,7 @@ func NewPaymentDemand(id Identifier, sourceID, targetID Identifier, amount int, 
 	}
 }
 
-func NewPaymentDemands(gen *IdentifierGenerator, sourceID Identifier, targetIDs []Identifier, amount int, source DemandSource) map[Identifier]Demand {
-	ds := make(map[Identifier]Demand)
-	for _, targetID := range targetIDs {
-		if sourceID == targetID {
-			continue
-		}
-		id := gen.New()
-		ds[id] = NewPaymentDemand(id, sourceID, targetID, amount, source)
-	}
-	return ds
-}
-
-func NewPropertyDemand(id Identifier, sourceID, targetID Identifier, sourceCardID *Identifier, targetCardID Identifier, source DemandSource) Demand {
+func NewPropertyDemand(id Identifier, sourceID, targetID uuid.UUID, sourceCardID *Identifier, targetCardID Identifier, source DemandSource) Demand {
 	return Demand{
 		ID:       id,
 		Kind:     DemandKindProperty,
@@ -120,7 +108,7 @@ func NewPropertyDemand(id Identifier, sourceID, targetID Identifier, sourceCardI
 	}
 }
 
-func NewPropertySetDemand(id Identifier, sourceID, targetID, propertySetID Identifier, source DemandSource) Demand {
+func NewPropertySetDemand(id Identifier, sourceID, targetID uuid.UUID, propertySetID Identifier, source DemandSource) Demand {
 	return Demand{
 		ID:       id,
 		Kind:     DemandKindPropertySet,
@@ -134,13 +122,13 @@ func NewPropertySetDemand(id Identifier, sourceID, targetID, propertySetID Ident
 	}
 }
 
-func (d *Demand) Proto(sourceUUID, targetUUID uuid.UUID) *monopoly_deal_schema.Demand {
+func (d *Demand) Proto() *monopoly_deal_schema.Demand {
 	switch d.Kind {
 	case DemandKindPayment:
 		return &monopoly_deal_schema.Demand{
 			Id:         string(d.ID),
-			PlayerId:   targetUUID.String(),
-			SourceId:   sourceUUID.String(),
+			PlayerId:   d.TargetID.String(),
+			SourceId:   d.SourceID.String(),
 			DemandKind: d.Kind.Proto(),
 			Demand: &monopoly_deal_schema.Demand_PaymentDemand{
 				PaymentDemand: &monopoly_deal_schema.PaymentDemand{
@@ -159,8 +147,8 @@ func (d *Demand) Proto(sourceUUID, targetUUID uuid.UUID) *monopoly_deal_schema.D
 
 		return &monopoly_deal_schema.Demand{
 			Id:         string(d.ID),
-			PlayerId:   targetUUID.String(),
-			SourceId:   sourceUUID.String(),
+			PlayerId:   d.TargetID.String(),
+			SourceId:   d.SourceID.String(),
 			DemandKind: d.Kind.Proto(),
 			Demand: &monopoly_deal_schema.Demand_PropertyDemand{
 				PropertyDemand: &monopoly_deal_schema.PropertyDemand{
@@ -174,8 +162,8 @@ func (d *Demand) Proto(sourceUUID, targetUUID uuid.UUID) *monopoly_deal_schema.D
 	case DemandKindPropertySet:
 		return &monopoly_deal_schema.Demand{
 			Id:         string(d.ID),
-			PlayerId:   targetUUID.String(),
-			SourceId:   sourceUUID.String(),
+			PlayerId:   d.TargetID.String(),
+			SourceId:   d.SourceID.String(),
 			DemandKind: d.Kind.Proto(),
 			Demand: &monopoly_deal_schema.Demand_PropertySetDemand{
 				PropertySetDemand: &monopoly_deal_schema.PropertySetDemand{

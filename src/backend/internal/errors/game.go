@@ -55,3 +55,5 @@ var DuplicateCardPaymentExists = NewError("duplicate card payment exists", http.
 var PropertySetHasHouse = NewError("property set has house", http.StatusBadRequest, "GME0026")
 
 var PropertySetHasHotel = NewError("property set has hotel", http.StatusBadRequest, "GME0027")
+
+var PropertySetHasNoHouse = NewError("property set does not have house", http.StatusBadRequest, "GME0028")

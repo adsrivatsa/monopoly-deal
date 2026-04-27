@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   connectGameSocket,
@@ -43,7 +43,6 @@ import {
   type Money,
   type PropertySet,
   type Player,
-  type TransferCards,
   type WonGame,
 } from "../generated/monopoly_deal";
 
@@ -56,6 +55,29 @@ type GameChatMessage = {
 type ActionHistoryEntry = {
   id: string;
   text: string;
+  kind:
+    | "generic"
+    | "playMoney"
+    | "playProperty"
+    | "demandsCreated"
+    | "playedCards"
+    | "paymentComplied"
+    | "discardCards"
+    | "maskedDiscardCards"
+    | "propertySwap"
+    | "propertySetSteal"
+    | "propertySteal"
+    | "startTurn"
+    | "maskedStartTurn"
+    | "turnDivider";
+  playerId?: string;
+  cardAssetKey?: number;
+  cardAssetKeys?: number[];
+  drawCount?: number;
+  sourcePlayerId?: string;
+  targetPlayerId?: string;
+  sourceCardAssetKey?: number;
+  targetCardAssetKey?: number;
 };
 
 type GameErrorNotice = ErrorToastNotice;
@@ -237,29 +259,6 @@ const recalculatePlayerStatsFromBoard = (
   });
 };
 
-const getTransferCardsPlayerStats = (transferCards: TransferCards) => {
-  const stats = transferCards as TransferCards & {
-    sourceProperties?: number;
-    targetProperties?: number;
-  };
-
-  const sourceCompletedSets =
-    typeof stats.sourceProperties === "number"
-      ? stats.sourceProperties
-      : stats.sourceSets;
-  const targetCompletedSets =
-    typeof stats.targetProperties === "number"
-      ? stats.targetProperties
-      : stats.targetSets;
-
-  return {
-    sourceCompletedSets,
-    targetCompletedSets,
-    sourceMoney: stats.sourceMoney,
-    targetMoney: stats.targetMoney,
-  };
-};
-
 const applyTransferCardsPlayerStats = (
   players: Player[],
   sourceId: string,
@@ -298,6 +297,8 @@ const GamePage = () => {
   const { game_id: gameId } = useParams();
   const navigate = useNavigate();
   const socketRef = useRef<WebSocket | null>(null);
+  const currentTurnPlayerIdRef = useRef<string | null>(null);
+  const actionHistoryListRef = useRef<HTMLDivElement | null>(null);
   const reconnectAttemptRef = useRef(0);
   const [initialGameState, setInitialGameState] = useState<GameState | null>(
     null,
@@ -371,6 +372,16 @@ const GamePage = () => {
   }, [pushErrorNotice]);
 
   const handCards = initialGameState?.yourHand?.cards ?? [];
+  const moneyByPlayerId = useMemo(() => {
+    const totals: Record<string, number> = {};
+    for (const pile of initialGameState?.money ?? []) {
+      const pileTotal = pile.cards.reduce((sum, card) => {
+        return sum + (card.value ?? 0);
+      }, 0);
+      totals[pile.playerId] = (totals[pile.playerId] ?? 0) + pileTotal;
+    }
+    return totals;
+  }, [initialGameState?.money]);
   const handCardIdsKey = handCards.map((card) => card.cardId).join("|");
   const maxHandSize = initialGameState?.maxHandSize ?? 0;
   const discardRequiredCount = Math.max(0, handCards.length - maxHandSize);
@@ -617,19 +628,6 @@ const GamePage = () => {
             });
           }
 
-          const actionHistory = message.monopolyDealMessage?.actionHistory;
-          if (actionHistory) {
-            setActionHistoryEntries((current) => {
-              return [
-                ...current,
-                {
-                  id: `action-history-${Date.now()}-${current.length}`,
-                  text: JSON.stringify(actionHistory.action) ?? "{}",
-                },
-              ];
-            });
-          }
-
           const wonGameMessage = message.monopolyDealMessage?.wonGame as
             | WonGameResult
             | undefined;
@@ -637,18 +635,436 @@ const GamePage = () => {
             setWonGame(wonGameMessage);
           }
 
-          const startTurnRes = message.monopolyDealMessage?.startTurnRes;
-          if (startTurnRes) {
-            setCurrentTurnPlayerId(startTurnRes.playerId);
-            setMovesLeft(startTurnRes.movesLeft);
+          const actionHistory = message.monopolyDealMessage?.actionHistory;
+          const action = message.monopolyDealMessage?.action;
+          const actionForHistory = actionHistory?.action ?? action;
+          const actionPlayerId = action?.playerId;
+          if (actionForHistory) {
+            setActionHistoryEntries((current) => {
+              const actionHistoryPlayerId = actionForHistory.playerId;
+              const playedMoneyCard = actionForHistory.actionPlayMoney?.card;
+              const playedPropertyCard =
+                actionForHistory.actionPlayProperty?.propertySet?.cards.at(-1);
+              const demandsCreatedCard =
+                actionForHistory.actionDemandsCreated?.lastPlayedCard;
+              const renderableDemandsCreatedCard =
+                demandsCreatedCard &&
+                demandsCreatedCard.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
+                  ? demandsCreatedCard
+                  : undefined;
+              const pendingRentCreatedCard =
+                actionForHistory.actionPendingRentCreated?.lastCardPlayed;
+              const actionPlayHouseCard = actionForHistory.actionPlayHouse?.card;
+              const actionPlayHotelCard = actionForHistory.actionPlayHotel?.card;
+              const actionPlayPassGo = actionForHistory.actionPlayPassGo;
+              const maskedActionPlayPassGo = actionForHistory.maskedActionPlayedPassGo;
+              const passGoPlayedCard =
+                actionPlayPassGo?.lastPlayedCard ??
+                maskedActionPlayPassGo?.lastPlayedCard;
+              const playedActionCard =
+                playedMoneyCard ??
+                playedPropertyCard ??
+                renderableDemandsCreatedCard ??
+                pendingRentCreatedCard ??
+                actionPlayHouseCard ??
+                actionPlayHotelCard;
+              const compliedTransferCards =
+                actionForHistory.actionDemandComplied?.transferCards;
+              const compliedTransferProperty =
+                actionForHistory.actionDemandComplied?.transferProperty;
+              const compliedTransferPropertySet =
+                actionForHistory.actionDemandComplied?.transferPropertySet;
+              const isDemandCompliedWithoutTransfer = !!(
+                actionForHistory.actionDemandComplied &&
+                !compliedTransferCards &&
+                !compliedTransferProperty &&
+                !compliedTransferPropertySet
+              );
+              const actionDiscardCards = actionForHistory.actionDiscardCards;
+              const maskedActionDiscardCards = actionForHistory.maskedActionDiscardCards;
+              const startTurnCards = actionForHistory.actionStartTurn?.cards ?? [];
+              const maskedStartTurnCount =
+                actionForHistory.maskedActionStartTurn?.numCards;
+              const isStartTurn =
+                !!(actionHistoryPlayerId && actionForHistory.actionStartTurn);
+              const isMaskedStartTurn =
+                !!(actionHistoryPlayerId && typeof maskedStartTurnCount === "number");
+              const isPlayMoney = !!(actionHistoryPlayerId && playedMoneyCard);
+              const isPlayProperty = !!(actionHistoryPlayerId && playedPropertyCard);
+              const isDemandsCreated = !!(actionHistoryPlayerId && renderableDemandsCreatedCard);
+              const isPaymentComplied =
+                !!(actionHistoryPlayerId && compliedTransferCards);
+              const isPropertySwap = !!(
+                compliedTransferProperty &&
+                compliedTransferProperty.sourcePropertySets.length > 0 &&
+                compliedTransferProperty.targetPropertySets.length > 0
+              );
+              const isPropertyStealViaTransferProperty = !!(
+                compliedTransferProperty &&
+                ((compliedTransferProperty.sourcePropertySets.length > 0 &&
+                  compliedTransferProperty.targetPropertySets.length === 0) ||
+                  (compliedTransferProperty.targetPropertySets.length > 0 &&
+                    compliedTransferProperty.sourcePropertySets.length === 0))
+              );
+              const isPropertySteal = !!(
+                compliedTransferPropertySet &&
+                compliedTransferPropertySet.propertySet
+              );
+              const isDiscardCards =
+                !!(actionHistoryPlayerId && actionDiscardCards);
+              const isMaskedDiscardCards =
+                !!(
+                  actionHistoryPlayerId &&
+                  maskedActionDiscardCards &&
+                  typeof maskedActionDiscardCards.numCards === "number"
+                );
+
+              if (isStartTurn) {
+                return [
+                  ...current,
+                  {
+                    id: `action-history-divider-${Date.now()}-${current.length}`,
+                    kind: "turnDivider",
+                    text: "",
+                  },
+                  {
+                    id: `action-history-${Date.now()}-${current.length}-start-turn`,
+                    kind: "startTurn",
+                    playerId: actionHistoryPlayerId,
+                    cardAssetKeys: startTurnCards.map((card) => card.assetKey),
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              if (isMaskedStartTurn) {
+                return [
+                  ...current,
+                  {
+                    id: `action-history-divider-${Date.now()}-${current.length}`,
+                    kind: "turnDivider",
+                    text: "",
+                  },
+                  {
+                    id: `action-history-${Date.now()}-${current.length}-masked-start-turn`,
+                    kind: "maskedStartTurn",
+                    playerId: actionHistoryPlayerId,
+                    drawCount: maskedStartTurnCount,
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              if (actionForHistory.actionRearrangeCard) {
+                return current;
+              }
+
+              if (actionForHistory.actionDemandsCreated && !renderableDemandsCreatedCard) {
+                return current;
+              }
+
+              if (isDemandCompliedWithoutTransfer) {
+                return current;
+              }
+
+              if (actionHistoryPlayerId && (actionPlayPassGo || maskedActionPlayPassGo)) {
+                let nextEntries = [...current];
+
+                if (passGoPlayedCard) {
+                  const playedAssetKey = passGoPlayedCard.assetKey;
+                  let lastTurnDividerIndex = -1;
+                  for (let index = nextEntries.length - 1; index >= 0; index -= 1) {
+                    if (nextEntries[index]?.kind === "turnDivider") {
+                      lastTurnDividerIndex = index;
+                      break;
+                    }
+                  }
+
+                  let groupedEntryIndex = -1;
+                  for (let index = nextEntries.length - 1; index > lastTurnDividerIndex; index -= 1) {
+                    const entry = nextEntries[index];
+                    if (
+                      entry?.kind === "playedCards" &&
+                      entry.playerId === actionHistoryPlayerId
+                    ) {
+                      groupedEntryIndex = index;
+                      break;
+                    }
+                  }
+
+                  if (groupedEntryIndex !== -1) {
+                    const groupedEntry = nextEntries[groupedEntryIndex];
+                    nextEntries = [
+                      ...nextEntries.slice(0, groupedEntryIndex),
+                      {
+                        ...groupedEntry,
+                        cardAssetKeys: [
+                          ...(groupedEntry.cardAssetKeys ?? []),
+                          playedAssetKey,
+                        ],
+                      },
+                      ...nextEntries.slice(groupedEntryIndex + 1),
+                    ];
+                  } else {
+                    nextEntries = [
+                      ...nextEntries,
+                      {
+                        id: `action-history-${Date.now()}-${nextEntries.length}`,
+                        kind: "playedCards",
+                        playerId: actionHistoryPlayerId,
+                        cardAssetKeys: [playedAssetKey],
+                        text: JSON.stringify(actionForHistory) ?? "{}",
+                      },
+                    ];
+                  }
+                }
+
+                if (actionPlayPassGo) {
+                  return [
+                    ...nextEntries,
+                    {
+                      id: `action-history-${Date.now()}-${nextEntries.length}-pass-go-draw`,
+                      kind: "startTurn",
+                      playerId: actionHistoryPlayerId,
+                      cardAssetKeys: actionPlayPassGo.cards.map((card) => card.assetKey),
+                      text: JSON.stringify(actionForHistory) ?? "{}",
+                    },
+                  ];
+                }
+
+                return [
+                  ...nextEntries,
+                  {
+                    id: `action-history-${Date.now()}-${nextEntries.length}-masked-pass-go-draw`,
+                    kind: "maskedStartTurn",
+                    playerId: actionHistoryPlayerId,
+                    drawCount: maskedActionPlayPassGo?.numCards,
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              if (actionHistoryPlayerId && playedActionCard) {
+                const playedAssetKey = playedActionCard.assetKey;
+                let lastTurnDividerIndex = -1;
+                for (let index = current.length - 1; index >= 0; index -= 1) {
+                  if (current[index]?.kind === "turnDivider") {
+                    lastTurnDividerIndex = index;
+                    break;
+                  }
+                }
+
+                let groupedEntryIndex = -1;
+                for (let index = current.length - 1; index > lastTurnDividerIndex; index -= 1) {
+                  const entry = current[index];
+                  if (
+                    entry?.kind === "playedCards" &&
+                    entry.playerId === actionHistoryPlayerId
+                  ) {
+                    groupedEntryIndex = index;
+                    break;
+                  }
+                }
+
+                if (groupedEntryIndex !== -1) {
+                  const groupedEntry = current[groupedEntryIndex];
+                  return [
+                    ...current.slice(0, groupedEntryIndex),
+                    {
+                      ...groupedEntry,
+                      cardAssetKeys: [
+                        ...(groupedEntry.cardAssetKeys ?? []),
+                        playedAssetKey,
+                      ],
+                    },
+                    ...current.slice(groupedEntryIndex + 1),
+                  ];
+                }
+
+                return [
+                  ...current,
+                  {
+                    id: `action-history-${Date.now()}-${current.length}`,
+                    kind: "playedCards",
+                    playerId: actionHistoryPlayerId,
+                    cardAssetKeys: [playedAssetKey],
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              if (isPaymentComplied) {
+                const paidCards = [
+                  ...compliedTransferCards.cards,
+                  ...compliedTransferCards.propertySets.flatMap((propertySet) => {
+                    return propertySet.cards;
+                  }),
+                ];
+
+                return [
+                  ...current,
+                  {
+                    id: `action-history-${Date.now()}-${current.length}`,
+                    kind: "paymentComplied",
+                    playerId: actionHistoryPlayerId,
+                    targetPlayerId: compliedTransferCards.targetId,
+                    cardAssetKeys: paidCards.map((card) => card.assetKey),
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              if (isPropertySwap) {
+                const sourceCard = compliedTransferProperty.sourcePropertySets
+                  .flatMap((propertySet) => {
+                    return propertySet.cards;
+                  })
+                  .at(0);
+                const targetCard = compliedTransferProperty.targetPropertySets
+                  .flatMap((propertySet) => {
+                    return propertySet.cards;
+                  })
+                  .at(0);
+
+                return [
+                  ...current,
+                  {
+                    id: `action-history-${Date.now()}-${current.length}`,
+                    kind: "propertySwap",
+                    sourcePlayerId: compliedTransferProperty.sourceId,
+                    targetPlayerId: compliedTransferProperty.targetId,
+                    sourceCardAssetKey: sourceCard?.assetKey,
+                    targetCardAssetKey: targetCard?.assetKey,
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              if (isPropertyStealViaTransferProperty) {
+                const sourceSideCard = compliedTransferProperty.sourcePropertySets
+                  .flatMap((propertySet) => {
+                    return propertySet.cards;
+                  })
+                  .at(0);
+                const targetSideCard = compliedTransferProperty.targetPropertySets
+                  .flatMap((propertySet) => {
+                    return propertySet.cards;
+                  })
+                  .at(0);
+
+                const isFromSourceToTarget =
+                  compliedTransferProperty.sourcePropertySets.length > 0;
+                const stealingPlayerId = isFromSourceToTarget
+                  ? compliedTransferProperty.targetId
+                  : compliedTransferProperty.sourceId;
+                const stolenFromPlayerId = isFromSourceToTarget
+                  ? compliedTransferProperty.sourceId
+                  : compliedTransferProperty.targetId;
+                const stolenCardAssetKey = isFromSourceToTarget
+                  ? sourceSideCard?.assetKey
+                  : targetSideCard?.assetKey;
+
+                return [
+                  ...current,
+                  {
+                    id: `action-history-${Date.now()}-${current.length}`,
+                    kind: "propertySteal",
+                    sourcePlayerId: stealingPlayerId,
+                    targetPlayerId: stolenFromPlayerId,
+                    cardAssetKey: stolenCardAssetKey,
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              if (isPropertySteal) {
+                const stolenSetCards = compliedTransferPropertySet.propertySet?.cards ?? [];
+                return [
+                  ...current,
+                  {
+                    id: `action-history-${Date.now()}-${current.length}`,
+                    kind: "propertySetSteal",
+                    sourcePlayerId: compliedTransferPropertySet.targetId,
+                    targetPlayerId: compliedTransferPropertySet.sourceId,
+                    cardAssetKeys: stolenSetCards.map((card) => card.assetKey),
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              if (isDiscardCards) {
+                return [
+                  ...current,
+                  {
+                    id: `action-history-${Date.now()}-${current.length}`,
+                    kind: "discardCards",
+                    playerId: actionHistoryPlayerId,
+                    cardAssetKeys: actionDiscardCards.cards.map((card) => card.assetKey),
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              if (isMaskedDiscardCards) {
+                return [
+                  ...current,
+                  {
+                    id: `action-history-${Date.now()}-${current.length}`,
+                    kind: "maskedDiscardCards",
+                    playerId: actionHistoryPlayerId,
+                    drawCount: maskedActionDiscardCards.numCards,
+                    text: JSON.stringify(actionForHistory) ?? "{}",
+                  },
+                ];
+              }
+
+              return [
+                ...current,
+                isPlayMoney
+                  ? {
+                      id: `action-history-${Date.now()}-${current.length}`,
+                      kind: "playMoney",
+                      playerId: actionHistoryPlayerId,
+                      cardAssetKey: playedMoneyCard?.assetKey,
+                      text: JSON.stringify(actionForHistory) ?? "{}",
+                    }
+                  : isPlayProperty
+                    ? {
+                        id: `action-history-${Date.now()}-${current.length}`,
+                        kind: "playProperty",
+                        playerId: actionHistoryPlayerId,
+                        cardAssetKey: playedPropertyCard?.assetKey,
+                        text: JSON.stringify(actionForHistory) ?? "{}",
+                      }
+                  : isDemandsCreated
+                    ? {
+                        id: `action-history-${Date.now()}-${current.length}`,
+                        kind: "demandsCreated",
+                        playerId: actionHistoryPlayerId,
+                        cardAssetKey: renderableDemandsCreatedCard?.assetKey,
+                        text: JSON.stringify(actionForHistory) ?? "{}",
+                      }
+                  : {
+                      id: `action-history-${Date.now()}-${current.length}`,
+                      kind: "generic",
+                      text: JSON.stringify(actionForHistory) ?? "{}",
+                    },
+              ];
+            });
+          }
+
+          const actionStartTurn = action?.actionStartTurn;
+          if (actionStartTurn && actionPlayerId) {
+            setCurrentTurnPlayerId(actionPlayerId);
+            setMovesLeft(actionStartTurn.movesLeft);
 
             setInitialGameState((current) => {
               if (!current) {
                 return current;
               }
 
-              const isSelfStartTurn = selfPlayerId === startTurnRes.playerId;
-              const drawnCards = startTurnRes.cards ?? [];
+              const isSelfStartTurn = selfPlayerId === actionPlayerId;
+              const drawnCards = actionStartTurn.cards ?? [];
               const nextYourHand = isSelfStartTurn
                 ? {
                     ...current.yourHand,
@@ -656,7 +1072,7 @@ const GamePage = () => {
                   }
                 : current.yourHand;
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== startTurnRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -668,9 +1084,9 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: startTurnRes.seqNum,
-                currentPlayerId: startTurnRes.playerId,
-                movesLeft: startTurnRes.movesLeft,
+                seqNum: action.seqNum ?? current.seqNum,
+                currentPlayerId: actionPlayerId,
+                movesLeft: actionStartTurn.movesLeft,
                 players: nextPlayers,
                 yourHand: nextYourHand,
               };
@@ -678,22 +1094,22 @@ const GamePage = () => {
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== startTurnRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
                 return {
                   ...player,
-                  handCards: player.handCards + startTurnRes.cards.length,
+                  handCards: player.handCards + actionStartTurn.cards.length,
                 };
               });
             });
           }
 
-          const startTurnMaskedRes =
-            message.monopolyDealMessage?.startTurnMaskedRes;
-          if (startTurnMaskedRes) {
-            setCurrentTurnPlayerId(startTurnMaskedRes.playerId);
+          const maskedActionStartTurn = action?.maskedActionStartTurn;
+          if (maskedActionStartTurn && actionPlayerId) {
+            setCurrentTurnPlayerId(actionPlayerId);
+            setMovesLeft(maskedActionStartTurn.movesLeft);
 
             setInitialGameState((current) => {
               if (!current) {
@@ -701,60 +1117,51 @@ const GamePage = () => {
               }
 
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== startTurnMaskedRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
                 return {
                   ...player,
-                  handCards: player.handCards + startTurnMaskedRes.numCards,
+                  handCards: player.handCards + maskedActionStartTurn.numCards,
                 };
               });
 
               return {
                 ...current,
-                seqNum: startTurnMaskedRes.seqNum,
-                currentPlayerId: startTurnMaskedRes.playerId,
+                seqNum: action.seqNum ?? current.seqNum,
+                currentPlayerId: actionPlayerId,
+                movesLeft: maskedActionStartTurn.movesLeft,
                 players: nextPlayers,
               };
             });
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== startTurnMaskedRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
                 return {
                   ...player,
-                  handCards: player.handCards + startTurnMaskedRes.numCards,
+                  handCards: player.handCards + maskedActionStartTurn.numCards,
                 };
               });
             });
           }
 
-          const action = message.monopolyDealMessage?.action;
-          const actionPlayerId = action?.playerId;
           const actionPlayMoney = action?.actionPlayMoney;
           if (
             actionPlayMoney &&
             selfPlayerId &&
-            actionPlayerId === selfPlayerId
+            actionPlayerId === selfPlayerId &&
+            currentTurnPlayerIdRef.current === actionPlayerId
           ) {
             setMovesLeft((current) => Math.max(0, current - 1));
           }
 
           if (actionPlayMoney?.card && actionPlayerId) {
             const playedMoneyCard = actionPlayMoney.card;
-            setActionHistoryEntries((current) => {
-              return [
-                ...current,
-                {
-                  id: `action-history-${Date.now()}-${current.length}`,
-                  text: JSON.stringify({ actionPlayMoney }) ?? "{}",
-                },
-              ];
-            });
             setInitialGameState((current) => {
               if (!current) {
                 return current;
@@ -778,8 +1185,11 @@ const GamePage = () => {
                 };
               }
 
-              const isSelfPlay = selfPlayerId === actionPlayerId;
-              const nextYourHand = isSelfPlay
+              const isSelfTurnAction =
+                !!selfPlayerId &&
+                selfPlayerId === actionPlayerId &&
+                current.currentPlayerId === actionPlayerId;
+              const nextYourHand = isSelfTurnAction
                 ? {
                     ...current.yourHand,
                     cards:
@@ -804,7 +1214,7 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: action.seqNum ?? current.seqNum,
-                movesLeft: isSelfPlay
+                movesLeft: isSelfTurnAction
                   ? Math.max(0, current.movesLeft - 1)
                   : current.movesLeft,
                 players: nextPlayers,
@@ -832,22 +1242,14 @@ const GamePage = () => {
           if (
             actionPlayProperty &&
             selfPlayerId &&
-            actionPlayerId === selfPlayerId
+            actionPlayerId === selfPlayerId &&
+            currentTurnPlayerIdRef.current === actionPlayerId
           ) {
             setMovesLeft((current) => Math.max(0, current - 1));
           }
 
           if (actionPlayProperty?.propertySet && actionPlayerId) {
             const playedPropertySet = actionPlayProperty.propertySet;
-            setActionHistoryEntries((current) => {
-              return [
-                ...current,
-                {
-                  id: `action-history-${Date.now()}-${current.length}`,
-                  text: JSON.stringify({ actionPlayProperty }) ?? "{}",
-                },
-              ];
-            });
             let nextCompletedSetsForPlayer: number | null = null;
             setInitialGameState((current) => {
               if (!current) {
@@ -871,9 +1273,12 @@ const GamePage = () => {
                 nextProperties[propertyIndex] = playedPropertySet;
               }
 
-              const isSelfPlay = selfPlayerId === actionPlayerId;
+              const isSelfTurnAction =
+                !!selfPlayerId &&
+                selfPlayerId === actionPlayerId &&
+                current.currentPlayerId === actionPlayerId;
               const nextYourHand =
-                isSelfPlay && playedCardId
+                isSelfTurnAction && playedCardId
                   ? {
                       ...current.yourHand,
                       cards:
@@ -906,7 +1311,7 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: action.seqNum ?? current.seqNum,
-                movesLeft: isSelfPlay
+                movesLeft: isSelfTurnAction
                   ? Math.max(0, current.movesLeft - 1)
                   : current.movesLeft,
                 players: nextPlayers,
@@ -933,7 +1338,11 @@ const GamePage = () => {
 
           const actionPlayHouse = action?.actionPlayHouse;
           if (actionPlayHouse && actionPlayerId) {
-            if (selfPlayerId && actionPlayerId === selfPlayerId) {
+            if (
+              selfPlayerId &&
+              actionPlayerId === selfPlayerId &&
+              currentTurnPlayerIdRef.current === actionPlayerId
+            ) {
               setMovesLeft((current) => Math.max(0, current - 1));
             }
 
@@ -941,6 +1350,11 @@ const GamePage = () => {
               if (!current || !actionPlayHouse.propertySet) {
                 return current;
               }
+
+              const isSelfTurnAction =
+                !!selfPlayerId &&
+                selfPlayerId === actionPlayerId &&
+                current.currentPlayerId === actionPlayerId;
 
               const nextProperties = [...current.properties];
               const propertyIndex = nextProperties.findIndex((propertySet) => {
@@ -955,7 +1369,7 @@ const GamePage = () => {
 
               const playedCardId = actionPlayHouse.card?.cardId;
               const nextYourHand =
-                selfPlayerId === actionPlayerId && playedCardId
+                isSelfTurnAction && playedCardId
                   ? {
                       ...current.yourHand,
                       cards:
@@ -980,7 +1394,7 @@ const GamePage = () => {
                 ...current,
                 seqNum: action.seqNum ?? current.seqNum,
                 movesLeft:
-                  selfPlayerId === actionPlayerId
+                  isSelfTurnAction
                     ? Math.max(0, current.movesLeft - 1)
                     : current.movesLeft,
                 players: nextPlayers,
@@ -1005,7 +1419,11 @@ const GamePage = () => {
 
           const actionPlayHotel = action?.actionPlayHotel;
           if (actionPlayHotel && actionPlayerId) {
-            if (selfPlayerId && actionPlayerId === selfPlayerId) {
+            if (
+              selfPlayerId &&
+              actionPlayerId === selfPlayerId &&
+              currentTurnPlayerIdRef.current === actionPlayerId
+            ) {
               setMovesLeft((current) => Math.max(0, current - 1));
             }
 
@@ -1013,6 +1431,11 @@ const GamePage = () => {
               if (!current || !actionPlayHotel.propertySet) {
                 return current;
               }
+
+              const isSelfTurnAction =
+                !!selfPlayerId &&
+                selfPlayerId === actionPlayerId &&
+                current.currentPlayerId === actionPlayerId;
 
               const nextProperties = [...current.properties];
               const propertyIndex = nextProperties.findIndex((propertySet) => {
@@ -1027,7 +1450,7 @@ const GamePage = () => {
 
               const playedCardId = actionPlayHotel.card?.cardId;
               const nextYourHand =
-                selfPlayerId === actionPlayerId && playedCardId
+                isSelfTurnAction && playedCardId
                   ? {
                       ...current.yourHand,
                       cards:
@@ -1052,7 +1475,7 @@ const GamePage = () => {
                 ...current,
                 seqNum: action.seqNum ?? current.seqNum,
                 movesLeft:
-                  selfPlayerId === actionPlayerId
+                  isSelfTurnAction
                     ? Math.max(0, current.movesLeft - 1)
                     : current.movesLeft,
                 players: nextPlayers,
@@ -1080,7 +1503,8 @@ const GamePage = () => {
             actionPlayPassGo &&
             actionPlayerId &&
             selfPlayerId &&
-            actionPlayerId === selfPlayerId
+            actionPlayerId === selfPlayerId &&
+            currentTurnPlayerIdRef.current === actionPlayerId
           ) {
             setMovesLeft((current) => Math.max(0, current - 1));
 
@@ -1117,7 +1541,11 @@ const GamePage = () => {
                 movesLeft: Math.max(0, current.movesLeft - 1),
                 players: nextPlayers,
                 yourHand: nextYourHand,
-                lastAction: actionPlayPassGo.lastPlayedCard,
+                lastAction:
+                  actionPlayPassGo.lastPlayedCard &&
+                  actionPlayPassGo.lastPlayedCard.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
+                    ? actionPlayPassGo.lastPlayedCard
+                    : current.lastAction,
               };
             });
 
@@ -1158,7 +1586,11 @@ const GamePage = () => {
                 ...current,
                 seqNum: action.seqNum ?? current.seqNum,
                 players: nextPlayers,
-                lastAction: maskedActionPlayPassGo.lastPlayedCard,
+                lastAction:
+                  maskedActionPlayPassGo.lastPlayedCard &&
+                  maskedActionPlayPassGo.lastPlayedCard.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
+                    ? maskedActionPlayPassGo.lastPlayedCard
+                    : current.lastAction,
               };
             });
 
@@ -1176,10 +1608,14 @@ const GamePage = () => {
             });
           }
 
-          const playActionRes = message.monopolyDealMessage?.playActionRes;
-          if (playActionRes) {
+          const actionDemandsCreated = action?.actionDemandsCreated;
+          if (actionDemandsCreated && actionPlayerId) {
+            const isSelfActor = !!selfPlayerId && actionPlayerId === selfPlayerId;
             const isSelfPlay =
-              !!selfPlayerId && playActionRes.playerId === selfPlayerId;
+              isSelfActor && currentTurnPlayerIdRef.current === actionPlayerId;
+            const playedCardId = actionDemandsCreated.lastPlayedCard?.cardId;
+            const didPlayCard = !!playedCardId;
+            const shouldConsumeSelfCard = isSelfActor && didPlayCard;
             if (isSelfPlay) {
               setMovesLeft((current) => Math.max(0, current - 1));
             }
@@ -1189,9 +1625,262 @@ const GamePage = () => {
                 return current;
               }
 
-              const playedCardId = playActionRes.lastPlayedCard?.cardId;
               const nextPlayers = current.players.map((player) => {
-                if (!isSelfPlay || player.playerId !== playActionRes.playerId) {
+                if (
+                  !shouldConsumeSelfCard ||
+                  player.playerId !== actionPlayerId
+                ) {
+                  return player;
+                }
+
+                return {
+                  ...player,
+                  handCards: Math.max(0, player.handCards - 1),
+                };
+              });
+
+              const nextYourHand =
+                shouldConsumeSelfCard && playedCardId
+                  ? {
+                      ...current.yourHand,
+                      cards:
+                        current.yourHand?.cards.filter((card) => {
+                          return card.cardId !== playedCardId;
+                        }) ?? [],
+                    }
+                  : current.yourHand;
+
+              return {
+                ...current,
+                seqNum: action.seqNum ?? current.seqNum,
+                movesLeft: isSelfPlay
+                  ? Math.max(0, current.movesLeft - 1)
+                  : current.movesLeft,
+                players: nextPlayers,
+                yourHand: nextYourHand,
+                lastAction:
+                  actionDemandsCreated.lastPlayedCard &&
+                  actionDemandsCreated.lastPlayedCard.assetKey !==
+                    AssetKey.ASSET_KEY_UNSPECIFIED
+                    ? actionDemandsCreated.lastPlayedCard
+                    : current.lastAction,
+                demands: actionDemandsCreated.demands,
+                pendingRent: undefined,
+              };
+            });
+
+            if (shouldConsumeSelfCard) {
+              setPlayers((currentPlayers) => {
+                return currentPlayers.map((player) => {
+                  if (player.playerId !== actionPlayerId) {
+                    return player;
+                  }
+
+                  return {
+                    ...player,
+                    handCards: Math.max(0, player.handCards - 1),
+                  };
+                });
+              });
+            }
+          }
+
+          const demandDenied = actionDemandsCreated?.deniedDemand;
+          if (demandDenied) {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const hasMatchingDemand = current.demands.some((demand) => {
+                return demand.id === demandDenied.id;
+              });
+              if (!hasMatchingDemand) {
+                return current;
+              }
+
+              return {
+                ...current,
+                seqNum: action?.seqNum ?? current.seqNum,
+                demands: current.demands.filter((demand) => {
+                  return demand.id !== demandDenied.id;
+                }),
+              };
+            });
+          }
+
+          const actionDemandComplied = action?.actionDemandComplied;
+          if (actionDemandComplied) {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              return {
+                ...current,
+                seqNum: action?.seqNum ?? current.seqNum,
+                demands: current.demands.filter((demand) => {
+                  return demand.id !== actionDemandComplied.demandId;
+                }),
+              };
+            });
+
+          }
+
+          const transferProperty = actionDemandComplied?.transferProperty;
+          if (transferProperty) {
+            let nextPlayersSnapshot: Player[] | null = null;
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const sourceId = transferProperty.sourceId;
+              const targetId = transferProperty.targetId;
+              const sourceGivenSets = transferProperty.sourcePropertySets.map((propertySet) => {
+                return {
+                  ...propertySet,
+                  playerId: targetId,
+                };
+              });
+              const targetGivenSets = transferProperty.targetPropertySets.map((propertySet) => {
+                return {
+                  ...propertySet,
+                  playerId: sourceId,
+                };
+              });
+
+              const sourceTransferredCardIds = new Set<string>();
+              for (const propertySet of transferProperty.sourcePropertySets) {
+                for (const card of propertySet.cards) {
+                  sourceTransferredCardIds.add(card.cardId);
+                }
+              }
+
+              const targetTransferredCardIds = new Set<string>();
+              for (const propertySet of transferProperty.targetPropertySets) {
+                for (const card of propertySet.cards) {
+                  targetTransferredCardIds.add(card.cardId);
+                }
+              }
+
+              const prunedProperties = current.properties
+                .map((propertySet) => {
+                  if (propertySet.playerId === sourceId && sourceTransferredCardIds.size > 0) {
+                    return {
+                      ...propertySet,
+                      cards: propertySet.cards.filter(
+                        (card) => !sourceTransferredCardIds.has(card.cardId),
+                      ),
+                    };
+                  }
+
+                  if (propertySet.playerId === targetId && targetTransferredCardIds.size > 0) {
+                    return {
+                      ...propertySet,
+                      cards: propertySet.cards.filter(
+                        (card) => !targetTransferredCardIds.has(card.cardId),
+                      ),
+                    };
+                  }
+
+                  return propertySet;
+                })
+                .filter((propertySet) => propertySet.cards.length > 0);
+
+              const upsertSetMap = new Map<string, (typeof prunedProperties)[number]>();
+              for (const propertySet of prunedProperties) {
+                upsertSetMap.set(propertySet.propertySetId, propertySet);
+              }
+              for (const propertySet of sourceGivenSets) {
+                upsertSetMap.set(propertySet.propertySetId, propertySet);
+              }
+              for (const propertySet of targetGivenSets) {
+                upsertSetMap.set(propertySet.propertySetId, propertySet);
+              }
+
+              const nextProperties = Array.from(upsertSetMap.values());
+              const nextPlayers = recalculatePlayerStatsFromBoard(
+                current.players,
+                current.money,
+                nextProperties,
+              );
+              nextPlayersSnapshot = nextPlayers;
+
+              return {
+                ...current,
+                seqNum: action?.seqNum ?? current.seqNum,
+                properties: nextProperties,
+                players: nextPlayers,
+              };
+            });
+
+            if (nextPlayersSnapshot) {
+              setPlayers(nextPlayersSnapshot);
+            }
+          }
+
+          const transferPropertySet = actionDemandComplied?.transferPropertySet;
+          if (transferPropertySet) {
+            let nextPlayersSnapshot: Player[] | null = null;
+            setInitialGameState((current) => {
+              if (!current || !transferPropertySet.propertySet) {
+                return current;
+              }
+
+              const nextTransferredSet = {
+                ...transferPropertySet.propertySet,
+                playerId: transferPropertySet.targetId,
+              };
+
+              const nextProperties = current.properties
+                .filter((propertySet) => {
+                  return propertySet.propertySetId !== transferPropertySet.propertySet?.propertySetId;
+                })
+                .filter((propertySet) => {
+                  return propertySet.propertySetId !== nextTransferredSet.propertySetId;
+                });
+
+              nextProperties.push(nextTransferredSet);
+
+              const nextPlayers = recalculatePlayerStatsFromBoard(
+                current.players,
+                current.money,
+                nextProperties,
+              );
+              nextPlayersSnapshot = nextPlayers;
+
+              return {
+                ...current,
+                seqNum: action?.seqNum ?? current.seqNum,
+                properties: nextProperties,
+                players: nextPlayers,
+              };
+            });
+
+            if (nextPlayersSnapshot) {
+              setPlayers(nextPlayersSnapshot);
+            }
+          }
+
+          const actionPendingRentCreated = action?.actionPendingRentCreated;
+          if (actionPendingRentCreated && actionPlayerId) {
+            const isSelfPlay =
+              !!selfPlayerId &&
+              actionPlayerId === selfPlayerId &&
+              currentTurnPlayerIdRef.current === actionPlayerId;
+            if (isSelfPlay) {
+              setMovesLeft((current) => Math.max(0, current - 1));
+            }
+
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              const playedCardId = actionPendingRentCreated.lastCardPlayed?.cardId;
+              const nextPlayers = current.players.map((player) => {
+                if (!isSelfPlay || player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -1214,20 +1903,26 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: playActionRes.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 movesLeft: isSelfPlay
                   ? Math.max(0, current.movesLeft - 1)
                   : current.movesLeft,
                 players: nextPlayers,
                 yourHand: nextYourHand,
-                lastAction: playActionRes.lastPlayedCard,
+                lastAction:
+                  actionPendingRentCreated.lastCardPlayed &&
+                  actionPendingRentCreated.lastCardPlayed.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
+                    ? actionPendingRentCreated.lastCardPlayed
+                    : current.lastAction,
+                pendingRent: actionPendingRentCreated.pendingRent,
+                demands: [],
               };
             });
 
             if (isSelfPlay) {
               setPlayers((currentPlayers) => {
                 return currentPlayers.map((player) => {
-                  if (player.playerId !== playActionRes.playerId) {
+                  if (player.playerId !== actionPlayerId) {
                     return player;
                   }
 
@@ -1240,252 +1935,28 @@ const GamePage = () => {
             }
           }
 
-          const demandCreated = message.monopolyDealMessage?.demandCreated;
-          if (demandCreated) {
+          const actionPendingRentResolved = action?.actionPendingRentResolved;
+          if (actionPendingRentResolved) {
             setInitialGameState((current) => {
               if (!current) {
                 return current;
               }
 
-              const incomingDemand = demandCreated.demand;
-              if (!incomingDemand) {
-                return {
-                  ...current,
-                  pendingRent: undefined,
-                };
-              }
-
-              const nextDemands = current.demands.some((demand) => {
-                return demand.id === incomingDemand.id;
-              })
-                ? current.demands.map((demand) => {
-                    return demand.id === incomingDemand.id ? incomingDemand : demand;
-                  })
-                : [...current.demands, incomingDemand];
-
               return {
                 ...current,
-                demands: nextDemands,
+                seqNum: action.seqNum ?? current.seqNum,
                 pendingRent: undefined,
+                demands: actionPendingRentResolved.demands,
               };
             });
           }
 
-          const demandDenied = message.monopolyDealMessage?.demandDenied;
-          if (demandDenied) {
-            setInitialGameState((current) => {
-              if (!current) {
-                return current;
-              }
-
-              const hasMatchingDemand = current.demands.some((demand) => {
-                return demand.id === demandDenied.demandId;
-              });
-              if (!hasMatchingDemand) {
-                return current;
-              }
-
-              return {
-                ...current,
-                seqNum: demandDenied.seqNum,
-                demands: current.demands.filter((demand) => {
-                  return demand.id !== demandDenied.demandId;
-                }),
-              };
-            });
-          }
-
-          const compliedDemand = message.monopolyDealMessage?.compliedDemand;
-          if (compliedDemand) {
-            setInitialGameState((current) => {
-              if (!current) {
-                return current;
-              }
-
-              return {
-                ...current,
-                seqNum: compliedDemand.seqNum,
-                demands: current.demands.filter((demand) => {
-                  return demand.id !== compliedDemand.demandId;
-                }),
-              };
-            });
-          }
-
-          const transferProperty = message.monopolyDealMessage?.transferProperty;
-          if (transferProperty) {
-            let nextPlayersSnapshot: Player[] | null = null;
-            setInitialGameState((current) => {
-              if (!current) {
-                return current;
-              }
-
-              const sourceId = transferProperty.sourceId;
-              const targetId = transferProperty.targetId;
-              const nextSourceSets = transferProperty.sourcePropertySets.map((propertySet) => {
-                return {
-                  ...propertySet,
-                  playerId: sourceId,
-                };
-              });
-              const nextTargetSets = transferProperty.targetPropertySets.map((propertySet) => {
-                return {
-                  ...propertySet,
-                  playerId: targetId,
-                };
-              });
-
-              const sourceTransferredCardIds = new Set<string>();
-              for (const propertySet of nextSourceSets) {
-                for (const card of propertySet.cards) {
-                  sourceTransferredCardIds.add(card.cardId);
-                }
-              }
-
-              const targetTransferredCardIds = new Set<string>();
-              for (const propertySet of nextTargetSets) {
-                for (const card of propertySet.cards) {
-                  targetTransferredCardIds.add(card.cardId);
-                }
-              }
-
-              const prunedProperties = current.properties
-                .map((propertySet) => {
-                  if (propertySet.playerId === targetId && sourceTransferredCardIds.size > 0) {
-                    return {
-                      ...propertySet,
-                      cards: propertySet.cards.filter(
-                        (card) => !sourceTransferredCardIds.has(card.cardId),
-                      ),
-                    };
-                  }
-
-                  if (propertySet.playerId === sourceId && targetTransferredCardIds.size > 0) {
-                    return {
-                      ...propertySet,
-                      cards: propertySet.cards.filter(
-                        (card) => !targetTransferredCardIds.has(card.cardId),
-                      ),
-                    };
-                  }
-
-                  return propertySet;
-                })
-                .filter((propertySet) => propertySet.cards.length > 0);
-
-              const upsertSetMap = new Map<string, (typeof prunedProperties)[number]>();
-              for (const propertySet of prunedProperties) {
-                upsertSetMap.set(propertySet.propertySetId, propertySet);
-              }
-              for (const propertySet of nextSourceSets) {
-                upsertSetMap.set(propertySet.propertySetId, propertySet);
-              }
-              for (const propertySet of nextTargetSets) {
-                upsertSetMap.set(propertySet.propertySetId, propertySet);
-              }
-
-              const nextProperties = Array.from(upsertSetMap.values());
-              const nextPlayers = recalculatePlayerStatsFromBoard(
-                current.players,
-                current.money,
-                nextProperties,
-              );
-              nextPlayersSnapshot = nextPlayers;
-
-              return {
-                ...current,
-                seqNum: transferProperty.seqNum,
-                properties: nextProperties,
-                players: nextPlayers,
-              };
-            });
-
-            if (nextPlayersSnapshot) {
-              setPlayers(nextPlayersSnapshot);
-            }
-          }
-
-          const transferPropertySet = message.monopolyDealMessage?.transferPropertySet;
-          if (transferPropertySet) {
-            let nextPlayersSnapshot: Player[] | null = null;
-            setInitialGameState((current) => {
-              if (!current || !transferPropertySet.propertySet) {
-                return current;
-              }
-
-              const nextTransferredSet = {
-                ...transferPropertySet.propertySet,
-                playerId: transferPropertySet.sourceId,
-              };
-
-              const nextProperties = current.properties
-                .filter((propertySet) => {
-                  return propertySet.propertySetId !== transferPropertySet.propertySet?.propertySetId;
-                })
-                .filter((propertySet) => {
-                  return propertySet.propertySetId !== nextTransferredSet.propertySetId;
-                });
-
-              nextProperties.push(nextTransferredSet);
-
-              const nextPlayers = recalculatePlayerStatsFromBoard(
-                current.players,
-                current.money,
-                nextProperties,
-              );
-              nextPlayersSnapshot = nextPlayers;
-
-              return {
-                ...current,
-                seqNum: transferPropertySet.seqNum,
-                properties: nextProperties,
-                players: nextPlayers,
-              };
-            });
-
-            if (nextPlayersSnapshot) {
-              setPlayers(nextPlayersSnapshot);
-            }
-          }
-
-          const pendingRentCreated =
-            message.monopolyDealMessage?.pendingRentCreated;
-          if (pendingRentCreated) {
-            setInitialGameState((current) => {
-              if (!current) {
-                return current;
-              }
-
-              return {
-                ...current,
-                pendingRent: pendingRentCreated.pendingRent,
-                demands: [],
-              };
-            });
-          }
-
-          const pendingRentResolved =
-            message.monopolyDealMessage?.pendingRentResolved;
-          if (pendingRentResolved) {
-            setInitialGameState((current) => {
-              if (!current) {
-                return current;
-              }
-
-              return {
-                ...current,
-                seqNum: pendingRentResolved.seqNum,
-                pendingRent: undefined,
-              };
-            });
-          }
-
-          const discardCardsRes = message.monopolyDealMessage?.discardCardsRes;
-          if (discardCardsRes) {
+          const actionDiscardCards = action?.actionDiscardCards;
+          if (actionDiscardCards && actionPlayerId) {
             const discardedCardIds = new Set(
-              discardCardsRes.cards.map((card) => card.cardId),
+              actionDiscardCards.cards.map((card) => card.cardId),
             );
-            const discardedCount = discardCardsRes.cards.length;
+            const discardedCount = actionDiscardCards.cards.length;
 
             setInitialGameState((current) => {
               if (!current) {
@@ -1493,7 +1964,7 @@ const GamePage = () => {
               }
 
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== discardCardsRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -1504,7 +1975,7 @@ const GamePage = () => {
               });
 
               const nextYourHand =
-                discardCardsRes.playerId === selfPlayerId
+                actionPlayerId === selfPlayerId
                   ? {
                       ...current.yourHand,
                       cards:
@@ -1516,7 +1987,7 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: discardCardsRes.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 players: nextPlayers,
                 yourHand: nextYourHand,
               };
@@ -1524,7 +1995,7 @@ const GamePage = () => {
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== discardCardsRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -1535,15 +2006,14 @@ const GamePage = () => {
               });
             });
 
-            if (discardCardsRes.playerId === selfPlayerId) {
+            if (actionPlayerId === selfPlayerId) {
               setSelectedDiscardCardIds(new Set());
             }
           }
 
-          const discardCardsMaskedRes =
-            message.monopolyDealMessage?.discardCardsMaskedRes;
-          if (discardCardsMaskedRes) {
-            const discardedCount = discardCardsMaskedRes.numCards;
+          const maskedActionDiscardCards = action?.maskedActionDiscardCards;
+          if (maskedActionDiscardCards && actionPlayerId) {
+            const discardedCount = maskedActionDiscardCards.numCards;
 
             setInitialGameState((current) => {
               if (!current) {
@@ -1551,7 +2021,7 @@ const GamePage = () => {
               }
 
               const nextPlayers = current.players.map((player) => {
-                if (player.playerId !== discardCardsMaskedRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -1563,14 +2033,14 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: discardCardsMaskedRes.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 players: nextPlayers,
               };
             });
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== discardCardsMaskedRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
@@ -1582,10 +2052,10 @@ const GamePage = () => {
             });
           }
 
-          const rearrangeCardRes = message.monopolyDealMessage?.rearrangeCardRes;
-          if (rearrangeCardRes?.propertySet) {
-            const movedCardId = rearrangeCardRes.card?.cardId;
-            const targetPropertySet = rearrangeCardRes.propertySet;
+          const actionRearrangeCard = action?.actionRearrangeCard;
+          if (actionRearrangeCard?.propertySet && actionPlayerId) {
+            const movedCardId = actionRearrangeCard.card?.cardId;
+            const targetPropertySet = actionRearrangeCard.propertySet;
 
             setInitialGameState((current) => {
               if (!current) {
@@ -1594,7 +2064,7 @@ const GamePage = () => {
 
               const nextProperties = current.properties
                 .map((propertySet) => {
-                  if (propertySet.playerId !== rearrangeCardRes.playerId) {
+                  if (propertySet.playerId !== actionPlayerId) {
                     return propertySet;
                   }
 
@@ -1607,7 +2077,7 @@ const GamePage = () => {
                 })
                 .filter((propertySet) => {
                   return (
-                    propertySet.playerId !== rearrangeCardRes.playerId ||
+                    propertySet.playerId !== actionPlayerId ||
                     propertySet.cards.length > 0
                   );
                 });
@@ -1624,16 +2094,16 @@ const GamePage = () => {
 
               return {
                 ...current,
-                seqNum: rearrangeCardRes.seqNum,
+                seqNum: action.seqNum ?? current.seqNum,
                 properties: nextProperties,
                 players: current.players.map((player) => {
-                  if (player.playerId !== rearrangeCardRes.playerId) {
+                  if (player.playerId !== actionPlayerId) {
                     return player;
                   }
 
                   return {
                     ...player,
-                    completedSets: rearrangeCardRes.sets,
+                    completedSets: actionRearrangeCard.sets,
                   };
                 }),
               };
@@ -1641,29 +2111,27 @@ const GamePage = () => {
 
             setPlayers((currentPlayers) => {
               return currentPlayers.map((player) => {
-                if (player.playerId !== rearrangeCardRes.playerId) {
+                if (player.playerId !== actionPlayerId) {
                   return player;
                 }
 
                 return {
                   ...player,
-                  completedSets: rearrangeCardRes.sets,
+                  completedSets: actionRearrangeCard.sets,
                 };
               });
             });
           }
 
-          const transferCards = message.monopolyDealMessage?.transferCards;
+          const transferCards = actionDemandComplied?.transferCards;
           if (transferCards) {
             const sourceId = transferCards.sourceId;
             const targetId = transferCards.targetId;
             const isSelfSource = !!selfPlayerId && selfPlayerId === sourceId;
-            const {
-              sourceCompletedSets,
-              targetCompletedSets,
-              sourceMoney,
-              targetMoney,
-            } = getTransferCardsPlayerStats(transferCards);
+            const sourceCompletedSets = transferCards.sourceSets;
+            const targetCompletedSets = transferCards.targetSets;
+            const sourceMoney = transferCards.sourceMoney;
+            const targetMoney = transferCards.targetMoney;
             const transferredMoneyCards = transferCards.cards;
             const transferredPropertySets = transferCards.propertySets;
             const moneyCardIds = toCardIdSet(transferredMoneyCards);
@@ -1743,6 +2211,7 @@ const GamePage = () => {
 
               return {
                 ...current,
+                seqNum: action?.seqNum ?? current.seqNum,
                 money: nextMoney,
                 properties: nextProperties,
                 players: nextPlayers,
@@ -1833,6 +2302,10 @@ const GamePage = () => {
   }, [gameId, pushErrorNotice, selfPlayerId]);
 
   useEffect(() => {
+    currentTurnPlayerIdRef.current = currentTurnPlayerId;
+  }, [currentTurnPlayerId]);
+
+  useEffect(() => {
     if (!isDiscardRequired) {
       setSelectedDiscardCardIds((current) => {
         if (current.size === 0) {
@@ -1870,6 +2343,15 @@ const GamePage = () => {
       return next;
     });
   }, [handCardIdsKey, handCards, isDiscardRequired]);
+
+  useEffect(() => {
+    const actionHistoryElement = actionHistoryListRef.current;
+    if (!actionHistoryElement) {
+      return;
+    }
+
+    actionHistoryElement.scrollTop = actionHistoryElement.scrollHeight;
+  }, [actionHistoryEntries.length, isSidebarCollapsed]);
 
   const handleSendChatMessage = useCallback((payload: string) => {
     const socket = socketRef.current;
@@ -3003,14 +3485,382 @@ const GamePage = () => {
             >
                 <section className="game-sidebar-card game-action-history-panel">
                   <h2 className="game-sidebar-title">Action history</h2>
-                  <div className="game-action-history-list" role="log" aria-live="polite">
+                  <div
+                    className="game-action-history-list"
+                    role="log"
+                    aria-live="polite"
+                    ref={actionHistoryListRef}
+                  >
                     {actionHistoryEntries.length === 0 ? (
                       <p className="game-sidebar-empty">No actions yet.</p>
                     ) : (
                       actionHistoryEntries.map((entry) => (
-                        <p className="game-action-history-line" key={entry.id}>
-                          {entry.text}
-                        </p>
+                        entry.kind === "turnDivider" ? (
+                          <hr className="game-action-history-divider" key={entry.id} aria-hidden="true" />
+                        ) : entry.kind === "paymentComplied" && entry.playerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.playerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.playerId] ?? entry.playerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.playerId
+                                  ? "You"
+                                  : (playerNameById[entry.playerId] ?? entry.playerId)}
+                              </span>{" "}paid{" "}
+                              {entry.targetPlayerId ? (
+                                <img
+                                  className="game-action-history-inline-avatar"
+                                  src={players.find((player) => player.playerId === entry.targetPlayerId)?.avatarUrl ?? ""}
+                                  alt={playerNameById[entry.targetPlayerId] ?? entry.targetPlayerId}
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                />
+                              ) : null}
+                              <span className="game-chat-line__author">
+                                {entry.targetPlayerId
+                                  ? selfPlayerId === entry.targetPlayerId
+                                    ? "you"
+                                    : (playerNameById[entry.targetPlayerId] ?? entry.targetPlayerId)
+                                  : "them"}
+                              </span>
+                              {(entry.cardAssetKeys?.length ?? 0) > 0
+                                ? ":"
+                                : " didn't have anything to pay with."}
+                            </p>
+                            {(entry.cardAssetKeys?.length ?? 0) > 0 ? (
+                              <div className="game-action-history-cards-row">
+                                {(entry.cardAssetKeys ?? []).map((assetKey, index) => (
+                                  <img
+                                    className="game-action-history-inline-card"
+                                    src={assetImageByKey[assetKey] ?? ""}
+                                    alt="Paid card"
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer"
+                                    key={`${entry.id}-${assetKey}-${index}`}
+                                  />
+                                ))}
+                              </div>
+                            ) : null}
+                          </article>
+                        ) : entry.kind === "discardCards" && entry.playerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.playerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.playerId] ?? entry.playerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.playerId
+                                  ? "You"
+                                  : (playerNameById[entry.playerId] ?? entry.playerId)}
+                              </span>{" "}
+                              discarded {(entry.cardAssetKeys?.length ?? 0)} {(entry.cardAssetKeys?.length ?? 0) === 1 ? "card:" : "cards:"}
+                            </p>
+                            <div className="game-action-history-cards-row">
+                              {(entry.cardAssetKeys ?? []).map((assetKey, index) => (
+                                <img
+                                  className="game-action-history-inline-card"
+                                  src={assetImageByKey[assetKey] ?? ""}
+                                  alt="Discarded card"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                  key={`${entry.id}-${assetKey}-${index}`}
+                                />
+                              ))}
+                            </div>
+                          </article>
+                        ) : entry.kind === "maskedDiscardCards" && entry.playerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.playerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.playerId] ?? entry.playerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.playerId
+                                  ? "You"
+                                  : (playerNameById[entry.playerId] ?? entry.playerId)}
+                              </span>{" "}
+                              discarded {entry.drawCount ?? 0} {(entry.drawCount ?? 0) === 1 ? "card." : "cards."}
+                            </p>
+                          </article>
+                        ) : entry.kind === "propertySwap" && entry.sourcePlayerId && entry.targetPlayerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.sourcePlayerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.sourcePlayerId] ?? entry.sourcePlayerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.sourcePlayerId
+                                  ? "You"
+                                  : (playerNameById[entry.sourcePlayerId] ?? entry.sourcePlayerId)}
+                              </span>{" "}
+                              swapped cards with{" "}
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.targetPlayerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.targetPlayerId] ?? entry.targetPlayerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.targetPlayerId
+                                  ? "you"
+                                  : (playerNameById[entry.targetPlayerId] ?? entry.targetPlayerId)}
+                              </span>
+                            </p>
+                            <div className="game-action-history-cards-row">
+                              <img
+                                className="game-action-history-inline-card"
+                                src={
+                                  typeof entry.sourceCardAssetKey === "number"
+                                    ? (assetImageByKey[entry.sourceCardAssetKey] ?? "")
+                                    : ""
+                                }
+                                alt="Swapped source card"
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-action-history-swap-arrows" aria-hidden="true">→ ←</span>
+                              <img
+                                className="game-action-history-inline-card"
+                                src={
+                                  typeof entry.targetCardAssetKey === "number"
+                                    ? (assetImageByKey[entry.targetCardAssetKey] ?? "")
+                                    : ""
+                                }
+                                alt="Swapped target card"
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                          </article>
+                        ) : entry.kind === "propertySetSteal" && entry.sourcePlayerId && entry.targetPlayerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.sourcePlayerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.sourcePlayerId] ?? entry.sourcePlayerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.sourcePlayerId
+                                  ? "You"
+                                  : (playerNameById[entry.sourcePlayerId] ?? entry.sourcePlayerId)}
+                              </span>{" "}
+                              stole a set from{" "}
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.targetPlayerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.targetPlayerId] ?? entry.targetPlayerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.targetPlayerId
+                                  ? "you"
+                                  : (playerNameById[entry.targetPlayerId] ?? entry.targetPlayerId)}
+                              </span>
+                              .
+                            </p>
+                            <div className="game-action-history-cards-row">
+                              {(entry.cardAssetKeys ?? []).map((assetKey, index) => (
+                                <img
+                                  className="game-action-history-inline-card"
+                                  src={assetImageByKey[assetKey] ?? ""}
+                                  alt="Stolen set card"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                  key={`${entry.id}-${assetKey}-${index}`}
+                                />
+                              ))}
+                            </div>
+                          </article>
+                        ) : entry.kind === "propertySteal" && entry.sourcePlayerId && entry.targetPlayerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.sourcePlayerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.sourcePlayerId] ?? entry.sourcePlayerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.sourcePlayerId
+                                  ? "You"
+                                  : (playerNameById[entry.sourcePlayerId] ?? entry.sourcePlayerId)}
+                              </span>{" "}
+                              stole a card from{" "}
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.targetPlayerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.targetPlayerId] ?? entry.targetPlayerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.targetPlayerId
+                                  ? "you"
+                                  : (playerNameById[entry.targetPlayerId] ?? entry.targetPlayerId)}
+                              </span>
+                              .
+                            </p>
+                            <div className="game-action-history-cards-row">
+                              <img
+                                className="game-action-history-inline-card"
+                                src={
+                                  typeof entry.cardAssetKey === "number"
+                                    ? (assetImageByKey[entry.cardAssetKey] ?? "")
+                                    : ""
+                                }
+                                alt="Stolen property card"
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                          </article>
+                        ) : entry.kind === "playedCards" && entry.playerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.playerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.playerId] ?? entry.playerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.playerId
+                                  ? "You"
+                                  : (playerNameById[entry.playerId] ?? entry.playerId)}
+                              </span>{" "}
+                              played:
+                            </p>
+                            <div className="game-action-history-cards-row">
+                              {(entry.cardAssetKeys ?? []).map((assetKey, index) => (
+                                <img
+                                  className="game-action-history-inline-card"
+                                  src={assetImageByKey[assetKey] ?? ""}
+                                  alt="Played card"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                  key={`${entry.id}-${assetKey}-${index}`}
+                                />
+                              ))}
+                            </div>
+                          </article>
+                        ) : entry.kind === "startTurn" && entry.playerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.playerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.playerId] ?? entry.playerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {selfPlayerId === entry.playerId
+                                  ? "You"
+                                  : (playerNameById[entry.playerId] ?? entry.playerId)}
+                              </span>{" "}
+                              drew
+                            </p>
+                            <div className="game-action-history-cards-row" aria-label="Drawn cards">
+                              {(entry.cardAssetKeys ?? []).map((assetKey, index) => (
+                                <img
+                                  className="game-action-history-inline-card"
+                                  src={assetImageByKey[assetKey] ?? ""}
+                                  alt="Drawn card"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                  key={`${entry.id}-${assetKey}-${index}`}
+                                />
+                              ))}
+                            </div>
+                          </article>
+                        ) : entry.kind === "maskedStartTurn" && entry.playerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.playerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.playerId] ?? entry.playerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                              <span className="game-chat-line__author">
+                                {playerNameById[entry.playerId] ?? entry.playerId}
+                              </span>{" "}
+                              drew {entry.drawCount ?? 0} cards.
+                            </p>
+                          </article>
+                        ) : (
+                          entry.kind === "playMoney" ||
+                          entry.kind === "playProperty" ||
+                          entry.kind === "demandsCreated"
+                        ) && entry.playerId ? (
+                          <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
+                            <p className="chat-message game-chat-line__message game-action-history-text">
+                              <img
+                                className="game-action-history-inline-avatar"
+                                src={players.find((player) => player.playerId === entry.playerId)?.avatarUrl ?? ""}
+                                alt={playerNameById[entry.playerId] ?? entry.playerId}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                                <span className="game-chat-line__author">
+                                  {playerNameById[entry.playerId] ?? entry.playerId}
+                                </span>{" "}
+                                {entry.kind === "playMoney"
+                                  ? "played money:"
+                                  : entry.kind === "playProperty"
+                                    ? "played property:"
+                                    : "played action:"}
+                              </p>
+                              <div className="game-action-history-cards-row">
+                                <img
+                                  className="game-action-history-inline-card"
+                                  src={
+                                  typeof entry.cardAssetKey === "number"
+                                    ? (assetImageByKey[entry.cardAssetKey] ?? "")
+                                    : ""
+                                }
+                                alt={
+                                  entry.kind === "playMoney"
+                                    ? "Money card"
+                                    : entry.kind === "playProperty"
+                                      ? "Property card"
+                                      : "Action card"
+                                }
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                          </article>
+                        ) : (
+                          <p className="chat-message game-chat-line__message game-action-history-line" key={entry.id}>
+                            {entry.text}
+                          </p>
+                        )
                       ))
                     )}
                   </div>
@@ -3072,7 +3922,7 @@ const GamePage = () => {
                               ) : null}
                             </p>
                             <p className="game-player-stats">
-                              ${player.money} · {player.completedSets} sets · {player.handCards} cards
+                              ${moneyByPlayerId[player.playerId] ?? 0}M · {player.completedSets} sets · {player.handCards} cards
                             </p>
                           </div>
                         </article>

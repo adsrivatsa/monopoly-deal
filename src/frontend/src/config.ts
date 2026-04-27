@@ -11,8 +11,6 @@ const wsDomain = trimTrailingSlash(
   import.meta.env.VITE_WS_DOMAIN ?? DEFAULT_WS_DOMAIN,
 );
 
-console.log(import.meta.env.VITE_WS_DOMAIN);
-
 const roomSocketUrl =
   import.meta.env.VITE_ROOM_SOCKET_URL ?? `${wsDomain}/room/socket`;
 const gameSocketUrl =
