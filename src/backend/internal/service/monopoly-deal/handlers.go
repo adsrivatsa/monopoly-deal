@@ -373,7 +373,14 @@ func (c *Controller) handleComplyPaymentDemand(game *monopoly_deal.Game, tp toke
 
 func (c *Controller) handleComplyPropertyDemand(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_ComplyPropertyDemand) (monopoly_deal.Action, error) {
 	demandID := monopoly_deal.Identifier(msg.ComplyPropertyDemand.DemandId)
-	return game.ComplyPropertyDemand(tp.PlayerID, demandID)
+
+	var propertySetID *monopoly_deal.Identifier
+	if msg.ComplyPropertyDemand.PropertySetId != nil {
+		id := monopoly_deal.Identifier(*msg.ComplyPropertyDemand.PropertySetId)
+		propertySetID = &id
+	}
+
+	return game.ComplyPropertyDemand(tp.PlayerID, demandID, propertySetID)
 }
 
 func (c *Controller) handleComplyPropertySetDemand(game *monopoly_deal.Game, tp token.Payload, msg *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand) (monopoly_deal.Action, error) {

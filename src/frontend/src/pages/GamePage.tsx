@@ -1735,21 +1735,6 @@ const GamePage = () => {
                 return current;
               }
 
-              const sourceId = transferProperty.sourceId;
-              const targetId = transferProperty.targetId;
-              const sourceGivenSets = transferProperty.sourcePropertySets.map((propertySet) => {
-                return {
-                  ...propertySet,
-                  playerId: targetId,
-                };
-              });
-              const targetGivenSets = transferProperty.targetPropertySets.map((propertySet) => {
-                return {
-                  ...propertySet,
-                  playerId: sourceId,
-                };
-              });
-
               const sourceTransferredCardIds = new Set<string>();
               for (const propertySet of transferProperty.sourcePropertySets) {
                 for (const card of propertySet.cards) {
@@ -1763,6 +1748,31 @@ const GamePage = () => {
                   targetTransferredCardIds.add(card.cardId);
                 }
               }
+
+              const sourceId = transferProperty.sourceId;
+              const targetId = transferProperty.targetId;
+              const sourceGivenSets = transferProperty.sourcePropertySets
+                .map((propertySet) => {
+                  return {
+                    ...propertySet,
+                    playerId: targetId,
+                    cards: propertySet.cards.filter(
+                      (card) => !targetTransferredCardIds.has(card.cardId),
+                    ),
+                  };
+                })
+                .filter((propertySet) => propertySet.cards.length > 0);
+              const targetGivenSets = transferProperty.targetPropertySets
+                .map((propertySet) => {
+                  return {
+                    ...propertySet,
+                    playerId: sourceId,
+                    cards: propertySet.cards.filter(
+                      (card) => !sourceTransferredCardIds.has(card.cardId),
+                    ),
+                  };
+                })
+                .filter((propertySet) => propertySet.cards.length > 0);
 
               const prunedProperties = current.properties
                 .map((propertySet) => {
@@ -1799,7 +1809,21 @@ const GamePage = () => {
                 upsertSetMap.set(propertySet.propertySetId, propertySet);
               }
 
-              const nextProperties = Array.from(upsertSetMap.values());
+              const nextProperties = Array.from(upsertSetMap.values()).map((propertySet) => {
+                const seenCardIds = new Set<string>();
+                const dedupedCards = propertySet.cards.filter((card) => {
+                  if (seenCardIds.has(card.cardId)) {
+                    return false;
+                  }
+                  seenCardIds.add(card.cardId);
+                  return true;
+                });
+
+                return {
+                  ...propertySet,
+                  cards: dedupedCards,
+                };
+              });
               const nextPlayers = recalculatePlayerStatsFromBoard(
                 current.players,
                 current.money,
@@ -3220,7 +3244,7 @@ const GamePage = () => {
     });
   }, [notifySocketUnavailable]);
 
-  const handleComplyPropertyDemand = useCallback((demandId: string) => {
+  const handleComplyPropertyDemand = useCallback((demandId: string, propertySetId?: string) => {
     const socket = socketRef.current;
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       console.log("[game-ws] comply property demand skipped; socket not open");
@@ -3228,8 +3252,8 @@ const GamePage = () => {
       return;
     }
 
-    console.log("[game-ui] comply property demand sent", { demandId });
-    sendGameComplyPropertyDemandMessage(socket, demandId);
+    console.log("[game-ui] comply property demand sent", { demandId, propertySetId });
+    sendGameComplyPropertyDemandMessage(socket, { demandId, propertySetId });
   }, [notifySocketUnavailable]);
 
   const handleComplyPropertySetDemand = useCallback((demandId: string) => {

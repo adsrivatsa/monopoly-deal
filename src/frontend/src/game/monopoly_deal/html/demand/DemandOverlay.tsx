@@ -1,6 +1,7 @@
 import {
   type Card,
   DemandKind,
+  DemandSource,
   type Demand,
   type Player,
 } from "../../../../generated/monopoly_deal";
@@ -19,7 +20,12 @@ type DemandOverlayProps = {
   selectingDemandId?: string;
   canConfirmSelection: boolean;
   selectedPaymentTotal: number;
-  onComply: (demandId: string) => void;
+  onComply: (demandId: string, propertySetId?: string) => void;
+  forcedDealPlacementDemandId?: string;
+  selectedForcedDealPlacementSetId?: string;
+  onStartForcedDealPlacementSelection: (demandId: string) => void;
+  onConfirmForcedDealPlacementSelection: (demandId: string) => void;
+  onCancelForcedDealPlacementSelection: () => void;
   onDeny: (demandId: string) => void;
 };
 
@@ -35,6 +41,11 @@ const DemandOverlay = ({
   canConfirmSelection,
   selectedPaymentTotal,
   onComply,
+  forcedDealPlacementDemandId,
+  selectedForcedDealPlacementSetId,
+  onStartForcedDealPlacementSelection,
+  onConfirmForcedDealPlacementSelection,
+  onCancelForcedDealPlacementSelection,
   onDeny,
 }: DemandOverlayProps) => {
   if (demands.length === 0) {
@@ -81,6 +92,20 @@ const DemandOverlay = ({
                   : undefined
               }
               canDeny={canDeny}
+              isChoosingForcedDealPlacement={
+                demand.demandSource === DemandSource.DEMAND_SOURCE_FORCED_DEAL &&
+                forcedDealPlacementDemandId === demand.id
+              }
+              selectedForcedDealPlacementSetId={selectedForcedDealPlacementSetId}
+              onStartForcedDealPlacementSelection={
+                onStartForcedDealPlacementSelection
+              }
+              onConfirmForcedDealPlacementSelection={
+                onConfirmForcedDealPlacementSelection
+              }
+              onCancelForcedDealPlacementSelection={
+                onCancelForcedDealPlacementSelection
+              }
               onComply={onComply}
               onDeny={onDeny}
             />

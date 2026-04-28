@@ -13,6 +13,7 @@ import {
   Category,
   Color,
   DemandKind,
+  DemandSource,
   type Demand,
   type Card,
   type GameState,
@@ -67,7 +68,7 @@ type MonopolyDealHtmlBoardProps = {
     activeColor?: Color,
   ) => void;
   onComplyPaymentDemand: (demandId: string, cardIds: string[]) => void;
-  onComplyPropertyDemand: (demandId: string) => void;
+  onComplyPropertyDemand: (demandId: string, propertySetId?: string) => void;
   onComplyPropertySetDemand: (demandId: string) => void;
   onDenyDemand: (demandId: string) => void;
   onPassTurn: () => void;
@@ -112,6 +113,12 @@ type DealPickerState = {
 type RearrangeSelectionState = {
   cardId: string;
   sourcePropertySetId: string;
+};
+
+type ForcedDealPlacementSelectionState = {
+  demandId: string;
+  sourceCardId: string;
+  selectedPropertySetId?: string;
 };
 
 const MIN_ZOOM = 0.65;
@@ -400,6 +407,8 @@ const MonopolyDealHtmlBoard = ({
     useState<string | null>(null);
   const [selectedRearrangeCard, setSelectedRearrangeCard] =
     useState<RearrangeSelectionState | null>(null);
+  const [forcedDealPlacementSelection, setForcedDealPlacementSelection] =
+    useState<ForcedDealPlacementSelectionState | null>(null);
   const panPointerIdRef = useRef<number | null>(null);
   const panStartPointRef = useRef<{ x: number; y: number } | null>(null);
   const didPanDuringPointerRef = useRef(false);
@@ -505,6 +514,17 @@ const MonopolyDealHtmlBoard = ({
     return lookup;
   }, [assetImageByKey, gameState?.properties]);
 
+  const propertyCardById = useMemo(() => {
+    const lookup: Record<string, Card> = {};
+    for (const propertySet of gameState?.properties ?? []) {
+      for (const card of propertySet.cards) {
+        lookup[card.cardId] = card;
+      }
+    }
+
+    return lookup;
+  }, [gameState?.properties]);
+
   const propertySetCardsById = useMemo(() => {
     const lookup: Record<string, Card[]> = {};
     for (const propertySet of gameState?.properties ?? []) {
@@ -586,6 +606,7 @@ const MonopolyDealHtmlBoard = ({
     isDiscardRequired ||
     shouldShowPendingRentOverlay ||
     (hasAnyDemand &&
+      !forcedDealPlacementSelection &&
       !(isSelectedPaymentDemandActive && isSelectingPaymentCards));
 
   const paymentAmount = selectedPaymentDemand?.paymentDemand?.amount ?? 0;
@@ -725,6 +746,62 @@ const MonopolyDealHtmlBoard = ({
 
     return selectedIds;
   }, [dealPicker?.selectedTargetPropertySetId]);
+
+  const selectedForcedDealPlacementSetIds = useMemo(() => {
+    const selectedIds = new Set<string>();
+
+    if (forcedDealPlacementSelection?.selectedPropertySetId) {
+      selectedIds.add(forcedDealPlacementSelection.selectedPropertySetId);
+    }
+
+    return selectedIds;
+  }, [forcedDealPlacementSelection?.selectedPropertySetId]);
+
+  const isValidForcedDealPlacementSet = useCallback(
+    (propertySet: PropertySet): boolean => {
+      if (!forcedDealPlacementSelection) {
+        return false;
+      }
+
+      const sourceCard = propertyCardById[forcedDealPlacementSelection.sourceCardId];
+      if (!sourceCard) {
+        return false;
+      }
+
+      const maxSetSize = minPropertyCountForCompleteSet(propertySet.color);
+      if (!Number.isFinite(maxSetSize) || propertySet.cards.length >= maxSetSize) {
+        return false;
+      }
+
+      if (sourceCard.activeColor === propertySet.color) {
+        return true;
+      }
+
+      return sourceCard.colors.includes(propertySet.color);
+    },
+    [forcedDealPlacementSelection, propertyCardById],
+  );
+
+  const isValidForcedDealPlacementSetForSourceCard = useCallback(
+    (propertySet: PropertySet, sourceCardId: string): boolean => {
+      const sourceCard = propertyCardById[sourceCardId];
+      if (!sourceCard) {
+        return false;
+      }
+
+      const maxSetSize = minPropertyCountForCompleteSet(propertySet.color);
+      if (!Number.isFinite(maxSetSize) || propertySet.cards.length >= maxSetSize) {
+        return false;
+      }
+
+      if (sourceCard.activeColor === propertySet.color) {
+        return true;
+      }
+
+      return sourceCard.colors.includes(propertySet.color);
+    },
+    [propertyCardById],
+  );
 
   const { columns } = useMemo(
     () => computeBoardGrid(orderedPlayers.length),
@@ -1324,7 +1401,7 @@ const MonopolyDealHtmlBoard = ({
   );
 
   const onDemandComply = useCallback(
-    (demandId: string) => {
+    (demandId: string, propertySetId?: string) => {
       const clickedDemand = visibleDemands.find(
         (demand) => demand.id === demandId,
       );
@@ -1334,7 +1411,20 @@ const MonopolyDealHtmlBoard = ({
       }
 
       if (clickedDemand.demandKind === DemandKind.DEMAND_KIND_PROPERTY) {
-        onComplyPropertyDemand(demandId);
+        if (
+          clickedDemand.demandSource === DemandSource.DEMAND_SOURCE_FORCED_DEAL &&
+          clickedDemand.isActive &&
+          clickedDemand.propertyDemand?.sourceCardId
+        ) {
+          setForcedDealPlacementSelection({
+            demandId,
+            sourceCardId: clickedDemand.propertyDemand.sourceCardId,
+            selectedPropertySetId: propertySetId,
+          });
+          return;
+        }
+
+        onComplyPropertyDemand(demandId, propertySetId);
         return;
       }
 
@@ -1396,6 +1486,58 @@ const MonopolyDealHtmlBoard = ({
       visibleDemands,
     ],
   );
+
+  const onStartForcedDealPlacementSelection = useCallback(
+    (demandId: string) => {
+      const demand = visibleDemands.find((item) => item.id === demandId);
+      if (
+        !demand ||
+        demand.demandSource !== DemandSource.DEMAND_SOURCE_FORCED_DEAL ||
+        !demand.propertyDemand?.sourceCardId
+      ) {
+        return;
+      }
+
+      const hasValidPlacementSet = selfPropertySets.some((propertySet) => {
+        return isValidForcedDealPlacementSetForSourceCard(
+          propertySet,
+          demand.propertyDemand.sourceCardId,
+        );
+      });
+
+      if (!hasValidPlacementSet) {
+        onComplyPropertyDemand(demandId, undefined);
+        return;
+      }
+
+      setForcedDealPlacementSelection({
+        demandId,
+        sourceCardId: demand.propertyDemand.sourceCardId,
+      });
+    },
+    [
+      isValidForcedDealPlacementSetForSourceCard,
+      onComplyPropertyDemand,
+      selfPropertySets,
+      visibleDemands,
+    ],
+  );
+
+  const onConfirmForcedDealPlacementSelection = useCallback(
+    (demandId: string) => {
+      if (!forcedDealPlacementSelection || forcedDealPlacementSelection.demandId !== demandId) {
+        return;
+      }
+
+      onComplyPropertyDemand(demandId, forcedDealPlacementSelection.selectedPropertySetId);
+      setForcedDealPlacementSelection(null);
+    },
+    [forcedDealPlacementSelection, onComplyPropertyDemand],
+  );
+
+  const onCancelForcedDealPlacementSelection = useCallback(() => {
+    setForcedDealPlacementSelection(null);
+  }, []);
 
   const onDemandDeny = useCallback(
     (demandId: string) => {
@@ -1584,6 +1726,13 @@ const MonopolyDealHtmlBoard = ({
     onGameError?.({
       message: "Set Snatcher can only snatch complete sets.",
       code: "DEAL_BREAKER_REQUIRES_COMPLETE_SET",
+    });
+  }, [onGameError]);
+
+  const onSelectCompleteSetForForcedDealPlacement = useCallback(() => {
+    onGameError?.({
+      message: "You cannot choose a complete set to place this card.",
+      code: "FORCED_DEAL_PLACEMENT_SET_COMPLETE",
     });
   }, [onGameError]);
 
@@ -1790,6 +1939,19 @@ const MonopolyDealHtmlBoard = ({
   }, [dealPicker, isDiscardRequired, isSelfTurn, yourHand]);
 
   useEffect(() => {
+    if (!forcedDealPlacementSelection) {
+      return;
+    }
+
+    const demandStillExists = visibleDemands.some((demand) => {
+      return demand.id === forcedDealPlacementSelection.demandId && demand.isActive;
+    });
+    if (!demandStillExists) {
+      setForcedDealPlacementSelection(null);
+    }
+  }, [forcedDealPlacementSelection, visibleDemands]);
+
+  useEffect(() => {
     if (!selectedHandPlacementCardId) {
       return;
     }
@@ -1863,6 +2025,8 @@ const MonopolyDealHtmlBoard = ({
       !isDiscardRequired;
     const canClickRearrangeDestination =
       canRearrangeFromBoard && !!selectedRearrangeCard;
+    const canSelectForcedDealPlacementSet =
+      isSelfBoard && !!forcedDealPlacementSelection;
     const moneyEmptyLabel =
       isSelfBoard && isSelfTurn
         ? "Select a card, then tap here to play as money."
@@ -1961,7 +2125,8 @@ const MonopolyDealHtmlBoard = ({
               className={[
                 "md-dropzone",
                 "md-dropzone--property-set",
-                selectedDealPropertySetIds.has(propertySet.propertySetId)
+                selectedDealPropertySetIds.has(propertySet.propertySetId) ||
+                selectedForcedDealPlacementSetIds.has(propertySet.propertySetId)
                   ? "is-set-selected"
                   : "",
               ]
@@ -1975,6 +2140,30 @@ const MonopolyDealHtmlBoard = ({
 
                 if (canSelectDealCards && dealPicker?.mode === "deal_breaker") {
                   onSelectDealPropertySet(propertySet, player.playerId);
+                  return;
+                }
+
+                if (canSelectForcedDealPlacementSet) {
+                  if (!isValidForcedDealPlacementSet(propertySet)) {
+                    if (isPropertySetComplete(propertySet)) {
+                      onSelectCompleteSetForForcedDealPlacement();
+                    }
+                    return;
+                  }
+
+                  setForcedDealPlacementSelection((current) => {
+                    if (!current) {
+                      return current;
+                    }
+
+                    return {
+                      ...current,
+                      selectedPropertySetId:
+                        current.selectedPropertySetId === propertySet.propertySetId
+                          ? undefined
+                          : propertySet.propertySetId,
+                    };
+                  });
                   return;
                 }
 
@@ -2007,6 +2196,7 @@ const MonopolyDealHtmlBoard = ({
                 selectableCards={
                   canSelectBoardCards ||
                   canSelectDealCards ||
+                  canSelectForcedDealPlacementSet ||
                   canRearrangeFromBoard
                 }
                 selectedCardIds={
@@ -2019,6 +2209,30 @@ const MonopolyDealHtmlBoard = ({
                 onCardClick={(card) => {
                   if (canClickRearrangeDestination) {
                     onApplySelectedRearrangeCard(propertySet.propertySetId);
+                    return;
+                  }
+
+                if (canSelectForcedDealPlacementSet) {
+                    if (!isValidForcedDealPlacementSet(propertySet)) {
+                      if (isPropertySetComplete(propertySet)) {
+                        onSelectCompleteSetForForcedDealPlacement();
+                      }
+                      return;
+                    }
+
+                    setForcedDealPlacementSelection((current) => {
+                      if (!current) {
+                        return current;
+                      }
+
+                      return {
+                        ...current,
+                        selectedPropertySetId:
+                          current.selectedPropertySetId === propertySet.propertySetId
+                            ? undefined
+                            : propertySet.propertySetId,
+                      };
+                    });
                     return;
                   }
 
@@ -2163,6 +2377,19 @@ const MonopolyDealHtmlBoard = ({
             canConfirmSelection={canConfirmPaymentSelection}
             selectedPaymentTotal={selectedPaymentTotal}
             onComply={onDemandComply}
+            forcedDealPlacementDemandId={forcedDealPlacementSelection?.demandId}
+            selectedForcedDealPlacementSetId={
+              forcedDealPlacementSelection?.selectedPropertySetId
+            }
+            onStartForcedDealPlacementSelection={
+              onStartForcedDealPlacementSelection
+            }
+            onConfirmForcedDealPlacementSelection={
+              onConfirmForcedDealPlacementSelection
+            }
+            onCancelForcedDealPlacementSelection={
+              onCancelForcedDealPlacementSelection
+            }
             onDeny={onDemandDeny}
           />
         )}

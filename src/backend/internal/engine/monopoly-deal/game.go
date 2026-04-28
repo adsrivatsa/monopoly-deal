@@ -260,6 +260,7 @@ func (g *Game) removeProperty(playerID uuid.UUID, cardID Identifier) (Card, erro
 	card, _ := set.Cards.RemoveByIdx(j)
 
 	properties[i] = set
+	properties.Clean()
 
 	g.Properties[playerID] = properties
 
@@ -1220,7 +1221,41 @@ func (g *Game) transferMoney(sourceID, targetID uuid.UUID, cardID Identifier) (C
 	return card, nil
 }
 
-func (g *Game) transferProperty(sourceID, targetID uuid.UUID, cardID Identifier) (*Card, *PropertySet, error) {
+func (g *Game) placeTransferredProperty(targetID uuid.UUID, card Card, targetSetID *Identifier) (PropertySet, error) {
+	properties := g.Properties[targetID]
+
+	if targetSetID != nil {
+		setIdx := properties.IndexBySetID(*targetSetID)
+		if setIdx == -1 {
+			return PropertySet{}, errors.PropertySetDoesntExist
+		}
+
+		set := properties[setIdx]
+		if set.IsComplete() {
+			return PropertySet{}, errors.PropertySetIsComplete
+		}
+
+		if !card.HasColor(set.Color) {
+			return PropertySet{}, errors.CardCannotBeAssignedToSet
+		}
+
+		card.ActiveColor = set.Color
+		set.Cards.Add(card)
+		properties[setIdx] = set
+		g.Properties[targetID] = properties
+		return set, nil
+	}
+
+	setID := g.IDGenerator.New()
+	set := NewPropertySet(setID, card.ActiveColor)
+	set.Cards.Add(card)
+	properties.Add(set)
+	g.Properties[targetID] = properties
+
+	return set, nil
+}
+
+func (g *Game) transferProperty(sourceID, targetID uuid.UUID, cardID Identifier, targetSetID *Identifier) (*Card, *PropertySet, error) {
 	card, err := g.removeProperty(sourceID, cardID)
 	if err != nil {
 		return nil, nil, err
@@ -1228,13 +1263,10 @@ func (g *Game) transferProperty(sourceID, targetID uuid.UUID, cardID Identifier)
 
 	switch card.Category {
 	case CategoryPureProperty, CategoryWildProperty:
-		setID := g.IDGenerator.New()
-		set := NewPropertySet(setID, card.ActiveColor)
-		set.Cards.Add(card)
-
-		properties := g.Properties[targetID]
-		properties.Add(set)
-		g.Properties[targetID] = properties
+		set, err := g.placeTransferredProperty(targetID, card, targetSetID)
+		if err != nil {
+			return nil, nil, err
+		}
 		return nil, &set, nil
 	case CategoryAction:
 		if card.AssetKey != AssetKeyHouse && card.AssetKey != AssetKeyHotel {
@@ -1346,7 +1378,7 @@ func (g *Game) transferCards(sourceID, targetID uuid.UUID, cardIDs ...Identifier
 				continue
 			}
 
-			cardPtr, setPtr, err := g.transferProperty(sourceID, targetID, cardID)
+			cardPtr, setPtr, err := g.transferProperty(sourceID, targetID, cardID, nil)
 			if err != nil {
 				nextPending = append(nextPending, cardID)
 				continue
@@ -1462,7 +1494,7 @@ func (g *Game) ComplyPaymentDemand(playerID uuid.UUID, demandID Identifier, card
 	return action, nil
 }
 
-func (g *Game) ComplyPropertyDemand(playerID uuid.UUID, demandID Identifier) (*ActionDemandComplied, error) {
+func (g *Game) ComplyPropertyDemand(playerID uuid.UUID, demandID Identifier, targetSetID *Identifier) (*ActionDemandComplied, error) {
 	err := g.checkPlayer(playerID)
 	if err != nil {
 		return nil, err
@@ -1484,19 +1516,26 @@ func (g *Game) ComplyPropertyDemand(playerID uuid.UUID, demandID Identifier) (*A
 		return action, nil
 	}
 
-	// target pays source with target card
-	_, sourcePropertySets, err := g.transferCards(demand.TargetID, demand.SourceID, demand.Property.TargetCardID)
-	if err != nil {
-		return nil, err
-	}
-
-	// forced-deal path: source pays target with source card
+	var sourcePropertySets PropertySets
 	var targetPropertySets PropertySets
+
+	// forced-deal path: place source card first so selected target set
+	// can still be referenced even if target card removal would empty it.
 	if demand.Property.SourceCardID != nil {
-		_, targetPropertySets, err = g.transferCards(demand.SourceID, demand.TargetID, *demand.Property.SourceCardID)
+		_, targetPropertySet, err := g.transferProperty(demand.SourceID, demand.TargetID, *demand.Property.SourceCardID, targetSetID)
 		if err != nil {
 			return nil, err
 		}
+
+		if targetPropertySet != nil {
+			targetPropertySets.Add(*targetPropertySet)
+		}
+	}
+
+	// target pays source with target card
+	_, sourcePropertySets, err = g.transferCards(demand.TargetID, demand.SourceID, demand.Property.TargetCardID)
+	if err != nil {
+		return nil, err
 	}
 
 	delete(g.Demands, demandID)

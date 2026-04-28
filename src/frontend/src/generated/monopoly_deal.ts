@@ -949,6 +949,7 @@ export interface ComplyPaymentDemand {
 
 export interface ComplyPropertyDemand {
   demandId: string;
+  propertySetId?: string | undefined;
 }
 
 export interface ComplyPropertySetDemand {
@@ -4790,13 +4791,16 @@ export const ComplyPaymentDemand: MessageFns<ComplyPaymentDemand> = {
 };
 
 function createBaseComplyPropertyDemand(): ComplyPropertyDemand {
-  return { demandId: "" };
+  return { demandId: "", propertySetId: undefined };
 }
 
 export const ComplyPropertyDemand: MessageFns<ComplyPropertyDemand> = {
   encode(message: ComplyPropertyDemand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.demandId !== "") {
       writer.uint32(10).string(message.demandId);
+    }
+    if (message.propertySetId !== undefined) {
+      writer.uint32(18).string(message.propertySetId);
     }
     return writer;
   },
@@ -4816,6 +4820,14 @@ export const ComplyPropertyDemand: MessageFns<ComplyPropertyDemand> = {
           message.demandId = reader.string();
           continue;
         }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.propertySetId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4832,6 +4844,11 @@ export const ComplyPropertyDemand: MessageFns<ComplyPropertyDemand> = {
         : isSet(object.demand_id)
         ? globalThis.String(object.demand_id)
         : "",
+      propertySetId: isSet(object.propertySetId)
+        ? globalThis.String(object.propertySetId)
+        : isSet(object.property_set_id)
+        ? globalThis.String(object.property_set_id)
+        : undefined,
     };
   },
 
@@ -4839,6 +4856,9 @@ export const ComplyPropertyDemand: MessageFns<ComplyPropertyDemand> = {
     const obj: any = {};
     if (message.demandId !== "") {
       obj.demandId = message.demandId;
+    }
+    if (message.propertySetId !== undefined) {
+      obj.propertySetId = message.propertySetId;
     }
     return obj;
   },
@@ -4849,6 +4869,7 @@ export const ComplyPropertyDemand: MessageFns<ComplyPropertyDemand> = {
   fromPartial<I extends Exact<DeepPartial<ComplyPropertyDemand>, I>>(object: I): ComplyPropertyDemand {
     const message = createBaseComplyPropertyDemand();
     message.demandId = object.demandId ?? "";
+    message.propertySetId = object.propertySetId ?? undefined;
     return message;
   },
 };

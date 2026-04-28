@@ -2811,6 +2811,7 @@ func (x *ComplyPaymentDemand) GetCardIds() []string {
 type ComplyPropertyDemand struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	DemandId      string                 `protobuf:"bytes,1,opt,name=demand_id,json=demandId,proto3" json:"demand_id,omitempty"`
+	PropertySetId *string                `protobuf:"bytes,2,opt,name=property_set_id,json=propertySetId,proto3,oneof" json:"property_set_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2848,6 +2849,13 @@ func (*ComplyPropertyDemand) Descriptor() ([]byte, []int) {
 func (x *ComplyPropertyDemand) GetDemandId() string {
 	if x != nil {
 		return x.DemandId
+	}
+	return ""
+}
+
+func (x *ComplyPropertyDemand) GetPropertySetId() string {
+	if x != nil && x.PropertySetId != nil {
+		return *x.PropertySetId
 	}
 	return ""
 }
@@ -4814,9 +4822,11 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\x0fproperty_set_id\x18\x03 \x01(\tR\rpropertySetId\"M\n" +
 	"\x13ComplyPaymentDemand\x12\x1b\n" +
 	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\x12\x19\n" +
-	"\bcard_ids\x18\x02 \x03(\tR\acardIds\"3\n" +
+	"\bcard_ids\x18\x02 \x03(\tR\acardIds\"t\n" +
 	"\x14ComplyPropertyDemand\x12\x1b\n" +
-	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\"6\n" +
+	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\x12+\n" +
+	"\x0fproperty_set_id\x18\x02 \x01(\tH\x00R\rpropertySetId\x88\x01\x01B\x12\n" +
+	"\x10_property_set_id\"6\n" +
 	"\x17ComplyPropertySetDemand\x12\x1b\n" +
 	"\tdemand_id\x18\x01 \x01(\tR\bdemandId\"\xdd\x02\n" +
 	"\rTransferCards\x12\x1b\n" +
@@ -5255,6 +5265,7 @@ func file_monopoly_deal_proto_init() {
 	file_monopoly_deal_proto_msgTypes[14].OneofWrappers = []any{}
 	file_monopoly_deal_proto_msgTypes[17].OneofWrappers = []any{}
 	file_monopoly_deal_proto_msgTypes[26].OneofWrappers = []any{}
+	file_monopoly_deal_proto_msgTypes[39].OneofWrappers = []any{}
 	file_monopoly_deal_proto_msgTypes[44].OneofWrappers = []any{
 		(*ActionDemandComplied_TransferCards)(nil),
 		(*ActionDemandComplied_TransferProperty)(nil),

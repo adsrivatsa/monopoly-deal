@@ -45,7 +45,7 @@ type MonopolyDealGameMountProps = {
     activeColor?: Color,
   ) => void;
   onComplyPaymentDemand: (demandId: string, cardIds: string[]) => void;
-  onComplyPropertyDemand: (demandId: string) => void;
+  onComplyPropertyDemand: (demandId: string, propertySetId?: string) => void;
   onComplyPropertySetDemand: (demandId: string) => void;
   onClientError?: (error: unknown) => void;
   onGameError?: (error: { message: string; code: string }) => void;

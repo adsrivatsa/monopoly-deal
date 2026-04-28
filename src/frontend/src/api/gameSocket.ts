@@ -374,12 +374,16 @@ export const sendGameComplyPaymentDemandMessage = (
 
 export const sendGameComplyPropertyDemandMessage = (
   socket: WebSocket,
-  demandId: string,
+  payload: {
+    demandId: string;
+    propertySetId?: string;
+  },
 ) => {
   const message = GatewayClientMessage.encode({
     monopolyDealMessage: {
       complyPropertyDemand: {
-        demandId,
+        demandId: payload.demandId,
+        propertySetId: payload.propertySetId,
       },
     },
   }).finish();

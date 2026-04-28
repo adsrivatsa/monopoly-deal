@@ -353,6 +353,7 @@ message ComplyPaymentDemand {
 
 message ComplyPropertyDemand {
   string demand_id = 1;
+  optional string property_set_id = 2;
 }
 
 message ComplyPropertySetDemand {

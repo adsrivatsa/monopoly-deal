@@ -11,7 +11,12 @@ type PropertyDemandOverlayProps = {
   targetCardImageUrl?: string;
   sourceCardImageUrl?: string;
   canDeny: boolean;
-  onComply: (demandId: string) => void;
+  isChoosingForcedDealPlacement: boolean;
+  selectedForcedDealPlacementSetId?: string;
+  onStartForcedDealPlacementSelection: (demandId: string) => void;
+  onConfirmForcedDealPlacementSelection: (demandId: string) => void;
+  onCancelForcedDealPlacementSelection: () => void;
+  onComply: (demandId: string, propertySetId?: string) => void;
   onDeny: (demandId: string) => void;
 };
 
@@ -22,6 +27,11 @@ const PropertyDemandOverlay = ({
   targetCardImageUrl,
   sourceCardImageUrl,
   canDeny,
+  isChoosingForcedDealPlacement,
+  selectedForcedDealPlacementSetId,
+  onStartForcedDealPlacementSelection,
+  onConfirmForcedDealPlacementSelection,
+  onCancelForcedDealPlacementSelection,
   onComply,
   onDeny,
 }: PropertyDemandOverlayProps) => {
@@ -61,6 +71,18 @@ const PropertyDemandOverlay = ({
     </span>
   );
   const sourceReference = isSelfSource ? "you" : sourceInlineName;
+  const selfInlineName = (
+    <span className="md-demand-inline-player">
+      <img
+        className="md-demand-source__avatar md-demand-inline-player__avatar"
+        src={sourcePlayer?.avatarUrl ?? ""}
+        alt="You"
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+      <span className="md-demand-source__name">You</span>
+    </span>
+  );
   const demandEyebrow = isSlyDealDemand
     ? "Property Steal"
     : isForcedDealDemand
@@ -99,6 +121,26 @@ const PropertyDemandOverlay = ({
   const secondExchangeImageUrl = demand.isActive
     ? targetCardImageUrl
     : sourceCardImageUrl;
+  const isDeniedBySelf = !isTargetingSelf && !demand.isActive && isSelfSource;
+
+  const shouldAskForcedDealPlacement =
+    isTargetingSelf &&
+    isForcedDealDemand &&
+    demand.isActive &&
+    !!hasReturnProperty;
+
+  const onClickComply = () => {
+    if (!shouldAskForcedDealPlacement) {
+      onComply(demand.id);
+      return;
+    }
+
+    onStartForcedDealPlacementSelection(demand.id);
+  };
+
+  const onConfirmForcedDealPlacement = () => {
+    onConfirmForcedDealPlacementSelection(demand.id);
+  };
 
   return (
     <aside
@@ -122,7 +164,13 @@ const PropertyDemandOverlay = ({
         </div>
       ) : (
         <p className="md-demand__line md-demand-source__message">
-          {targetInlineName} {demandLine} {sourceReference}.
+          {isDeniedBySelf
+            ? isSlyDealDemand
+              ? <>{selfInlineName} blocked a property steal from {targetInlineName}.</>
+              : isForcedDealDemand
+                ? <>{selfInlineName} blocked a property swap from {targetInlineName}.</>
+                : <>{selfInlineName} blocked a property demand from {targetInlineName}.</>
+            : <>{targetInlineName} {demandLine} {sourceReference}.</>}
         </p>
       )}
       {isTargetingSelf && hasReturnProperty ? (
@@ -173,21 +221,44 @@ const PropertyDemandOverlay = ({
           />
         </div>
       ) : null}
+      {isTargetingSelf && isChoosingForcedDealPlacement ? (
+        <p className="md-demand__line">
+          {selectedForcedDealPlacementSetId
+            ? "Set selected. Click OK to accept swap."
+            : "No set selected. Click OK to create a new set."}
+        </p>
+      ) : null}
       {isTargetingSelf ? (
         <div className="md-demand__actions">
-          <button
-            type="button"
-            className="md-demand__button"
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={() => onComply(demand.id)}
-          >
-            OK
-          </button>
+          {isChoosingForcedDealPlacement ? (
+            <>
+              <button
+                type="button"
+                className="md-demand__button"
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={onConfirmForcedDealPlacement}
+              >
+                OK
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="md-demand__button"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={onClickComply}
+            >
+              Accept
+            </button>
+          )}
           <button
             type="button"
             className="md-demand__button md-demand__button--secondary"
             onPointerDown={(event) => event.stopPropagation()}
-            onClick={() => onDeny(demand.id)}
+            onClick={() => {
+              onCancelForcedDealPlacementSelection();
+              onDeny(demand.id);
+            }}
             disabled={!canDeny}
             title={canDeny ? "Play Just Say No" : "Requires a Just Say No card"}
           >
