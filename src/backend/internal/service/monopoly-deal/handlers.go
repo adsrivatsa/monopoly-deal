@@ -90,7 +90,7 @@ func (c *Controller) handleChat(ctx context.Context, tp token.Payload, msg *mono
 }
 
 func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_MonopolyDealMessage) error {
-	g, err := c.store.GetGameByPlayer(ctx, tp.PlayerID)
+	gameID, err := c.store.GetGameIDByPlayer(ctx, tp.PlayerID)
 	if err != nil {
 		if errors.DBErrorCode(err) == errors.NoDataFound {
 			return errors.EntityNotFound(errors.EntityGame)
@@ -98,9 +98,18 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		return err
 	}
 
-	lock := c.getGameLock(g.GameID)
+	// TODO - move this to a redis lock
+	lock := c.getGameLock(gameID)
 	lock.Lock()
 	defer lock.Unlock()
+
+	g, err := c.store.GetGameByPlayer(ctx, tp.PlayerID)
+	if err != nil {
+		if errors.DBErrorCode(err) == errors.NoDataFound {
+			return errors.EntityNotFound(errors.EntityGame)
+		}
+		return err
+	}
 
 	game, err := monopoly_deal.DecodeMsgpack(g.GameState)
 	if err != nil {

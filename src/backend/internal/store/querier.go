@@ -24,6 +24,7 @@ type Querier interface {
 	DeleteRoomPlayer(ctx context.Context, arg DeleteRoomPlayerParams) error
 	DeleteRoomPlayersByRoom(ctx context.Context, roomID uuid.UUID) error
 	GetGameByPlayer(ctx context.Context, playerID uuid.UUID) (Game, error)
+	GetGameIDByPlayer(ctx context.Context, playerID uuid.UUID) (uuid.UUID, error)
 	GetOldestRoomPlayer(ctx context.Context, arg GetOldestRoomPlayerParams) (RoomPlayer, error)
 	GetPlayer(ctx context.Context, arg GetPlayerParams) (Player, error)
 	GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Player, error)
