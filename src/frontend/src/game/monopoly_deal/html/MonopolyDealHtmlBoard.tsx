@@ -456,6 +456,7 @@ const MonopolyDealHtmlBoard = ({
   }, [gameState?.demands, selfPlayerId]);
 
   const hasAnyDemand = visibleDemands.length > 0;
+  const hasActiveDemand = visibleDemands.some((demand) => demand.isActive);
   const pendingRent = gameState?.pendingRent;
   const hasPendingRent = !!pendingRent;
   const currentPlayerId = gameState?.currentPlayerId ?? "";
@@ -2358,6 +2359,34 @@ const MonopolyDealHtmlBoard = ({
             canDouble={hasDoubleTheRent && hasMovesLeft}
             onDouble={onPendingRentDouble}
             onRent={onPendingRentRent}
+          />
+        ) : hasActiveDemand ? (
+          <DemandOverlay
+            demands={visibleDemands}
+            players={players}
+            selfPlayerId={selfPlayerId}
+            targetCardImageById={propertyCardImageById}
+            propertySetCardsById={propertySetCardsById}
+            canDeny={hasJustSayNo}
+            isSelectingCards={isSelectingPaymentCards}
+            selectingDemandId={activePaymentDemandId ?? undefined}
+            canConfirmSelection={canConfirmPaymentSelection}
+            selectedPaymentTotal={selectedPaymentTotal}
+            onComply={onDemandComply}
+            forcedDealPlacementDemandId={forcedDealPlacementSelection?.demandId}
+            selectedForcedDealPlacementSetId={
+              forcedDealPlacementSelection?.selectedPropertySetId
+            }
+            onStartForcedDealPlacementSelection={
+              onStartForcedDealPlacementSelection
+            }
+            onConfirmForcedDealPlacementSelection={
+              onConfirmForcedDealPlacementSelection
+            }
+            onCancelForcedDealPlacementSelection={
+              onCancelForcedDealPlacementSelection
+            }
+            onDeny={onDemandDeny}
           />
         ) : isDiscardRequired ? (
           <DiscardPromptOverlay
