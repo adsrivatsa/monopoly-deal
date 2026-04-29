@@ -13,6 +13,10 @@ export const themeRegistry = [
     id: "rose-light",
     label: "Rose Light",
   },
+  {
+    id: "rose-dark",
+    label: "Rose Dark",
+  },
 ] as const;
 
 export type ThemeId = (typeof themeRegistry)[number]["id"];
