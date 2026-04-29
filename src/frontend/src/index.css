@@ -88,6 +88,25 @@
   --nav-bg: rgba(19, 10, 13, 0.86);
 }
 
+:root[data-theme="ash-orange"] {
+  --background: #171514;
+  --foreground: #f2ece7;
+  --card: #201d1b;
+  --card-foreground: #f2ece7;
+  --muted: #2b2623;
+  --muted-foreground: #c2b2a5;
+  --border: #4b413a;
+  --ring: #ffab66;
+  --primary: #f28a2e;
+  --primary-foreground: #22160b;
+  --surface: #25201c;
+  --shadow: 0 16px 38px rgba(0, 0, 0, 0.5);
+  --overlay-backdrop: rgba(9, 8, 7, 0.72);
+  --bg-glow-1: rgba(242, 138, 46, 0.2);
+  --bg-glow-2: rgba(180, 139, 106, 0.12);
+  --nav-bg: rgba(23, 21, 20, 0.86);
+}
+
 body {
   margin: 0;
   min-height: 100vh;
