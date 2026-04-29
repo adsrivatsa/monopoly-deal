@@ -456,7 +456,9 @@ const MonopolyDealHtmlBoard = ({
   }, [gameState?.demands, selfPlayerId]);
 
   const hasAnyDemand = visibleDemands.length > 0;
-  const hasActiveDemand = visibleDemands.some((demand) => demand.isActive);
+  const hasSelfDemand =
+    !!selfPlayerId &&
+    visibleDemands.some((demand) => demand.playerId === selfPlayerId);
   const pendingRent = gameState?.pendingRent;
   const hasPendingRent = !!pendingRent;
   const currentPlayerId = gameState?.currentPlayerId ?? "";
@@ -2360,7 +2362,7 @@ const MonopolyDealHtmlBoard = ({
             onDouble={onPendingRentDouble}
             onRent={onPendingRentRent}
           />
-        ) : hasActiveDemand ? (
+        ) : hasSelfDemand ? (
           <DemandOverlay
             demands={visibleDemands}
             players={players}
