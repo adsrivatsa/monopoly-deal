@@ -92,6 +92,21 @@ func (q *Queries) GetGameByPlayer(ctx context.Context, playerID uuid.UUID) (Game
 	return i, err
 }
 
+const getGameIDByPlayer = `-- name: GetGameIDByPlayer :one
+SELECT g.game_id FROM game g
+INNER JOIN game_player gp
+    ON gp.game_id = g.game_id
+WHERE gp.player_id = $1
+  AND NOT g.completed
+`
+
+func (q *Queries) GetGameIDByPlayer(ctx context.Context, playerID uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, getGameIDByPlayer, playerID)
+	var game_id uuid.UUID
+	err := row.Scan(&game_id)
+	return game_id, err
+}
+
 const updateGameState = `-- name: UpdateGameState :one
    UPDATE game
       SET game_state = $1
