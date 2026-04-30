@@ -2,7 +2,6 @@ package monopoly_deal
 
 import (
 	"context"
-	"sync"
 	"the-deal/internal/config"
 	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
@@ -20,33 +19,21 @@ import (
 )
 
 type Controller struct {
-	cfg       config.Config
-	store     store.Store
-	bus       *event.Bus
-	mu        sync.Mutex
-	gameLocks map[uuid.UUID]*sync.RWMutex
+	cfg        config.Config
+	store      store.Store
+	bus        *event.Bus
+	timeoutMan *timex.TimeoutManager[TimeoutKey]
 }
 
 func NewController(cfg config.Config, pool *pgxpool.Pool, client *redis.Client) *Controller {
 	c := &Controller{
-		cfg:       cfg,
-		store:     store.NewSQLStore(pool, nil),
-		bus:       event.NewBus(client),
-		gameLocks: make(map[uuid.UUID]*sync.RWMutex),
+		cfg:        cfg,
+		store:      store.NewSQLStore(pool, nil),
+		bus:        event.NewBus(client),
+		timeoutMan: timex.NewTimeoutManager[TimeoutKey](),
 	}
 
 	return c
-}
-
-func (c *Controller) getGameLock(gameID uuid.UUID) *sync.RWMutex {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	lock, ok := c.gameLocks[gameID]
-	if !ok {
-		lock = &sync.RWMutex{}
-		c.gameLocks[gameID] = lock
-	}
-	return lock
 }
 
 func (c *Controller) HandleEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_MonopolyDealMessage) error {
@@ -90,169 +77,166 @@ func (c *Controller) handleChat(ctx context.Context, tp token.Payload, msg *mono
 }
 
 func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_MonopolyDealMessage) error {
-	gameID, err := c.store.GetGameIDByPlayer(ctx, tp.PlayerID)
-	if err != nil {
-		if errors.DBErrorCode(err) == errors.NoDataFound {
-			return errors.EntityNotFound(errors.EntityGame)
-		}
-		return err
-	}
-
-	// TODO - move this to a redis lock
-	lock := c.getGameLock(gameID)
-	lock.Lock()
-	defer lock.Unlock()
-
-	g, err := c.store.GetGameByPlayer(ctx, tp.PlayerID)
-	if err != nil {
-		if errors.DBErrorCode(err) == errors.NoDataFound {
-			return errors.EntityNotFound(errors.EntityGame)
-		}
-		return err
-	}
-
-	game, err := monopoly_deal.DecodeMsgpack(g.GameState)
-	if err != nil {
-		return err
-	}
-
+	var gameID uuid.UUID
 	var action monopoly_deal.Action
+	var totalSets, totalMoney int
+	var didWin bool
 
-	switch p := msg.MonopolyDealMessage.GetPayload().(type) {
-	case *monopoly_deal_schema.ClientMessage_PlayMoney:
-		action, err = c.handlePlayMoney(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayProperty:
-		action, err = c.handlePlayProperty(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayHouse:
-		action, err = c.handlePlayHouse(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayHotel:
-		action, err = c.handlePlayHotel(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayPassGo:
-		action, err = c.handlePlayPassGo(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday:
-		action, err = c.handlePlayItsMyBirthday(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayDebtCollector:
-		action, err = c.handlePlayDebtCollector(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayRent:
-		action, err = c.handlePlayRent(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayWildRent:
-		action, err = c.handlePlayWildRent(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayDoubleTheRent:
-		action, err = c.handleDoubleTheRent(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlaySlyDeal:
-		action, err = c.handlerMonopolyDealPlaySlyDeal(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayForcedDeal:
-		action, err = c.handlePlayForcedDeal(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_PlayDealBreaker:
-		action, err = c.handlePlayDealBreaker(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_ResolvePendingRent:
-		action, err = c.handleResolveRent(game, tp)
-	case *monopoly_deal_schema.ClientMessage_ComplyPaymentDemand:
-		action, err = c.handleComplyPaymentDemand(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_ComplyPropertyDemand:
-		action, err = c.handleComplyPropertyDemand(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand:
-		action, err = c.handleComplyPropertySetDemand(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_DenyDemand:
-		action, err = c.handleDenyDemand(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_DiscardCards:
-		action, err = c.handleDiscardCards(game, tp, p)
-	case *monopoly_deal_schema.ClientMessage_CompleteTurn:
-		action, err = c.handleCompleteTurn(game, tp)
-	case *monopoly_deal_schema.ClientMessage_RearrangeCard:
-		action, err = c.handleRearrangeCard(game, tp, p)
-	}
-	if err != nil {
-		return err
-	}
+	err := c.store.ExecTx(ctx, func(q *store.Queries) error {
+		g, err := q.GetGameByPlayerForUpdate(ctx, tp.PlayerID)
+		if err != nil {
+			if errors.DBErrorCode(err) == errors.NoDataFound {
+				return errors.EntityNotFound(errors.EntityGame)
+			}
+			return err
+		}
 
-	buf, err := game.EncodeMsgpack()
-	if err != nil {
-		return err
-	}
+		gameID = g.GameID
 
-	g, err = c.store.UpdateGameState(ctx, store.UpdateGameStateParams{
-		GameState: buf,
-		GameID:    g.GameID,
+		game, err := monopoly_deal.DecodeMsgpack(g.GameState)
+		if err != nil {
+			return err
+		}
+
+		switch p := msg.MonopolyDealMessage.GetPayload().(type) {
+		case *monopoly_deal_schema.ClientMessage_PlayMoney:
+			action, err = c.handlePlayMoney(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayProperty:
+			action, err = c.handlePlayProperty(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayHouse:
+			action, err = c.handlePlayHouse(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayHotel:
+			action, err = c.handlePlayHotel(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayPassGo:
+			action, err = c.handlePlayPassGo(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday:
+			action, err = c.handlePlayItsMyBirthday(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayDebtCollector:
+			action, err = c.handlePlayDebtCollector(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayRent:
+			action, err = c.handlePlayRent(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayWildRent:
+			action, err = c.handlePlayWildRent(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayDoubleTheRent:
+			action, err = c.handleDoubleTheRent(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlaySlyDeal:
+			action, err = c.handlerMonopolyDealPlaySlyDeal(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayForcedDeal:
+			action, err = c.handlePlayForcedDeal(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_PlayDealBreaker:
+			action, err = c.handlePlayDealBreaker(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_ResolvePendingRent:
+			action, err = c.handleResolveRent(game, tp)
+		case *monopoly_deal_schema.ClientMessage_ComplyPaymentDemand:
+			action, err = c.handleComplyPaymentDemand(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_ComplyPropertyDemand:
+			action, err = c.handleComplyPropertyDemand(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand:
+			action, err = c.handleComplyPropertySetDemand(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_DenyDemand:
+			action, err = c.handleDenyDemand(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_DiscardCards:
+			action, err = c.handleDiscardCards(game, tp, p)
+		case *monopoly_deal_schema.ClientMessage_CompleteTurn:
+			action, err = c.handleCompleteTurn(game, tp)
+		case *monopoly_deal_schema.ClientMessage_RearrangeCard:
+			action, err = c.handleRearrangeCard(game, tp, p)
+		}
+		if err != nil {
+			return err
+		}
+
+		buf, err := game.EncodeMsgpack()
+		if err != nil {
+			return err
+		}
+
+		g, err = q.UpdateGameState(ctx, store.UpdateGameStateParams{
+			GameState: buf,
+			GameID:    g.GameID,
+		})
+		if err != nil {
+			return err
+		}
+
+		buf, err = msgpack.Marshal(action)
+		if err != nil {
+			return err
+		}
+
+		_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
+			GameID:        g.GameID,
+			SeqNum:        int16(action.GetSeqNum()),
+			ActionKind:    string(action.GetKind()),
+			ActionVersion: int32(action.GetVersion()),
+			Action:        buf,
+		})
+		if err != nil {
+			return err
+		}
+
+		totalSets, totalMoney, didWin, err = game.CheckWinConditions(tp.PlayerID)
+		if err != nil {
+			return err
+		}
+
+		if didWin {
+			_, err = q.CompleteGame(ctx, store.CompleteGameParams{
+				Winner: &tp.PlayerID,
+				GameID: gameID,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err
 	}
 
-	buf, err = msgpack.Marshal(action)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.store.CreateGameHistory(ctx, store.CreateGameHistoryParams{
-		GameID:        g.GameID,
-		SeqNum:        int16(action.GetSeqNum()),
-		ActionKind:    string(action.GetKind()),
-		ActionVersion: int32(action.GetVersion()),
-		Action:        buf,
-	})
-	if err != nil {
-		return err
-	}
-
-	completeSets, moneyValue, didWin, err := game.CheckWinConditions(tp.PlayerID)
-	if err != nil {
-		return err
-	}
-
-	e := &monopoly_deal_schema.ServerMessage{
-		Payload: &monopoly_deal_schema.ServerMessage_Action{
-			Action: action.Proto(),
-		},
-	}
-
-	wrappedEvent := &schema.ServerMessage{
+	e := &schema.ServerMessage{
 		Payload: &schema.ServerMessage_MonopolyDealMessage{
-			MonopolyDealMessage: e,
+			MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
+				Payload: &monopoly_deal_schema.ServerMessage_Action{
+					Action: action.Proto(),
+				},
+			},
 		},
 	}
 
-	buf, err = proto.Marshal(wrappedEvent)
+	buf, err := proto.Marshal(e)
 	if err != nil {
 		return err
 	}
 
-	err = c.bus.Publish(ctx, event.GameChannelPre+g.GameID.String(), event.NewMonopolyDealEvent(buf))
+	err = c.bus.Publish(ctx, event.GameChannelPre+gameID.String(), event.NewMonopolyDealEvent(buf))
 	if err != nil {
 		return err
 	}
 
 	if didWin {
-		e = &monopoly_deal_schema.ServerMessage{
-			Payload: &monopoly_deal_schema.ServerMessage_WonGame{
-				WonGame: &monopoly_deal_schema.WonGame{
-					PlayerId:         tp.PlayerID.String(),
-					NumCompletedSets: int32(completeSets),
-					Money:            int32(moneyValue),
+		e = &schema.ServerMessage{
+			Payload: &schema.ServerMessage_MonopolyDealMessage{
+				MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
+					Payload: &monopoly_deal_schema.ServerMessage_WonGame{
+						WonGame: &monopoly_deal_schema.WonGame{
+							PlayerId:         tp.PlayerID.String(),
+							NumCompletedSets: int32(totalSets),
+							Money:            int32(totalMoney),
+						},
+					},
 				},
 			},
 		}
 
-		wrappedEvent = &schema.ServerMessage{
-			Payload: &schema.ServerMessage_MonopolyDealMessage{
-				MonopolyDealMessage: e,
-			},
-		}
-
-		buf, err = proto.Marshal(wrappedEvent)
+		buf, err = proto.Marshal(e)
 		if err != nil {
 			return err
 		}
 
-		err = c.bus.Publish(ctx, event.GameChannelPre+g.GameID.String(), event.NewMonopolyDealEvent(buf))
-		if err != nil {
-			return err
-		}
-
-		_, err = c.store.CompleteGame(ctx, store.CompleteGameParams{
-			Winner: &tp.PlayerID,
-			GameID: g.GameID,
-		})
+		err = c.bus.Publish(ctx, event.GameChannelPre+gameID.String(), event.NewMonopolyDealEvent(buf))
 		if err != nil {
 			return err
 		}

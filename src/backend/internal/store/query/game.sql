@@ -26,3 +26,12 @@ INNER JOIN game_player gp
     ON gp.game_id = g.game_id
 WHERE gp.player_id = $1
   AND NOT g.completed;
+
+-- name: GetGameByPlayerForUpdate :one
+SELECT g.*
+  FROM game g
+           INNER JOIN game_player gp
+           ON gp.game_id = g.game_id
+ WHERE gp.player_id = $1
+   AND NOT g.completed
+FOR UPDATE;
