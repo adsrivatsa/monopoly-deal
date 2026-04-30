@@ -92,6 +92,31 @@ func (q *Queries) GetGameByPlayer(ctx context.Context, playerID uuid.UUID) (Game
 	return i, err
 }
 
+const getGameByPlayerForUpdate = `-- name: GetGameByPlayerForUpdate :one
+SELECT g.game_id, g.display_name, g.game, g.game_state, g.completed, g.winner, g.created_at
+  FROM game g
+           INNER JOIN game_player gp
+           ON gp.game_id = g.game_id
+ WHERE gp.player_id = $1
+   AND NOT g.completed
+FOR UPDATE
+`
+
+func (q *Queries) GetGameByPlayerForUpdate(ctx context.Context, playerID uuid.UUID) (Game, error) {
+	row := q.db.QueryRow(ctx, getGameByPlayerForUpdate, playerID)
+	var i Game
+	err := row.Scan(
+		&i.GameID,
+		&i.DisplayName,
+		&i.Game,
+		&i.GameState,
+		&i.Completed,
+		&i.Winner,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getGameIDByPlayer = `-- name: GetGameIDByPlayer :one
 SELECT g.game_id FROM game g
 INNER JOIN game_player gp
