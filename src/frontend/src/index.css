@@ -1585,6 +1585,19 @@ h1 {
   text-align: center;
 }
 
+.room-chat-event-line {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.room-chat-event-line__action {
+  font-size: 0.76rem;
+  color: var(--muted-foreground);
+}
+
+
 .game-player-snippet {
   display: grid;
   grid-template-columns: 40px 1fr;

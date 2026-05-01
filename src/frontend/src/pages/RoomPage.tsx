@@ -81,6 +81,13 @@ const RoomPage = () => {
         }
       | {
           id: string;
+          kind: "player-event";
+          text: string;
+          playerName: string;
+          playerImageUrl?: string;
+        }
+      | {
+          id: string;
           kind: "chat";
           text: string;
           playerId: string;
@@ -251,8 +258,8 @@ const RoomPage = () => {
                 ...currentMessages,
                 {
                   id: `join-${joinedPlayer.playerId}-${Date.now()}`,
-                  kind: "system",
-                  text: `${joinedPlayer.displayName} joined the room`,
+                  kind: "player-event" as const,
+                  text: `joined the room`,
                   playerName: joinedPlayer.displayName,
                   playerImageUrl: joinedPlayer.avatarUrl,
                 },
@@ -288,9 +295,9 @@ const RoomPage = () => {
                 ...currentMessages,
                 {
                   id: `leave-${leftPlayer.playedId}-${Date.now()}`,
-                  kind: "system",
-                  text: `${leavingPlayer?.name ?? "A player"} left the room`,
-                  playerName: leavingPlayer?.name ?? "Player",
+                  kind: "player-event" as const,
+                  text: `left the room`,
+                  playerName: leavingPlayer?.name ?? "A player",
                   playerImageUrl: leavingPlayer?.imageUrl,
                 },
               ];
@@ -936,7 +943,29 @@ const RoomPage = () => {
             onSendMessage={handleSendMessage}
             getMessageKey={(message) => message.id}
             renderMessage={(chatMessage) => {
-if (chatMessage.kind === "system") {
+if (chatMessage.kind === "player-event") {
+                return (
+                  <article className="room-chat-event-line">
+                    {chatMessage.playerImageUrl ? (
+                      <img
+                        src={chatMessage.playerImageUrl}
+                        alt={chatMessage.playerName}
+                        className="game-chat-line__avatar"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : null}
+                    <span className="game-chat-line__author">
+                      {chatMessage.playerName}
+                    </span>
+                    <span className="room-chat-event-line__action">
+                      {chatMessage.text}
+                    </span>
+                  </article>
+                );
+              }
+
+              if (chatMessage.kind === "system") {
                 const isMultiChange = chatMessage.text.split("\n").length > 1;
                 return (
                   <article className="room-chat-settings-line">
@@ -949,9 +978,7 @@ if (chatMessage.kind === "system") {
                           loading="lazy"
                           referrerPolicy="no-referrer"
                         />
-                      ) : (
-                        <div className="game-chat-line__avatar" />
-                      )}
+                      ) : null}
                       <span className="game-chat-line__author">
                         {chatMessage.playerName}
                       </span>
