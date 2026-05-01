@@ -13,6 +13,7 @@ type DemandOverlayProps = {
   demands: Demand[];
   players: Player[];
   selfPlayerId?: string;
+  demandTimerSeconds?: number;
   targetCardImageById: Record<string, string>;
   propertySetCardsById: Record<string, Card[]>;
   canDeny: boolean;
@@ -33,6 +34,7 @@ const DemandOverlay = ({
   demands,
   players,
   selfPlayerId,
+  demandTimerSeconds,
   targetCardImageById,
   propertySetCardsById,
   canDeny,
@@ -68,6 +70,7 @@ const DemandOverlay = ({
               isSelectingCards={isThisDemandSelecting}
               canConfirmSelection={canConfirmSelection}
               selectedPaymentTotal={selectedPaymentTotal}
+              demandTimerSeconds={demandTimerSeconds}
               onComply={onComply}
               onDeny={onDeny}
             />
@@ -97,6 +100,7 @@ const DemandOverlay = ({
                 forcedDealPlacementDemandId === demand.id
               }
               selectedForcedDealPlacementSetId={selectedForcedDealPlacementSetId}
+              demandTimerSeconds={demandTimerSeconds}
               onStartForcedDealPlacementSelection={
                 onStartForcedDealPlacementSelection
               }
@@ -125,6 +129,7 @@ const DemandOverlay = ({
                   ? propertySetCardsById[demand.propertySetDemand.propertySetId] ?? []
                   : []
               }
+              demandTimerSeconds={demandTimerSeconds}
               canDeny={canDeny}
               onComply={onComply}
               onDeny={onDeny}

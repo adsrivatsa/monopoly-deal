@@ -11,6 +11,7 @@ export type PropertySetDemandOverlayProps = {
   selfPlayerId?: string;
   targetCardImageById: Record<string, string>;
   requestedCards: Card[];
+  demandTimerSeconds?: number;
   canDeny: boolean;
   onComply: (demandId: string) => void;
   onDeny: (demandId: string) => void;
@@ -22,6 +23,7 @@ const PropertySetDemandOverlay = ({
   selfPlayerId,
   targetCardImageById,
   requestedCards,
+  demandTimerSeconds,
   canDeny,
   onComply,
   onDeny,
@@ -67,6 +69,9 @@ const PropertySetDemandOverlay = ({
       onPointerDown={(event) => event.stopPropagation()}
     >
       <p className="md-demand__eyebrow">Set Snatcher</p>
+      {typeof demandTimerSeconds === "number" ? (
+        <p className="md-demand__line">Time left: {Math.max(0, demandTimerSeconds)}s</p>
+      ) : null}
       {isTargetingSelf ? (
         <div className="md-demand-source">
           <img

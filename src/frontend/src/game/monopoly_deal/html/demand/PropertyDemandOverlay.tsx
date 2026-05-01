@@ -11,6 +11,7 @@ type PropertyDemandOverlayProps = {
   targetCardImageUrl?: string;
   sourceCardImageUrl?: string;
   canDeny: boolean;
+  demandTimerSeconds?: number;
   isChoosingForcedDealPlacement: boolean;
   selectedForcedDealPlacementSetId?: string;
   onStartForcedDealPlacementSelection: (demandId: string) => void;
@@ -27,6 +28,7 @@ const PropertyDemandOverlay = ({
   targetCardImageUrl,
   sourceCardImageUrl,
   canDeny,
+  demandTimerSeconds,
   isChoosingForcedDealPlacement,
   selectedForcedDealPlacementSetId,
   onStartForcedDealPlacementSelection,
@@ -149,6 +151,9 @@ const PropertyDemandOverlay = ({
       onPointerDown={(event) => event.stopPropagation()}
     >
       <p className="md-demand__eyebrow">{demandEyebrow}</p>
+      {typeof demandTimerSeconds === "number" ? (
+        <p className="md-demand__line">Time left: {Math.max(0, demandTimerSeconds)}s</p>
+      ) : null}
       {isTargetingSelf ? (
         <div className="md-demand-source">
           <img

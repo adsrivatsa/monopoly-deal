@@ -5,6 +5,7 @@ import {
   getCapacityOptions,
   getCapacityRangeForGame,
   getGameDisplayName,
+  getGameSettingDefinition,
   getGameSettingSelectValues,
   getDefaultSettingsForGame,
   parseGame,
@@ -123,6 +124,20 @@ const RoomPage = () => {
 
     return getCapacityRangeForGame(roomGame, roomSettingsPayload);
   }, [roomGame, roomSettingsPayload]);
+
+  const orderedRoomSettingSelectValues = useMemo(() => {
+    return [...roomSettingSelectValues].sort((left, right) => {
+      if (left.key === "speed") {
+        return -1;
+      }
+
+      if (right.key === "speed") {
+        return 1;
+      }
+
+      return 0;
+    });
+  }, [roomSettingSelectValues]);
 
   useEffect(() => {
     if (roomCapacity === null) {
@@ -295,11 +310,62 @@ const RoomPage = () => {
               settingsUpdated.game === 0 ? Game.MonopolyDeal : roomGame;
 
             if (nextGame) {
+              const nextSettingSelectValues = getGameSettingSelectValues(
+                nextGame,
+                settingsUpdated.settings,
+              );
+
+              const changes: string[] = [];
+
+              if (roomGame && roomGame !== nextGame) {
+                changes.push(
+                  `Game ${getGameDisplayName(roomGame)} -> ${getGameDisplayName(nextGame)}`,
+                );
+              }
+
+              if (roomCapacity !== null && roomCapacity !== settingsUpdated.capacity) {
+                changes.push(`Capacity ${roomCapacity} -> ${settingsUpdated.capacity}`);
+              }
+
+              for (const nextSetting of nextSettingSelectValues) {
+                const previousSetting = roomSettingSelectValues.find((setting) => {
+                  return setting.key === nextSetting.key;
+                });
+                if (!previousSetting || previousSetting.value === nextSetting.value) {
+                  continue;
+                }
+
+                const settingDefinition = getGameSettingDefinition(nextGame, nextSetting.key);
+                const previousLabel =
+                  previousSetting.options.find((option) => option.value === previousSetting.value)
+                    ?.label ?? previousSetting.value;
+                const nextLabel =
+                  nextSetting.options.find((option) => option.value === nextSetting.value)
+                    ?.label ?? nextSetting.value;
+
+                changes.push(
+                  `${settingDefinition?.label ?? nextSetting.label} ${previousLabel} -> ${nextLabel}`,
+                );
+              }
+
               setRoomGame(nextGame);
               setRoomCapacity(settingsUpdated.capacity);
-              setRoomSettingSelectValues(
-                getGameSettingSelectValues(nextGame, settingsUpdated.settings),
-              );
+              setRoomSettingSelectValues(nextSettingSelectValues);
+
+              if (changes.length > 0) {
+                setChatMessages((currentMessages) => {
+                  return [
+                    ...currentMessages,
+                    {
+                      id: `settings-updated-${Date.now()}`,
+                      kind: "system",
+                      text: `Room settings updated: ${changes.join(", ")}`,
+                      playerName: "System",
+                      playerImageUrl: undefined,
+                    },
+                  ];
+                });
+              }
             }
           }
 
@@ -675,7 +741,7 @@ const RoomPage = () => {
                   </select>
                 </div>
 
-                {roomSettingSelectValues.map((setting) => {
+                {orderedRoomSettingSelectValues.map((setting) => {
                   return (
                     <div key={setting.key} className="room-settings-row">
                       <label

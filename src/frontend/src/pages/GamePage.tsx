@@ -641,9 +641,11 @@ const GamePage = () => {
           const actionPlayerId = action?.playerId;
 
           const nextDeadlineMs =
-            typeof action?.turnDeadlineMs === "number"
-              ? action.turnDeadlineMs
-              : null;
+            action?.actionRearrangeCard
+              ? null
+              : typeof action?.turnDeadlineMs === "number"
+                ? action.turnDeadlineMs
+                : null;
 
           if (typeof nextDeadlineMs === "number") {
             setInitialGameState((current) => {
@@ -1742,6 +1744,12 @@ const GamePage = () => {
 
           const actionDemandComplied = action?.actionDemandComplied;
           if (actionDemandComplied) {
+            const resumeTurnPlayerId = currentTurnPlayerIdRef.current;
+            const shouldResumeTurnAfterDemandComply =
+              !!resumeTurnPlayerId &&
+              typeof action?.turnDeadlineMs === "number" &&
+              action.turnDeadlineMs > 0;
+
             setInitialGameState((current) => {
               if (!current) {
                 return current;
@@ -1750,11 +1758,18 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: action?.seqNum ?? current.seqNum,
+                currentPlayerId: shouldResumeTurnAfterDemandComply && resumeTurnPlayerId
+                  ? resumeTurnPlayerId
+                  : current.currentPlayerId,
                 demands: current.demands.filter((demand) => {
                   return demand.id !== actionDemandComplied.demandId;
                 }),
               };
             });
+
+            if (shouldResumeTurnAfterDemandComply && resumeTurnPlayerId) {
+              setCurrentTurnPlayerId(resumeTurnPlayerId);
+            }
 
           }
 

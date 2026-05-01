@@ -464,9 +464,6 @@ const MonopolyDealHtmlBoard = ({
   }, [gameState?.demands, selfPlayerId]);
 
   const hasAnyDemand = visibleDemands.length > 0;
-  const hasSelfDemand =
-    !!selfPlayerId &&
-    visibleDemands.some((demand) => demand.playerId === selfPlayerId);
   const pendingRent = gameState?.pendingRent;
   const hasPendingRent = !!pendingRent;
   const currentPlayerId = gameState?.currentPlayerId ?? "";
@@ -492,7 +489,7 @@ const MonopolyDealHtmlBoard = ({
     0,
     Math.ceil(remainingTurnMs / 1000),
   );
-  const shouldShowTurnTimer = turnDeadlineMs > 0;
+  const shouldShowTurnTimer = turnDeadlineMs > 0 && !hasAnyDemand;
   const lastActionCards =
     gameState?.lastAction &&
     gameState.lastAction.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
@@ -2392,15 +2389,17 @@ const MonopolyDealHtmlBoard = ({
             pendingRent={pendingRent}
             players={players}
             selfPlayerId={selfPlayerId ?? undefined}
+            timerSeconds={turnDeadlineMs > 0 ? remainingTurnSeconds : undefined}
             canDouble={hasDoubleTheRent && hasMovesLeft}
             onDouble={onPendingRentDouble}
             onRent={onPendingRentRent}
           />
-        ) : hasSelfDemand ? (
+        ) : hasAnyDemand ? (
           <DemandOverlay
             demands={visibleDemands}
             players={players}
             selfPlayerId={selfPlayerId}
+            demandTimerSeconds={turnDeadlineMs > 0 ? remainingTurnSeconds : undefined}
             targetCardImageById={propertyCardImageById}
             propertySetCardsById={propertySetCardsById}
             canDeny={hasJustSayNo}
@@ -2434,6 +2433,7 @@ const MonopolyDealHtmlBoard = ({
             demands={visibleDemands}
             players={players}
             selfPlayerId={selfPlayerId}
+            demandTimerSeconds={turnDeadlineMs > 0 ? remainingTurnSeconds : undefined}
             targetCardImageById={propertyCardImageById}
             propertySetCardsById={propertySetCardsById}
             canDeny={hasJustSayNo}

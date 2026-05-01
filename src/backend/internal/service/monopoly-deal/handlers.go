@@ -2,6 +2,7 @@ package monopoly_deal
 
 import (
 	"context"
+	"fmt"
 	"the-deal/internal/config"
 	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
@@ -184,6 +185,15 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		}
 
 		if didWin {
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: nil,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
 			_, err = q.CompleteGame(ctx, store.CompleteGameParams{
 				Winner: &tp.PlayerID,
 				GameID: gameID,
@@ -196,51 +206,121 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		}
 
 		switch msg.MonopolyDealMessage.GetPayload().(type) {
-		case *monopoly_deal_schema.ClientMessage_PlayMoney:
+		case *monopoly_deal_schema.ClientMessage_PlayMoney, *monopoly_deal_schema.ClientMessage_PlayProperty,
+			*monopoly_deal_schema.ClientMessage_PlayHouse, *monopoly_deal_schema.ClientMessage_PlayHotel,
+			*monopoly_deal_schema.ClientMessage_PlayPassGo, *monopoly_deal_schema.ClientMessage_PlayRent,
+			*monopoly_deal_schema.ClientMessage_PlayWildRent, *monopoly_deal_schema.ClientMessage_PlayDoubleTheRent,
+			*monopoly_deal_schema.ClientMessage_DiscardCards:
 			deadline = time.Now().Add(game.Config.MoveTimeout)
 			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, deadline)
 
-		case *monopoly_deal_schema.ClientMessage_PlayProperty:
-			deadline = time.Now().Add(game.Config.MoveTimeout)
-			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, deadline)
+		case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday, *monopoly_deal_schema.ClientMessage_PlayDebtCollector,
+			*monopoly_deal_schema.ClientMessage_PlaySlyDeal, *monopoly_deal_schema.ClientMessage_PlayForcedDeal,
+			*monopoly_deal_schema.ClientMessage_PlayDealBreaker, *monopoly_deal_schema.ClientMessage_ResolvePendingRent,
+			*monopoly_deal_schema.ClientMessage_DenyDemand:
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: nil,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
 
-		case *monopoly_deal_schema.ClientMessage_PlayHouse:
+			dcAct, ok := action.(*monopoly_deal.ActionDemandsCreated)
+			if !ok {
+				return fmt.Errorf("monopoly_deal: invalid actionDemandsCreated action")
+			}
 
-		case *monopoly_deal_schema.ClientMessage_PlayHotel:
+			for _, demand := range dcAct.Demands {
+				targetID := demand.TargetID
+				demandID := string(demand.ID)
+				_, err = q.UpsertGameDemandTimeout(ctx, store.UpsertGameDemandTimeoutParams{
+					GameID:   gameID,
+					PlayerID: targetID,
+					DemandID: &demandID,
+					TokenID:  uuid.New(),
+				})
+				if err != nil {
+					return err
+				}
+			}
 
-		case *monopoly_deal_schema.ClientMessage_PlayPassGo:
+			deadline = time.Now().Add(game.Config.DemandTimeout)
 
-		case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday:
-
-		case *monopoly_deal_schema.ClientMessage_PlayDebtCollector:
-
-		case *monopoly_deal_schema.ClientMessage_PlayRent:
-
-		case *monopoly_deal_schema.ClientMessage_PlayWildRent:
-
-		case *monopoly_deal_schema.ClientMessage_PlayDoubleTheRent:
-
-		case *monopoly_deal_schema.ClientMessage_PlaySlyDeal:
-
-		case *monopoly_deal_schema.ClientMessage_PlayForcedDeal:
-
-		case *monopoly_deal_schema.ClientMessage_PlayDealBreaker:
-
-		case *monopoly_deal_schema.ClientMessage_ResolvePendingRent:
+			for _, demand := range dcAct.Demands {
+				targetID := demand.TargetID
+				demandID := string(demand.ID)
+				err = c.scheduleDefaultDemand(ctx, q, gameID, targetID, demandID, deadline)
+				if err != nil {
+					return err
+				}
+			}
 
 		case *monopoly_deal_schema.ClientMessage_ComplyPaymentDemand:
+			demandID := msg.MonopolyDealMessage.GetComplyPaymentDemand().DemandId
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: &demandID,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			if len(game.Demands) == 0 {
+				currPlayerID := game.Players[game.CurrPlayerIdx]
+				deadline = time.Now().Add(game.Config.MoveTimeout)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+			}
 
 		case *monopoly_deal_schema.ClientMessage_ComplyPropertyDemand:
+			demandID := msg.MonopolyDealMessage.GetComplyPropertyDemand().DemandId
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: &demandID,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			if len(game.Demands) == 0 {
+				currPlayerID := game.Players[game.CurrPlayerIdx]
+				deadline = time.Now().Add(game.Config.MoveTimeout)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+			}
 
 		case *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand:
+			demandID := msg.MonopolyDealMessage.GetComplyPropertySetDemand().DemandId
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: &demandID,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
 
-		case *monopoly_deal_schema.ClientMessage_DenyDemand:
-
-		case *monopoly_deal_schema.ClientMessage_DiscardCards:
+			if len(game.Demands) == 0 {
+				currPlayerID := game.Players[game.CurrPlayerIdx]
+				deadline = time.Now().Add(game.Config.MoveTimeout)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+			}
 
 		case *monopoly_deal_schema.ClientMessage_CompleteTurn:
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: nil,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			nextPlayerID := game.Players[game.CurrPlayerIdx]
 			deadline = time.Now().Add(game.Config.MoveTimeout)
-			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, deadline)
+			err = c.scheduleDefaultMove(ctx, q, gameID, nextPlayerID, deadline)
 
 		case *monopoly_deal_schema.ClientMessage_RearrangeCard:
 

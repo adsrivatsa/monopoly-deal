@@ -46,6 +46,7 @@ type Querier interface {
 	UpdateRoomOccupied(ctx context.Context, arg UpdateRoomOccupiedParams) (Room, error)
 	UpdateRoomPlayerHost(ctx context.Context, arg UpdateRoomPlayerHostParams) (RoomPlayer, error)
 	UpdateRoomSettings(ctx context.Context, arg UpdateRoomSettingsParams) (Room, error)
+	UpsertGameDemandTimeout(ctx context.Context, arg UpsertGameDemandTimeoutParams) (GameTimeout, error)
 	UpsertGameMoveTimeout(ctx context.Context, arg UpsertGameMoveTimeoutParams) (GameTimeout, error)
 }
 

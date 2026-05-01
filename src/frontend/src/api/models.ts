@@ -26,6 +26,7 @@ export type MonopolyDealSettings = {
   pass_go_draw: number;
   its_my_birthday_amount: number;
   debt_collector_amount: number;
+  speed: number;
 };
 
 type GameSettingsByGame = {
@@ -90,6 +91,7 @@ export const getDefaultSettingsForGame = <TGame extends Game>(
         pass_go_draw: 2,
         its_my_birthday_amount: 2,
         debt_collector_amount: 5,
+        speed: 1,
       } as GameSettingsFor<TGame>;
     default:
       return assertNever(game as never);
@@ -111,6 +113,14 @@ const buildRangeOptions = (
     const value = String(min + index);
     return { value, label: value };
   });
+};
+
+const buildSpeedOptions = (): Array<{ value: string; label: string }> => {
+  return [
+    { value: "0", label: "Slow" },
+    { value: "1", label: "Medium" },
+    { value: "2", label: "Fast" },
+  ];
 };
 
 const inRange = (value: number, min: number, max: number): boolean => {
@@ -190,7 +200,7 @@ const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
         {
           key: "max_hand_size",
           label: "Max hand size",
-          min: 7,
+          min: 5,
           max: 10,
         },
         {
@@ -216,6 +226,12 @@ const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
           label: "Debt Collector amount",
           min: 5,
           max: 8,
+        },
+        {
+          key: "speed",
+          label: "Speed",
+          min: 0,
+          max: 2,
         },
       ];
     default:
@@ -332,6 +348,7 @@ export const parseGameSettings = <TGame extends Game>(
           "debt_collector_amount",
           defaults.debt_collector_amount,
         ),
+        speed: getSettingValue("speed", defaults.speed),
       } as GameSettingsFor<TGame>;
     }
     default:
@@ -361,7 +378,10 @@ export const getGameSettingSelectValues = (
           key: definition.key,
           label: definition.label,
           value: String(numericValue),
-          options: buildRangeOptions(definition.min, definition.max),
+          options:
+            definition.key === "speed"
+              ? buildSpeedOptions()
+              : buildRangeOptions(definition.min, definition.max),
         };
       });
     }

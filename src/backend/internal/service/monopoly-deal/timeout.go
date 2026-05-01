@@ -26,7 +26,7 @@ const (
 type TimeoutKey struct {
 	Kind     TimeoutKind
 	PlayerID uuid.UUID
-	DemandID *monopoly_deal.Identifier
+	DemandID *string
 }
 
 func NewMoveTimeoutKey(playerID uuid.UUID) TimeoutKey {
@@ -36,7 +36,7 @@ func NewMoveTimeoutKey(playerID uuid.UUID) TimeoutKey {
 	}
 }
 
-func NewDemandTimeoutKey(playerID uuid.UUID, demandID monopoly_deal.Identifier) TimeoutKey {
+func NewDemandTimeoutKey(playerID uuid.UUID, demandID string) TimeoutKey {
 	return TimeoutKey{
 		Kind:     TimeoutKindDemand,
 		PlayerID: playerID,
@@ -44,7 +44,7 @@ func NewDemandTimeoutKey(playerID uuid.UUID, demandID monopoly_deal.Identifier) 
 	}
 }
 
-func (c *Controller) defaultMove(gameID, playerID, tokenID uuid.UUID) (func(), error) {
+func (c *Controller) defaultMove(gameID, playerID, tokenID uuid.UUID) func() {
 	return func() {
 		ctx := context.Background()
 
@@ -79,7 +79,7 @@ func (c *Controller) defaultMove(gameID, playerID, tokenID uuid.UUID) (func(), e
 				return err
 			}
 
-			discardAct, err := game.DefaultMove(playerID)
+			defaultActs, err := game.DefaultMove(playerID)
 			if err != nil {
 				return err
 			}
@@ -89,7 +89,7 @@ func (c *Controller) defaultMove(gameID, playerID, tokenID uuid.UUID) (func(), e
 				return err
 			}
 
-			actions = []monopoly_deal.Action{discardAct, completeAct}
+			actions = append(defaultActs, completeAct)
 
 			buf, err := game.EncodeMsgpack()
 			if err != nil {
@@ -104,36 +104,22 @@ func (c *Controller) defaultMove(gameID, playerID, tokenID uuid.UUID) (func(), e
 				return err
 			}
 
-			buf, err = msgpack.Marshal(discardAct)
-			if err != nil {
-				return err
-			}
+			for _, action := range actions {
+				buf, err = msgpack.Marshal(action)
+				if err != nil {
+					return err
+				}
 
-			_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
-				GameID:        gameID,
-				SeqNum:        int16(discardAct.GetSeqNum()),
-				ActionKind:    string(discardAct.GetKind()),
-				ActionVersion: int32(discardAct.GetVersion()),
-				Action:        buf,
-			})
-			if err != nil {
-				return err
-			}
-
-			buf, err = msgpack.Marshal(completeAct)
-			if err != nil {
-				return err
-			}
-
-			_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
-				GameID:        gameID,
-				SeqNum:        int16(completeAct.GetSeqNum()),
-				ActionKind:    string(completeAct.GetKind()),
-				ActionVersion: int32(completeAct.GetVersion()),
-				Action:        buf,
-			})
-			if err != nil {
-				return err
+				_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
+					GameID:        gameID,
+					SeqNum:        int16(action.GetSeqNum()),
+					ActionKind:    string(action.GetKind()),
+					ActionVersion: int32(action.GetVersion()),
+					Action:        buf,
+				})
+				if err != nil {
+					return err
+				}
 			}
 
 			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
@@ -185,7 +171,7 @@ func (c *Controller) defaultMove(gameID, playerID, tokenID uuid.UUID) (func(), e
 				return
 			}
 		}
-	}, nil
+	}
 }
 
 func (c *Controller) scheduleDefaultMove(ctx context.Context, q *store.Queries, gameID, playerID uuid.UUID, deadline time.Time) error {
@@ -198,12 +184,157 @@ func (c *Controller) scheduleDefaultMove(ctx context.Context, q *store.Queries, 
 		return err
 	}
 
-	fn, err := c.defaultMove(gameID, playerID, gt.TokenID)
+	fn := c.defaultMove(gameID, playerID, gt.TokenID)
+
+	k := NewMoveTimeoutKey(playerID)
+	c.timeoutMan.Add(k, deadline, fn)
+	return nil
+}
+
+func (c *Controller) defaultDemand(gameID, playerID, tokenID uuid.UUID, demandID string) func() {
+	return func() {
+		ctx := context.Background()
+
+		var action monopoly_deal.Action
+		var err error
+		var deadline time.Time
+		applied := false
+
+		err = c.store.ExecTx(ctx, func(q *store.Queries) error {
+			gt, err := q.GetGameTimeoutForUpdate(ctx, store.GetGameTimeoutForUpdateParams{
+				GameID:   gameID,
+				PlayerID: playerID,
+				DemandID: &demandID,
+			})
+			if err != nil {
+				if errors.DBErrorCode(err) == errors.NoDataFound {
+					return nil
+				}
+				return err
+			}
+
+			if gt.TokenID != tokenID {
+				return nil
+			}
+
+			applied = true
+
+			g, err := q.GetGameByPlayerForUpdate(ctx, gt.PlayerID)
+			if err != nil {
+				return err
+			}
+
+			game, err := monopoly_deal.DecodeMsgpack(g.GameState)
+			if err != nil {
+				return err
+			}
+
+			action, err = game.DefaultDemand(playerID, monopoly_deal.Identifier(demandID))
+			if err != nil {
+				return err
+			}
+
+			buf, err := game.EncodeMsgpack()
+			if err != nil {
+				return err
+			}
+
+			g, err = q.UpdateGameState(ctx, store.UpdateGameStateParams{
+				GameState: buf,
+				GameID:    gameID,
+			})
+			if err != nil {
+				return err
+			}
+
+			buf, err = msgpack.Marshal(action)
+			if err != nil {
+				return err
+			}
+
+			_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
+				GameID:        gameID,
+				SeqNum:        int16(action.GetSeqNum()),
+				ActionKind:    string(action.GetKind()),
+				ActionVersion: int32(action.GetVersion()),
+				Action:        buf,
+			})
+			if err != nil {
+				return err
+			}
+
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: playerID,
+				DemandID: &demandID,
+			})
+			if err != nil {
+				return err
+			}
+
+			if len(game.Demands) == 0 {
+				currPlayerID := game.Players[game.CurrPlayerIdx]
+				deadline = time.Now().Add(game.Config.MoveTimeout)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		if !applied || action == nil {
+			return
+		}
+
+		actionProto := action.Proto()
+		if deadline.After(time.Now()) {
+			actionProto.TurnDeadlineMs = deadline.UnixMilli()
+		}
+
+		e := &schema.ServerMessage{
+			Payload: &schema.ServerMessage_MonopolyDealMessage{
+				MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
+					Payload: &monopoly_deal_schema.ServerMessage_Action{
+						Action: actionProto,
+					},
+				},
+			},
+		}
+
+		buf, err := proto.Marshal(e)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		err = c.bus.Publish(ctx, event.GameChannelPre+gameID.String(), event.NewMonopolyDealEvent(buf))
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+}
+
+func (c *Controller) scheduleDefaultDemand(ctx context.Context, q *store.Queries, gameID, playerID uuid.UUID, demandID string, deadline time.Time) error {
+	gt, err := q.UpsertGameDemandTimeout(ctx, store.UpsertGameDemandTimeoutParams{
+		GameID:   gameID,
+		PlayerID: playerID,
+		DemandID: &demandID,
+		TokenID:  uuid.New(),
+	})
 	if err != nil {
 		return err
 	}
 
-	k := NewMoveTimeoutKey(playerID)
+	fn := c.defaultDemand(gameID, playerID, gt.TokenID, demandID)
+
+	k := NewDemandTimeoutKey(playerID, demandID)
 	c.timeoutMan.Add(k, deadline, fn)
 	return nil
 }

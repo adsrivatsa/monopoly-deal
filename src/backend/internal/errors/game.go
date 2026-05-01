@@ -57,3 +57,5 @@ var PropertySetHasHouse = NewError("property set has house", http.StatusBadReque
 var PropertySetHasHotel = NewError("property set has hotel", http.StatusBadRequest, "GME0027")
 
 var PropertySetHasNoHouse = NewError("property set does not have house", http.StatusBadRequest, "GME0028")
+
+var PlayerNotDemandTarget = NewError("player not demand target", http.StatusBadRequest, "GME0029")
