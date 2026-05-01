@@ -91,7 +91,7 @@ export const getDefaultSettingsForGame = <TGame extends Game>(
         pass_go_draw: 2,
         its_my_birthday_amount: 2,
         debt_collector_amount: 5,
-        speed: 1,
+        speed: 2,
       } as GameSettingsFor<TGame>;
     default:
       return assertNever(game as never);
@@ -117,9 +117,9 @@ const buildRangeOptions = (
 
 const buildSpeedOptions = (): Array<{ value: string; label: string }> => {
   return [
-    { value: "0", label: "Slow" },
-    { value: "1", label: "Medium" },
-    { value: "2", label: "Fast" },
+    { value: "1", label: "Slow" },
+    { value: "2", label: "Medium" },
+    { value: "3", label: "Fast" },
   ];
 };
 
@@ -230,8 +230,8 @@ const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
         {
           key: "speed",
           label: "Speed",
-          min: 0,
-          max: 2,
+          min: 1,
+          max: 3,
         },
       ];
     default:
