@@ -49,10 +49,18 @@ import {
 import ErrorModal from "../components/ui/error-modal";
 import ChatBox from "../components/chat/ChatBox";
 
+const formatSettingsChangeMessage = (changes: string[]): string => {
+  return changes.join("\n");
+};
+
 const RoomPage = () => {
   const navigate = useNavigate();
   const { room_id: roomId } = useParams();
   const socketRef = useRef<WebSocket | null>(null);
+  const roomGameRef = useRef<Game | null>(null);
+  const roomCapacityRef = useRef<number | null>(null);
+  const roomSettingSelectValuesRef = useRef<GameSettingSelectValue[]>([]);
+  const playersRef = useRef<ShortPlayer[]>([]);
   const [roomGame, setRoomGame] = useState<Game | null>(null);
   const [roomCapacity, setRoomCapacity] = useState<number | null>(null);
   const [roomSettingSelectValues, setRoomSettingSelectValues] = useState<
@@ -124,6 +132,22 @@ const RoomPage = () => {
 
     return getCapacityRangeForGame(roomGame, roomSettingsPayload);
   }, [roomGame, roomSettingsPayload]);
+
+  useEffect(() => {
+    roomGameRef.current = roomGame;
+  }, [roomGame]);
+
+  useEffect(() => {
+    roomCapacityRef.current = roomCapacity;
+  }, [roomCapacity]);
+
+  useEffect(() => {
+    roomSettingSelectValuesRef.current = roomSettingSelectValues;
+  }, [roomSettingSelectValues]);
+
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
 
   const orderedRoomSettingSelectValues = useMemo(() => {
     return [...roomSettingSelectValues].sort((left, right) => {
@@ -307,7 +331,9 @@ const RoomPage = () => {
           const settingsUpdated = message?.roomMessage?.settingsUpdated;
           if (settingsUpdated) {
             const nextGame =
-              settingsUpdated.game === 0 ? Game.MonopolyDeal : roomGame;
+              settingsUpdated.game === 0
+                ? (roomGameRef.current ?? Game.MonopolyDeal)
+                : Game.MonopolyDeal;
 
             if (nextGame) {
               const nextSettingSelectValues = getGameSettingSelectValues(
@@ -317,18 +343,21 @@ const RoomPage = () => {
 
               const changes: string[] = [];
 
-              if (roomGame && roomGame !== nextGame) {
+              if (roomGameRef.current && roomGameRef.current !== nextGame) {
                 changes.push(
-                  `Game ${getGameDisplayName(roomGame)} -> ${getGameDisplayName(nextGame)}`,
+                  `Game: ${getGameDisplayName(roomGameRef.current)}, ${getGameDisplayName(nextGame)}`,
                 );
               }
 
-              if (roomCapacity !== null && roomCapacity !== settingsUpdated.capacity) {
-                changes.push(`Capacity ${roomCapacity} -> ${settingsUpdated.capacity}`);
+              if (
+                roomCapacityRef.current !== null &&
+                roomCapacityRef.current !== settingsUpdated.capacity
+              ) {
+                changes.push(`Capacity: ${roomCapacityRef.current} -> ${settingsUpdated.capacity}`);
               }
 
               for (const nextSetting of nextSettingSelectValues) {
-                const previousSetting = roomSettingSelectValues.find((setting) => {
+                const previousSetting = roomSettingSelectValuesRef.current.find((setting) => {
                   return setting.key === nextSetting.key;
                 });
                 if (!previousSetting || previousSetting.value === nextSetting.value) {
@@ -344,7 +373,7 @@ const RoomPage = () => {
                     ?.label ?? nextSetting.value;
 
                 changes.push(
-                  `${settingDefinition?.label ?? nextSetting.label} ${previousLabel} -> ${nextLabel}`,
+                  `${settingDefinition?.label ?? nextSetting.label}: ${previousLabel} -> ${nextLabel}`,
                 );
               }
 
@@ -353,15 +382,16 @@ const RoomPage = () => {
               setRoomSettingSelectValues(nextSettingSelectValues);
 
               if (changes.length > 0) {
+                const hostPlayer = playersRef.current.find((player) => player.isHost);
                 setChatMessages((currentMessages) => {
                   return [
                     ...currentMessages,
                     {
                       id: `settings-updated-${Date.now()}`,
                       kind: "system",
-                      text: `Room settings updated: ${changes.join(", ")}`,
-                      playerName: "System",
-                      playerImageUrl: undefined,
+                      text: formatSettingsChangeMessage(changes),
+                      playerName: hostPlayer?.name ?? "Host",
+                      playerImageUrl: hostPlayer?.imageUrl,
                     },
                   ];
                 });
@@ -505,6 +535,64 @@ const RoomPage = () => {
     params: UpdateRoomSettingsParams,
   ): Promise<void> => {
     const result = await updateRoomSettings(params);
+
+    if (result.ok) {
+      const nextSettingSelectValues = getGameSettingSelectValues(
+        params.game,
+        params.settings,
+      );
+      const changes: string[] = [];
+
+      if (roomGameRef.current && roomGameRef.current !== params.game) {
+        changes.push(
+          `Game: ${getGameDisplayName(roomGameRef.current)}, ${getGameDisplayName(params.game)}`,
+        );
+      }
+
+      if (
+        roomCapacityRef.current !== null &&
+        roomCapacityRef.current !== params.capacity
+      ) {
+        changes.push(`Capacity: ${roomCapacityRef.current} -> ${params.capacity}`);
+      }
+
+      for (const nextSetting of nextSettingSelectValues) {
+        const previousSetting = roomSettingSelectValuesRef.current.find((setting) => {
+          return setting.key === nextSetting.key;
+        });
+        if (!previousSetting || previousSetting.value === nextSetting.value) {
+          continue;
+        }
+
+        const settingDefinition = getGameSettingDefinition(params.game, nextSetting.key);
+        const previousLabel =
+          previousSetting.options.find((option) => option.value === previousSetting.value)
+            ?.label ?? previousSetting.value;
+        const nextLabel =
+          nextSetting.options.find((option) => option.value === nextSetting.value)
+            ?.label ?? nextSetting.value;
+
+        changes.push(
+          `${settingDefinition?.label ?? nextSetting.label}: ${previousLabel} -> ${nextLabel}`,
+        );
+      }
+
+      if (changes.length > 0) {
+        const hostPlayer = playersRef.current.find((player) => player.isHost);
+        setChatMessages((currentMessages) => {
+          return [
+            ...currentMessages,
+            {
+              id: `settings-updated-local-${Date.now()}`,
+              kind: "system",
+              text: formatSettingsChangeMessage(changes),
+              playerName: hostPlayer?.name ?? "Host",
+              playerImageUrl: hostPlayer?.imageUrl,
+            },
+          ];
+        });
+      }
+    }
 
     if (!result.ok && result.isTokenError) {
       navigate("/login", { replace: true });
@@ -848,22 +936,33 @@ const RoomPage = () => {
             onSendMessage={handleSendMessage}
             getMessageKey={(message) => message.id}
             renderMessage={(chatMessage) => {
-              if (chatMessage.kind === "system") {
+if (chatMessage.kind === "system") {
+                const isMultiChange = chatMessage.text.split("\n").length > 1;
                 return (
-                  <div className="chat-event-join">
-                    {chatMessage.playerImageUrl ? (
-                      <img
-                        src={chatMessage.playerImageUrl}
-                        alt={chatMessage.playerName}
-                        className="host-avatar"
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : null}
-                    <p className="chat-message chat-message--system">
+                  <article className="room-chat-settings-line">
+                    <div className="room-chat-settings-line__header">
+                      {chatMessage.playerImageUrl ? (
+                        <img
+                          src={chatMessage.playerImageUrl}
+                          alt={chatMessage.playerName}
+                          className="game-chat-line__avatar"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="game-chat-line__avatar" />
+                      )}
+                      <span className="game-chat-line__author">
+                        {chatMessage.playerName}
+                      </span>
+                      <span className="room-chat-settings-line__action">
+                        {" changed setting"}{isMultiChange ? "s" : ""}:
+                      </span>
+                    </div>
+                    <p className="room-chat-settings-line__details">
                       {chatMessage.text}
                     </p>
-                  </div>
+                  </article>
                 );
               }
 
