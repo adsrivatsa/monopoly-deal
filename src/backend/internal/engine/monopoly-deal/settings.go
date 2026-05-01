@@ -9,7 +9,8 @@ import (
 type Speed int
 
 const (
-	SpeedSlow Speed = iota
+	SpeedUnidentified Speed = iota
+	SpeedSlow
 	SpeedMedium
 	SpeedFast
 )
@@ -24,7 +25,7 @@ type Settings struct {
 	DebtCollectorAmount int           `msgpack:"debt_collector_amount" validate:"required,min=5,max=8"`
 	WinSetAmount        int           `msgpack:"win_set_amount" validate:"required,min=3,max=6"`
 	WinMoneyAmount      int           `msgpack:"win_money_amount" validate:"min=0,max=40"`
-	Speed               Speed         `msgpack:"speed" validate:"required,min=0,max=2"`
+	Speed               Speed         `msgpack:"speed" validate:"required,min=1,max=3"`
 	MoveTimeout         time.Duration `msgpack:"move_timeout"`
 	DemandTimeout       time.Duration `msgpack:"demand_timeout"`
 }
