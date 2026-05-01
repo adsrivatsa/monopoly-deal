@@ -2,6 +2,7 @@ package monopoly_deal
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"slices"
 	"the-deal/internal/errors"
 	"the-deal/internal/schema/monopoly_deal_schema"
@@ -105,7 +106,7 @@ func (g *Game) Proto(playerID uuid.UUID, allPlayerIDs []uuid.UUID) *monopoly_dea
 	for _, assetKey := range assetKeys {
 		assetImages = append(assetImages, &monopoly_deal_schema.AssetImage{
 			AssetKey: assetKey.Proto(),
-			ImageUrl: fmt.Sprintf("https://deal-backend.adsrivatsa.com/static/card/%s.svg", string(assetKey)), // TODO - this is just for now
+			ImageUrl: fmt.Sprintf("https://deal-test-backend.adsrivatsa.com/static/card/%s.svg", string(assetKey)), // TODO - this is just for now
 		})
 	}
 
@@ -1948,4 +1949,41 @@ func (g *Game) CheckWinConditions(playerID uuid.UUID) (int, int, bool, error) {
 	}
 
 	return completeCount, value, true, nil
+}
+
+func (g *Game) DefaultMove(playerID uuid.UUID) (Action, error) {
+	err := g.checkPlayer(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkTurn(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	// discard cards and pass turn
+	cards := Cards{}
+	for {
+		hand := g.Hands[playerID]
+		n := hand.Len()
+		if n <= g.Config.MaxHandSize {
+			break
+		}
+
+		r := rand.IntN(n)
+		card := hand[r]
+		card, err = g.discardHand(playerID, card.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		cards = append(cards, card)
+	}
+
+	action := NewActionDiscardCards(g.SequenceNum, playerID, cards...)
+
+	g.SequenceNum++
+
+	return action, nil
 }

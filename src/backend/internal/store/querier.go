@@ -20,12 +20,14 @@ type Querier interface {
 	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
 	CreateRoomPlayer(ctx context.Context, arg CreateRoomPlayerParams) (RoomPlayer, error)
 	DecrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
+	DeleteGameTimeout(ctx context.Context, arg DeleteGameTimeoutParams) (GameTimeout, error)
 	DeleteRoom(ctx context.Context, roomID uuid.UUID) error
 	DeleteRoomPlayer(ctx context.Context, arg DeleteRoomPlayerParams) error
 	DeleteRoomPlayersByRoom(ctx context.Context, roomID uuid.UUID) error
 	GetGameByPlayer(ctx context.Context, playerID uuid.UUID) (Game, error)
 	GetGameByPlayerForUpdate(ctx context.Context, playerID uuid.UUID) (Game, error)
 	GetGameIDByPlayer(ctx context.Context, playerID uuid.UUID) (uuid.UUID, error)
+	GetGameTimeoutForUpdate(ctx context.Context, arg GetGameTimeoutForUpdateParams) (GameTimeout, error)
 	GetOldestRoomPlayer(ctx context.Context, arg GetOldestRoomPlayerParams) (RoomPlayer, error)
 	GetPlayer(ctx context.Context, arg GetPlayerParams) (Player, error)
 	GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Player, error)
@@ -44,6 +46,7 @@ type Querier interface {
 	UpdateRoomOccupied(ctx context.Context, arg UpdateRoomOccupiedParams) (Room, error)
 	UpdateRoomPlayerHost(ctx context.Context, arg UpdateRoomPlayerHostParams) (RoomPlayer, error)
 	UpdateRoomSettings(ctx context.Context, arg UpdateRoomSettingsParams) (Room, error)
+	UpsertGameMoveTimeout(ctx context.Context, arg UpsertGameMoveTimeoutParams) (GameTimeout, error)
 }
 
 var _ Querier = (*Queries)(nil)

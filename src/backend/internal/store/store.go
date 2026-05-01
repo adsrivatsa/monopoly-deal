@@ -10,7 +10,7 @@ import (
 
 type Store interface {
 	Querier
-	ExecTx(ctx context.Context, fn func(queries *Queries) error) error
+	ExecTx(ctx context.Context, fn func(q *Queries) error) error
 }
 
 type SQLStore struct {
@@ -27,7 +27,7 @@ func NewSQLStore(pool *pgxpool.Pool, logger *slog.Logger) Store {
 	}
 }
 
-func (store *SQLStore) ExecTx(ctx context.Context, fn func(queries *Queries) error) error {
+func (store *SQLStore) ExecTx(ctx context.Context, fn func(q *Queries) error) error {
 	tx, err := store.Pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err

@@ -91,6 +91,14 @@ type GamePlayer struct {
 	PlayerID uuid.UUID `json:"player_id"`
 }
 
+type GameTimeout struct {
+	GameID    uuid.UUID `json:"game_id"`
+	PlayerID  uuid.UUID `json:"player_id"`
+	DemandID  *string   `json:"demand_id"`
+	TokenID   uuid.UUID `json:"token_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type Player struct {
 	PlayerID       uuid.UUID `json:"player_id"`
 	DisplayName    string    `json:"display_name"`

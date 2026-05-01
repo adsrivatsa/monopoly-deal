@@ -580,8 +580,10 @@
   grid-area: controls;
   min-width: 0;
   display: flex;
+  flex-direction: column;
   justify-content: flex-end;
-  align-items: center;
+  align-items: stretch;
+  gap: 0.38rem;
 }
 
 .md-hand-turn-button {
@@ -596,6 +598,12 @@
 .md-hand-turn-button__moves {
   display: inline;
   margin-left: 0.22rem;
+}
+
+.md-hand-turn-timer-button {
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
 }
 
 .md-hand-main .md-card {
@@ -821,7 +829,7 @@
   }
 
   .md-hand-turn-controls {
-    align-items: stretch;
+    justify-content: stretch;
   }
 
   .md-hand-turn-button {
@@ -838,6 +846,7 @@
     display: block;
     margin-left: 0;
   }
+
 }
 
 @media (min-width: 1180px) {
@@ -876,6 +885,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .md-hand-turn-timer-button {
+    width: 100%;
   }
 
   .md-hand-main .md-stack-box,

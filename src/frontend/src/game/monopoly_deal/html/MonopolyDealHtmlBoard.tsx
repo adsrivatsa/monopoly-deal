@@ -224,6 +224,13 @@ const minPropertyCountForCompleteSet = (color: Color): number => {
   }
 };
 
+const formatRemainingTime = (totalSeconds: number): string => {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+};
+
+
 const isPropertyCard = (card: Card): boolean => {
   return (
     card.category === Category.CATEGORY_PURE_PROPERTY ||
@@ -403,6 +410,7 @@ const MonopolyDealHtmlBoard = ({
   const [activePaymentDemandId, setActivePaymentDemandId] = useState<
     string | null
   >(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const [selectedHandPlacementCardId, setSelectedHandPlacementCardId] =
     useState<string | null>(null);
   const [selectedRearrangeCard, setSelectedRearrangeCard] =
@@ -478,6 +486,13 @@ const MonopolyDealHtmlBoard = ({
     hasPendingRent && !shouldAutoResolvePendingRent;
   const hasMovesLeft = (gameState?.movesLeft ?? 0) > 0;
   const movesLeft = gameState?.movesLeft ?? 0;
+  const turnDeadlineMs = gameState?.deadlineMs ?? 0;
+  const remainingTurnMs = Math.max(0, turnDeadlineMs - nowMs);
+  const remainingTurnSeconds = Math.max(
+    0,
+    Math.ceil(remainingTurnMs / 1000),
+  );
+  const shouldShowTurnTimer = turnDeadlineMs > 0;
   const lastActionCards =
     gameState?.lastAction &&
     gameState.lastAction.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
@@ -1493,10 +1508,11 @@ const MonopolyDealHtmlBoard = ({
   const onStartForcedDealPlacementSelection = useCallback(
     (demandId: string) => {
       const demand = visibleDemands.find((item) => item.id === demandId);
+      const sourceCardId = demand?.propertyDemand?.sourceCardId;
       if (
         !demand ||
         demand.demandSource !== DemandSource.DEMAND_SOURCE_FORCED_DEAL ||
-        !demand.propertyDemand?.sourceCardId
+        !sourceCardId
       ) {
         return;
       }
@@ -1504,7 +1520,7 @@ const MonopolyDealHtmlBoard = ({
       const hasValidPlacementSet = selfPropertySets.some((propertySet) => {
         return isValidForcedDealPlacementSetForSourceCard(
           propertySet,
-          demand.propertyDemand.sourceCardId,
+          sourceCardId,
         );
       });
 
@@ -1515,7 +1531,7 @@ const MonopolyDealHtmlBoard = ({
 
       setForcedDealPlacementSelection({
         demandId,
-        sourceCardId: demand.propertyDemand.sourceCardId,
+        sourceCardId,
       });
     },
     [
@@ -1919,6 +1935,24 @@ const MonopolyDealHtmlBoard = ({
   const onCancelDealPicker = useCallback(() => {
     setDealPicker(null);
   }, []);
+
+  useEffect(() => {
+    if (turnDeadlineMs <= 0) {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 250);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [turnDeadlineMs]);
+
+  useEffect(() => {
+    setNowMs(Date.now());
+  }, [turnDeadlineMs]);
 
   useEffect(() => {
     if (isSelectingPaymentCards && !isSelectedPaymentDemandActive) {
@@ -2529,6 +2563,18 @@ const MonopolyDealHtmlBoard = ({
         </div>
 
         <section className="md-hand-turn-controls">
+          {shouldShowTurnTimer ? (
+            <button
+              type="button"
+              className="md-demand__button md-hand-turn-button md-hand-turn-timer-button"
+              aria-live="polite"
+              aria-disabled="true"
+              tabIndex={-1}
+            >
+              Turn timer: {formatRemainingTime(remainingTurnSeconds)}
+            </button>
+          ) : null}
+
           <button
             type="button"
             className="md-demand__button md-hand-turn-button"
@@ -2545,8 +2591,10 @@ const MonopolyDealHtmlBoard = ({
               : isSelfTurn
                 ? (
                     <>
-                      Pass Turn{" "}
-                      <span className="md-hand-turn-button__moves">({movesLeft} left)</span>
+                      <span>
+                        Pass Turn{" "}
+                        <span className="md-hand-turn-button__moves">({movesLeft} left)</span>
+                      </span>
                     </>
                   )
                 : "Pass Turn"}

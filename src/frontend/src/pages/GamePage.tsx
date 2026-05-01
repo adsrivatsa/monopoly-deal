@@ -639,6 +639,25 @@ const GamePage = () => {
           const action = message.monopolyDealMessage?.action;
           const actionForHistory = actionHistory?.action ?? action;
           const actionPlayerId = action?.playerId;
+
+          const nextDeadlineMs =
+            typeof action?.turnDeadlineMs === "number"
+              ? action.turnDeadlineMs
+              : null;
+
+          if (typeof nextDeadlineMs === "number") {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              return {
+                ...current,
+                deadlineMs: nextDeadlineMs,
+              };
+            });
+          }
+
           if (actionForHistory) {
             setActionHistoryEntries((current) => {
               const actionHistoryPlayerId = actionForHistory.playerId;
@@ -764,6 +783,18 @@ const GamePage = () => {
               }
 
               if (isDemandCompliedWithoutTransfer) {
+                return current;
+              }
+
+              if (actionDiscardCards && actionDiscardCards.cards.length === 0) {
+                return current;
+              }
+
+              if (
+                maskedActionDiscardCards &&
+                typeof maskedActionDiscardCards.numCards === "number" &&
+                maskedActionDiscardCards.numCards === 0
+              ) {
                 return current;
               }
 
@@ -2258,7 +2289,31 @@ const GamePage = () => {
             });
           }
 
-            console.log("[game-ws] message", toGameServerMessageJson(message));
+            const messageJson = toGameServerMessageJson(message) as {
+              action?: {
+                actionDiscardCards?: {
+                  cards?: unknown[];
+                };
+              };
+              actionHistory?: {
+                action?: {
+                  actionDiscardCards?: {
+                    cards?: unknown[];
+                  };
+                };
+              };
+            };
+            const actionDiscardCardsCount =
+              messageJson.action?.actionDiscardCards?.cards?.length;
+            const actionHistoryDiscardCardsCount =
+              messageJson.actionHistory?.action?.actionDiscardCards?.cards?.length;
+
+            const isZeroDiscardMessage =
+              actionDiscardCardsCount === 0 || actionHistoryDiscardCardsCount === 0;
+
+            if (!isZeroDiscardMessage) {
+              console.log("[game-ws] message", messageJson);
+            }
           } catch (error) {
             console.error("[game-ws] failed to decode message", error);
             pushErrorNotice(toClientGameError(error, "WS_MESSAGE_DECODE_FAILED"));
@@ -3571,7 +3626,7 @@ const GamePage = () => {
                               </div>
                             ) : null}
                           </article>
-                        ) : entry.kind === "discardCards" && entry.playerId ? (
+                        ) : entry.kind === "discardCards" && entry.playerId && (entry.cardAssetKeys?.length ?? 0) > 0 ? (
                           <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
                             <p className="chat-message game-chat-line__message game-action-history-text">
                               <img
@@ -3601,7 +3656,7 @@ const GamePage = () => {
                               ))}
                             </div>
                           </article>
-                        ) : entry.kind === "maskedDiscardCards" && entry.playerId ? (
+                        ) : entry.kind === "maskedDiscardCards" && entry.playerId && (entry.drawCount ?? 0) > 0 ? (
                           <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
                             <p className="chat-message game-chat-line__message game-action-history-text">
                               <img

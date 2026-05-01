@@ -9,7 +9,9 @@ import (
 	"the-deal/internal/schema"
 	"the-deal/internal/schema/monopoly_deal_schema"
 	"the-deal/internal/store"
+	"the-deal/internal/timex"
 	"the-deal/internal/token"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
@@ -81,6 +83,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 	var action monopoly_deal.Action
 	var totalSets, totalMoney int
 	var didWin bool
+	var deadline time.Time
 
 	err := c.store.ExecTx(ctx, func(q *store.Queries) error {
 		g, err := q.GetGameByPlayerForUpdate(ctx, tp.PlayerID)
@@ -188,6 +191,62 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 			if err != nil {
 				return err
 			}
+
+			return nil
+		}
+
+		switch msg.MonopolyDealMessage.GetPayload().(type) {
+		case *monopoly_deal_schema.ClientMessage_PlayMoney:
+			deadline = time.Now().Add(game.Config.MoveTimeout)
+			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, deadline)
+
+		case *monopoly_deal_schema.ClientMessage_PlayProperty:
+			deadline = time.Now().Add(game.Config.MoveTimeout)
+			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, deadline)
+
+		case *monopoly_deal_schema.ClientMessage_PlayHouse:
+
+		case *monopoly_deal_schema.ClientMessage_PlayHotel:
+
+		case *monopoly_deal_schema.ClientMessage_PlayPassGo:
+
+		case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday:
+
+		case *monopoly_deal_schema.ClientMessage_PlayDebtCollector:
+
+		case *monopoly_deal_schema.ClientMessage_PlayRent:
+
+		case *monopoly_deal_schema.ClientMessage_PlayWildRent:
+
+		case *monopoly_deal_schema.ClientMessage_PlayDoubleTheRent:
+
+		case *monopoly_deal_schema.ClientMessage_PlaySlyDeal:
+
+		case *monopoly_deal_schema.ClientMessage_PlayForcedDeal:
+
+		case *monopoly_deal_schema.ClientMessage_PlayDealBreaker:
+
+		case *monopoly_deal_schema.ClientMessage_ResolvePendingRent:
+
+		case *monopoly_deal_schema.ClientMessage_ComplyPaymentDemand:
+
+		case *monopoly_deal_schema.ClientMessage_ComplyPropertyDemand:
+
+		case *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand:
+
+		case *monopoly_deal_schema.ClientMessage_DenyDemand:
+
+		case *monopoly_deal_schema.ClientMessage_DiscardCards:
+
+		case *monopoly_deal_schema.ClientMessage_CompleteTurn:
+			deadline = time.Now().Add(game.Config.MoveTimeout)
+			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, deadline)
+
+		case *monopoly_deal_schema.ClientMessage_RearrangeCard:
+
+		}
+		if err != nil {
+			return err
 		}
 
 		return nil
@@ -196,11 +255,14 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		return err
 	}
 
+	actionProto := action.Proto()
+	actionProto.TurnDeadlineMs = deadline.UnixMilli()
+
 	e := &schema.ServerMessage{
 		Payload: &schema.ServerMessage_MonopolyDealMessage{
 			MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
 				Payload: &monopoly_deal_schema.ServerMessage_Action{
-					Action: action.Proto(),
+					Action: actionProto,
 				},
 			},
 		},
