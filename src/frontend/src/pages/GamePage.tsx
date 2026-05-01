@@ -1939,9 +1939,6 @@ const GamePage = () => {
               !!selfPlayerId &&
               actionPlayerId === selfPlayerId &&
               currentTurnPlayerIdRef.current === actionPlayerId;
-            if (isSelfPlay) {
-              setMovesLeft((current) => Math.max(0, current - 1));
-            }
 
             setInitialGameState((current) => {
               if (!current) {
