@@ -893,7 +893,9 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  height: auto;
+  position: sticky;
+  top: 5.75rem;
+  max-height: calc(100vh - 5.75rem - 2rem);
 }
 
 .room-left-card {
@@ -904,7 +906,11 @@ h1 {
 }
 
 .room-settings-card {
-  flex: none;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .room-players-card {
@@ -919,6 +925,9 @@ h1 {
 .room-settings-card .ui-card__content {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .room-players-content {
@@ -944,7 +953,24 @@ h1 {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 1rem;
+}
+
+.room-settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.room-settings-group-label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  padding-bottom: 0.1rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .room-settings-readonly-note {
@@ -978,11 +1004,156 @@ h1 {
   padding-right: 2rem;
 }
 
-.room-chat-panel {
-  height: 100%;
-  flex: 1;
+.room-slider-control {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.room-slider-min,
+.room-slider-max {
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 1ch;
+  text-align: center;
+}
+
+.room-slider {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.room-slider:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.room-slider:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.room-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: var(--primary);
+  border: 2px solid var(--background);
+  box-shadow: 0 0 0 1px var(--primary);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.room-slider:not(:disabled)::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+.room-slider::-moz-range-thumb {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: var(--primary);
+  border: 2px solid var(--background);
+  box-shadow: 0 0 0 1px var(--primary);
+  cursor: pointer;
+}
+
+.room-slider-value-input {
+  flex-shrink: 0;
+  width: 3rem;
+  text-align: center;
+  font-size: 0.82rem;
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--foreground);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  padding: 0.15rem 0.3rem;
+  line-height: 1.4;
+  /* hide the browser spinner arrows */
+  -moz-appearance: textfield;
+}
+
+.room-slider-value-input::-webkit-inner-spin-button,
+.room-slider-value-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.room-slider-value-input:not(:disabled):hover {
+  border-color: var(--ring);
+}
+
+.room-slider-value-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  background: var(--surface);
+}
+
+.room-slider-value-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.room-speed-group {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  overflow: hidden;
+  background: var(--muted);
+}
+
+.room-speed-option {
+  flex: 1;
+  padding: 0.3rem 0.7rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+
+.room-speed-option:first-child {
+  border-left: none;
+}
+
+.room-speed-option:not(:disabled):not(.is-active):hover {
+  background: color-mix(in oklab, var(--muted) 60%, var(--primary) 40%);
+  color: var(--foreground);
+}
+
+.room-speed-option.is-active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-left-color: var(--primary);
+}
+
+.room-speed-option.is-active + .room-speed-option {
+  border-left-color: var(--primary);
+}
+
+.room-speed-option:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .profile-page {
@@ -1081,6 +1252,16 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  position: sticky;
+  top: 5.75rem;
+  max-height: calc(100vh - 5.75rem - 2rem);
+}
+
+.room-chat-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .room-chat-content {
@@ -1525,7 +1706,7 @@ h1 {
 .game-chat-line {
   display: grid;
   grid-template-columns: 1.6rem minmax(0, 1fr);
-  align-items: start;
+  align-items: center;
   gap: 0.4rem;
 }
 
@@ -1808,7 +1989,29 @@ h1 {
   }
 
   .room-left-panel {
+    position: static;
+    max-height: none;
     height: auto;
+    overflow-y: visible;
+  }
+
+  .room-settings-card {
+    flex: none;
+    overflow: visible;
+  }
+
+  .room-settings-card .ui-card__content {
+    overflow-y: visible;
+  }
+
+  .room-chat-column {
+    position: static;
+    max-height: none;
+    height: auto;
+  }
+
+  .room-chat-panel {
+    min-height: 420px;
   }
 
   .room-left-card {
@@ -1829,7 +2032,36 @@ h1 {
   }
 
   .game-sidebar {
-    height: min(70dvh, 680px);
+    height: auto;
+    overflow: visible;
+  }
+
+  .game-sidebar-panels {
+    flex: none;
+    min-height: 0;
+    overflow: visible;
+    height: auto;
+  }
+
+  .game-sidebar-panels__content {
+    height: auto;
+    overflow: visible;
+  }
+
+  .game-chat-panel {
+    flex: none;
+    min-height: 320px;
+  }
+
+  .game-action-history-panel {
+    flex: none;
+    overflow: visible;
+    height: auto;
+  }
+
+  .game-action-history-list {
+    max-height: 320px;
+    overflow-y: auto;
   }
 
   .game-page.game-page--sidebar-collapsed {

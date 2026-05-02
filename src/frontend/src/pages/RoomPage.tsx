@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Game,
-  getCapacityOptions,
   getCapacityRangeForGame,
   getGameDisplayName,
   getGameSettingDefinition,
@@ -53,6 +52,14 @@ const formatSettingsChangeMessage = (changes: string[]): string => {
   return changes.join("\n");
 };
 
+const GROUP_ORDER = [
+  "Game Speed",
+  "Deal Rules",
+  "Card Rules",
+  "Win Conditions",
+  "Deck Rules",
+];
+
 const RoomPage = () => {
   const navigate = useNavigate();
   const { room_id: roomId } = useParams();
@@ -63,6 +70,8 @@ const RoomPage = () => {
   const playersRef = useRef<ShortPlayer[]>([]);
   const [roomGame, setRoomGame] = useState<Game | null>(null);
   const [roomCapacity, setRoomCapacity] = useState<number | null>(null);
+  const [capacityInputText, setCapacityInputText] = useState<string | null>(null);
+  const [settingInputTexts, setSettingInputTexts] = useState<Record<string, string>>({});
   const [roomSettingSelectValues, setRoomSettingSelectValues] = useState<
     GameSettingSelectValue[]
   >([]);
@@ -156,18 +165,21 @@ const RoomPage = () => {
     playersRef.current = players;
   }, [players]);
 
-  const orderedRoomSettingSelectValues = useMemo(() => {
-    return [...roomSettingSelectValues].sort((left, right) => {
-      if (left.key === "speed") {
-        return -1;
-      }
+  const groupedRoomSettings = useMemo(() => {
+    const groups: Map<string, typeof roomSettingSelectValues> = new Map();
+    for (const groupName of GROUP_ORDER) {
+      groups.set(groupName, []);
+    }
 
-      if (right.key === "speed") {
-        return 1;
+    for (const setting of roomSettingSelectValues) {
+      const groupName = setting.group ?? "Other";
+      if (!groups.has(groupName)) {
+        groups.set(groupName, []);
       }
+      groups.get(groupName)!.push(setting);
+    }
 
-      return 0;
-    });
+    return [...groups.entries()].filter(([, settings]) => settings.length > 0);
   }, [roomSettingSelectValues]);
 
   useEffect(() => {
@@ -793,138 +805,236 @@ const RoomPage = () => {
                   >
                     Capacity
                   </label>
-                  <select
-                    id="room-capacity-setting"
-                    className="field-input room-setting-input"
-                    value={roomCapacity !== null ? String(roomCapacity) : ""}
-                    disabled={!canEditSettings}
-                    onChange={(event) => {
-                      if (!canEditSettings) {
-                        return;
-                      }
+                  <div className="room-slider-control">
+                    <span className="room-slider-min">{capacityRange.min}</span>
+                    <input
+                      id="room-capacity-setting"
+                      type="range"
+                      className="room-slider"
+                      min={capacityRange.min}
+                      max={capacityRange.max}
+                      step={1}
+                      value={roomCapacity ?? capacityRange.min}
+                      disabled={!canEditSettings}
+                      onChange={(event) => {
+                        if (!canEditSettings) {
+                          return;
+                        }
 
-                      const nextCapacity = Number.parseInt(
-                        event.target.value,
-                        10,
-                      );
-                      if (Number.isNaN(nextCapacity) || !roomGame) {
-                        return;
-                      }
+                        const nextCapacity = Number.parseInt(
+                          event.target.value,
+                          10,
+                        );
+                        if (Number.isNaN(nextCapacity) || !roomGame) {
+                          return;
+                        }
 
-                      setRoomCapacity(nextCapacity);
+                        setRoomCapacity(nextCapacity);
 
-                      void persistRoomSettings({
-                        capacity: nextCapacity,
-                        game: roomGame,
-                        settings: buildSettingsPayload(
-                          roomGame,
-                          roomSettingSelectValues,
-                        ),
-                      });
-                    }}
-                  >
-                    {getCapacityOptions(
-                      capacityRange.min,
-                      capacityRange.max,
-                    ).map((option) => {
-                      return (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      );
-                    })}
-                  </select>
+                        void persistRoomSettings({
+                          capacity: nextCapacity,
+                          game: roomGame,
+                          settings: buildSettingsPayload(
+                            roomGame,
+                            roomSettingSelectValues,
+                          ),
+                        });
+                      }}
+                    />
+                    <span className="room-slider-max">{capacityRange.max}</span>
+                    <input
+                      type="number"
+                      className="room-slider-value-input"
+                      disabled={!canEditSettings}
+                      value={capacityInputText ?? String(roomCapacity ?? capacityRange.min)}
+                      min={capacityRange.min}
+                      max={capacityRange.max}
+                      onChange={(event) => {
+                        setCapacityInputText(event.target.value);
+                      }}
+                      onBlur={() => {
+                        const parsed = Number.parseInt(capacityInputText ?? "", 10);
+                        const clamped = Number.isNaN(parsed)
+                          ? (roomCapacity ?? capacityRange.min)
+                          : Math.min(capacityRange.max, Math.max(capacityRange.min, parsed));
+                        setCapacityInputText(null);
+                        if (clamped === roomCapacity || !roomGame) return;
+                        setRoomCapacity(clamped);
+                        void persistRoomSettings({
+                          capacity: clamped,
+                          game: roomGame,
+                          settings: buildSettingsPayload(roomGame, roomSettingSelectValues),
+                        });
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.currentTarget.blur();
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
 
-                {orderedRoomSettingSelectValues.map((setting) => {
-                  return (
-                    <div key={setting.key} className="room-settings-row">
-                      <label
-                        className="room-setting-label"
-                        htmlFor={`room-setting-${setting.key}`}
-                      >
-                        {setting.label}
-                      </label>
-                      <select
-                        id={`room-setting-${setting.key}`}
-                        className="field-input room-setting-input"
-                        value={setting.value}
-                        disabled={!canEditSettings}
-                        onChange={(event) => {
-                          if (!canEditSettings) {
-                            return;
-                          }
+                {groupedRoomSettings.map(([groupName, groupSettings]) => (
+                  <div key={groupName} className="room-settings-group">
+                    <p className="room-settings-group-label">{groupName}</p>
+                    {groupSettings.map((setting) => {
+                      const isSpeed = setting.key === "speed";
+                      const settingMin = Number(setting.options[0]?.value ?? 0);
+                      const settingMax = Number(setting.options[setting.options.length - 1]?.value ?? settingMin);
 
-                          const nextValue = event.target.value;
-                          setRoomSettingSelectValues((currentSettings) => {
-                            return currentSettings.map((currentSetting) => {
-                              if (currentSetting.key !== setting.key) {
-                                return currentSetting;
-                              }
+                      const commitSettingValue = (rawValue: string, key: string) => {
+                        const parsed = Number.parseInt(rawValue, 10);
+                        const def = getGameSettingDefinition(roomGame!, key);
+                        const min = def?.min ?? settingMin;
+                        const max = def?.max ?? settingMax;
+                        const currentNumeric = Number.parseInt(
+                          roomSettingSelectValues.find((s) => s.key === key)?.value ?? "",
+                          10,
+                        );
+                        const clamped = Number.isNaN(parsed)
+                          ? currentNumeric
+                          : Math.min(max, Math.max(min, parsed));
+                        const nextValue = String(clamped);
 
-                              return {
-                                ...currentSetting,
-                                value: nextValue,
-                              };
-                            });
+                        setSettingInputTexts((prev) => {
+                          const next = { ...prev };
+                          delete next[key];
+                          return next;
+                        });
+
+                        if (nextValue === String(currentNumeric) || !roomGame) return;
+
+                        const nextSettings = roomSettingSelectValues.map((s) =>
+                          s.key !== key ? s : { ...s, value: nextValue },
+                        );
+                        setRoomSettingSelectValues(nextSettings);
+
+                        const nextSettingsPayload = buildSettingsPayload(roomGame, nextSettings);
+                        const nextCapacityRange = getCapacityRangeForGame(roomGame, nextSettingsPayload);
+                        let nextCapacity = roomCapacity;
+                        if (
+                          nextCapacity === null ||
+                          nextCapacity < nextCapacityRange.min ||
+                          nextCapacity > nextCapacityRange.max
+                        ) {
+                          nextCapacity = nextCapacityRange.min;
+                          setRoomCapacity(nextCapacityRange.min);
+                        }
+                        if (nextCapacity !== null) {
+                          void persistRoomSettings({
+                            capacity: nextCapacity,
+                            game: roomGame,
+                            settings: nextSettingsPayload,
                           });
+                        }
+                      };
 
-                          if (!roomGame) {
-                            return;
-                          }
+                      const applySelectChange = (nextValue: string) => {
+                        if (!canEditSettings || !roomGame) return;
+                        const nextSettings = roomSettingSelectValues.map((s) =>
+                          s.key !== setting.key ? s : { ...s, value: nextValue },
+                        );
+                        setRoomSettingSelectValues(nextSettings);
+                        const nextSettingsPayload = buildSettingsPayload(roomGame, nextSettings);
+                        const nextCapacityRange = getCapacityRangeForGame(roomGame, nextSettingsPayload);
+                        let nextCapacity = roomCapacity;
+                        if (
+                          nextCapacity === null ||
+                          nextCapacity < nextCapacityRange.min ||
+                          nextCapacity > nextCapacityRange.max
+                        ) {
+                          nextCapacity = nextCapacityRange.min;
+                          setRoomCapacity(nextCapacityRange.min);
+                        }
+                        if (nextCapacity !== null) {
+                          void persistRoomSettings({
+                            capacity: nextCapacity,
+                            game: roomGame,
+                            settings: nextSettingsPayload,
+                          });
+                        }
+                      };
 
-                          const nextSettings = roomSettingSelectValues.map(
-                            (currentSetting) => {
-                              if (currentSetting.key !== setting.key) {
-                                return currentSetting;
-                              }
+                      return (
+                        <div key={setting.key} className="room-settings-row">
+                          <label
+                            className="room-setting-label"
+                            htmlFor={`room-setting-${setting.key}`}
+                          >
+                            {setting.label}
+                          </label>
 
-                              return {
-                                ...currentSetting,
-                                value: nextValue,
-                              };
-                            },
-                          );
-
-                          const nextSettingsPayload = buildSettingsPayload(
-                            roomGame,
-                            nextSettings,
-                          );
-                          const nextCapacityRange = getCapacityRangeForGame(
-                            roomGame,
-                            nextSettingsPayload,
-                          );
-
-                          let nextCapacity = roomCapacity;
-                          if (
-                            nextCapacity === null ||
-                            nextCapacity < nextCapacityRange.min ||
-                            nextCapacity > nextCapacityRange.max
-                          ) {
-                            nextCapacity = nextCapacityRange.min;
-                            setRoomCapacity(nextCapacityRange.min);
-                          }
-
-                          if (nextCapacity !== null) {
-                            void persistRoomSettings({
-                              capacity: nextCapacity,
-                              game: roomGame,
-                              settings: nextSettingsPayload,
-                            });
-                          }
-                        }}
-                      >
-                        {setting.options.map((option) => {
-                          return (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  );
-                })}
+                          {isSpeed ? (
+                            <div
+                              className="room-speed-group"
+                              role="group"
+                              aria-label="Speed"
+                            >
+                              {setting.options.map((option) => (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  className={`room-speed-option${setting.value === option.value ? " is-active" : ""}`}
+                                  disabled={!canEditSettings}
+                                  onClick={() => applySelectChange(option.value)}
+                                >
+                                  {option.label}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="room-slider-control">
+                              <span className="room-slider-min">{settingMin}</span>
+                              <input
+                                id={`room-setting-${setting.key}`}
+                                type="range"
+                                className="room-slider"
+                                min={settingMin}
+                                max={settingMax}
+                                step={1}
+                                value={Number.parseInt(setting.value, 10) || settingMin}
+                                disabled={!canEditSettings}
+                                onChange={(event) => {
+                                  if (!canEditSettings) return;
+                                  applySelectChange(event.target.value);
+                                }}
+                              />
+                              <span className="room-slider-max">{settingMax}</span>
+                              <input
+                                type="number"
+                                className="room-slider-value-input"
+                                disabled={!canEditSettings}
+                                value={
+                                  settingInputTexts[setting.key] ?? setting.value
+                                }
+                                min={settingMin}
+                                max={settingMax}
+                                onChange={(event) => {
+                                  setSettingInputTexts((prev) => ({
+                                    ...prev,
+                                    [setting.key]: event.target.value,
+                                  }));
+                                }}
+                                onBlur={() => {
+                                  commitSettingValue(
+                                    settingInputTexts[setting.key] ?? setting.value,
+                                    setting.key,
+                                  );
+                                }}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter") {
+                                    event.currentTarget.blur();
+                                  }
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
 
               {!canEditSettings ? (
@@ -998,12 +1108,23 @@ if (chatMessage.kind === "player-event") {
               );
 
               return (
-                <p className="chat-message">
-                  <span className="chat-message__author">
-                    {chatPlayer?.name ?? "Player"}:
-                  </span>{" "}
-                  {chatMessage.text}
-                </p>
+                <article className="game-chat-line">
+                  {chatPlayer?.imageUrl ? (
+                    <img
+                      src={chatPlayer.imageUrl}
+                      alt={chatPlayer.name}
+                      className="game-chat-line__avatar"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : null}
+                  <p className="chat-message game-chat-line__message">
+                    <span className="game-chat-line__author">
+                      {chatPlayer?.name ?? "Player"}:
+                    </span>{" "}
+                    {chatMessage.text}
+                  </p>
+                </article>
               );
             }}
           />

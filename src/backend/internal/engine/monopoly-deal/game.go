@@ -626,7 +626,7 @@ func (g *Game) PlayPassGo(playerID uuid.UUID, cardID Identifier) (*ActionPlayPas
 		return nil, err
 	}
 
-	cards := g.drawCards(playerID, g.Config.PassGoDraw)
+	cards := g.drawCards(playerID, g.Config.PaydayDraw)
 
 	g.LastAction = card
 
@@ -685,7 +685,7 @@ func (g *Game) PlayItsMyBirthday(playerID uuid.UUID, cardID Identifier) (*Action
 			continue
 		}
 		id := g.IDGenerator.New()
-		demand := NewPaymentDemand(id, playerID, targetID, g.Config.ItsMyBirthdayAmount, DemandSourceItsMyBirthday)
+		demand := NewPaymentDemand(id, playerID, targetID, g.Config.PartyBillPayment, DemandSourceItsMyBirthday)
 		demandsMap[id] = demand
 		demandsSlice = append(demandsSlice, demand)
 	}
@@ -750,7 +750,7 @@ func (g *Game) PlayDebtCollector(playerID uuid.UUID, targetID uuid.UUID, cardID 
 	}
 
 	demandID := g.IDGenerator.New()
-	demand := NewPaymentDemand(demandID, playerID, targetID, g.Config.DebtCollectorAmount, DemansSourceDebtCollector)
+	demand := NewPaymentDemand(demandID, playerID, targetID, g.Config.SettleUpPayment, DemansSourceDebtCollector)
 	g.Demands = map[Identifier]Demand{demandID: demand}
 
 	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, nil, demand)
@@ -1787,7 +1787,7 @@ func (g *Game) CompleteTurn(playerID uuid.UUID) (*ActionStartTurn, error) {
 
 func (g *Game) startTurn(playerID uuid.UUID) *ActionStartTurn {
 	hand := g.Hands[playerID]
-	drawCount := g.Config.PassGoDraw
+	drawCount := g.Config.PaydayDraw
 	if hand.Len() == 0 {
 		drawCount = g.Config.StartNumCards
 	}

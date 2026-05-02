@@ -11,7 +11,11 @@ type Deck struct {
 }
 
 func NewDeck(cfg Settings, gen *IdentifierGenerator) (Deck, map[Identifier]Card) {
-	n := 28 + 11 + 20 + 34 + 13
+	nAction := cfg.PaydayAmount + cfg.DoubleTheRentAmount + cfg.PartyBillAmount +
+		cfg.HouseAmount + cfg.PropertyStealAmount + cfg.PropertySwapAmount + cfg.SettleUpAmount +
+		cfg.HotelAmount + cfg.NahAmount + cfg.SetSnatcherAmount
+	nRent := cfg.RentAmount*5 + cfg.WildRentAmount
+	n := 28 + 11 + 20 + nAction + nRent
 	cards := make([]Card, 0, n*cfg.NumDecks)
 	cardMap := make(map[Identifier]Card)
 
@@ -78,24 +82,24 @@ func NewDeck(cfg Settings, gen *IdentifierGenerator) (Deck, map[Identifier]Card)
 	addCopies(AssetKeyMoney10, 1)
 
 	// Action cards (34)
-	addCopies(AssetKeyPassGo, 10)
-	addCopies(AssetKeyDoubleTheRent, 2)
-	addCopies(AssetKeyItsMyBirthday, 3)
-	addCopies(AssetKeyHouse, 3)
-	addCopies(AssetKeySlyDeal, 3)
-	addCopies(AssetKeyForcedDeal, 3)
-	addCopies(AssetKeyDebtCollector, 3)
-	addCopies(AssetKeyHotel, 2)
-	addCopies(AssetKeyJustSayNo, 3)
-	addCopies(AssetKeyDealBreaker, 2)
+	addCopies(AssetKeyPassGo, cfg.PaydayAmount)
+	addCopies(AssetKeyDoubleTheRent, cfg.DoubleTheRentAmount)
+	addCopies(AssetKeyItsMyBirthday, cfg.PartyBillAmount)
+	addCopies(AssetKeyHouse, cfg.HouseAmount)
+	addCopies(AssetKeySlyDeal, cfg.PropertyStealAmount)
+	addCopies(AssetKeyForcedDeal, cfg.PropertySwapAmount)
+	addCopies(AssetKeyDebtCollector, cfg.SettleUpAmount)
+	addCopies(AssetKeyHotel, cfg.HotelAmount)
+	addCopies(AssetKeyJustSayNo, cfg.NahAmount)
+	addCopies(AssetKeyDealBreaker, cfg.SetSnatcherAmount)
 
 	// Rent cards (13)
-	addCopies(AssetKeyRentBrownSky, 2)
-	addCopies(AssetKeyRentPinkOrange, 2)
-	addCopies(AssetKeyRentRedYellow, 2)
-	addCopies(AssetKeyRentGreenBlue, 2)
-	addCopies(AssetKeyRentUtilityRailroad, 2)
-	addCopies(AssetKeyRentWild, 3)
+	addCopies(AssetKeyRentBrownSky, cfg.RentAmount)
+	addCopies(AssetKeyRentPinkOrange, cfg.RentAmount)
+	addCopies(AssetKeyRentRedYellow, cfg.RentAmount)
+	addCopies(AssetKeyRentGreenBlue, cfg.RentAmount)
+	addCopies(AssetKeyRentUtilityRailroad, cfg.RentAmount)
+	addCopies(AssetKeyRentWild, cfg.WildRentAmount)
 
 	d := Deck{Cards: cards}
 
