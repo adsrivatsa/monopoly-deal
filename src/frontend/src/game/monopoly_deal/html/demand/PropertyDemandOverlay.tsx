@@ -153,7 +153,7 @@ const PropertyDemandOverlay = ({
       <p className="md-demand__eyebrow">{demandEyebrow}</p>
       {typeof demandTimerSeconds === "number" ? (
         <p className="md-demand__line md-demand__timer">
-          ⏱ {String(Math.floor(demandTimerSeconds / 60)).padStart(2, "0")}:{String(demandTimerSeconds % 60).padStart(2, "0")}
+          Time left: {String(Math.floor(demandTimerSeconds / 60)).padStart(2, "0")}:{String(demandTimerSeconds % 60).padStart(2, "0")}
         </p>
       ) : null}
       {isTargetingSelf ? (

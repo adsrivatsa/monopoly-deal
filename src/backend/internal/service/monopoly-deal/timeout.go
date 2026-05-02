@@ -133,7 +133,7 @@ func (c *Controller) defaultMove(gameID, playerID, tokenID uuid.UUID) func() {
 
 			currPlayerID := game.Players[game.CurrPlayerIdx]
 			deadline = time.Now().Add(game.Config.MoveTimeout)
-			err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+			err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, game.Config.MoveTimeout, deadline)
 			if err != nil {
 				return err
 			}
@@ -174,12 +174,13 @@ func (c *Controller) defaultMove(gameID, playerID, tokenID uuid.UUID) func() {
 	}
 }
 
-func (c *Controller) scheduleDefaultMove(ctx context.Context, q *store.Queries, gameID, playerID uuid.UUID, deadline time.Time) error {
+func (c *Controller) scheduleDefaultMove(ctx context.Context, q *store.Queries, gameID, playerID uuid.UUID, timeout time.Duration, deadline time.Time) error {
 	gt, err := q.UpsertGameMoveTimeout(ctx, store.UpsertGameMoveTimeoutParams{
-		GameID:   gameID,
-		PlayerID: playerID,
-		TokenID:  uuid.New(),
-		Deadline: deadline,
+		GameID:     gameID,
+		PlayerID:   playerID,
+		TokenID:    uuid.New(),
+		DurationMs: timeout.Milliseconds(),
+		Deadline:   deadline,
 	})
 	if err != nil {
 		return err
@@ -276,7 +277,7 @@ func (c *Controller) defaultDemand(gameID, playerID, tokenID uuid.UUID, demandID
 			if len(game.Demands) == 0 {
 				currPlayerID := game.Players[game.CurrPlayerIdx]
 				deadline = time.Now().Add(game.Config.MoveTimeout)
-				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, game.Config.MoveTimeout, deadline)
 				if err != nil {
 					return err
 				}
@@ -322,13 +323,14 @@ func (c *Controller) defaultDemand(gameID, playerID, tokenID uuid.UUID, demandID
 	}
 }
 
-func (c *Controller) scheduleDefaultDemand(ctx context.Context, q *store.Queries, gameID, playerID uuid.UUID, demandID string, deadline time.Time) error {
+func (c *Controller) scheduleDefaultDemand(ctx context.Context, q *store.Queries, gameID, playerID uuid.UUID, demandID string, timeout time.Duration, deadline time.Time) error {
 	gt, err := q.UpsertGameDemandTimeout(ctx, store.UpsertGameDemandTimeoutParams{
-		GameID:   gameID,
-		PlayerID: playerID,
-		DemandID: &demandID,
-		TokenID:  uuid.New(),
-		Deadline: deadline,
+		GameID:     gameID,
+		PlayerID:   playerID,
+		DemandID:   &demandID,
+		TokenID:    uuid.New(),
+		DurationMs: timeout.Milliseconds(),
+		Deadline:   deadline,
 	})
 	if err != nil {
 		return err

@@ -3672,7 +3672,7 @@ const GamePage = () => {
                               </span>
                               {(entry.cardAssetKeys?.length ?? 0) > 0
                                 ? ":"
-                                : " didn't have anything to pay with."}
+                                : " nothing."}
                             </p>
                             {(entry.cardAssetKeys?.length ?? 0) > 0 ? (
                               <div className="game-action-history-cards-row">

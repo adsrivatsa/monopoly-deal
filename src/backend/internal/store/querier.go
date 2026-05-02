@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	ClaimGameTimeouts(ctx context.Context, limit int32) ([]GameTimeout, error)
 	CompleteGame(ctx context.Context, arg CompleteGameParams) (Game, error)
 	CreateGame(ctx context.Context, arg CreateGameParams) (Game, error)
 	CreateGameHistory(ctx context.Context, arg CreateGameHistoryParams) (GameHistory, error)

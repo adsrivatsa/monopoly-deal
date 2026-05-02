@@ -3,41 +3,19 @@ package monopoly_deal
 import (
 	"context"
 	"fmt"
-	"the-deal/internal/config"
 	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
 	"the-deal/internal/event"
 	"the-deal/internal/schema"
 	"the-deal/internal/schema/monopoly_deal_schema"
 	"the-deal/internal/store"
-	"the-deal/internal/timex"
 	"the-deal/internal/token"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/vmihailenco/msgpack/v5"
 	"google.golang.org/protobuf/proto"
 )
-
-type Controller struct {
-	cfg        config.Config
-	store      store.Store
-	bus        *event.Bus
-	timeoutMan *timex.TimeoutManager[TimeoutKey]
-}
-
-func NewController(cfg config.Config, pool *pgxpool.Pool, client *redis.Client) *Controller {
-	c := &Controller{
-		cfg:        cfg,
-		store:      store.NewSQLStore(pool, nil),
-		bus:        event.NewBus(client),
-		timeoutMan: timex.NewTimeoutManager[TimeoutKey](),
-	}
-
-	return c
-}
 
 func (c *Controller) HandleEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_MonopolyDealMessage) error {
 	switch p := msg.MonopolyDealMessage.GetPayload().(type) {
@@ -212,7 +190,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 			*monopoly_deal_schema.ClientMessage_PlayWildRent, *monopoly_deal_schema.ClientMessage_PlayDoubleTheRent,
 			*monopoly_deal_schema.ClientMessage_DiscardCards:
 			deadline = time.Now().Add(game.Config.MoveTimeout)
-			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, deadline)
+			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, game.Config.MoveTimeout, deadline)
 
 		case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday, *monopoly_deal_schema.ClientMessage_PlayDebtCollector,
 			*monopoly_deal_schema.ClientMessage_PlaySlyDeal, *monopoly_deal_schema.ClientMessage_PlayForcedDeal,
@@ -236,7 +214,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 			for _, demand := range dcAct.Demands {
 				targetID := demand.TargetID
 				demandID := string(demand.ID)
-				err = c.scheduleDefaultDemand(ctx, q, gameID, targetID, demandID, deadline)
+				err = c.scheduleDefaultDemand(ctx, q, gameID, targetID, demandID, game.Config.DemandTimeout, deadline)
 				if err != nil {
 					return err
 				}
@@ -262,8 +240,8 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 
 			for _, demand := range dcAct.Demands {
 				targetID := demand.TargetID
-				demandID := string(demand.ID)
-				err = c.scheduleDefaultDemand(ctx, q, gameID, targetID, demandID, deadline)
+				demandID = string(demand.ID)
+				err = c.scheduleDefaultDemand(ctx, q, gameID, targetID, demandID, game.Config.DemandTimeout, deadline)
 				if err != nil {
 					return err
 				}
@@ -282,8 +260,16 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 
 			if len(game.Demands) == 0 {
 				currPlayerID := game.Players[game.CurrPlayerIdx]
+				_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+					GameID:   gameID,
+					PlayerID: currPlayerID,
+					DemandID: nil,
+				})
+				if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+					return err
+				}
 				deadline = time.Now().Add(game.Config.MoveTimeout)
-				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, game.Config.MoveTimeout, deadline)
 			}
 
 		case *monopoly_deal_schema.ClientMessage_ComplyPropertyDemand:
@@ -299,8 +285,16 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 
 			if len(game.Demands) == 0 {
 				currPlayerID := game.Players[game.CurrPlayerIdx]
+				_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+					GameID:   gameID,
+					PlayerID: currPlayerID,
+					DemandID: nil,
+				})
+				if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+					return err
+				}
 				deadline = time.Now().Add(game.Config.MoveTimeout)
-				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, game.Config.MoveTimeout, deadline)
 			}
 
 		case *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand:
@@ -316,8 +310,16 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 
 			if len(game.Demands) == 0 {
 				currPlayerID := game.Players[game.CurrPlayerIdx]
+				_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+					GameID:   gameID,
+					PlayerID: currPlayerID,
+					DemandID: nil,
+				})
+				if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+					return err
+				}
 				deadline = time.Now().Add(game.Config.MoveTimeout)
-				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, game.Config.MoveTimeout, deadline)
 			}
 
 		case *monopoly_deal_schema.ClientMessage_CompleteTurn:
@@ -332,7 +334,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 
 			nextPlayerID := game.Players[game.CurrPlayerIdx]
 			deadline = time.Now().Add(game.Config.MoveTimeout)
-			err = c.scheduleDefaultMove(ctx, q, gameID, nextPlayerID, deadline)
+			err = c.scheduleDefaultMove(ctx, q, gameID, nextPlayerID, game.Config.MoveTimeout, deadline)
 
 		case *monopoly_deal_schema.ClientMessage_RearrangeCard:
 

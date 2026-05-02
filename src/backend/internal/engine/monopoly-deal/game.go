@@ -13,11 +13,11 @@ import (
 type Game struct {
 	Config        Settings                   `json:"config" msgpack:"a"`
 	IDGenerator   *IdentifierGenerator       `json:"id_generator" msgpack:"b"`
-	Deck          Deck                       `json:"deck" msgpack:"c"`
-	Cards         map[Identifier]Card        `json:"cards" msgpack:"d"`
-	Players       []uuid.UUID                `json:"players" msgpack:"e"`
-	CurrPlayerIdx int                        `json:"curr_player_idx" msgpack:"f"`
-	MovesLeft     int                        `json:"moves_left" msgpack:"g"`
+	Deck          Deck                       `json:"deck" msgpack:"d"`
+	Cards         map[Identifier]Card        `json:"cards" msgpack:"e"`
+	Players       []uuid.UUID                `json:"players" msgpack:"f"`
+	CurrPlayerIdx int                        `json:"curr_player_idx" msgpack:"g"`
+	MovesLeft     int                        `json:"moves_left" msgpack:"h"`
 	Hands         map[uuid.UUID]Cards        `json:"hands" msgpack:"i"`
 	Money         map[uuid.UUID]Cards        `json:"money" msgpack:"j"`
 	Properties    map[uuid.UUID]PropertySets `json:"properties" msgpack:"k"`

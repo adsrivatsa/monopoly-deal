@@ -256,7 +256,7 @@ func (c *Controller) CreateGame(ctx context.Context, roomID uuid.UUID, playerIDs
 		}
 
 		deadline = time.Now().Add(settings.MoveTimeout)
-		err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, deadline)
+		err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, settings.MoveTimeout, deadline)
 		if err != nil {
 			return err
 		}
