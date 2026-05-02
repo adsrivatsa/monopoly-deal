@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: "127.0.0.1",
-    allowedHosts: ["deal.adsrivatsa.com", "127.0.0.1", "abhinavs-macbook-pro.taile3b908.ts.net"],
+    allowedHosts: ["deal.adsrivatsa.com", "127.0.0.1", "deal-test.adsrivatsa.com"],
   },
 });
