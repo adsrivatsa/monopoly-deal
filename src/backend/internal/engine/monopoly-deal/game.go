@@ -64,9 +64,6 @@ func NewGame(cfg Settings, playerIDs []uuid.UUID) *Game {
 		Config:        cfg,
 	}
 
-	firstPlayerID := g.Players[g.CurrPlayerIdx]
-	_, _ = g.StartTurn(firstPlayerID)
-
 	return g
 }
 
@@ -123,6 +120,7 @@ func (g *Game) Proto(playerID uuid.UUID, allPlayerIDs []uuid.UUID) *monopoly_dea
 		LastAction:      g.LastAction.Proto(),
 		AssetImages:     assetImages,
 		MaxHandSize:     int32(g.Config.MaxHandSize),
+		Deadlines:       nil, // populated by caller
 	}
 }
 

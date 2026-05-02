@@ -44,7 +44,7 @@ func (s *Settings) Decode(data []byte) error {
 	}
 
 	switch s.Speed {
-	case SpeedSlow:
+	default:
 		s.MoveTimeout = time.Second * 45
 		s.DemandTimeout = time.Second * 30
 	case SpeedMedium:

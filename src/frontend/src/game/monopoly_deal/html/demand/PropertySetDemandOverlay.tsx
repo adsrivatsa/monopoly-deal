@@ -70,7 +70,9 @@ const PropertySetDemandOverlay = ({
     >
       <p className="md-demand__eyebrow">Set Snatcher</p>
       {typeof demandTimerSeconds === "number" ? (
-        <p className="md-demand__line">Time left: {Math.max(0, demandTimerSeconds)}s</p>
+        <p className="md-demand__line md-demand__timer">
+          ⏱ {String(Math.floor(demandTimerSeconds / 60)).padStart(2, "0")}:{String(demandTimerSeconds % 60).padStart(2, "0")}
+        </p>
       ) : null}
       {isTargetingSelf ? (
         <div className="md-demand-source">

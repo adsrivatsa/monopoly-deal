@@ -179,6 +179,7 @@ func (c *Controller) scheduleDefaultMove(ctx context.Context, q *store.Queries, 
 		GameID:   gameID,
 		PlayerID: playerID,
 		TokenID:  uuid.New(),
+		Deadline: deadline,
 	})
 	if err != nil {
 		return err
@@ -327,6 +328,7 @@ func (c *Controller) scheduleDefaultDemand(ctx context.Context, q *store.Queries
 		PlayerID: playerID,
 		DemandID: &demandID,
 		TokenID:  uuid.New(),
+		Deadline: deadline,
 	})
 	if err != nil {
 		return err

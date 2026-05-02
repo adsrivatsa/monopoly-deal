@@ -7,12 +7,13 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const deleteGameTimeout = `-- name: DeleteGameTimeout :one
-DELETE FROM game_timeout WHERE game_id = $1 AND player_id = $2 and demand_id IS NOT DISTINCT FROM $3 RETURNING game_id, player_id, demand_id, token_id, created_at
+DELETE FROM game_timeout WHERE game_id = $1 AND player_id = $2 and demand_id IS NOT DISTINCT FROM $3 RETURNING game_id, player_id, demand_id, token_id, deadline, created_at
 `
 
 type DeleteGameTimeoutParams struct {
@@ -29,13 +30,14 @@ func (q *Queries) DeleteGameTimeout(ctx context.Context, arg DeleteGameTimeoutPa
 		&i.PlayerID,
 		&i.DemandID,
 		&i.TokenID,
+		&i.Deadline,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getGameTimeoutForUpdate = `-- name: GetGameTimeoutForUpdate :one
-SELECT game_id, player_id, demand_id, token_id, created_at FROM game_timeout WHERE game_id = $1 AND player_id = $2 AND demand_id IS NOT DISTINCT FROM $3 FOR UPDATE
+SELECT game_id, player_id, demand_id, token_id, deadline, created_at FROM game_timeout WHERE game_id = $1 AND player_id = $2 AND demand_id IS NOT DISTINCT FROM $3 FOR UPDATE
 `
 
 type GetGameTimeoutForUpdateParams struct {
@@ -52,16 +54,49 @@ func (q *Queries) GetGameTimeoutForUpdate(ctx context.Context, arg GetGameTimeou
 		&i.PlayerID,
 		&i.DemandID,
 		&i.TokenID,
+		&i.Deadline,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
+const listGameTimeouts = `-- name: ListGameTimeouts :many
+SELECT game_id, player_id, demand_id, token_id, deadline, created_at FROM game_timeout WHERE game_id = $1 ORDER BY deadline
+`
+
+func (q *Queries) ListGameTimeouts(ctx context.Context, gameID uuid.UUID) ([]GameTimeout, error) {
+	rows, err := q.db.Query(ctx, listGameTimeouts, gameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GameTimeout{}
+	for rows.Next() {
+		var i GameTimeout
+		if err := rows.Scan(
+			&i.GameID,
+			&i.PlayerID,
+			&i.DemandID,
+			&i.TokenID,
+			&i.Deadline,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const upsertGameDemandTimeout = `-- name: UpsertGameDemandTimeout :one
-INSERT INTO game_timeout (game_id, player_id, demand_id, token_id) VALUES ($1, $2, $3, $4)
+INSERT INTO game_timeout (game_id, player_id, demand_id, token_id, deadline) VALUES ($1, $2, $3, $4, $5)
     ON CONFLICT (game_id, player_id, demand_id) WHERE demand_id IS NOT NULL DO UPDATE SET
-    token_id = EXCLUDED.token_id
-    RETURNING game_id, player_id, demand_id, token_id, created_at
+    token_id = EXCLUDED.token_id,
+    deadline = EXCLUDED.deadline
+    RETURNING game_id, player_id, demand_id, token_id, deadline, created_at
 `
 
 type UpsertGameDemandTimeoutParams struct {
@@ -69,6 +104,7 @@ type UpsertGameDemandTimeoutParams struct {
 	PlayerID uuid.UUID `json:"player_id"`
 	DemandID *string   `json:"demand_id"`
 	TokenID  uuid.UUID `json:"token_id"`
+	Deadline time.Time `json:"deadline"`
 }
 
 func (q *Queries) UpsertGameDemandTimeout(ctx context.Context, arg UpsertGameDemandTimeoutParams) (GameTimeout, error) {
@@ -77,6 +113,7 @@ func (q *Queries) UpsertGameDemandTimeout(ctx context.Context, arg UpsertGameDem
 		arg.PlayerID,
 		arg.DemandID,
 		arg.TokenID,
+		arg.Deadline,
 	)
 	var i GameTimeout
 	err := row.Scan(
@@ -84,32 +121,41 @@ func (q *Queries) UpsertGameDemandTimeout(ctx context.Context, arg UpsertGameDem
 		&i.PlayerID,
 		&i.DemandID,
 		&i.TokenID,
+		&i.Deadline,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const upsertGameMoveTimeout = `-- name: UpsertGameMoveTimeout :one
-INSERT INTO game_timeout (game_id, player_id, token_id) VALUES ($1, $2, $3)
+INSERT INTO game_timeout (game_id, player_id, token_id, deadline) VALUES ($1, $2, $3, $4)
     ON CONFLICT (game_id, player_id) WHERE demand_id IS NULL DO UPDATE SET
-    token_id = EXCLUDED.token_id
-    RETURNING game_id, player_id, demand_id, token_id, created_at
+    token_id = EXCLUDED.token_id,
+    deadline = EXCLUDED.deadline
+    RETURNING game_id, player_id, demand_id, token_id, deadline, created_at
 `
 
 type UpsertGameMoveTimeoutParams struct {
 	GameID   uuid.UUID `json:"game_id"`
 	PlayerID uuid.UUID `json:"player_id"`
 	TokenID  uuid.UUID `json:"token_id"`
+	Deadline time.Time `json:"deadline"`
 }
 
 func (q *Queries) UpsertGameMoveTimeout(ctx context.Context, arg UpsertGameMoveTimeoutParams) (GameTimeout, error) {
-	row := q.db.QueryRow(ctx, upsertGameMoveTimeout, arg.GameID, arg.PlayerID, arg.TokenID)
+	row := q.db.QueryRow(ctx, upsertGameMoveTimeout,
+		arg.GameID,
+		arg.PlayerID,
+		arg.TokenID,
+		arg.Deadline,
+	)
 	var i GameTimeout
 	err := row.Scan(
 		&i.GameID,
 		&i.PlayerID,
 		&i.DemandID,
 		&i.TokenID,
+		&i.Deadline,
 		&i.CreatedAt,
 	)
 	return i, err

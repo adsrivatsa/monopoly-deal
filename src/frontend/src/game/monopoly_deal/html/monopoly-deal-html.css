@@ -117,6 +117,14 @@
   color: var(--foreground);
 }
 
+.md-demand__timer {
+  margin-top: 0.1rem;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+  letter-spacing: 0.02em;
+}
+
 .md-demand__line--rent-warning {
   display: flex;
   align-items: center;

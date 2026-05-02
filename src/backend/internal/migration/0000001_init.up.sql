@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS game_timeout
         player_id uuid NOT NULL REFERENCES player (player_id),
         demand_id text,
         token_id uuid NOT NULL,
+        deadline timestamptz NOT NULL,
         created_at timestamptz NOT NULL DEFAULT NOW()
     );
 

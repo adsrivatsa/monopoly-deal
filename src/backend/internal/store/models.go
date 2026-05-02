@@ -96,6 +96,7 @@ type GameTimeout struct {
 	PlayerID  uuid.UUID `json:"player_id"`
 	DemandID  *string   `json:"demand_id"`
 	TokenID   uuid.UUID `json:"token_id"`
+	Deadline  time.Time `json:"deadline"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

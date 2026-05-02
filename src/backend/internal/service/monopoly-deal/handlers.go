@@ -216,8 +216,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 
 		case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday, *monopoly_deal_schema.ClientMessage_PlayDebtCollector,
 			*monopoly_deal_schema.ClientMessage_PlaySlyDeal, *monopoly_deal_schema.ClientMessage_PlayForcedDeal,
-			*monopoly_deal_schema.ClientMessage_PlayDealBreaker, *monopoly_deal_schema.ClientMessage_ResolvePendingRent,
-			*monopoly_deal_schema.ClientMessage_DenyDemand:
+			*monopoly_deal_schema.ClientMessage_PlayDealBreaker, *monopoly_deal_schema.ClientMessage_ResolvePendingRent:
 			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
 				GameID:   gameID,
 				PlayerID: tp.PlayerID,
@@ -232,18 +231,31 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 				return fmt.Errorf("monopoly_deal: invalid actionDemandsCreated action")
 			}
 
+			deadline = time.Now().Add(game.Config.DemandTimeout)
+
 			for _, demand := range dcAct.Demands {
 				targetID := demand.TargetID
 				demandID := string(demand.ID)
-				_, err = q.UpsertGameDemandTimeout(ctx, store.UpsertGameDemandTimeoutParams{
-					GameID:   gameID,
-					PlayerID: targetID,
-					DemandID: &demandID,
-					TokenID:  uuid.New(),
-				})
+				err = c.scheduleDefaultDemand(ctx, q, gameID, targetID, demandID, deadline)
 				if err != nil {
 					return err
 				}
+			}
+
+		case *monopoly_deal_schema.ClientMessage_DenyDemand:
+			demandID := msg.MonopolyDealMessage.GetDenyDemand().DemandId
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: &demandID,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			dcAct, ok := action.(*monopoly_deal.ActionDemandsCreated)
+			if !ok {
+				return fmt.Errorf("monopoly_deal: invalid actionDemandsCreated action")
 			}
 
 			deadline = time.Now().Add(game.Config.DemandTimeout)

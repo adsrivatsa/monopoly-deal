@@ -38,6 +38,7 @@ type Querier interface {
 	GetRoomPlayer(ctx context.Context, playerID uuid.UUID) (RoomPlayer, error)
 	IncrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
 	ListGameHistory(ctx context.Context, arg ListGameHistoryParams) ([]GameHistory, error)
+	ListGameTimeouts(ctx context.Context, gameID uuid.UUID) ([]GameTimeout, error)
 	ListRooms(ctx context.Context, arg ListRoomsParams) ([]ListRoomsRow, error)
 	ToggleRoomPlayerIsReady(ctx context.Context, arg ToggleRoomPlayerIsReadyParams) (RoomPlayer, error)
 	UpdateGameState(ctx context.Context, arg UpdateGameStateParams) (Game, error)

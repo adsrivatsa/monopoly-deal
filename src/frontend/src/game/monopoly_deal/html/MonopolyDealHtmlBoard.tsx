@@ -31,6 +31,7 @@ type MonopolyDealHtmlBoardProps = {
   gameState: GameState | null;
   assetImageByKey: Record<number, string>;
   selfPlayerId?: string;
+  demandDeadlineMsById?: Record<string, number>;
   onPlayMoneyCard: (cardId: string) => void;
   onPlayPassGoCard: (cardId: string) => void;
   onPlayDebtCollectorCard: (cardId: string, targetPlayerId: string) => void;
@@ -365,6 +366,7 @@ const MonopolyDealHtmlBoard = ({
   gameState,
   assetImageByKey,
   selfPlayerId,
+  demandDeadlineMsById,
   onPlayMoneyCard,
   onPlayPassGoCard,
   onPlayDebtCollectorCard,
@@ -453,15 +455,38 @@ const MonopolyDealHtmlBoard = ({
   }, [players, selfPlayerId]);
   const visibleDemands = useMemo<Demand[]>(() => {
     const demands = gameState?.demands ?? [];
-    const selfDemands = selfPlayerId
-      ? demands.filter((demand) => demand.playerId === selfPlayerId)
-      : demands;
-    if (selfDemands.length > 0) {
-      return selfDemands.slice(0, 3);
+    // Self-targeted demands (player must respond) always take priority.
+    // Only show ACTIVE ones here — inactive (denied) self-demands don't require a response.
+    const selfActiveDemands = selfPlayerId
+      ? demands.filter((demand) => demand.playerId === selfPlayerId && demand.isActive)
+      : demands.filter((d) => d.isActive);
+    if (selfActiveDemands.length > 0) {
+      return selfActiveDemands.slice(0, 3);
     }
 
-    return demands.slice(0, 2);
+    // No active self-targeted demands — show the spectator/notification view.
+    // Sort active demands before inactive so actionable items come first.
+    const sorted = [...demands].sort((a, b) => {
+      if (a.isActive === b.isActive) return 0;
+      return a.isActive ? -1 : 1;
+    });
+    return sorted.slice(0, 2);
   }, [gameState?.demands, selfPlayerId]);
+
+  // Compute per-demand remaining seconds from the tracked deadline map
+  const demandTimerSecondsByDemandId = useMemo<Record<string, number>>(() => {
+    if (!demandDeadlineMsById) {
+      return {};
+    }
+    const result: Record<string, number> = {};
+    for (const demand of visibleDemands) {
+      const deadlineMs = demandDeadlineMsById[demand.id];
+      if (typeof deadlineMs === "number" && deadlineMs > 0) {
+        result[demand.id] = Math.max(0, Math.ceil((deadlineMs - nowMs) / 1000));
+      }
+    }
+    return result;
+  }, [demandDeadlineMsById, nowMs, visibleDemands]);
 
   const hasAnyDemand = visibleDemands.length > 0;
   const pendingRent = gameState?.pendingRent;
@@ -483,7 +508,8 @@ const MonopolyDealHtmlBoard = ({
     hasPendingRent && !shouldAutoResolvePendingRent;
   const hasMovesLeft = (gameState?.movesLeft ?? 0) > 0;
   const movesLeft = gameState?.movesLeft ?? 0;
-  const turnDeadlineMs = gameState?.deadlineMs ?? 0;
+  const turnDeadlineMs =
+    gameState?.deadlines?.find((d) => !d.demandId)?.deadlineMs ?? 0;
   const remainingTurnMs = Math.max(0, turnDeadlineMs - nowMs);
   const remainingTurnSeconds = Math.max(
     0,
@@ -1933,8 +1959,15 @@ const MonopolyDealHtmlBoard = ({
     setDealPicker(null);
   }, []);
 
+  const hasAnyDemandDeadline = useMemo(() => {
+    if (!demandDeadlineMsById) {
+      return false;
+    }
+    return Object.values(demandDeadlineMsById).some((deadlineMs) => deadlineMs > 0);
+  }, [demandDeadlineMsById]);
+
   useEffect(() => {
-    if (turnDeadlineMs <= 0) {
+    if (turnDeadlineMs <= 0 && !hasAnyDemandDeadline) {
       return;
     }
 
@@ -1945,7 +1978,7 @@ const MonopolyDealHtmlBoard = ({
     return () => {
       window.clearInterval(timerId);
     };
-  }, [turnDeadlineMs]);
+  }, [hasAnyDemandDeadline, turnDeadlineMs]);
 
   useEffect(() => {
     setNowMs(Date.now());
@@ -2399,7 +2432,7 @@ const MonopolyDealHtmlBoard = ({
             demands={visibleDemands}
             players={players}
             selfPlayerId={selfPlayerId}
-            demandTimerSeconds={turnDeadlineMs > 0 ? remainingTurnSeconds : undefined}
+            demandTimerSecondsByDemandId={demandTimerSecondsByDemandId}
             targetCardImageById={propertyCardImageById}
             propertySetCardsById={propertySetCardsById}
             canDeny={hasJustSayNo}
@@ -2433,7 +2466,7 @@ const MonopolyDealHtmlBoard = ({
             demands={visibleDemands}
             players={players}
             selfPlayerId={selfPlayerId}
-            demandTimerSeconds={turnDeadlineMs > 0 ? remainingTurnSeconds : undefined}
+            demandTimerSecondsByDemandId={demandTimerSecondsByDemandId}
             targetCardImageById={propertyCardImageById}
             propertySetCardsById={propertySetCardsById}
             canDeny={hasJustSayNo}
