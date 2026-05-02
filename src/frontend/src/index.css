@@ -1134,10 +1134,27 @@ h1 {
 }
 
 .chat-event-join {
-  display: flex;
+  display: inline;
   align-items: center;
-  justify-content: center;
   gap: 0.45rem;
+}
+
+.chat-event-join .host-avatar {
+  flex-shrink: 0;
+}
+
+.room-system-message {
+  text-align: left;
+  margin: 0;
+  display: inline;
+}
+
+.room-system-message__author {
+  display: inline;
+}
+
+.room-system-message__details {
+  display: inline;
 }
 
 .chat-message__author {
@@ -1508,13 +1525,14 @@ h1 {
 .game-chat-line {
   display: grid;
   grid-template-columns: 1.6rem minmax(0, 1fr);
-  align-items: center;
+  align-items: start;
   gap: 0.4rem;
 }
 
 .game-chat-line__author,
 .game-chat-line__message {
   margin: 0;
+  text-align: left;
 }
 
 .game-chat-line__avatar {
@@ -1537,6 +1555,48 @@ h1 {
   font-size: 0.76rem;
   line-height: 1.35;
 }
+
+.room-chat-settings-line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  align-self: center;
+  align-items: center;
+}
+
+.room-chat-settings-line__header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.room-chat-settings-line__action {
+  font-size: 0.76rem;
+  color: var(--muted-foreground);
+}
+
+.room-chat-settings-line__details {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  padding-left: 0;
+  white-space: pre-line;
+  text-align: center;
+}
+
+.room-chat-event-line {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.room-chat-event-line__action {
+  font-size: 0.76rem;
+  color: var(--muted-foreground);
+}
+
 
 .game-player-snippet {
   display: grid;

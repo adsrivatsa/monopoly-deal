@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type GameType string
@@ -89,6 +90,17 @@ type GameHistory struct {
 type GamePlayer struct {
 	GameID   uuid.UUID `json:"game_id"`
 	PlayerID uuid.UUID `json:"player_id"`
+}
+
+type GameTimeout struct {
+	GameID     uuid.UUID          `json:"game_id"`
+	PlayerID   uuid.UUID          `json:"player_id"`
+	DemandID   *string            `json:"demand_id"`
+	TokenID    uuid.UUID          `json:"token_id"`
+	DurationMs int64              `json:"duration_ms"`
+	Deadline   time.Time          `json:"deadline"`
+	CreatedAt  time.Time          `json:"created_at"`
+	ClaimedAt  pgtype.Timestamptz `json:"claimed_at"`
 }
 
 type Player struct {

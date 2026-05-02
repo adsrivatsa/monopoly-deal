@@ -2,6 +2,7 @@ package monopoly_deal
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"slices"
 	"the-deal/internal/errors"
 	"the-deal/internal/schema/monopoly_deal_schema"
@@ -12,11 +13,11 @@ import (
 type Game struct {
 	Config        Settings                   `json:"config" msgpack:"a"`
 	IDGenerator   *IdentifierGenerator       `json:"id_generator" msgpack:"b"`
-	Deck          Deck                       `json:"deck" msgpack:"c"`
-	Cards         map[Identifier]Card        `json:"cards" msgpack:"d"`
-	Players       []uuid.UUID                `json:"players" msgpack:"e"`
-	CurrPlayerIdx int                        `json:"curr_player_idx" msgpack:"f"`
-	MovesLeft     int                        `json:"moves_left" msgpack:"g"`
+	Deck          Deck                       `json:"deck" msgpack:"d"`
+	Cards         map[Identifier]Card        `json:"cards" msgpack:"e"`
+	Players       []uuid.UUID                `json:"players" msgpack:"f"`
+	CurrPlayerIdx int                        `json:"curr_player_idx" msgpack:"g"`
+	MovesLeft     int                        `json:"moves_left" msgpack:"h"`
 	Hands         map[uuid.UUID]Cards        `json:"hands" msgpack:"i"`
 	Money         map[uuid.UUID]Cards        `json:"money" msgpack:"j"`
 	Properties    map[uuid.UUID]PropertySets `json:"properties" msgpack:"k"`
@@ -62,9 +63,6 @@ func NewGame(cfg Settings, playerIDs []uuid.UUID) *Game {
 		Demands:       make(map[Identifier]Demand),
 		Config:        cfg,
 	}
-
-	firstPlayerID := g.Players[g.CurrPlayerIdx]
-	_, _ = g.StartTurn(firstPlayerID)
 
 	return g
 }
@@ -122,6 +120,7 @@ func (g *Game) Proto(playerID uuid.UUID, allPlayerIDs []uuid.UUID) *monopoly_dea
 		LastAction:      g.LastAction.Proto(),
 		AssetImages:     assetImages,
 		MaxHandSize:     int32(g.Config.MaxHandSize),
+		Deadlines:       nil, // populated by caller
 	}
 }
 
@@ -1414,6 +1413,10 @@ func (g *Game) ComplyPaymentDemand(playerID uuid.UUID, demandID Identifier, card
 		return nil, errors.DemandDoesNotExist
 	}
 
+	if playerID != demand.TargetID {
+		return nil, errors.PlayerNotDemandTarget
+	}
+
 	if demand.Kind != DemandKindPayment {
 		return nil, errors.DemandDoesNotExist
 	}
@@ -1505,6 +1508,10 @@ func (g *Game) ComplyPropertyDemand(playerID uuid.UUID, demandID Identifier, tar
 		return nil, errors.DemandDoesNotExist
 	}
 
+	if playerID != demand.TargetID {
+		return nil, errors.PlayerNotDemandTarget
+	}
+
 	if demand.Kind != DemandKindProperty {
 		return nil, errors.DemandDoesNotExist
 	}
@@ -1589,6 +1596,10 @@ func (g *Game) ComplyPropertySetDemand(playerID uuid.UUID, demandID Identifier) 
 		return nil, errors.DemandDoesNotExist
 	}
 
+	if playerID != demand.TargetID {
+		return nil, errors.PlayerNotDemandTarget
+	}
+
 	if demand.Kind != DemandKindPropertySet {
 		return nil, errors.DemandDoesNotExist
 	}
@@ -1645,6 +1656,10 @@ func (g *Game) DenyDemand(playerID uuid.UUID, demandID Identifier, cardID Identi
 	demand, ok := g.Demands[demandID]
 	if !ok {
 		return nil, errors.DemandDoesNotExist
+	}
+
+	if playerID != demand.TargetID {
+		return nil, errors.PlayerNotDemandTarget
 	}
 
 	deniedDemand := demand
@@ -1948,4 +1963,262 @@ func (g *Game) CheckWinConditions(playerID uuid.UUID) (int, int, bool, error) {
 	}
 
 	return completeCount, value, true, nil
+}
+
+func (g *Game) DefaultMove(playerID uuid.UUID) ([]Action, error) {
+	err := g.checkPlayer(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkTurn(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	actions := make([]Action, 0)
+	actions = append(actions, g.defaultRearrangeProperties(playerID)...)
+
+	// discard cards and pass turn
+	cards := Cards{}
+	for {
+		hand := g.Hands[playerID]
+		n := hand.Len()
+		if n <= g.Config.MaxHandSize {
+			break
+		}
+
+		r := rand.IntN(n)
+		card := hand[r]
+		card, err = g.discardHand(playerID, card.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		cards = append(cards, card)
+	}
+
+	action := NewActionDiscardCards(g.SequenceNum, playerID, cards...)
+	actions = append(actions, action)
+
+	g.SequenceNum++
+
+	return actions, nil
+}
+
+func (g *Game) defaultRearrangeProperties(playerID uuid.UUID) []Action {
+	properties := g.Properties[playerID]
+	if properties.Valid() {
+		return nil
+	}
+
+	actions := make([]Action, 0)
+
+	targetIncomplete := make(map[Color]int)
+
+	for i := 0; i < len(properties); i++ {
+		set := properties[i]
+		if set.IsComplete() {
+			continue
+		}
+
+		targetIdx, ok := targetIncomplete[set.Color]
+		if !ok {
+			targetIncomplete[set.Color] = i
+			continue
+		}
+
+		targetSet := properties[targetIdx]
+		for _, card := range set.Cards {
+			card.ActiveColor = targetSet.Color
+			targetSet.Cards.Add(card)
+			actions = append(actions, NewActionRearrangeCard(g.SequenceNum, playerID, &card, targetSet, properties.CompleteCount()))
+			g.SequenceNum++
+		}
+
+		targetIncomplete[set.Color] = targetIdx
+		properties[targetIdx] = targetSet
+		properties[i].Cards = Cards{}
+	}
+
+	properties.Clean()
+	g.Properties[playerID] = properties
+
+	return actions
+}
+
+type paymentCardChoice struct {
+	card          Card
+	isCompleteSet bool
+}
+
+type paymentSubsetChoice struct {
+	cardIDs []Identifier
+	paid    int
+}
+
+func betterPaymentSubset(candidate, current paymentSubsetChoice, amount int) bool {
+	if len(current.cardIDs) == 0 {
+		return true
+	}
+
+	candidateOverpay := candidate.paid - amount
+	currentOverpay := current.paid - amount
+	if candidateOverpay != currentOverpay {
+		return candidateOverpay < currentOverpay
+	}
+
+	if len(candidate.cardIDs) != len(current.cardIDs) {
+		return len(candidate.cardIDs) < len(current.cardIDs)
+	}
+
+	c := append([]Identifier(nil), candidate.cardIDs...)
+	b := append([]Identifier(nil), current.cardIDs...)
+	slices.Sort(c)
+	slices.Sort(b)
+	for i := range c {
+		if c[i] == b[i] {
+			continue
+		}
+		return c[i] < b[i]
+	}
+
+	return false
+}
+
+func chooseBestPaymentSubset(cards Cards, amount int) paymentSubsetChoice {
+	best := paymentSubsetChoice{}
+	currentIDs := make([]Identifier, 0, len(cards))
+
+	var dfs func(idx, total int)
+	dfs = func(idx, total int) {
+		if total >= amount {
+			candidate := paymentSubsetChoice{
+				cardIDs: append([]Identifier(nil), currentIDs...),
+				paid:    total,
+			}
+			if betterPaymentSubset(candidate, best, amount) {
+				best = candidate
+			}
+			return
+		}
+
+		if idx >= len(cards) {
+			return
+		}
+
+		currentIDs = append(currentIDs, cards[idx].ID)
+		dfs(idx+1, total+cards[idx].Value)
+		currentIDs = currentIDs[:len(currentIDs)-1]
+
+		dfs(idx+1, total)
+	}
+
+	dfs(0, 0)
+	return best
+}
+
+func (g *Game) defaultPaymentCardIDs(playerID uuid.UUID, amount int) []Identifier {
+	money := append(Cards(nil), g.Money[playerID]...)
+	moneyTotal := money.Value()
+
+	properties := make([]paymentCardChoice, 0)
+	propertyTotal := 0
+	for _, set := range g.Properties[playerID] {
+		for _, card := range set.Cards {
+			properties = append(properties, paymentCardChoice{
+				card:          card,
+				isCompleteSet: set.IsComplete(),
+			})
+			propertyTotal += card.Value
+		}
+	}
+
+	totalPayable := moneyTotal + propertyTotal
+	if totalPayable < amount {
+		ids := make([]Identifier, 0, len(money)+len(properties))
+		for _, card := range money {
+			ids = append(ids, card.ID)
+		}
+		for _, prop := range properties {
+			ids = append(ids, prop.card.ID)
+		}
+		return ids
+	}
+
+	if moneyTotal >= amount {
+		best := chooseBestPaymentSubset(money, amount)
+		return best.cardIDs
+	}
+
+	selected := make([]Identifier, 0, len(money)+len(properties))
+	for _, card := range money {
+		selected = append(selected, card.ID)
+	}
+
+	remaining := amount - moneyTotal
+	slices.SortFunc(properties, func(a, b paymentCardChoice) int {
+		if a.isCompleteSet != b.isCompleteSet {
+			if !a.isCompleteSet {
+				return -1
+			}
+			return 1
+		}
+		if a.card.Value != b.card.Value {
+			return a.card.Value - b.card.Value
+		}
+		if a.card.ID < b.card.ID {
+			return -1
+		}
+		if a.card.ID > b.card.ID {
+			return 1
+		}
+		return 0
+	})
+
+	paidByProperty := 0
+	for _, prop := range properties {
+		selected = append(selected, prop.card.ID)
+		paidByProperty += prop.card.Value
+		if paidByProperty >= remaining {
+			break
+		}
+	}
+
+	return selected
+}
+
+func (g *Game) DefaultDemand(playerID uuid.UUID, demandID Identifier) (Action, error) {
+	err := g.checkPlayer(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.checkDemands()
+	if err == nil {
+		return nil, errors.DemandDoesNotExist
+	}
+
+	demand, ok := g.Demands[demandID]
+	if !ok {
+		return nil, errors.DemandDoesNotExist
+	}
+
+	var action *ActionDemandComplied
+	switch demand.Kind {
+	case DemandKindPayment:
+		cardIDs := g.defaultPaymentCardIDs(playerID, demand.Payment.Amount)
+		action, err = g.ComplyPaymentDemand(playerID, demandID, cardIDs...)
+	case DemandKindProperty:
+		action, err = g.ComplyPropertyDemand(playerID, demandID, nil)
+	case DemandKindPropertySet:
+		action, err = g.ComplyPropertySetDemand(playerID, demandID)
+	default:
+		return nil, errors.DemandDoesNotExist
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return action, nil
 }

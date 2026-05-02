@@ -25,6 +25,7 @@ export type PaymentDemandOverlayProps = {
   isSelectingCards: boolean;
   canConfirmSelection: boolean;
   selectedPaymentTotal?: number;
+  demandTimerSeconds?: number;
   onComply: (demandId: string) => void;
   onDeny: (demandId: string) => void;
 };
@@ -38,6 +39,7 @@ const PaymentDemandOverlay = ({
   isSelectingCards,
   canConfirmSelection,
   selectedPaymentTotal,
+  demandTimerSeconds,
   onComply,
   onDeny,
 }: PaymentDemandOverlayProps) => {
@@ -191,6 +193,11 @@ const PaymentDemandOverlay = ({
       onPointerDown={(event) => event.stopPropagation()}
     >
       <p className="md-demand__eyebrow">{demandEyebrow}</p>
+      {typeof demandTimerSeconds === "number" ? (
+        <p className="md-demand__line md-demand__timer">
+          Time left: {String(Math.floor(demandTimerSeconds / 60)).padStart(2, "0")}:{String(demandTimerSeconds % 60).padStart(2, "0")}
+        </p>
+      ) : null}
       {isTargetingSelf && isDemandActive ? (
         <div className="md-demand-source">
           <img

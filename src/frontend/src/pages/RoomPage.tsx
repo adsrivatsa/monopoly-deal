@@ -5,6 +5,7 @@ import {
   getCapacityOptions,
   getCapacityRangeForGame,
   getGameDisplayName,
+  getGameSettingDefinition,
   getGameSettingSelectValues,
   getDefaultSettingsForGame,
   parseGame,
@@ -48,10 +49,18 @@ import {
 import ErrorModal from "../components/ui/error-modal";
 import ChatBox from "../components/chat/ChatBox";
 
+const formatSettingsChangeMessage = (changes: string[]): string => {
+  return changes.join("\n");
+};
+
 const RoomPage = () => {
   const navigate = useNavigate();
   const { room_id: roomId } = useParams();
   const socketRef = useRef<WebSocket | null>(null);
+  const roomGameRef = useRef<Game | null>(null);
+  const roomCapacityRef = useRef<number | null>(null);
+  const roomSettingSelectValuesRef = useRef<GameSettingSelectValue[]>([]);
+  const playersRef = useRef<ShortPlayer[]>([]);
   const [roomGame, setRoomGame] = useState<Game | null>(null);
   const [roomCapacity, setRoomCapacity] = useState<number | null>(null);
   const [roomSettingSelectValues, setRoomSettingSelectValues] = useState<
@@ -66,6 +75,13 @@ const RoomPage = () => {
       | {
           id: string;
           kind: "system";
+          text: string;
+          playerName: string;
+          playerImageUrl?: string;
+        }
+      | {
+          id: string;
+          kind: "player-event";
           text: string;
           playerName: string;
           playerImageUrl?: string;
@@ -123,6 +139,36 @@ const RoomPage = () => {
 
     return getCapacityRangeForGame(roomGame, roomSettingsPayload);
   }, [roomGame, roomSettingsPayload]);
+
+  useEffect(() => {
+    roomGameRef.current = roomGame;
+  }, [roomGame]);
+
+  useEffect(() => {
+    roomCapacityRef.current = roomCapacity;
+  }, [roomCapacity]);
+
+  useEffect(() => {
+    roomSettingSelectValuesRef.current = roomSettingSelectValues;
+  }, [roomSettingSelectValues]);
+
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
+
+  const orderedRoomSettingSelectValues = useMemo(() => {
+    return [...roomSettingSelectValues].sort((left, right) => {
+      if (left.key === "speed") {
+        return -1;
+      }
+
+      if (right.key === "speed") {
+        return 1;
+      }
+
+      return 0;
+    });
+  }, [roomSettingSelectValues]);
 
   useEffect(() => {
     if (roomCapacity === null) {
@@ -212,8 +258,8 @@ const RoomPage = () => {
                 ...currentMessages,
                 {
                   id: `join-${joinedPlayer.playerId}-${Date.now()}`,
-                  kind: "system",
-                  text: `${joinedPlayer.displayName} joined the room`,
+                  kind: "player-event" as const,
+                  text: `joined the room`,
                   playerName: joinedPlayer.displayName,
                   playerImageUrl: joinedPlayer.avatarUrl,
                 },
@@ -249,9 +295,9 @@ const RoomPage = () => {
                 ...currentMessages,
                 {
                   id: `leave-${leftPlayer.playedId}-${Date.now()}`,
-                  kind: "system",
-                  text: `${leavingPlayer?.name ?? "A player"} left the room`,
-                  playerName: leavingPlayer?.name ?? "Player",
+                  kind: "player-event" as const,
+                  text: `left the room`,
+                  playerName: leavingPlayer?.name ?? "A player",
                   playerImageUrl: leavingPlayer?.imageUrl,
                 },
               ];
@@ -292,14 +338,71 @@ const RoomPage = () => {
           const settingsUpdated = message?.roomMessage?.settingsUpdated;
           if (settingsUpdated) {
             const nextGame =
-              settingsUpdated.game === 0 ? Game.MonopolyDeal : roomGame;
+              settingsUpdated.game === 0
+                ? (roomGameRef.current ?? Game.MonopolyDeal)
+                : Game.MonopolyDeal;
 
             if (nextGame) {
+              const nextSettingSelectValues = getGameSettingSelectValues(
+                nextGame,
+                settingsUpdated.settings,
+              );
+
+              const changes: string[] = [];
+
+              if (roomGameRef.current && roomGameRef.current !== nextGame) {
+                changes.push(
+                  `Game: ${getGameDisplayName(roomGameRef.current)}, ${getGameDisplayName(nextGame)}`,
+                );
+              }
+
+              if (
+                roomCapacityRef.current !== null &&
+                roomCapacityRef.current !== settingsUpdated.capacity
+              ) {
+                changes.push(`Capacity: ${roomCapacityRef.current} -> ${settingsUpdated.capacity}`);
+              }
+
+              for (const nextSetting of nextSettingSelectValues) {
+                const previousSetting = roomSettingSelectValuesRef.current.find((setting) => {
+                  return setting.key === nextSetting.key;
+                });
+                if (!previousSetting || previousSetting.value === nextSetting.value) {
+                  continue;
+                }
+
+                const settingDefinition = getGameSettingDefinition(nextGame, nextSetting.key);
+                const previousLabel =
+                  previousSetting.options.find((option) => option.value === previousSetting.value)
+                    ?.label ?? previousSetting.value;
+                const nextLabel =
+                  nextSetting.options.find((option) => option.value === nextSetting.value)
+                    ?.label ?? nextSetting.value;
+
+                changes.push(
+                  `${settingDefinition?.label ?? nextSetting.label}: ${previousLabel} -> ${nextLabel}`,
+                );
+              }
+
               setRoomGame(nextGame);
               setRoomCapacity(settingsUpdated.capacity);
-              setRoomSettingSelectValues(
-                getGameSettingSelectValues(nextGame, settingsUpdated.settings),
-              );
+              setRoomSettingSelectValues(nextSettingSelectValues);
+
+              if (changes.length > 0) {
+                const hostPlayer = playersRef.current.find((player) => player.isHost);
+                setChatMessages((currentMessages) => {
+                  return [
+                    ...currentMessages,
+                    {
+                      id: `settings-updated-${Date.now()}`,
+                      kind: "system",
+                      text: formatSettingsChangeMessage(changes),
+                      playerName: hostPlayer?.name ?? "Host",
+                      playerImageUrl: hostPlayer?.imageUrl,
+                    },
+                  ];
+                });
+              }
             }
           }
 
@@ -439,6 +542,64 @@ const RoomPage = () => {
     params: UpdateRoomSettingsParams,
   ): Promise<void> => {
     const result = await updateRoomSettings(params);
+
+    if (result.ok) {
+      const nextSettingSelectValues = getGameSettingSelectValues(
+        params.game,
+        params.settings,
+      );
+      const changes: string[] = [];
+
+      if (roomGameRef.current && roomGameRef.current !== params.game) {
+        changes.push(
+          `Game: ${getGameDisplayName(roomGameRef.current)}, ${getGameDisplayName(params.game)}`,
+        );
+      }
+
+      if (
+        roomCapacityRef.current !== null &&
+        roomCapacityRef.current !== params.capacity
+      ) {
+        changes.push(`Capacity: ${roomCapacityRef.current} -> ${params.capacity}`);
+      }
+
+      for (const nextSetting of nextSettingSelectValues) {
+        const previousSetting = roomSettingSelectValuesRef.current.find((setting) => {
+          return setting.key === nextSetting.key;
+        });
+        if (!previousSetting || previousSetting.value === nextSetting.value) {
+          continue;
+        }
+
+        const settingDefinition = getGameSettingDefinition(params.game, nextSetting.key);
+        const previousLabel =
+          previousSetting.options.find((option) => option.value === previousSetting.value)
+            ?.label ?? previousSetting.value;
+        const nextLabel =
+          nextSetting.options.find((option) => option.value === nextSetting.value)
+            ?.label ?? nextSetting.value;
+
+        changes.push(
+          `${settingDefinition?.label ?? nextSetting.label}: ${previousLabel} -> ${nextLabel}`,
+        );
+      }
+
+      if (changes.length > 0) {
+        const hostPlayer = playersRef.current.find((player) => player.isHost);
+        setChatMessages((currentMessages) => {
+          return [
+            ...currentMessages,
+            {
+              id: `settings-updated-local-${Date.now()}`,
+              kind: "system",
+              text: formatSettingsChangeMessage(changes),
+              playerName: hostPlayer?.name ?? "Host",
+              playerImageUrl: hostPlayer?.imageUrl,
+            },
+          ];
+        });
+      }
+    }
 
     if (!result.ok && result.isTokenError) {
       navigate("/login", { replace: true });
@@ -675,7 +836,7 @@ const RoomPage = () => {
                   </select>
                 </div>
 
-                {roomSettingSelectValues.map((setting) => {
+                {orderedRoomSettingSelectValues.map((setting) => {
                   return (
                     <div key={setting.key} className="room-settings-row">
                       <label
@@ -782,22 +943,53 @@ const RoomPage = () => {
             onSendMessage={handleSendMessage}
             getMessageKey={(message) => message.id}
             renderMessage={(chatMessage) => {
-              if (chatMessage.kind === "system") {
+if (chatMessage.kind === "player-event") {
                 return (
-                  <div className="chat-event-join">
+                  <article className="room-chat-event-line">
                     {chatMessage.playerImageUrl ? (
                       <img
                         src={chatMessage.playerImageUrl}
                         alt={chatMessage.playerName}
-                        className="host-avatar"
+                        className="game-chat-line__avatar"
                         loading="lazy"
                         referrerPolicy="no-referrer"
                       />
                     ) : null}
-                    <p className="chat-message chat-message--system">
+                    <span className="game-chat-line__author">
+                      {chatMessage.playerName}
+                    </span>
+                    <span className="room-chat-event-line__action">
+                      {chatMessage.text}
+                    </span>
+                  </article>
+                );
+              }
+
+              if (chatMessage.kind === "system") {
+                const isMultiChange = chatMessage.text.split("\n").length > 1;
+                return (
+                  <article className="room-chat-settings-line">
+                    <div className="room-chat-settings-line__header">
+                      {chatMessage.playerImageUrl ? (
+                        <img
+                          src={chatMessage.playerImageUrl}
+                          alt={chatMessage.playerName}
+                          className="game-chat-line__avatar"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : null}
+                      <span className="game-chat-line__author">
+                        {chatMessage.playerName}
+                      </span>
+                      <span className="room-chat-settings-line__action">
+                        {" changed setting"}{isMultiChange ? "s" : ""}:
+                      </span>
+                    </div>
+                    <p className="room-chat-settings-line__details">
                       {chatMessage.text}
                     </p>
-                  </div>
+                  </article>
                 );
               }
 

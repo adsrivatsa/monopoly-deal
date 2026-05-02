@@ -59,3 +59,18 @@ CREATE TABLE IF NOT EXISTS game_history
         action bytea NOT NULL,
         created_at timestamptz NOT NULL DEFAULT NOW()
     );
+
+CREATE TABLE IF NOT EXISTS game_timeout
+    (
+        game_id uuid NOT NULL REFERENCES game (game_id),
+        player_id uuid NOT NULL REFERENCES player (player_id),
+        demand_id text,
+        token_id uuid NOT NULL,
+        duration_ms int8 NOT NULL,
+        deadline timestamptz NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT NOW(),
+        claimed_at timestamptz
+    );
+
+CREATE UNIQUE INDEX ON game_timeout (game_id, player_id) WHERE demand_id IS NULL;
+CREATE UNIQUE INDEX ON game_timeout (game_id, player_id, demand_id) WHERE demand_id IS NOT NULL;

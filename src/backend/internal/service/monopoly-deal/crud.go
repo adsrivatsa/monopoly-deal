@@ -6,13 +6,16 @@ import (
 	"fmt"
 	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
+	"the-deal/internal/event"
 	"the-deal/internal/schema"
 	"the-deal/internal/schema/monopoly_deal_schema"
 	"the-deal/internal/store"
 	"the-deal/internal/token"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack/v5"
+	"google.golang.org/protobuf/proto"
 )
 
 func protoMonopolyDealError(err error) *schema.ServerMessage {
@@ -76,6 +79,21 @@ func (c *Controller) GetGameState(ctx context.Context, tp token.Payload) *schema
 
 	gameState := game.Proto(tp.PlayerID, playerIDs)
 	gameState.Players = playerProtos
+
+	gts, err := c.store.ListGameTimeouts(ctx, g.GameID)
+	if err != nil {
+		return protoMonopolyDealError(err)
+	}
+
+	deadlines := make([]*monopoly_deal_schema.Deadline, 0, len(gts))
+	for _, gt := range gts {
+		deadlines = append(deadlines, &monopoly_deal_schema.Deadline{
+			DeadlineMs: gt.Deadline.UnixMilli(),
+			DemandId:   gt.DemandID,
+		})
+	}
+
+	gameState.Deadlines = deadlines
 
 	return &schema.ServerMessage{
 		Payload: &schema.ServerMessage_MonopolyDealMessage{
@@ -154,4 +172,123 @@ func (c *Controller) ListGameHistory(ctx context.Context, tp token.Payload, game
 	}
 
 	return nil
+}
+
+func (c *Controller) CreateGame(ctx context.Context, roomID uuid.UUID, playerIDs []uuid.UUID) (uuid.UUID, error) {
+	var gameID uuid.UUID
+	var action monopoly_deal.Action
+	var deadline time.Time
+
+	err := c.store.ExecTx(ctx, func(q *store.Queries) error {
+		r, err := q.GetRoom(ctx, roomID)
+		if err != nil {
+			if errors.DBErrorCode(err) == errors.NoDataFound {
+				return errors.EntityNotFound(errors.EntityRoom)
+			}
+			return err
+		}
+
+		var settings monopoly_deal.Settings
+		err = settings.Decode(r.Settings)
+		if err != nil {
+			return err
+		}
+
+		game := monopoly_deal.NewGame(settings, playerIDs)
+		currPlayerID := game.Players[game.CurrPlayerIdx]
+		action, err = game.StartTurn(currPlayerID)
+		if err != nil {
+			return err
+		}
+
+		buf, err := game.EncodeMsgpack()
+		if err != nil {
+			return err
+		}
+
+		gameID, err = uuid.NewV7()
+		if err != nil {
+			return err
+		}
+
+		g, err := q.CreateGame(ctx, store.CreateGameParams{
+			GameID:      gameID,
+			DisplayName: r.DisplayName,
+			Game:        r.Game,
+			GameState:   buf,
+		})
+		if err != nil {
+			return err
+		}
+
+		err = q.CreateGamePlayersFromRoom(ctx, store.CreateGamePlayersFromRoomParams{
+			GameID: g.GameID,
+			RoomID: r.RoomID,
+		})
+		if err != nil {
+			return err
+		}
+
+		err = q.DeleteRoom(ctx, r.RoomID)
+		if err != nil {
+			return err
+		}
+
+		err = q.DeleteRoomPlayersByRoom(ctx, r.RoomID)
+		if err != nil {
+			return err
+		}
+
+		buf, err = msgpack.Marshal(action)
+		if err != nil {
+			return err
+		}
+
+		_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
+			GameID:        gameID,
+			SeqNum:        int16(action.GetSeqNum()),
+			ActionKind:    string(action.GetKind()),
+			ActionVersion: int32(action.GetVersion()),
+			Action:        buf,
+		})
+		if err != nil {
+			return err
+		}
+
+		deadline = time.Now().Add(settings.MoveTimeout)
+		err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, settings.MoveTimeout, deadline)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	actionProto := action.Proto()
+	actionProto.TurnDeadlineMs = deadline.UnixMilli()
+
+	e := &schema.ServerMessage{
+		Payload: &schema.ServerMessage_MonopolyDealMessage{
+			MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
+				Payload: &monopoly_deal_schema.ServerMessage_Action{
+					Action: actionProto,
+				},
+			},
+		},
+	}
+
+	buf, err := proto.Marshal(e)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	err = c.bus.Publish(ctx, event.GameChannelPre+gameID.String(), event.NewServerMessageEvent(buf))
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	return gameID, err
 }

@@ -5,6 +5,7 @@ type MonopolyDealGameMountProps = {
   initialGameState: GameState | null;
   assetImageByKey: Record<number, string>;
   selfPlayerId?: string;
+  demandDeadlineMsById?: Record<string, number>;
   onPlayMoneyCard: (cardId: string) => void;
   onPlayPassGoCard: (cardId: string) => void;
   onPlayDebtCollectorCard: (cardId: string, targetPlayerId: string) => void;
@@ -55,6 +56,7 @@ const MonopolyDealGameMount = ({
   initialGameState,
   assetImageByKey,
   selfPlayerId,
+  demandDeadlineMsById,
   onPlayMoneyCard,
   onPlayPassGoCard,
   onPlayDebtCollectorCard,
@@ -84,6 +86,7 @@ const MonopolyDealGameMount = ({
       gameState={initialGameState}
       assetImageByKey={assetImageByKey}
       selfPlayerId={selfPlayerId}
+      demandDeadlineMsById={demandDeadlineMsById}
       onPlayMoneyCard={onPlayMoneyCard}
       onPlayPassGoCard={onPlayPassGoCard}
       onPlayDebtCollectorCard={onPlayDebtCollectorCard}

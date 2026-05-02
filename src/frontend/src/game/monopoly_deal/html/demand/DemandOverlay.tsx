@@ -13,6 +13,8 @@ type DemandOverlayProps = {
   demands: Demand[];
   players: Player[];
   selfPlayerId?: string;
+  /** Per-demand timer: maps demand ID → remaining seconds. Used instead of a shared global timer. */
+  demandTimerSecondsByDemandId?: Record<string, number>;
   targetCardImageById: Record<string, string>;
   propertySetCardsById: Record<string, Card[]>;
   canDeny: boolean;
@@ -33,6 +35,7 @@ const DemandOverlay = ({
   demands,
   players,
   selfPlayerId,
+  demandTimerSecondsByDemandId,
   targetCardImageById,
   propertySetCardsById,
   canDeny,
@@ -55,6 +58,7 @@ const DemandOverlay = ({
   return (
     <div className="md-demand-stack">
       {demands.map((demand) => {
+        const demandTimerSeconds = demandTimerSecondsByDemandId?.[demand.id];
         if (demand.demandKind === DemandKind.DEMAND_KIND_PAYMENT) {
           const isThisDemandSelecting = isSelectingCards && selectingDemandId === demand.id;
           return (
@@ -68,6 +72,7 @@ const DemandOverlay = ({
               isSelectingCards={isThisDemandSelecting}
               canConfirmSelection={canConfirmSelection}
               selectedPaymentTotal={selectedPaymentTotal}
+              demandTimerSeconds={demandTimerSeconds}
               onComply={onComply}
               onDeny={onDeny}
             />
@@ -97,6 +102,7 @@ const DemandOverlay = ({
                 forcedDealPlacementDemandId === demand.id
               }
               selectedForcedDealPlacementSetId={selectedForcedDealPlacementSetId}
+              demandTimerSeconds={demandTimerSeconds}
               onStartForcedDealPlacementSelection={
                 onStartForcedDealPlacementSelection
               }
@@ -125,6 +131,7 @@ const DemandOverlay = ({
                   ? propertySetCardsById[demand.propertySetDemand.propertySetId] ?? []
                   : []
               }
+              demandTimerSeconds={demandTimerSeconds}
               canDeny={canDeny}
               onComply={onComply}
               onDeny={onDeny}

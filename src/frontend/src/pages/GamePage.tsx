@@ -323,6 +323,7 @@ const GamePage = () => {
     () => new Set(),
   );
   const [wonGame, setWonGame] = useState<WonGameResult | null>(null);
+  const [demandDeadlineMsById, setDemandDeadlineMsById] = useState<Record<string, number>>({});
 
   const pushErrorNotice = useCallback(
     (
@@ -604,9 +605,28 @@ const GamePage = () => {
               };
             });
 
+            // Parse demand-specific deadlines from the deadlines array.
+            // (Entries without a demandId are the turn deadline — the board reads
+            // those directly from gameState.deadlines, so no extra handling needed.)
+            const incomingDemandDeadlines: Record<string, number> = {};
+            for (const deadline of gameState.deadlines ?? []) {
+              if (deadline.demandId && deadline.deadlineMs > 0) {
+                incomingDemandDeadlines[deadline.demandId] = deadline.deadlineMs;
+              }
+            }
+
+            if (Object.keys(incomingDemandDeadlines).length > 0) {
+              setDemandDeadlineMsById((current) => ({
+                ...current,
+                ...incomingDemandDeadlines,
+              }));
+            }
+
             setInitialGameState((current) => {
               if (current) {
-                return current;
+                // On reconnect: replace the whole deadlines array so timers
+                // reflect the latest server snapshot.
+                return { ...current, deadlines: gameState.deadlines };
               }
 
               console.log("[game-ws] initial game state", gameState);
@@ -639,6 +659,32 @@ const GamePage = () => {
           const action = message.monopolyDealMessage?.action;
           const actionForHistory = actionHistory?.action ?? action;
           const actionPlayerId = action?.playerId;
+
+          const nextDeadlineMs =
+            action?.actionRearrangeCard
+              ? null
+              : typeof action?.turnDeadlineMs === "number"
+                ? action.turnDeadlineMs
+                : null;
+
+          if (typeof nextDeadlineMs === "number") {
+            setInitialGameState((current) => {
+              if (!current) {
+                return current;
+              }
+
+              // Update the turn-deadline entry in the deadlines array
+              // (the entry where demandId is absent/undefined).
+              const otherDeadlines = current.deadlines.filter((d) => !!d.demandId);
+              return {
+                ...current,
+                deadlines: nextDeadlineMs > 0
+                  ? [...otherDeadlines, { deadlineMs: nextDeadlineMs, demandId: undefined }]
+                  : otherDeadlines,
+              };
+            });
+          }
+
           if (actionForHistory) {
             setActionHistoryEntries((current) => {
               const actionHistoryPlayerId = actionForHistory.playerId;
@@ -764,6 +810,18 @@ const GamePage = () => {
               }
 
               if (isDemandCompliedWithoutTransfer) {
+                return current;
+              }
+
+              if (actionDiscardCards && actionDiscardCards.cards.length === 0) {
+                return current;
+              }
+
+              if (
+                maskedActionDiscardCards &&
+                typeof maskedActionDiscardCards.numCards === "number" &&
+                maskedActionDiscardCards.numCards === 0
+              ) {
                 return current;
               }
 
@@ -1611,13 +1669,33 @@ const GamePage = () => {
           const actionDemandsCreated = action?.actionDemandsCreated;
           if (actionDemandsCreated && actionPlayerId) {
             const isSelfActor = !!selfPlayerId && actionPlayerId === selfPlayerId;
-            const isSelfPlay =
-              isSelfActor && currentTurnPlayerIdRef.current === actionPlayerId;
             const playedCardId = actionDemandsCreated.lastPlayedCard?.cardId;
             const didPlayCard = !!playedCardId;
             const shouldConsumeSelfCard = isSelfActor && didPlayCard;
+            // Only decrement moves when a card was directly played in this action.
+            // If lastPlayedCard is absent the demands came from resolving a pending rent
+            // and the move was already counted by actionPendingRentCreated.
+            const isSelfPlay =
+              isSelfActor &&
+              currentTurnPlayerIdRef.current === actionPlayerId &&
+              didPlayCard;
             if (isSelfPlay) {
               setMovesLeft((current) => Math.max(0, current - 1));
+            }
+
+            // Track per-demand deadlines using the action's turnDeadlineMs
+            const actionDeadlineMs = typeof action.turnDeadlineMs === "number" ? action.turnDeadlineMs : 0;
+            if (actionDeadlineMs > 0 && actionDemandsCreated.demands.length > 0) {
+              setDemandDeadlineMsById((current) => {
+                const next = { ...current };
+                for (const demand of actionDemandsCreated.demands) {
+                  // Only set deadline for demands that don't have one yet
+                  if (!next[demand.id]) {
+                    next[demand.id] = actionDeadlineMs;
+                  }
+                }
+                return next;
+              });
             }
 
             setInitialGameState((current) => {
@@ -1650,6 +1728,21 @@ const GamePage = () => {
                     }
                   : current.yourHand;
 
+              // Merge demands: remove the denied demand (it's replaced by a new
+              // JSN counter-demand with a fresh ID), then append any net-new demands.
+              const deniedDemandId = actionDemandsCreated.deniedDemand?.id;
+
+              // Drop the denied demand from existing state entirely
+              const existingFiltered = deniedDemandId
+                ? current.demands.filter((d) => d.id !== deniedDemandId)
+                : current.demands;
+
+              // Append incoming demands whose IDs we don't already have
+              const existingIds = new Set(existingFiltered.map((d) => d.id));
+              const brandNewDemands = actionDemandsCreated.demands.filter(
+                (d) => !existingIds.has(d.id),
+              );
+
               return {
                 ...current,
                 seqNum: action.seqNum ?? current.seqNum,
@@ -1664,7 +1757,7 @@ const GamePage = () => {
                     AssetKey.ASSET_KEY_UNSPECIFIED
                     ? actionDemandsCreated.lastPlayedCard
                     : current.lastAction,
-                demands: actionDemandsCreated.demands,
+                demands: [...existingFiltered, ...brandNewDemands],
                 pendingRent: undefined,
               };
             });
@@ -1685,32 +1778,14 @@ const GamePage = () => {
             }
           }
 
-          const demandDenied = actionDemandsCreated?.deniedDemand;
-          if (demandDenied) {
-            setInitialGameState((current) => {
-              if (!current) {
-                return current;
-              }
-
-              const hasMatchingDemand = current.demands.some((demand) => {
-                return demand.id === demandDenied.id;
-              });
-              if (!hasMatchingDemand) {
-                return current;
-              }
-
-              return {
-                ...current,
-                seqNum: action?.seqNum ?? current.seqNum,
-                demands: current.demands.filter((demand) => {
-                  return demand.id !== demandDenied.id;
-                }),
-              };
-            });
-          }
-
           const actionDemandComplied = action?.actionDemandComplied;
           if (actionDemandComplied) {
+            const resumeTurnPlayerId = currentTurnPlayerIdRef.current;
+            const shouldResumeTurnAfterDemandComply =
+              !!resumeTurnPlayerId &&
+              typeof action?.turnDeadlineMs === "number" &&
+              action.turnDeadlineMs > 0;
+
             setInitialGameState((current) => {
               if (!current) {
                 return current;
@@ -1719,11 +1794,18 @@ const GamePage = () => {
               return {
                 ...current,
                 seqNum: action?.seqNum ?? current.seqNum,
+                currentPlayerId: shouldResumeTurnAfterDemandComply && resumeTurnPlayerId
+                  ? resumeTurnPlayerId
+                  : current.currentPlayerId,
                 demands: current.demands.filter((demand) => {
                   return demand.id !== actionDemandComplied.demandId;
                 }),
               };
             });
+
+            if (shouldResumeTurnAfterDemandComply && resumeTurnPlayerId) {
+              setCurrentTurnPlayerId(resumeTurnPlayerId);
+            }
 
           }
 
@@ -1893,9 +1975,6 @@ const GamePage = () => {
               !!selfPlayerId &&
               actionPlayerId === selfPlayerId &&
               currentTurnPlayerIdRef.current === actionPlayerId;
-            if (isSelfPlay) {
-              setMovesLeft((current) => Math.max(0, current - 1));
-            }
 
             setInitialGameState((current) => {
               if (!current) {
@@ -1961,6 +2040,20 @@ const GamePage = () => {
 
           const actionPendingRentResolved = action?.actionPendingRentResolved;
           if (actionPendingRentResolved) {
+            // Track per-demand deadlines for newly resolved rent demands
+            const rentResolveDeadlineMs = typeof action.turnDeadlineMs === "number" ? action.turnDeadlineMs : 0;
+            if (rentResolveDeadlineMs > 0 && actionPendingRentResolved.demands.length > 0) {
+              setDemandDeadlineMsById((current) => {
+                const next = { ...current };
+                for (const demand of actionPendingRentResolved.demands) {
+                  if (!next[demand.id]) {
+                    next[demand.id] = rentResolveDeadlineMs;
+                  }
+                }
+                return next;
+              });
+            }
+
             setInitialGameState((current) => {
               if (!current) {
                 return current;
@@ -2258,7 +2351,31 @@ const GamePage = () => {
             });
           }
 
-            console.log("[game-ws] message", toGameServerMessageJson(message));
+            const messageJson = toGameServerMessageJson(message) as {
+              action?: {
+                actionDiscardCards?: {
+                  cards?: unknown[];
+                };
+              };
+              actionHistory?: {
+                action?: {
+                  actionDiscardCards?: {
+                    cards?: unknown[];
+                  };
+                };
+              };
+            };
+            const actionDiscardCardsCount =
+              messageJson.action?.actionDiscardCards?.cards?.length;
+            const actionHistoryDiscardCardsCount =
+              messageJson.actionHistory?.action?.actionDiscardCards?.cards?.length;
+
+            const isZeroDiscardMessage =
+              actionDiscardCardsCount === 0 || actionHistoryDiscardCardsCount === 0;
+
+            if (!isZeroDiscardMessage) {
+              console.log("[game-ws] message", messageJson);
+            }
           } catch (error) {
             console.error("[game-ws] failed to decode message", error);
             pushErrorNotice(toClientGameError(error, "WS_MESSAGE_DECODE_FAILED"));
@@ -3424,6 +3541,7 @@ const GamePage = () => {
             initialGameState={initialGameState}
             assetImageByKey={assetImageByKey}
             selfPlayerId={selfPlayerId ?? undefined}
+            demandDeadlineMsById={demandDeadlineMsById}
             onPlayMoneyCard={handlePlayMoneyCard}
             onPlayPassGoCard={handlePlayPassGoCard}
             onPlayDebtCollectorCard={handlePlayDebtCollectorCard}
@@ -3554,7 +3672,7 @@ const GamePage = () => {
                               </span>
                               {(entry.cardAssetKeys?.length ?? 0) > 0
                                 ? ":"
-                                : " didn't have anything to pay with."}
+                                : " nothing."}
                             </p>
                             {(entry.cardAssetKeys?.length ?? 0) > 0 ? (
                               <div className="game-action-history-cards-row">
@@ -3571,7 +3689,7 @@ const GamePage = () => {
                               </div>
                             ) : null}
                           </article>
-                        ) : entry.kind === "discardCards" && entry.playerId ? (
+                        ) : entry.kind === "discardCards" && entry.playerId && (entry.cardAssetKeys?.length ?? 0) > 0 ? (
                           <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
                             <p className="chat-message game-chat-line__message game-action-history-text">
                               <img
@@ -3601,7 +3719,7 @@ const GamePage = () => {
                               ))}
                             </div>
                           </article>
-                        ) : entry.kind === "maskedDiscardCards" && entry.playerId ? (
+                        ) : entry.kind === "maskedDiscardCards" && entry.playerId && (entry.drawCount ?? 0) > 0 ? (
                           <article className="game-action-history-line game-action-history-line--event" key={entry.id}>
                             <p className="chat-message game-chat-line__message game-action-history-text">
                               <img

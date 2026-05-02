@@ -4,6 +4,7 @@ type PendingRentOverlayProps = {
   pendingRent: PendingRent;
   players: Player[];
   selfPlayerId?: string;
+  timerSeconds?: number;
   canDouble: boolean;
   onDouble: () => void;
   onRent: () => void;
@@ -13,6 +14,7 @@ const PendingRentOverlay = ({
   pendingRent,
   players,
   selfPlayerId,
+  timerSeconds,
   canDouble,
   onDouble,
   onRent,
@@ -44,6 +46,9 @@ const PendingRentOverlay = ({
         onPointerDown={(event) => event.stopPropagation()}
       >
         <p className="md-demand__eyebrow">Rent</p>
+        {typeof timerSeconds === "number" ? (
+          <p className="md-demand__line">Time left: {String(Math.floor(Math.max(0, timerSeconds) / 60)).padStart(2, "0")}:{String(Math.max(0, timerSeconds) % 60).padStart(2, "0")}</p>
+        ) : null}
         {isSelfTarget ? (
           <p className="md-demand__line md-demand__line--rent-warning">
             <img
@@ -98,6 +103,9 @@ const PendingRentOverlay = ({
       onPointerDown={(event) => event.stopPropagation()}
     >
       <p className="md-demand__eyebrow">Rent</p>
+      {typeof timerSeconds === "number" ? (
+        <p className="md-demand__line">Time left: {String(Math.floor(Math.max(0, timerSeconds) / 60)).padStart(2, "0")}:{String(Math.max(0, timerSeconds) % 60).padStart(2, "0")}</p>
+      ) : null}
       <p className="md-demand__line">{targetLabel}:</p>
       <div className="md-rent-targets" role="list" aria-label="Rent targets">
         {targets.length === 0 ? (

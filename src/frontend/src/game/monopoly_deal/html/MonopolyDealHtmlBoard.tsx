@@ -31,6 +31,7 @@ type MonopolyDealHtmlBoardProps = {
   gameState: GameState | null;
   assetImageByKey: Record<number, string>;
   selfPlayerId?: string;
+  demandDeadlineMsById?: Record<string, number>;
   onPlayMoneyCard: (cardId: string) => void;
   onPlayPassGoCard: (cardId: string) => void;
   onPlayDebtCollectorCard: (cardId: string, targetPlayerId: string) => void;
@@ -224,6 +225,13 @@ const minPropertyCountForCompleteSet = (color: Color): number => {
   }
 };
 
+const formatRemainingTime = (totalSeconds: number): string => {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+};
+
+
 const isPropertyCard = (card: Card): boolean => {
   return (
     card.category === Category.CATEGORY_PURE_PROPERTY ||
@@ -358,6 +366,7 @@ const MonopolyDealHtmlBoard = ({
   gameState,
   assetImageByKey,
   selfPlayerId,
+  demandDeadlineMsById,
   onPlayMoneyCard,
   onPlayPassGoCard,
   onPlayDebtCollectorCard,
@@ -403,6 +412,7 @@ const MonopolyDealHtmlBoard = ({
   const [activePaymentDemandId, setActivePaymentDemandId] = useState<
     string | null
   >(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const [selectedHandPlacementCardId, setSelectedHandPlacementCardId] =
     useState<string | null>(null);
   const [selectedRearrangeCard, setSelectedRearrangeCard] =
@@ -445,20 +455,40 @@ const MonopolyDealHtmlBoard = ({
   }, [players, selfPlayerId]);
   const visibleDemands = useMemo<Demand[]>(() => {
     const demands = gameState?.demands ?? [];
-    const selfDemands = selfPlayerId
-      ? demands.filter((demand) => demand.playerId === selfPlayerId)
-      : demands;
-    if (selfDemands.length > 0) {
-      return selfDemands.slice(0, 3);
+    // Self-targeted demands (player must respond) always take priority.
+    // Only show ACTIVE ones here — inactive (denied) self-demands don't require a response.
+    const selfActiveDemands = selfPlayerId
+      ? demands.filter((demand) => demand.playerId === selfPlayerId && demand.isActive)
+      : demands.filter((d) => d.isActive);
+    if (selfActiveDemands.length > 0) {
+      return selfActiveDemands.slice(0, 3);
     }
 
-    return demands.slice(0, 2);
+    // No active self-targeted demands — show the spectator/notification view.
+    // Sort active demands before inactive so actionable items come first.
+    const sorted = [...demands].sort((a, b) => {
+      if (a.isActive === b.isActive) return 0;
+      return a.isActive ? -1 : 1;
+    });
+    return sorted.slice(0, 2);
   }, [gameState?.demands, selfPlayerId]);
 
+  // Compute per-demand remaining seconds from the tracked deadline map
+  const demandTimerSecondsByDemandId = useMemo<Record<string, number>>(() => {
+    if (!demandDeadlineMsById) {
+      return {};
+    }
+    const result: Record<string, number> = {};
+    for (const demand of visibleDemands) {
+      const deadlineMs = demandDeadlineMsById[demand.id];
+      if (typeof deadlineMs === "number" && deadlineMs > 0) {
+        result[demand.id] = Math.max(0, Math.ceil((deadlineMs - nowMs) / 1000));
+      }
+    }
+    return result;
+  }, [demandDeadlineMsById, nowMs, visibleDemands]);
+
   const hasAnyDemand = visibleDemands.length > 0;
-  const hasSelfDemand =
-    !!selfPlayerId &&
-    visibleDemands.some((demand) => demand.playerId === selfPlayerId);
   const pendingRent = gameState?.pendingRent;
   const hasPendingRent = !!pendingRent;
   const currentPlayerId = gameState?.currentPlayerId ?? "";
@@ -478,6 +508,14 @@ const MonopolyDealHtmlBoard = ({
     hasPendingRent && !shouldAutoResolvePendingRent;
   const hasMovesLeft = (gameState?.movesLeft ?? 0) > 0;
   const movesLeft = gameState?.movesLeft ?? 0;
+  const turnDeadlineMs =
+    gameState?.deadlines?.find((d) => !d.demandId)?.deadlineMs ?? 0;
+  const remainingTurnMs = Math.max(0, turnDeadlineMs - nowMs);
+  const remainingTurnSeconds = Math.max(
+    0,
+    Math.ceil(remainingTurnMs / 1000),
+  );
+  const shouldShowTurnTimer = turnDeadlineMs > 0 && !hasAnyDemand;
   const lastActionCards =
     gameState?.lastAction &&
     gameState.lastAction.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
@@ -1493,10 +1531,11 @@ const MonopolyDealHtmlBoard = ({
   const onStartForcedDealPlacementSelection = useCallback(
     (demandId: string) => {
       const demand = visibleDemands.find((item) => item.id === demandId);
+      const sourceCardId = demand?.propertyDemand?.sourceCardId;
       if (
         !demand ||
         demand.demandSource !== DemandSource.DEMAND_SOURCE_FORCED_DEAL ||
-        !demand.propertyDemand?.sourceCardId
+        !sourceCardId
       ) {
         return;
       }
@@ -1504,7 +1543,7 @@ const MonopolyDealHtmlBoard = ({
       const hasValidPlacementSet = selfPropertySets.some((propertySet) => {
         return isValidForcedDealPlacementSetForSourceCard(
           propertySet,
-          demand.propertyDemand.sourceCardId,
+          sourceCardId,
         );
       });
 
@@ -1515,7 +1554,7 @@ const MonopolyDealHtmlBoard = ({
 
       setForcedDealPlacementSelection({
         demandId,
-        sourceCardId: demand.propertyDemand.sourceCardId,
+        sourceCardId,
       });
     },
     [
@@ -1919,6 +1958,31 @@ const MonopolyDealHtmlBoard = ({
   const onCancelDealPicker = useCallback(() => {
     setDealPicker(null);
   }, []);
+
+  const hasAnyDemandDeadline = useMemo(() => {
+    if (!demandDeadlineMsById) {
+      return false;
+    }
+    return Object.values(demandDeadlineMsById).some((deadlineMs) => deadlineMs > 0);
+  }, [demandDeadlineMsById]);
+
+  useEffect(() => {
+    if (turnDeadlineMs <= 0 && !hasAnyDemandDeadline) {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 250);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [hasAnyDemandDeadline, turnDeadlineMs]);
+
+  useEffect(() => {
+    setNowMs(Date.now());
+  }, [turnDeadlineMs]);
 
   useEffect(() => {
     if (isSelectingPaymentCards && !isSelectedPaymentDemandActive) {
@@ -2358,15 +2422,17 @@ const MonopolyDealHtmlBoard = ({
             pendingRent={pendingRent}
             players={players}
             selfPlayerId={selfPlayerId ?? undefined}
+            timerSeconds={turnDeadlineMs > 0 ? remainingTurnSeconds : undefined}
             canDouble={hasDoubleTheRent && hasMovesLeft}
             onDouble={onPendingRentDouble}
             onRent={onPendingRentRent}
           />
-        ) : hasSelfDemand ? (
+        ) : hasAnyDemand ? (
           <DemandOverlay
             demands={visibleDemands}
             players={players}
             selfPlayerId={selfPlayerId}
+            demandTimerSecondsByDemandId={demandTimerSecondsByDemandId}
             targetCardImageById={propertyCardImageById}
             propertySetCardsById={propertySetCardsById}
             canDeny={hasJustSayNo}
@@ -2400,6 +2466,7 @@ const MonopolyDealHtmlBoard = ({
             demands={visibleDemands}
             players={players}
             selfPlayerId={selfPlayerId}
+            demandTimerSecondsByDemandId={demandTimerSecondsByDemandId}
             targetCardImageById={propertyCardImageById}
             propertySetCardsById={propertySetCardsById}
             canDeny={hasJustSayNo}
@@ -2529,6 +2596,18 @@ const MonopolyDealHtmlBoard = ({
         </div>
 
         <section className="md-hand-turn-controls">
+          {shouldShowTurnTimer ? (
+            <button
+              type="button"
+              className="md-demand__button md-hand-turn-button md-hand-turn-timer-button"
+              aria-live="polite"
+              aria-disabled="true"
+              tabIndex={-1}
+            >
+              Turn timer: {formatRemainingTime(remainingTurnSeconds)}
+            </button>
+          ) : null}
+
           <button
             type="button"
             className="md-demand__button md-hand-turn-button"
@@ -2545,8 +2624,10 @@ const MonopolyDealHtmlBoard = ({
               : isSelfTurn
                 ? (
                     <>
-                      Pass Turn{" "}
-                      <span className="md-hand-turn-button__moves">({movesLeft} left)</span>
+                      <span>
+                        Pass Turn{" "}
+                        <span className="md-hand-turn-button__moves">({movesLeft} left)</span>
+                      </span>
                     </>
                   )
                 : "Pass Turn"}

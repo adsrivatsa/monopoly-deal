@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
 	"the-deal/internal/event"
 	"the-deal/internal/schema"
@@ -109,53 +108,13 @@ func (c *Controller) CreateGame(ctx context.Context, tp token.Payload) error {
 		return err
 	}
 
-	var buf []byte
+	var gameID uuid.UUID
 	switch r.Game {
 	case store.GameTypeMonopolyDeal:
-		var settings monopoly_deal.Settings
-		err = settings.Decode(r.Settings)
-		if err != nil {
-			return err
-		}
-
-		game := monopoly_deal.NewGame(settings, playerIDs)
-		buf, err = game.EncodeMsgpack()
-		if err != nil {
-			return err
-		}
+		gameID, err = c.MonopolyDealController.CreateGame(ctx, r.RoomID, playerIDs)
 	default:
 		return errors.GameNotSupported
 	}
-
-	gameID, err := uuid.NewV7()
-	if err != nil {
-		return err
-	}
-
-	g, err := c.store.CreateGame(ctx, store.CreateGameParams{
-		GameID:      gameID,
-		DisplayName: r.DisplayName,
-		Game:        r.Game,
-		GameState:   buf,
-	})
-	if err != nil {
-		return err
-	}
-
-	err = c.store.CreateGamePlayersFromRoom(ctx, store.CreateGamePlayersFromRoomParams{
-		GameID: g.GameID,
-		RoomID: r.RoomID,
-	})
-	if err != nil {
-		return err
-	}
-
-	err = c.store.DeleteRoom(ctx, r.RoomID)
-	if err != nil {
-		return err
-	}
-
-	err = c.store.DeleteRoomPlayersByRoom(ctx, r.RoomID)
 	if err != nil {
 		return err
 	}
@@ -165,14 +124,14 @@ func (c *Controller) CreateGame(ctx context.Context, tp token.Payload) error {
 			RoomMessage: &room_schema.ServerMessage{
 				Payload: &room_schema.ServerMessage_GameStarted{
 					GameStarted: &room_schema.GameStarted{
-						GameId: g.GameID.String(),
+						GameId: gameID.String(),
 					},
 				},
 			},
 		},
 	}
 
-	buf, err = proto.Marshal(e)
+	buf, err := proto.Marshal(e)
 	if err != nil {
 		return err
 	}

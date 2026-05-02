@@ -815,6 +815,11 @@ export interface AssetImage {
   imageUrl: string;
 }
 
+export interface Deadline {
+  deadlineMs: number;
+  demandId?: string | undefined;
+}
+
 export interface GameState {
   seqNum: number;
   players: Player[];
@@ -828,7 +833,7 @@ export interface GameState {
   lastAction: Card | undefined;
   assetImages: AssetImage[];
   maxHandSize: number;
-  deadlineMs: number;
+  deadlines: Deadline[];
 }
 
 export interface PlayMoney {
@@ -2549,6 +2554,90 @@ export const AssetImage: MessageFns<AssetImage> = {
   },
 };
 
+function createBaseDeadline(): Deadline {
+  return { deadlineMs: 0, demandId: undefined };
+}
+
+export const Deadline: MessageFns<Deadline> = {
+  encode(message: Deadline, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.deadlineMs !== 0) {
+      writer.uint32(8).int64(message.deadlineMs);
+    }
+    if (message.demandId !== undefined) {
+      writer.uint32(18).string(message.demandId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Deadline {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDeadline();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.deadlineMs = longToNumber(reader.int64());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.demandId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Deadline {
+    return {
+      deadlineMs: isSet(object.deadlineMs)
+        ? globalThis.Number(object.deadlineMs)
+        : isSet(object.deadline_ms)
+        ? globalThis.Number(object.deadline_ms)
+        : 0,
+      demandId: isSet(object.demandId)
+        ? globalThis.String(object.demandId)
+        : isSet(object.demand_id)
+        ? globalThis.String(object.demand_id)
+        : undefined,
+    };
+  },
+
+  toJSON(message: Deadline): unknown {
+    const obj: any = {};
+    if (message.deadlineMs !== 0) {
+      obj.deadlineMs = Math.round(message.deadlineMs);
+    }
+    if (message.demandId !== undefined) {
+      obj.demandId = message.demandId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Deadline>, I>>(base?: I): Deadline {
+    return Deadline.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Deadline>, I>>(object: I): Deadline {
+    const message = createBaseDeadline();
+    message.deadlineMs = object.deadlineMs ?? 0;
+    message.demandId = object.demandId ?? undefined;
+    return message;
+  },
+};
+
 function createBaseGameState(): GameState {
   return {
     seqNum: 0,
@@ -2563,7 +2652,7 @@ function createBaseGameState(): GameState {
     lastAction: undefined,
     assetImages: [],
     maxHandSize: 0,
-    deadlineMs: 0,
+    deadlines: [],
   };
 }
 
@@ -2605,8 +2694,8 @@ export const GameState: MessageFns<GameState> = {
     if (message.maxHandSize !== 0) {
       writer.uint32(96).int32(message.maxHandSize);
     }
-    if (message.deadlineMs !== 0) {
-      writer.uint32(104).int64(message.deadlineMs);
+    for (const v of message.deadlines) {
+      Deadline.encode(v!, writer.uint32(106).fork()).join();
     }
     return writer;
   },
@@ -2715,11 +2804,11 @@ export const GameState: MessageFns<GameState> = {
           continue;
         }
         case 13: {
-          if (tag !== 104) {
+          if (tag !== 106) {
             break;
           }
 
-          message.deadlineMs = longToNumber(reader.int64());
+          message.deadlines.push(Deadline.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -2783,11 +2872,9 @@ export const GameState: MessageFns<GameState> = {
         : isSet(object.max_hand_size)
         ? globalThis.Number(object.max_hand_size)
         : 0,
-      deadlineMs: isSet(object.deadlineMs)
-        ? globalThis.Number(object.deadlineMs)
-        : isSet(object.deadline_ms)
-        ? globalThis.Number(object.deadline_ms)
-        : 0,
+      deadlines: globalThis.Array.isArray(object?.deadlines)
+        ? object.deadlines.map((e: any) => Deadline.fromJSON(e))
+        : [],
     };
   },
 
@@ -2829,8 +2916,8 @@ export const GameState: MessageFns<GameState> = {
     if (message.maxHandSize !== 0) {
       obj.maxHandSize = Math.round(message.maxHandSize);
     }
-    if (message.deadlineMs !== 0) {
-      obj.deadlineMs = Math.round(message.deadlineMs);
+    if (message.deadlines?.length) {
+      obj.deadlines = message.deadlines.map((e) => Deadline.toJSON(e));
     }
     return obj;
   },
@@ -2858,7 +2945,7 @@ export const GameState: MessageFns<GameState> = {
       : undefined;
     message.assetImages = object.assetImages?.map((e) => AssetImage.fromPartial(e)) || [];
     message.maxHandSize = object.maxHandSize ?? 0;
-    message.deadlineMs = object.deadlineMs ?? 0;
+    message.deadlines = object.deadlines?.map((e) => Deadline.fromPartial(e)) || [];
     return message;
   },
 };

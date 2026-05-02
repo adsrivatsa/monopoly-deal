@@ -202,6 +202,11 @@ message AssetImage {
   string image_url = 2;
 }
 
+message Deadline {
+  int64 deadline_ms = 1;
+  optional string demand_id = 2;
+}
+
 message GameState {
   int32 seq_num = 1;
   repeated Player players = 2;
@@ -215,7 +220,7 @@ message GameState {
   Card last_action = 10;
   repeated AssetImage asset_images = 11;
   int32 max_hand_size = 12;
-  int64 deadline_ms = 13;
+  repeated Deadline deadlines = 13;
 }
 
 enum ActionKind {

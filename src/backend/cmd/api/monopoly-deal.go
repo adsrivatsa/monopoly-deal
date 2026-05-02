@@ -94,7 +94,7 @@ func (s *Server) handleClientMonopolyDealMessages(ctx context.Context, sock *soc
 						MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
 							Payload: &monopoly_deal_schema.ServerMessage_Error{
 								Error: &monopoly_deal_schema.Error{
-									Message: intErr.Message,
+									Message: intErr.Error(),
 									Status:  int32(intErr.Status),
 									Code:    intErr.Code,
 								},

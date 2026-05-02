@@ -2,7 +2,7 @@ package monopoly_deal
 
 import (
 	"context"
-	"the-deal/internal/config"
+	"fmt"
 	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
 	"the-deal/internal/event"
@@ -10,31 +10,12 @@ import (
 	"the-deal/internal/schema/monopoly_deal_schema"
 	"the-deal/internal/store"
 	"the-deal/internal/token"
+	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/vmihailenco/msgpack/v5"
 	"google.golang.org/protobuf/proto"
 )
-
-type Controller struct {
-	cfg        config.Config
-	store      store.Store
-	bus        *event.Bus
-	timeoutMan *timex.TimeoutManager[TimeoutKey]
-}
-
-func NewController(cfg config.Config, pool *pgxpool.Pool, client *redis.Client) *Controller {
-	c := &Controller{
-		cfg:        cfg,
-		store:      store.NewSQLStore(pool, nil),
-		bus:        event.NewBus(client),
-		timeoutMan: timex.NewTimeoutManager[TimeoutKey](),
-	}
-
-	return c
-}
 
 func (c *Controller) HandleEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_MonopolyDealMessage) error {
 	switch p := msg.MonopolyDealMessage.GetPayload().(type) {
@@ -81,6 +62,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 	var action monopoly_deal.Action
 	var totalSets, totalMoney int
 	var didWin bool
+	var deadline time.Time
 
 	err := c.store.ExecTx(ctx, func(q *store.Queries) error {
 		g, err := q.GetGameByPlayerForUpdate(ctx, tp.PlayerID)
@@ -181,6 +163,15 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		}
 
 		if didWin {
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: nil,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
 			_, err = q.CompleteGame(ctx, store.CompleteGameParams{
 				Winner: &tp.PlayerID,
 				GameID: gameID,
@@ -188,6 +179,168 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 			if err != nil {
 				return err
 			}
+
+			return nil
+		}
+
+		switch msg.MonopolyDealMessage.GetPayload().(type) {
+		case *monopoly_deal_schema.ClientMessage_PlayMoney, *monopoly_deal_schema.ClientMessage_PlayProperty,
+			*monopoly_deal_schema.ClientMessage_PlayHouse, *monopoly_deal_schema.ClientMessage_PlayHotel,
+			*monopoly_deal_schema.ClientMessage_PlayPassGo, *monopoly_deal_schema.ClientMessage_PlayRent,
+			*monopoly_deal_schema.ClientMessage_PlayWildRent, *monopoly_deal_schema.ClientMessage_PlayDoubleTheRent,
+			*monopoly_deal_schema.ClientMessage_DiscardCards:
+			deadline = time.Now().Add(game.Config.MoveTimeout)
+			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, game.Config.MoveTimeout, deadline)
+
+		case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday, *monopoly_deal_schema.ClientMessage_PlayDebtCollector,
+			*monopoly_deal_schema.ClientMessage_PlaySlyDeal, *monopoly_deal_schema.ClientMessage_PlayForcedDeal,
+			*monopoly_deal_schema.ClientMessage_PlayDealBreaker, *monopoly_deal_schema.ClientMessage_ResolvePendingRent:
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: nil,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			dcAct, ok := action.(*monopoly_deal.ActionDemandsCreated)
+			if !ok {
+				return fmt.Errorf("monopoly_deal: invalid actionDemandsCreated action")
+			}
+
+			deadline = time.Now().Add(game.Config.DemandTimeout)
+
+			for _, demand := range dcAct.Demands {
+				targetID := demand.TargetID
+				demandID := string(demand.ID)
+				err = c.scheduleDefaultDemand(ctx, q, gameID, targetID, demandID, game.Config.DemandTimeout, deadline)
+				if err != nil {
+					return err
+				}
+			}
+
+		case *monopoly_deal_schema.ClientMessage_DenyDemand:
+			demandID := msg.MonopolyDealMessage.GetDenyDemand().DemandId
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: &demandID,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			dcAct, ok := action.(*monopoly_deal.ActionDemandsCreated)
+			if !ok {
+				return fmt.Errorf("monopoly_deal: invalid actionDemandsCreated action")
+			}
+
+			deadline = time.Now().Add(game.Config.DemandTimeout)
+
+			for _, demand := range dcAct.Demands {
+				targetID := demand.TargetID
+				demandID = string(demand.ID)
+				err = c.scheduleDefaultDemand(ctx, q, gameID, targetID, demandID, game.Config.DemandTimeout, deadline)
+				if err != nil {
+					return err
+				}
+			}
+
+		case *monopoly_deal_schema.ClientMessage_ComplyPaymentDemand:
+			demandID := msg.MonopolyDealMessage.GetComplyPaymentDemand().DemandId
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: &demandID,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			if len(game.Demands) == 0 {
+				currPlayerID := game.Players[game.CurrPlayerIdx]
+				_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+					GameID:   gameID,
+					PlayerID: currPlayerID,
+					DemandID: nil,
+				})
+				if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+					return err
+				}
+				deadline = time.Now().Add(game.Config.MoveTimeout)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, game.Config.MoveTimeout, deadline)
+			}
+
+		case *monopoly_deal_schema.ClientMessage_ComplyPropertyDemand:
+			demandID := msg.MonopolyDealMessage.GetComplyPropertyDemand().DemandId
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: &demandID,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			if len(game.Demands) == 0 {
+				currPlayerID := game.Players[game.CurrPlayerIdx]
+				_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+					GameID:   gameID,
+					PlayerID: currPlayerID,
+					DemandID: nil,
+				})
+				if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+					return err
+				}
+				deadline = time.Now().Add(game.Config.MoveTimeout)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, game.Config.MoveTimeout, deadline)
+			}
+
+		case *monopoly_deal_schema.ClientMessage_ComplyPropertySetDemand:
+			demandID := msg.MonopolyDealMessage.GetComplyPropertySetDemand().DemandId
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: &demandID,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			if len(game.Demands) == 0 {
+				currPlayerID := game.Players[game.CurrPlayerIdx]
+				_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+					GameID:   gameID,
+					PlayerID: currPlayerID,
+					DemandID: nil,
+				})
+				if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+					return err
+				}
+				deadline = time.Now().Add(game.Config.MoveTimeout)
+				err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, game.Config.MoveTimeout, deadline)
+			}
+
+		case *monopoly_deal_schema.ClientMessage_CompleteTurn:
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: nil,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			nextPlayerID := game.Players[game.CurrPlayerIdx]
+			deadline = time.Now().Add(game.Config.MoveTimeout)
+			err = c.scheduleDefaultMove(ctx, q, gameID, nextPlayerID, game.Config.MoveTimeout, deadline)
+
+		case *monopoly_deal_schema.ClientMessage_RearrangeCard:
+
+		}
+		if err != nil {
+			return err
 		}
 
 		return nil
@@ -196,11 +349,14 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		return err
 	}
 
+	actionProto := action.Proto()
+	actionProto.TurnDeadlineMs = deadline.UnixMilli()
+
 	e := &schema.ServerMessage{
 		Payload: &schema.ServerMessage_MonopolyDealMessage{
 			MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
 				Payload: &monopoly_deal_schema.ServerMessage_Action{
-					Action: action.Proto(),
+					Action: actionProto,
 				},
 			},
 		},
