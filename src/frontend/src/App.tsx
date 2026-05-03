@@ -9,6 +9,7 @@ const LobbyPage = lazy(() => import("./pages/LobbyPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const RoomPage = lazy(() => import("./pages/RoomPage"));
 const GamePage = lazy(() => import("./pages/GamePage"));
+const MonopolyDealGamePage = lazy(() => import("./game/monopoly_deal/page/MonopolyDealGamePage"));
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/room/:room_id" element={<RoomPage />} />
               <Route path="/game/:game_id" element={<GamePage />} />
+              <Route path="/deal/:game_id" element={<MonopolyDealGamePage />} />
             </Route>
           </Routes>
         </Suspense>

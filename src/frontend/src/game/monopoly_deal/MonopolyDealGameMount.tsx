@@ -1,5 +1,5 @@
 import { type Color, type GameState } from "../../generated/monopoly_deal";
-import MonopolyDealHtmlBoard from "./html/MonopolyDealHtmlBoard";
+import MonopolyDealBoard from "./board/MonopolyDealBoard";
 
 type MonopolyDealGameMountProps = {
   initialGameState: GameState | null;
@@ -82,7 +82,7 @@ const MonopolyDealGameMount = ({
   onGameError,
 }: MonopolyDealGameMountProps) => {
   return (
-    <MonopolyDealHtmlBoard
+    <MonopolyDealBoard
       gameState={initialGameState}
       assetImageByKey={assetImageByKey}
       selfPlayerId={selfPlayerId}

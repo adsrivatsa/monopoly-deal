@@ -1,4 +1,4 @@
-.md-html-board {
+.md-board {
   position: relative;
   height: 100%;
   width: 100%;
@@ -829,7 +829,7 @@
 }
 
 @media (min-width: 841px) {
-  .md-html-board {
+  .md-board {
     grid-template-rows: minmax(0, 1fr) auto;
   }
 
@@ -868,7 +868,7 @@
 }
 
 @media (max-width: 840px) {
-  .md-html-board {
+  .md-board {
     grid-template-rows: minmax(0, 1fr) auto;
   }
 

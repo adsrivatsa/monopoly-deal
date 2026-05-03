@@ -25,9 +25,9 @@ import DiscardPromptOverlay from "./discard/DiscardPromptOverlay";
 import GameCardStackBox from "./GameCardStackBox";
 import DemandOverlay from "./demand/DemandOverlay";
 import PendingRentOverlay from "./rent/PendingRentOverlay";
-import "./monopoly-deal-html.css";
+import "./monopoly-deal-board.css";
 
-type MonopolyDealHtmlBoardProps = {
+type MonopolyDealBoardProps = {
   gameState: GameState | null;
   assetImageByKey: Record<number, string>;
   selfPlayerId?: string;
@@ -369,7 +369,7 @@ const midpointBetweenPoints = (
   };
 };
 
-const MonopolyDealHtmlBoard = ({
+const MonopolyDealBoard = ({
   gameState,
   assetImageByKey,
   selfPlayerId,
@@ -397,7 +397,7 @@ const MonopolyDealHtmlBoard = ({
   onGameError,
   onPassTurn,
   onSubmitDiscard,
-}: MonopolyDealHtmlBoardProps) => {
+}: MonopolyDealBoardProps) => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -2404,7 +2404,7 @@ const MonopolyDealHtmlBoard = ({
   };
 
   return (
-    <div className="md-html-board">
+    <div className="md-board">
       <div className="md-demand-overlay-wrap">
         {dealPicker ? (
           <aside
@@ -2734,4 +2734,4 @@ const MonopolyDealHtmlBoard = ({
   );
 };
 
-export default MonopolyDealHtmlBoard;
+export default MonopolyDealBoard;
