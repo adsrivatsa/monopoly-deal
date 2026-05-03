@@ -482,6 +482,55 @@ func (DemandSource) EnumDescriptor() ([]byte, []int) {
 	return file_monopoly_deal_proto_rawDescGZIP(), []int{4}
 }
 
+type AssetImageKind int32
+
+const (
+	AssetImageKind_ASSET_IMAGE_KIND_UNSPECIFIED AssetImageKind = 0
+	AssetImageKind_ASSET_IMAGE_KIND_SMALL       AssetImageKind = 1
+	AssetImageKind_ASSET_IMAGE_KIND_LARGE       AssetImageKind = 2
+)
+
+// Enum value maps for AssetImageKind.
+var (
+	AssetImageKind_name = map[int32]string{
+		0: "ASSET_IMAGE_KIND_UNSPECIFIED",
+		1: "ASSET_IMAGE_KIND_SMALL",
+		2: "ASSET_IMAGE_KIND_LARGE",
+	}
+	AssetImageKind_value = map[string]int32{
+		"ASSET_IMAGE_KIND_UNSPECIFIED": 0,
+		"ASSET_IMAGE_KIND_SMALL":       1,
+		"ASSET_IMAGE_KIND_LARGE":       2,
+	}
+)
+
+func (x AssetImageKind) Enum() *AssetImageKind {
+	p := new(AssetImageKind)
+	*p = x
+	return p
+}
+
+func (x AssetImageKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AssetImageKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_monopoly_deal_proto_enumTypes[5].Descriptor()
+}
+
+func (AssetImageKind) Type() protoreflect.EnumType {
+	return &file_monopoly_deal_proto_enumTypes[5]
+}
+
+func (x AssetImageKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AssetImageKind.Descriptor instead.
+func (AssetImageKind) EnumDescriptor() ([]byte, []int) {
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{5}
+}
+
 type ActionKind int32
 
 const (
@@ -542,11 +591,11 @@ func (x ActionKind) String() string {
 }
 
 func (ActionKind) Descriptor() protoreflect.EnumDescriptor {
-	return file_monopoly_deal_proto_enumTypes[5].Descriptor()
+	return file_monopoly_deal_proto_enumTypes[6].Descriptor()
 }
 
 func (ActionKind) Type() protoreflect.EnumType {
-	return &file_monopoly_deal_proto_enumTypes[5]
+	return &file_monopoly_deal_proto_enumTypes[6]
 }
 
 func (x ActionKind) Number() protoreflect.EnumNumber {
@@ -555,7 +604,7 @@ func (x ActionKind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ActionKind.Descriptor instead.
 func (ActionKind) EnumDescriptor() ([]byte, []int) {
-	return file_monopoly_deal_proto_rawDescGZIP(), []int{5}
+	return file_monopoly_deal_proto_rawDescGZIP(), []int{6}
 }
 
 type Error struct {
@@ -1446,8 +1495,9 @@ func (x *PendingRent) GetMultiplier() int32 {
 
 type AssetImage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AssetKey      AssetKey               `protobuf:"varint,1,opt,name=asset_key,json=assetKey,proto3,enum=the_deal.schema.monopoly_deal.AssetKey" json:"asset_key,omitempty"`
-	ImageUrl      string                 `protobuf:"bytes,2,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
+	Kind          AssetImageKind         `protobuf:"varint,1,opt,name=kind,proto3,enum=the_deal.schema.monopoly_deal.AssetImageKind" json:"kind,omitempty"`
+	AssetKey      AssetKey               `protobuf:"varint,2,opt,name=asset_key,json=assetKey,proto3,enum=the_deal.schema.monopoly_deal.AssetKey" json:"asset_key,omitempty"`
+	ImageUrl      string                 `protobuf:"bytes,3,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1480,6 +1530,13 @@ func (x *AssetImage) ProtoReflect() protoreflect.Message {
 // Deprecated: Use AssetImage.ProtoReflect.Descriptor instead.
 func (*AssetImage) Descriptor() ([]byte, []int) {
 	return file_monopoly_deal_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *AssetImage) GetKind() AssetImageKind {
+	if x != nil {
+		return x.Kind
+	}
+	return AssetImageKind_ASSET_IMAGE_KIND_UNSPECIFIED
 }
 
 func (x *AssetImage) GetAssetKey() AssetKey {
@@ -4830,11 +4887,12 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"baseAmount\x12\x1e\n" +
 	"\n" +
 	"multiplier\x18\x04 \x01(\x05R\n" +
-	"multiplier\"o\n" +
+	"multiplier\"\xb2\x01\n" +
 	"\n" +
-	"AssetImage\x12D\n" +
-	"\tasset_key\x18\x01 \x01(\x0e2'.the_deal.schema.monopoly_deal.AssetKeyR\bassetKey\x12\x1b\n" +
-	"\timage_url\x18\x02 \x01(\tR\bimageUrl\"[\n" +
+	"AssetImage\x12A\n" +
+	"\x04kind\x18\x01 \x01(\x0e2-.the_deal.schema.monopoly_deal.AssetImageKindR\x04kind\x12D\n" +
+	"\tasset_key\x18\x02 \x01(\x0e2'.the_deal.schema.monopoly_deal.AssetKeyR\bassetKey\x12\x1b\n" +
+	"\timage_url\x18\x03 \x01(\tR\bimageUrl\"[\n" +
 	"\bDeadline\x12\x1f\n" +
 	"\vdeadline_ms\x18\x01 \x01(\x03R\n" +
 	"deadlineMs\x12 \n" +
@@ -5161,7 +5219,11 @@ const file_monopoly_deal_proto_rawDesc = "" +
 	"\x16DEMAND_SOURCE_SLY_DEAL\x10\x04\x12\x1e\n" +
 	"\x1aDEMAND_SOURCE_DEAL_BREAKER\x10\x05\x12\x1d\n" +
 	"\x19DEMAND_SOURCE_JUST_SAY_NO\x10\x06\x12 \n" +
-	"\x1cDEMAND_SOURCE_DEBT_COLLECTOR\x10\a*\xfd\x02\n" +
+	"\x1cDEMAND_SOURCE_DEBT_COLLECTOR\x10\a*j\n" +
+	"\x0eAssetImageKind\x12 \n" +
+	"\x1cASSET_IMAGE_KIND_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16ASSET_IMAGE_KIND_SMALL\x10\x01\x12\x1a\n" +
+	"\x16ASSET_IMAGE_KIND_LARGE\x10\x02*\xfd\x02\n" +
 	"\n" +
 	"ActionKind\x12\x1b\n" +
 	"\x17ACTION_KIND_UNSPECIFIED\x10\x00\x12\x1a\n" +
@@ -5190,7 +5252,7 @@ func file_monopoly_deal_proto_rawDescGZIP() []byte {
 	return file_monopoly_deal_proto_rawDescData
 }
 
-var file_monopoly_deal_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
+var file_monopoly_deal_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
 var file_monopoly_deal_proto_msgTypes = make([]protoimpl.MessageInfo, 61)
 var file_monopoly_deal_proto_goTypes = []any{
 	(AssetKey)(0),                     // 0: the_deal.schema.monopoly_deal.AssetKey
@@ -5198,173 +5260,175 @@ var file_monopoly_deal_proto_goTypes = []any{
 	(Color)(0),                        // 2: the_deal.schema.monopoly_deal.Color
 	(DemandKind)(0),                   // 3: the_deal.schema.monopoly_deal.DemandKind
 	(DemandSource)(0),                 // 4: the_deal.schema.monopoly_deal.DemandSource
-	(ActionKind)(0),                   // 5: the_deal.schema.monopoly_deal.ActionKind
-	(*Error)(nil),                     // 6: the_deal.schema.monopoly_deal.Error
-	(*Chat)(nil),                      // 7: the_deal.schema.monopoly_deal.Chat
-	(*ChatReceived)(nil),              // 8: the_deal.schema.monopoly_deal.ChatReceived
-	(*Settings)(nil),                  // 9: the_deal.schema.monopoly_deal.Settings
-	(*Card)(nil),                      // 10: the_deal.schema.monopoly_deal.Card
-	(*Player)(nil),                    // 11: the_deal.schema.monopoly_deal.Player
-	(*Hand)(nil),                      // 12: the_deal.schema.monopoly_deal.Hand
-	(*Money)(nil),                     // 13: the_deal.schema.monopoly_deal.Money
-	(*PropertySet)(nil),               // 14: the_deal.schema.monopoly_deal.PropertySet
-	(*PaymentDemand)(nil),             // 15: the_deal.schema.monopoly_deal.PaymentDemand
-	(*PropertyDemand)(nil),            // 16: the_deal.schema.monopoly_deal.PropertyDemand
-	(*PropertySetDemand)(nil),         // 17: the_deal.schema.monopoly_deal.PropertySetDemand
-	(*Demand)(nil),                    // 18: the_deal.schema.monopoly_deal.Demand
-	(*PendingRent)(nil),               // 19: the_deal.schema.monopoly_deal.PendingRent
-	(*AssetImage)(nil),                // 20: the_deal.schema.monopoly_deal.AssetImage
-	(*Deadline)(nil),                  // 21: the_deal.schema.monopoly_deal.Deadline
-	(*GameState)(nil),                 // 22: the_deal.schema.monopoly_deal.GameState
-	(*PlayMoney)(nil),                 // 23: the_deal.schema.monopoly_deal.PlayMoney
-	(*ActionPlayMoney)(nil),           // 24: the_deal.schema.monopoly_deal.ActionPlayMoney
-	(*PlayProperty)(nil),              // 25: the_deal.schema.monopoly_deal.PlayProperty
-	(*ActionPlayProperty)(nil),        // 26: the_deal.schema.monopoly_deal.ActionPlayProperty
-	(*PlayHouse)(nil),                 // 27: the_deal.schema.monopoly_deal.PlayHouse
-	(*ActionPlayHouse)(nil),           // 28: the_deal.schema.monopoly_deal.ActionPlayHouse
-	(*PlayHotel)(nil),                 // 29: the_deal.schema.monopoly_deal.PlayHotel
-	(*ActionPlayHotel)(nil),           // 30: the_deal.schema.monopoly_deal.ActionPlayHotel
-	(*PlayPassGo)(nil),                // 31: the_deal.schema.monopoly_deal.PlayPassGo
-	(*ActionPlayPassGo)(nil),          // 32: the_deal.schema.monopoly_deal.ActionPlayPassGo
-	(*MaskedActionPlayPassGo)(nil),    // 33: the_deal.schema.monopoly_deal.MaskedActionPlayPassGo
-	(*ActionDemandsCreated)(nil),      // 34: the_deal.schema.monopoly_deal.ActionDemandsCreated
-	(*PlayItsMyBirthday)(nil),         // 35: the_deal.schema.monopoly_deal.PlayItsMyBirthday
-	(*PlayDebtCollector)(nil),         // 36: the_deal.schema.monopoly_deal.PlayDebtCollector
-	(*ActionPendingRentCreated)(nil),  // 37: the_deal.schema.monopoly_deal.ActionPendingRentCreated
-	(*ResolvePendingRent)(nil),        // 38: the_deal.schema.monopoly_deal.ResolvePendingRent
-	(*ActionPendingRentResolved)(nil), // 39: the_deal.schema.monopoly_deal.ActionPendingRentResolved
-	(*PlayRent)(nil),                  // 40: the_deal.schema.monopoly_deal.PlayRent
-	(*PlayWildRent)(nil),              // 41: the_deal.schema.monopoly_deal.PlayWildRent
-	(*PlayDoubleTheRent)(nil),         // 42: the_deal.schema.monopoly_deal.PlayDoubleTheRent
-	(*PlaySlyDeal)(nil),               // 43: the_deal.schema.monopoly_deal.PlaySlyDeal
-	(*PlayForcedDeal)(nil),            // 44: the_deal.schema.monopoly_deal.PlayForcedDeal
-	(*PlayDealBreaker)(nil),           // 45: the_deal.schema.monopoly_deal.PlayDealBreaker
-	(*ComplyPaymentDemand)(nil),       // 46: the_deal.schema.monopoly_deal.ComplyPaymentDemand
-	(*ComplyPropertyDemand)(nil),      // 47: the_deal.schema.monopoly_deal.ComplyPropertyDemand
-	(*ComplyPropertySetDemand)(nil),   // 48: the_deal.schema.monopoly_deal.ComplyPropertySetDemand
-	(*TransferCards)(nil),             // 49: the_deal.schema.monopoly_deal.TransferCards
-	(*TransferProperty)(nil),          // 50: the_deal.schema.monopoly_deal.TransferProperty
-	(*TransferPropertySet)(nil),       // 51: the_deal.schema.monopoly_deal.TransferPropertySet
-	(*ActionDemandComplied)(nil),      // 52: the_deal.schema.monopoly_deal.ActionDemandComplied
-	(*DenyDemand)(nil),                // 53: the_deal.schema.monopoly_deal.DenyDemand
-	(*DiscardCards)(nil),              // 54: the_deal.schema.monopoly_deal.DiscardCards
-	(*ActionDiscardCards)(nil),        // 55: the_deal.schema.monopoly_deal.ActionDiscardCards
-	(*MaskedActionDiscardCards)(nil),  // 56: the_deal.schema.monopoly_deal.MaskedActionDiscardCards
-	(*CompleteTurn)(nil),              // 57: the_deal.schema.monopoly_deal.CompleteTurn
-	(*ActionStartTurn)(nil),           // 58: the_deal.schema.monopoly_deal.ActionStartTurn
-	(*MaskedActionStartTurn)(nil),     // 59: the_deal.schema.monopoly_deal.MaskedActionStartTurn
-	(*RearrangeCard)(nil),             // 60: the_deal.schema.monopoly_deal.RearrangeCard
-	(*ActionRearrangeCard)(nil),       // 61: the_deal.schema.monopoly_deal.ActionRearrangeCard
-	(*WonGame)(nil),                   // 62: the_deal.schema.monopoly_deal.WonGame
-	(*Action)(nil),                    // 63: the_deal.schema.monopoly_deal.Action
-	(*ActionHistory)(nil),             // 64: the_deal.schema.monopoly_deal.ActionHistory
-	(*ClientMessage)(nil),             // 65: the_deal.schema.monopoly_deal.ClientMessage
-	(*ServerMessage)(nil),             // 66: the_deal.schema.monopoly_deal.ServerMessage
+	(AssetImageKind)(0),               // 5: the_deal.schema.monopoly_deal.AssetImageKind
+	(ActionKind)(0),                   // 6: the_deal.schema.monopoly_deal.ActionKind
+	(*Error)(nil),                     // 7: the_deal.schema.monopoly_deal.Error
+	(*Chat)(nil),                      // 8: the_deal.schema.monopoly_deal.Chat
+	(*ChatReceived)(nil),              // 9: the_deal.schema.monopoly_deal.ChatReceived
+	(*Settings)(nil),                  // 10: the_deal.schema.monopoly_deal.Settings
+	(*Card)(nil),                      // 11: the_deal.schema.monopoly_deal.Card
+	(*Player)(nil),                    // 12: the_deal.schema.monopoly_deal.Player
+	(*Hand)(nil),                      // 13: the_deal.schema.monopoly_deal.Hand
+	(*Money)(nil),                     // 14: the_deal.schema.monopoly_deal.Money
+	(*PropertySet)(nil),               // 15: the_deal.schema.monopoly_deal.PropertySet
+	(*PaymentDemand)(nil),             // 16: the_deal.schema.monopoly_deal.PaymentDemand
+	(*PropertyDemand)(nil),            // 17: the_deal.schema.monopoly_deal.PropertyDemand
+	(*PropertySetDemand)(nil),         // 18: the_deal.schema.monopoly_deal.PropertySetDemand
+	(*Demand)(nil),                    // 19: the_deal.schema.monopoly_deal.Demand
+	(*PendingRent)(nil),               // 20: the_deal.schema.monopoly_deal.PendingRent
+	(*AssetImage)(nil),                // 21: the_deal.schema.monopoly_deal.AssetImage
+	(*Deadline)(nil),                  // 22: the_deal.schema.monopoly_deal.Deadline
+	(*GameState)(nil),                 // 23: the_deal.schema.monopoly_deal.GameState
+	(*PlayMoney)(nil),                 // 24: the_deal.schema.monopoly_deal.PlayMoney
+	(*ActionPlayMoney)(nil),           // 25: the_deal.schema.monopoly_deal.ActionPlayMoney
+	(*PlayProperty)(nil),              // 26: the_deal.schema.monopoly_deal.PlayProperty
+	(*ActionPlayProperty)(nil),        // 27: the_deal.schema.monopoly_deal.ActionPlayProperty
+	(*PlayHouse)(nil),                 // 28: the_deal.schema.monopoly_deal.PlayHouse
+	(*ActionPlayHouse)(nil),           // 29: the_deal.schema.monopoly_deal.ActionPlayHouse
+	(*PlayHotel)(nil),                 // 30: the_deal.schema.monopoly_deal.PlayHotel
+	(*ActionPlayHotel)(nil),           // 31: the_deal.schema.monopoly_deal.ActionPlayHotel
+	(*PlayPassGo)(nil),                // 32: the_deal.schema.monopoly_deal.PlayPassGo
+	(*ActionPlayPassGo)(nil),          // 33: the_deal.schema.monopoly_deal.ActionPlayPassGo
+	(*MaskedActionPlayPassGo)(nil),    // 34: the_deal.schema.monopoly_deal.MaskedActionPlayPassGo
+	(*ActionDemandsCreated)(nil),      // 35: the_deal.schema.monopoly_deal.ActionDemandsCreated
+	(*PlayItsMyBirthday)(nil),         // 36: the_deal.schema.monopoly_deal.PlayItsMyBirthday
+	(*PlayDebtCollector)(nil),         // 37: the_deal.schema.monopoly_deal.PlayDebtCollector
+	(*ActionPendingRentCreated)(nil),  // 38: the_deal.schema.monopoly_deal.ActionPendingRentCreated
+	(*ResolvePendingRent)(nil),        // 39: the_deal.schema.monopoly_deal.ResolvePendingRent
+	(*ActionPendingRentResolved)(nil), // 40: the_deal.schema.monopoly_deal.ActionPendingRentResolved
+	(*PlayRent)(nil),                  // 41: the_deal.schema.monopoly_deal.PlayRent
+	(*PlayWildRent)(nil),              // 42: the_deal.schema.monopoly_deal.PlayWildRent
+	(*PlayDoubleTheRent)(nil),         // 43: the_deal.schema.monopoly_deal.PlayDoubleTheRent
+	(*PlaySlyDeal)(nil),               // 44: the_deal.schema.monopoly_deal.PlaySlyDeal
+	(*PlayForcedDeal)(nil),            // 45: the_deal.schema.monopoly_deal.PlayForcedDeal
+	(*PlayDealBreaker)(nil),           // 46: the_deal.schema.monopoly_deal.PlayDealBreaker
+	(*ComplyPaymentDemand)(nil),       // 47: the_deal.schema.monopoly_deal.ComplyPaymentDemand
+	(*ComplyPropertyDemand)(nil),      // 48: the_deal.schema.monopoly_deal.ComplyPropertyDemand
+	(*ComplyPropertySetDemand)(nil),   // 49: the_deal.schema.monopoly_deal.ComplyPropertySetDemand
+	(*TransferCards)(nil),             // 50: the_deal.schema.monopoly_deal.TransferCards
+	(*TransferProperty)(nil),          // 51: the_deal.schema.monopoly_deal.TransferProperty
+	(*TransferPropertySet)(nil),       // 52: the_deal.schema.monopoly_deal.TransferPropertySet
+	(*ActionDemandComplied)(nil),      // 53: the_deal.schema.monopoly_deal.ActionDemandComplied
+	(*DenyDemand)(nil),                // 54: the_deal.schema.monopoly_deal.DenyDemand
+	(*DiscardCards)(nil),              // 55: the_deal.schema.monopoly_deal.DiscardCards
+	(*ActionDiscardCards)(nil),        // 56: the_deal.schema.monopoly_deal.ActionDiscardCards
+	(*MaskedActionDiscardCards)(nil),  // 57: the_deal.schema.monopoly_deal.MaskedActionDiscardCards
+	(*CompleteTurn)(nil),              // 58: the_deal.schema.monopoly_deal.CompleteTurn
+	(*ActionStartTurn)(nil),           // 59: the_deal.schema.monopoly_deal.ActionStartTurn
+	(*MaskedActionStartTurn)(nil),     // 60: the_deal.schema.monopoly_deal.MaskedActionStartTurn
+	(*RearrangeCard)(nil),             // 61: the_deal.schema.monopoly_deal.RearrangeCard
+	(*ActionRearrangeCard)(nil),       // 62: the_deal.schema.monopoly_deal.ActionRearrangeCard
+	(*WonGame)(nil),                   // 63: the_deal.schema.monopoly_deal.WonGame
+	(*Action)(nil),                    // 64: the_deal.schema.monopoly_deal.Action
+	(*ActionHistory)(nil),             // 65: the_deal.schema.monopoly_deal.ActionHistory
+	(*ClientMessage)(nil),             // 66: the_deal.schema.monopoly_deal.ClientMessage
+	(*ServerMessage)(nil),             // 67: the_deal.schema.monopoly_deal.ServerMessage
 }
 var file_monopoly_deal_proto_depIdxs = []int32{
 	0,  // 0: the_deal.schema.monopoly_deal.Card.asset_key:type_name -> the_deal.schema.monopoly_deal.AssetKey
 	1,  // 1: the_deal.schema.monopoly_deal.Card.category:type_name -> the_deal.schema.monopoly_deal.Category
 	2,  // 2: the_deal.schema.monopoly_deal.Card.active_color:type_name -> the_deal.schema.monopoly_deal.Color
 	2,  // 3: the_deal.schema.monopoly_deal.Card.colors:type_name -> the_deal.schema.monopoly_deal.Color
-	10, // 4: the_deal.schema.monopoly_deal.Hand.cards:type_name -> the_deal.schema.monopoly_deal.Card
-	10, // 5: the_deal.schema.monopoly_deal.Money.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	11, // 4: the_deal.schema.monopoly_deal.Hand.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	11, // 5: the_deal.schema.monopoly_deal.Money.cards:type_name -> the_deal.schema.monopoly_deal.Card
 	2,  // 6: the_deal.schema.monopoly_deal.PropertySet.color:type_name -> the_deal.schema.monopoly_deal.Color
-	10, // 7: the_deal.schema.monopoly_deal.PropertySet.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	11, // 7: the_deal.schema.monopoly_deal.PropertySet.cards:type_name -> the_deal.schema.monopoly_deal.Card
 	3,  // 8: the_deal.schema.monopoly_deal.Demand.demand_kind:type_name -> the_deal.schema.monopoly_deal.DemandKind
-	15, // 9: the_deal.schema.monopoly_deal.Demand.payment_demand:type_name -> the_deal.schema.monopoly_deal.PaymentDemand
-	16, // 10: the_deal.schema.monopoly_deal.Demand.property_demand:type_name -> the_deal.schema.monopoly_deal.PropertyDemand
-	17, // 11: the_deal.schema.monopoly_deal.Demand.property_set_demand:type_name -> the_deal.schema.monopoly_deal.PropertySetDemand
+	16, // 9: the_deal.schema.monopoly_deal.Demand.payment_demand:type_name -> the_deal.schema.monopoly_deal.PaymentDemand
+	17, // 10: the_deal.schema.monopoly_deal.Demand.property_demand:type_name -> the_deal.schema.monopoly_deal.PropertyDemand
+	18, // 11: the_deal.schema.monopoly_deal.Demand.property_set_demand:type_name -> the_deal.schema.monopoly_deal.PropertySetDemand
 	4,  // 12: the_deal.schema.monopoly_deal.Demand.demand_source:type_name -> the_deal.schema.monopoly_deal.DemandSource
-	0,  // 13: the_deal.schema.monopoly_deal.AssetImage.asset_key:type_name -> the_deal.schema.monopoly_deal.AssetKey
-	11, // 14: the_deal.schema.monopoly_deal.GameState.players:type_name -> the_deal.schema.monopoly_deal.Player
-	12, // 15: the_deal.schema.monopoly_deal.GameState.your_hand:type_name -> the_deal.schema.monopoly_deal.Hand
-	13, // 16: the_deal.schema.monopoly_deal.GameState.money:type_name -> the_deal.schema.monopoly_deal.Money
-	14, // 17: the_deal.schema.monopoly_deal.GameState.properties:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	18, // 18: the_deal.schema.monopoly_deal.GameState.demands:type_name -> the_deal.schema.monopoly_deal.Demand
-	19, // 19: the_deal.schema.monopoly_deal.GameState.pending_rent:type_name -> the_deal.schema.monopoly_deal.PendingRent
-	10, // 20: the_deal.schema.monopoly_deal.GameState.last_action:type_name -> the_deal.schema.monopoly_deal.Card
-	20, // 21: the_deal.schema.monopoly_deal.GameState.asset_images:type_name -> the_deal.schema.monopoly_deal.AssetImage
-	21, // 22: the_deal.schema.monopoly_deal.GameState.deadlines:type_name -> the_deal.schema.monopoly_deal.Deadline
-	9,  // 23: the_deal.schema.monopoly_deal.GameState.settings:type_name -> the_deal.schema.monopoly_deal.Settings
-	10, // 24: the_deal.schema.monopoly_deal.ActionPlayMoney.card:type_name -> the_deal.schema.monopoly_deal.Card
-	2,  // 25: the_deal.schema.monopoly_deal.PlayProperty.active_color:type_name -> the_deal.schema.monopoly_deal.Color
-	14, // 26: the_deal.schema.monopoly_deal.ActionPlayProperty.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	10, // 27: the_deal.schema.monopoly_deal.ActionPlayHouse.card:type_name -> the_deal.schema.monopoly_deal.Card
-	14, // 28: the_deal.schema.monopoly_deal.ActionPlayHouse.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	10, // 29: the_deal.schema.monopoly_deal.ActionPlayHotel.card:type_name -> the_deal.schema.monopoly_deal.Card
-	14, // 30: the_deal.schema.monopoly_deal.ActionPlayHotel.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	10, // 31: the_deal.schema.monopoly_deal.ActionPlayPassGo.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
-	10, // 32: the_deal.schema.monopoly_deal.ActionPlayPassGo.cards:type_name -> the_deal.schema.monopoly_deal.Card
-	10, // 33: the_deal.schema.monopoly_deal.MaskedActionPlayPassGo.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
-	10, // 34: the_deal.schema.monopoly_deal.ActionDemandsCreated.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
-	18, // 35: the_deal.schema.monopoly_deal.ActionDemandsCreated.denied_demand:type_name -> the_deal.schema.monopoly_deal.Demand
-	18, // 36: the_deal.schema.monopoly_deal.ActionDemandsCreated.demands:type_name -> the_deal.schema.monopoly_deal.Demand
-	10, // 37: the_deal.schema.monopoly_deal.ActionPendingRentCreated.last_card_played:type_name -> the_deal.schema.monopoly_deal.Card
-	19, // 38: the_deal.schema.monopoly_deal.ActionPendingRentCreated.pending_rent:type_name -> the_deal.schema.monopoly_deal.PendingRent
-	18, // 39: the_deal.schema.monopoly_deal.ActionPendingRentResolved.demands:type_name -> the_deal.schema.monopoly_deal.Demand
-	10, // 40: the_deal.schema.monopoly_deal.TransferCards.cards:type_name -> the_deal.schema.monopoly_deal.Card
-	14, // 41: the_deal.schema.monopoly_deal.TransferCards.property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	14, // 42: the_deal.schema.monopoly_deal.TransferProperty.source_property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	14, // 43: the_deal.schema.monopoly_deal.TransferProperty.target_property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	14, // 44: the_deal.schema.monopoly_deal.TransferPropertySet.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	49, // 45: the_deal.schema.monopoly_deal.ActionDemandComplied.transfer_cards:type_name -> the_deal.schema.monopoly_deal.TransferCards
-	50, // 46: the_deal.schema.monopoly_deal.ActionDemandComplied.transfer_property:type_name -> the_deal.schema.monopoly_deal.TransferProperty
-	51, // 47: the_deal.schema.monopoly_deal.ActionDemandComplied.transfer_property_set:type_name -> the_deal.schema.monopoly_deal.TransferPropertySet
-	10, // 48: the_deal.schema.monopoly_deal.ActionDiscardCards.cards:type_name -> the_deal.schema.monopoly_deal.Card
-	10, // 49: the_deal.schema.monopoly_deal.ActionStartTurn.cards:type_name -> the_deal.schema.monopoly_deal.Card
-	2,  // 50: the_deal.schema.monopoly_deal.RearrangeCard.color:type_name -> the_deal.schema.monopoly_deal.Color
-	10, // 51: the_deal.schema.monopoly_deal.ActionRearrangeCard.card:type_name -> the_deal.schema.monopoly_deal.Card
-	14, // 52: the_deal.schema.monopoly_deal.ActionRearrangeCard.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
-	5,  // 53: the_deal.schema.monopoly_deal.Action.kind:type_name -> the_deal.schema.monopoly_deal.ActionKind
-	24, // 54: the_deal.schema.monopoly_deal.Action.action_play_money:type_name -> the_deal.schema.monopoly_deal.ActionPlayMoney
-	26, // 55: the_deal.schema.monopoly_deal.Action.action_play_property:type_name -> the_deal.schema.monopoly_deal.ActionPlayProperty
-	28, // 56: the_deal.schema.monopoly_deal.Action.action_play_house:type_name -> the_deal.schema.monopoly_deal.ActionPlayHouse
-	30, // 57: the_deal.schema.monopoly_deal.Action.action_play_hotel:type_name -> the_deal.schema.monopoly_deal.ActionPlayHotel
-	32, // 58: the_deal.schema.monopoly_deal.Action.action_play_pass_go:type_name -> the_deal.schema.monopoly_deal.ActionPlayPassGo
-	33, // 59: the_deal.schema.monopoly_deal.Action.masked_action_played_pass_go:type_name -> the_deal.schema.monopoly_deal.MaskedActionPlayPassGo
-	34, // 60: the_deal.schema.monopoly_deal.Action.action_demands_created:type_name -> the_deal.schema.monopoly_deal.ActionDemandsCreated
-	37, // 61: the_deal.schema.monopoly_deal.Action.action_pending_rent_created:type_name -> the_deal.schema.monopoly_deal.ActionPendingRentCreated
-	39, // 62: the_deal.schema.monopoly_deal.Action.action_pending_rent_resolved:type_name -> the_deal.schema.monopoly_deal.ActionPendingRentResolved
-	52, // 63: the_deal.schema.monopoly_deal.Action.action_demand_complied:type_name -> the_deal.schema.monopoly_deal.ActionDemandComplied
-	55, // 64: the_deal.schema.monopoly_deal.Action.action_discard_cards:type_name -> the_deal.schema.monopoly_deal.ActionDiscardCards
-	56, // 65: the_deal.schema.monopoly_deal.Action.masked_action_discard_cards:type_name -> the_deal.schema.monopoly_deal.MaskedActionDiscardCards
-	58, // 66: the_deal.schema.monopoly_deal.Action.action_start_turn:type_name -> the_deal.schema.monopoly_deal.ActionStartTurn
-	59, // 67: the_deal.schema.monopoly_deal.Action.masked_action_start_turn:type_name -> the_deal.schema.monopoly_deal.MaskedActionStartTurn
-	61, // 68: the_deal.schema.monopoly_deal.Action.action_rearrange_card:type_name -> the_deal.schema.monopoly_deal.ActionRearrangeCard
-	63, // 69: the_deal.schema.monopoly_deal.ActionHistory.action:type_name -> the_deal.schema.monopoly_deal.Action
-	7,  // 70: the_deal.schema.monopoly_deal.ClientMessage.chat:type_name -> the_deal.schema.monopoly_deal.Chat
-	23, // 71: the_deal.schema.monopoly_deal.ClientMessage.play_money:type_name -> the_deal.schema.monopoly_deal.PlayMoney
-	25, // 72: the_deal.schema.monopoly_deal.ClientMessage.play_property:type_name -> the_deal.schema.monopoly_deal.PlayProperty
-	57, // 73: the_deal.schema.monopoly_deal.ClientMessage.complete_turn:type_name -> the_deal.schema.monopoly_deal.CompleteTurn
-	31, // 74: the_deal.schema.monopoly_deal.ClientMessage.play_pass_go:type_name -> the_deal.schema.monopoly_deal.PlayPassGo
-	35, // 75: the_deal.schema.monopoly_deal.ClientMessage.play_its_my_birthday:type_name -> the_deal.schema.monopoly_deal.PlayItsMyBirthday
-	36, // 76: the_deal.schema.monopoly_deal.ClientMessage.play_debt_collector:type_name -> the_deal.schema.monopoly_deal.PlayDebtCollector
-	40, // 77: the_deal.schema.monopoly_deal.ClientMessage.play_rent:type_name -> the_deal.schema.monopoly_deal.PlayRent
-	41, // 78: the_deal.schema.monopoly_deal.ClientMessage.play_wild_rent:type_name -> the_deal.schema.monopoly_deal.PlayWildRent
-	42, // 79: the_deal.schema.monopoly_deal.ClientMessage.play_double_the_rent:type_name -> the_deal.schema.monopoly_deal.PlayDoubleTheRent
-	38, // 80: the_deal.schema.monopoly_deal.ClientMessage.resolve_pending_rent:type_name -> the_deal.schema.monopoly_deal.ResolvePendingRent
-	60, // 81: the_deal.schema.monopoly_deal.ClientMessage.rearrange_card:type_name -> the_deal.schema.monopoly_deal.RearrangeCard
-	54, // 82: the_deal.schema.monopoly_deal.ClientMessage.discard_cards:type_name -> the_deal.schema.monopoly_deal.DiscardCards
-	53, // 83: the_deal.schema.monopoly_deal.ClientMessage.deny_demand:type_name -> the_deal.schema.monopoly_deal.DenyDemand
-	43, // 84: the_deal.schema.monopoly_deal.ClientMessage.play_sly_deal:type_name -> the_deal.schema.monopoly_deal.PlaySlyDeal
-	47, // 85: the_deal.schema.monopoly_deal.ClientMessage.comply_property_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPropertyDemand
-	44, // 86: the_deal.schema.monopoly_deal.ClientMessage.play_forced_deal:type_name -> the_deal.schema.monopoly_deal.PlayForcedDeal
-	45, // 87: the_deal.schema.monopoly_deal.ClientMessage.play_deal_breaker:type_name -> the_deal.schema.monopoly_deal.PlayDealBreaker
-	48, // 88: the_deal.schema.monopoly_deal.ClientMessage.comply_property_set_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPropertySetDemand
-	46, // 89: the_deal.schema.monopoly_deal.ClientMessage.comply_payment_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPaymentDemand
-	27, // 90: the_deal.schema.monopoly_deal.ClientMessage.play_house:type_name -> the_deal.schema.monopoly_deal.PlayHouse
-	29, // 91: the_deal.schema.monopoly_deal.ClientMessage.play_hotel:type_name -> the_deal.schema.monopoly_deal.PlayHotel
-	6,  // 92: the_deal.schema.monopoly_deal.ServerMessage.error:type_name -> the_deal.schema.monopoly_deal.Error
-	8,  // 93: the_deal.schema.monopoly_deal.ServerMessage.chat_received:type_name -> the_deal.schema.monopoly_deal.ChatReceived
-	22, // 94: the_deal.schema.monopoly_deal.ServerMessage.game_state:type_name -> the_deal.schema.monopoly_deal.GameState
-	62, // 95: the_deal.schema.monopoly_deal.ServerMessage.won_game:type_name -> the_deal.schema.monopoly_deal.WonGame
-	63, // 96: the_deal.schema.monopoly_deal.ServerMessage.action:type_name -> the_deal.schema.monopoly_deal.Action
-	64, // 97: the_deal.schema.monopoly_deal.ServerMessage.action_history:type_name -> the_deal.schema.monopoly_deal.ActionHistory
-	98, // [98:98] is the sub-list for method output_type
-	98, // [98:98] is the sub-list for method input_type
-	98, // [98:98] is the sub-list for extension type_name
-	98, // [98:98] is the sub-list for extension extendee
-	0,  // [0:98] is the sub-list for field type_name
+	5,  // 13: the_deal.schema.monopoly_deal.AssetImage.kind:type_name -> the_deal.schema.monopoly_deal.AssetImageKind
+	0,  // 14: the_deal.schema.monopoly_deal.AssetImage.asset_key:type_name -> the_deal.schema.monopoly_deal.AssetKey
+	12, // 15: the_deal.schema.monopoly_deal.GameState.players:type_name -> the_deal.schema.monopoly_deal.Player
+	13, // 16: the_deal.schema.monopoly_deal.GameState.your_hand:type_name -> the_deal.schema.monopoly_deal.Hand
+	14, // 17: the_deal.schema.monopoly_deal.GameState.money:type_name -> the_deal.schema.monopoly_deal.Money
+	15, // 18: the_deal.schema.monopoly_deal.GameState.properties:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	19, // 19: the_deal.schema.monopoly_deal.GameState.demands:type_name -> the_deal.schema.monopoly_deal.Demand
+	20, // 20: the_deal.schema.monopoly_deal.GameState.pending_rent:type_name -> the_deal.schema.monopoly_deal.PendingRent
+	11, // 21: the_deal.schema.monopoly_deal.GameState.last_action:type_name -> the_deal.schema.monopoly_deal.Card
+	21, // 22: the_deal.schema.monopoly_deal.GameState.asset_images:type_name -> the_deal.schema.monopoly_deal.AssetImage
+	22, // 23: the_deal.schema.monopoly_deal.GameState.deadlines:type_name -> the_deal.schema.monopoly_deal.Deadline
+	10, // 24: the_deal.schema.monopoly_deal.GameState.settings:type_name -> the_deal.schema.monopoly_deal.Settings
+	11, // 25: the_deal.schema.monopoly_deal.ActionPlayMoney.card:type_name -> the_deal.schema.monopoly_deal.Card
+	2,  // 26: the_deal.schema.monopoly_deal.PlayProperty.active_color:type_name -> the_deal.schema.monopoly_deal.Color
+	15, // 27: the_deal.schema.monopoly_deal.ActionPlayProperty.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	11, // 28: the_deal.schema.monopoly_deal.ActionPlayHouse.card:type_name -> the_deal.schema.monopoly_deal.Card
+	15, // 29: the_deal.schema.monopoly_deal.ActionPlayHouse.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	11, // 30: the_deal.schema.monopoly_deal.ActionPlayHotel.card:type_name -> the_deal.schema.monopoly_deal.Card
+	15, // 31: the_deal.schema.monopoly_deal.ActionPlayHotel.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	11, // 32: the_deal.schema.monopoly_deal.ActionPlayPassGo.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
+	11, // 33: the_deal.schema.monopoly_deal.ActionPlayPassGo.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	11, // 34: the_deal.schema.monopoly_deal.MaskedActionPlayPassGo.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
+	11, // 35: the_deal.schema.monopoly_deal.ActionDemandsCreated.last_played_card:type_name -> the_deal.schema.monopoly_deal.Card
+	19, // 36: the_deal.schema.monopoly_deal.ActionDemandsCreated.denied_demand:type_name -> the_deal.schema.monopoly_deal.Demand
+	19, // 37: the_deal.schema.monopoly_deal.ActionDemandsCreated.demands:type_name -> the_deal.schema.monopoly_deal.Demand
+	11, // 38: the_deal.schema.monopoly_deal.ActionPendingRentCreated.last_card_played:type_name -> the_deal.schema.monopoly_deal.Card
+	20, // 39: the_deal.schema.monopoly_deal.ActionPendingRentCreated.pending_rent:type_name -> the_deal.schema.monopoly_deal.PendingRent
+	19, // 40: the_deal.schema.monopoly_deal.ActionPendingRentResolved.demands:type_name -> the_deal.schema.monopoly_deal.Demand
+	11, // 41: the_deal.schema.monopoly_deal.TransferCards.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	15, // 42: the_deal.schema.monopoly_deal.TransferCards.property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	15, // 43: the_deal.schema.monopoly_deal.TransferProperty.source_property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	15, // 44: the_deal.schema.monopoly_deal.TransferProperty.target_property_sets:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	15, // 45: the_deal.schema.monopoly_deal.TransferPropertySet.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	50, // 46: the_deal.schema.monopoly_deal.ActionDemandComplied.transfer_cards:type_name -> the_deal.schema.monopoly_deal.TransferCards
+	51, // 47: the_deal.schema.monopoly_deal.ActionDemandComplied.transfer_property:type_name -> the_deal.schema.monopoly_deal.TransferProperty
+	52, // 48: the_deal.schema.monopoly_deal.ActionDemandComplied.transfer_property_set:type_name -> the_deal.schema.monopoly_deal.TransferPropertySet
+	11, // 49: the_deal.schema.monopoly_deal.ActionDiscardCards.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	11, // 50: the_deal.schema.monopoly_deal.ActionStartTurn.cards:type_name -> the_deal.schema.monopoly_deal.Card
+	2,  // 51: the_deal.schema.monopoly_deal.RearrangeCard.color:type_name -> the_deal.schema.monopoly_deal.Color
+	11, // 52: the_deal.schema.monopoly_deal.ActionRearrangeCard.card:type_name -> the_deal.schema.monopoly_deal.Card
+	15, // 53: the_deal.schema.monopoly_deal.ActionRearrangeCard.property_set:type_name -> the_deal.schema.monopoly_deal.PropertySet
+	6,  // 54: the_deal.schema.monopoly_deal.Action.kind:type_name -> the_deal.schema.monopoly_deal.ActionKind
+	25, // 55: the_deal.schema.monopoly_deal.Action.action_play_money:type_name -> the_deal.schema.monopoly_deal.ActionPlayMoney
+	27, // 56: the_deal.schema.monopoly_deal.Action.action_play_property:type_name -> the_deal.schema.monopoly_deal.ActionPlayProperty
+	29, // 57: the_deal.schema.monopoly_deal.Action.action_play_house:type_name -> the_deal.schema.monopoly_deal.ActionPlayHouse
+	31, // 58: the_deal.schema.monopoly_deal.Action.action_play_hotel:type_name -> the_deal.schema.monopoly_deal.ActionPlayHotel
+	33, // 59: the_deal.schema.monopoly_deal.Action.action_play_pass_go:type_name -> the_deal.schema.monopoly_deal.ActionPlayPassGo
+	34, // 60: the_deal.schema.monopoly_deal.Action.masked_action_played_pass_go:type_name -> the_deal.schema.monopoly_deal.MaskedActionPlayPassGo
+	35, // 61: the_deal.schema.monopoly_deal.Action.action_demands_created:type_name -> the_deal.schema.monopoly_deal.ActionDemandsCreated
+	38, // 62: the_deal.schema.monopoly_deal.Action.action_pending_rent_created:type_name -> the_deal.schema.monopoly_deal.ActionPendingRentCreated
+	40, // 63: the_deal.schema.monopoly_deal.Action.action_pending_rent_resolved:type_name -> the_deal.schema.monopoly_deal.ActionPendingRentResolved
+	53, // 64: the_deal.schema.monopoly_deal.Action.action_demand_complied:type_name -> the_deal.schema.monopoly_deal.ActionDemandComplied
+	56, // 65: the_deal.schema.monopoly_deal.Action.action_discard_cards:type_name -> the_deal.schema.monopoly_deal.ActionDiscardCards
+	57, // 66: the_deal.schema.monopoly_deal.Action.masked_action_discard_cards:type_name -> the_deal.schema.monopoly_deal.MaskedActionDiscardCards
+	59, // 67: the_deal.schema.monopoly_deal.Action.action_start_turn:type_name -> the_deal.schema.monopoly_deal.ActionStartTurn
+	60, // 68: the_deal.schema.monopoly_deal.Action.masked_action_start_turn:type_name -> the_deal.schema.monopoly_deal.MaskedActionStartTurn
+	62, // 69: the_deal.schema.monopoly_deal.Action.action_rearrange_card:type_name -> the_deal.schema.monopoly_deal.ActionRearrangeCard
+	64, // 70: the_deal.schema.monopoly_deal.ActionHistory.action:type_name -> the_deal.schema.monopoly_deal.Action
+	8,  // 71: the_deal.schema.monopoly_deal.ClientMessage.chat:type_name -> the_deal.schema.monopoly_deal.Chat
+	24, // 72: the_deal.schema.monopoly_deal.ClientMessage.play_money:type_name -> the_deal.schema.monopoly_deal.PlayMoney
+	26, // 73: the_deal.schema.monopoly_deal.ClientMessage.play_property:type_name -> the_deal.schema.monopoly_deal.PlayProperty
+	58, // 74: the_deal.schema.monopoly_deal.ClientMessage.complete_turn:type_name -> the_deal.schema.monopoly_deal.CompleteTurn
+	32, // 75: the_deal.schema.monopoly_deal.ClientMessage.play_pass_go:type_name -> the_deal.schema.monopoly_deal.PlayPassGo
+	36, // 76: the_deal.schema.monopoly_deal.ClientMessage.play_its_my_birthday:type_name -> the_deal.schema.monopoly_deal.PlayItsMyBirthday
+	37, // 77: the_deal.schema.monopoly_deal.ClientMessage.play_debt_collector:type_name -> the_deal.schema.monopoly_deal.PlayDebtCollector
+	41, // 78: the_deal.schema.monopoly_deal.ClientMessage.play_rent:type_name -> the_deal.schema.monopoly_deal.PlayRent
+	42, // 79: the_deal.schema.monopoly_deal.ClientMessage.play_wild_rent:type_name -> the_deal.schema.monopoly_deal.PlayWildRent
+	43, // 80: the_deal.schema.monopoly_deal.ClientMessage.play_double_the_rent:type_name -> the_deal.schema.monopoly_deal.PlayDoubleTheRent
+	39, // 81: the_deal.schema.monopoly_deal.ClientMessage.resolve_pending_rent:type_name -> the_deal.schema.monopoly_deal.ResolvePendingRent
+	61, // 82: the_deal.schema.monopoly_deal.ClientMessage.rearrange_card:type_name -> the_deal.schema.monopoly_deal.RearrangeCard
+	55, // 83: the_deal.schema.monopoly_deal.ClientMessage.discard_cards:type_name -> the_deal.schema.monopoly_deal.DiscardCards
+	54, // 84: the_deal.schema.monopoly_deal.ClientMessage.deny_demand:type_name -> the_deal.schema.monopoly_deal.DenyDemand
+	44, // 85: the_deal.schema.monopoly_deal.ClientMessage.play_sly_deal:type_name -> the_deal.schema.monopoly_deal.PlaySlyDeal
+	48, // 86: the_deal.schema.monopoly_deal.ClientMessage.comply_property_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPropertyDemand
+	45, // 87: the_deal.schema.monopoly_deal.ClientMessage.play_forced_deal:type_name -> the_deal.schema.monopoly_deal.PlayForcedDeal
+	46, // 88: the_deal.schema.monopoly_deal.ClientMessage.play_deal_breaker:type_name -> the_deal.schema.monopoly_deal.PlayDealBreaker
+	49, // 89: the_deal.schema.monopoly_deal.ClientMessage.comply_property_set_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPropertySetDemand
+	47, // 90: the_deal.schema.monopoly_deal.ClientMessage.comply_payment_demand:type_name -> the_deal.schema.monopoly_deal.ComplyPaymentDemand
+	28, // 91: the_deal.schema.monopoly_deal.ClientMessage.play_house:type_name -> the_deal.schema.monopoly_deal.PlayHouse
+	30, // 92: the_deal.schema.monopoly_deal.ClientMessage.play_hotel:type_name -> the_deal.schema.monopoly_deal.PlayHotel
+	7,  // 93: the_deal.schema.monopoly_deal.ServerMessage.error:type_name -> the_deal.schema.monopoly_deal.Error
+	9,  // 94: the_deal.schema.monopoly_deal.ServerMessage.chat_received:type_name -> the_deal.schema.monopoly_deal.ChatReceived
+	23, // 95: the_deal.schema.monopoly_deal.ServerMessage.game_state:type_name -> the_deal.schema.monopoly_deal.GameState
+	63, // 96: the_deal.schema.monopoly_deal.ServerMessage.won_game:type_name -> the_deal.schema.monopoly_deal.WonGame
+	64, // 97: the_deal.schema.monopoly_deal.ServerMessage.action:type_name -> the_deal.schema.monopoly_deal.Action
+	65, // 98: the_deal.schema.monopoly_deal.ServerMessage.action_history:type_name -> the_deal.schema.monopoly_deal.ActionHistory
+	99, // [99:99] is the sub-list for method output_type
+	99, // [99:99] is the sub-list for method input_type
+	99, // [99:99] is the sub-list for extension type_name
+	99, // [99:99] is the sub-list for extension extendee
+	0,  // [0:99] is the sub-list for field type_name
 }
 
 func init() { file_monopoly_deal_proto_init() }
@@ -5444,7 +5508,7 @@ func file_monopoly_deal_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_monopoly_deal_proto_rawDesc), len(file_monopoly_deal_proto_rawDesc)),
-			NumEnums:      6,
+			NumEnums:      7,
 			NumMessages:   61,
 			NumExtensions: 0,
 			NumServices:   0,

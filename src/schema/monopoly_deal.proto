@@ -201,9 +201,16 @@ message PendingRent {
   int32 multiplier = 4;
 }
 
+enum AssetImageKind {
+  ASSET_IMAGE_KIND_UNSPECIFIED = 0;
+  ASSET_IMAGE_KIND_SMALL = 1;
+  ASSET_IMAGE_KIND_LARGE = 2;
+}
+
 message AssetImage {
-  AssetKey asset_key = 1;
-  string image_url = 2;
+  AssetImageKind kind = 1;
+  AssetKey asset_key = 2;
+  string image_url = 3;
 }
 
 message Deadline {

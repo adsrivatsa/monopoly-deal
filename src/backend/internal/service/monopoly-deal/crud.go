@@ -77,7 +77,7 @@ func (c *Controller) GetGameState(ctx context.Context, tp token.Payload) *schema
 		})
 	}
 
-	gameState := game.Proto(tp.PlayerID, playerIDs)
+	gameState := game.Proto(tp.PlayerID)
 	gameState.Players = playerProtos
 
 	gts, err := c.store.ListGameTimeouts(ctx, g.GameID)
@@ -94,6 +94,8 @@ func (c *Controller) GetGameState(ctx context.Context, tp token.Payload) *schema
 	}
 
 	gameState.Deadlines = deadlines
+
+	gameState.AssetImages = append(c.smallCardImages(), c.largeCardImages()...)
 
 	return &schema.ServerMessage{
 		Payload: &schema.ServerMessage_MonopolyDealMessage{

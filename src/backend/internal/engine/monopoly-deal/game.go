@@ -1,7 +1,6 @@
 package monopoly_deal
 
 import (
-	"fmt"
 	"math/rand/v2"
 	"slices"
 	"the-deal/internal/errors"
@@ -67,7 +66,7 @@ func NewGame(cfg Settings, playerIDs []uuid.UUID) *Game {
 	return g
 }
 
-func (g *Game) Proto(playerID uuid.UUID, allPlayerIDs []uuid.UUID) *monopoly_deal_schema.GameState {
+func (g *Game) Proto(playerID uuid.UUID) *monopoly_deal_schema.GameState {
 	currPlayerID := g.Players[g.CurrPlayerIdx]
 
 	hand := g.Hands[playerID]
@@ -75,9 +74,9 @@ func (g *Game) Proto(playerID uuid.UUID, allPlayerIDs []uuid.UUID) *monopoly_dea
 		Cards: hand.Proto(),
 	}
 
-	monies := make([]*monopoly_deal_schema.Money, 0, len(allPlayerIDs))
+	monies := make([]*monopoly_deal_schema.Money, 0, len(g.Players))
 	var properties []*monopoly_deal_schema.PropertySet
-	for _, id := range allPlayerIDs {
+	for _, id := range g.Players {
 		money := g.Money[id]
 		monies = append(monies, &monopoly_deal_schema.Money{
 			PlayerId: id.String(),
@@ -98,15 +97,6 @@ func (g *Game) Proto(playerID uuid.UUID, allPlayerIDs []uuid.UUID) *monopoly_dea
 		pendingRentProto = g.PendingRent.Proto()
 	}
 
-	assetKeys := AllAssetKeys()
-	assetImages := make([]*monopoly_deal_schema.AssetImage, 0, len(assetKeys))
-	for _, assetKey := range assetKeys {
-		assetImages = append(assetImages, &monopoly_deal_schema.AssetImage{
-			AssetKey: assetKey.Proto(),
-			ImageUrl: fmt.Sprintf("https://deal-backend.adsrivatsa.com/static/card/%s.svg", string(assetKey)), // TODO - this is just for now
-		})
-	}
-
 	return &monopoly_deal_schema.GameState{
 		SeqNum:          int32(g.SequenceNum),
 		Players:         nil, // populated by caller
@@ -118,7 +108,7 @@ func (g *Game) Proto(playerID uuid.UUID, allPlayerIDs []uuid.UUID) *monopoly_dea
 		Demands:         demandsProto,
 		PendingRent:     pendingRentProto,
 		LastAction:      g.LastAction.Proto(),
-		AssetImages:     assetImages,
+		AssetImages:     nil, // populated by caller
 		MaxHandSize:     int32(g.Config.MaxHandSize),
 		Deadlines:       nil, // populated by caller
 		Settings:        g.Config.Proto(),

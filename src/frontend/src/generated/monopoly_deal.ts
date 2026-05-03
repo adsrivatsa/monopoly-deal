@@ -636,6 +636,45 @@ export function demandSourceToJSON(object: DemandSource): string {
   }
 }
 
+export enum AssetImageKind {
+  ASSET_IMAGE_KIND_UNSPECIFIED = 0,
+  ASSET_IMAGE_KIND_SMALL = 1,
+  ASSET_IMAGE_KIND_LARGE = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function assetImageKindFromJSON(object: any): AssetImageKind {
+  switch (object) {
+    case 0:
+    case "ASSET_IMAGE_KIND_UNSPECIFIED":
+      return AssetImageKind.ASSET_IMAGE_KIND_UNSPECIFIED;
+    case 1:
+    case "ASSET_IMAGE_KIND_SMALL":
+      return AssetImageKind.ASSET_IMAGE_KIND_SMALL;
+    case 2:
+    case "ASSET_IMAGE_KIND_LARGE":
+      return AssetImageKind.ASSET_IMAGE_KIND_LARGE;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return AssetImageKind.UNRECOGNIZED;
+  }
+}
+
+export function assetImageKindToJSON(object: AssetImageKind): string {
+  switch (object) {
+    case AssetImageKind.ASSET_IMAGE_KIND_UNSPECIFIED:
+      return "ASSET_IMAGE_KIND_UNSPECIFIED";
+    case AssetImageKind.ASSET_IMAGE_KIND_SMALL:
+      return "ASSET_IMAGE_KIND_SMALL";
+    case AssetImageKind.ASSET_IMAGE_KIND_LARGE:
+      return "ASSET_IMAGE_KIND_LARGE";
+    case AssetImageKind.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export enum ActionKind {
   ACTION_KIND_UNSPECIFIED = 0,
   ACTION_KIND_PLAY_MONEY = 1,
@@ -815,6 +854,7 @@ export interface PendingRent {
 }
 
 export interface AssetImage {
+  kind: AssetImageKind;
   assetKey: AssetKey;
   imageUrl: string;
 }
@@ -2540,16 +2580,19 @@ export const PendingRent: MessageFns<PendingRent> = {
 };
 
 function createBaseAssetImage(): AssetImage {
-  return { assetKey: 0, imageUrl: "" };
+  return { kind: 0, assetKey: 0, imageUrl: "" };
 }
 
 export const AssetImage: MessageFns<AssetImage> = {
   encode(message: AssetImage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.kind !== 0) {
+      writer.uint32(8).int32(message.kind);
+    }
     if (message.assetKey !== 0) {
-      writer.uint32(8).int32(message.assetKey);
+      writer.uint32(16).int32(message.assetKey);
     }
     if (message.imageUrl !== "") {
-      writer.uint32(18).string(message.imageUrl);
+      writer.uint32(26).string(message.imageUrl);
     }
     return writer;
   },
@@ -2566,11 +2609,19 @@ export const AssetImage: MessageFns<AssetImage> = {
             break;
           }
 
-          message.assetKey = reader.int32() as any;
+          message.kind = reader.int32() as any;
           continue;
         }
         case 2: {
-          if (tag !== 18) {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.assetKey = reader.int32() as any;
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
             break;
           }
 
@@ -2588,6 +2639,7 @@ export const AssetImage: MessageFns<AssetImage> = {
 
   fromJSON(object: any): AssetImage {
     return {
+      kind: isSet(object.kind) ? assetImageKindFromJSON(object.kind) : 0,
       assetKey: isSet(object.assetKey)
         ? assetKeyFromJSON(object.assetKey)
         : isSet(object.asset_key)
@@ -2603,6 +2655,9 @@ export const AssetImage: MessageFns<AssetImage> = {
 
   toJSON(message: AssetImage): unknown {
     const obj: any = {};
+    if (message.kind !== 0) {
+      obj.kind = assetImageKindToJSON(message.kind);
+    }
     if (message.assetKey !== 0) {
       obj.assetKey = assetKeyToJSON(message.assetKey);
     }
@@ -2617,6 +2672,7 @@ export const AssetImage: MessageFns<AssetImage> = {
   },
   fromPartial<I extends Exact<DeepPartial<AssetImage>, I>>(object: I): AssetImage {
     const message = createBaseAssetImage();
+    message.kind = object.kind ?? 0;
     message.assetKey = object.assetKey ?? 0;
     message.imageUrl = object.imageUrl ?? "";
     return message;
