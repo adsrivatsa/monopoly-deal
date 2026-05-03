@@ -24,5 +24,10 @@ redisdown:
 	@docker stop redis || true
 	@docker rm redis || true
 
+clean_run: postgresdown postgresup
+	sleep 0.5
+	make createdb
+	air --build.cmd "go build -o ./tmp/main ./cmd/api" --build.bin "./tmp/main"
+
 gen:
 	sqlc generate

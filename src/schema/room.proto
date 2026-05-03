@@ -25,6 +25,7 @@ message Room {
   int32 occupied = 5;
   Game game = 6;
   bytes settings = 7;
+  bool is_private = 8;
 }
 
 message RoomCreated {
@@ -64,6 +65,7 @@ message SettingsUpdated {
   int32 capacity = 1;
   Game game = 2;
   bytes settings = 3;
+  bool is_private = 4;
 }
 
 message GameStarted {

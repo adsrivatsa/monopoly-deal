@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS room
         occupied int NOT NULL DEFAULT 1,
         game game_type NOT NULL,
         settings bytea NOT NULL,
+        is_private bool NOT NULL DEFAULT FALSE,
         created_at timestamptz NOT NULL DEFAULT NOW()
     );
 

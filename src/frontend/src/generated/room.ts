@@ -53,6 +53,7 @@ export interface Room {
   occupied: number;
   game: Game;
   settings: Uint8Array;
+  isPrivate: boolean;
 }
 
 export interface RoomCreated {
@@ -92,6 +93,7 @@ export interface SettingsUpdated {
   capacity: number;
   game: Game;
   settings: Uint8Array;
+  isPrivate: boolean;
 }
 
 export interface GameStarted {
@@ -277,7 +279,16 @@ export const Player: MessageFns<Player> = {
 };
 
 function createBaseRoom(): Room {
-  return { roomId: "", displayName: "", players: [], capacity: 0, occupied: 0, game: 0, settings: new Uint8Array(0) };
+  return {
+    roomId: "",
+    displayName: "",
+    players: [],
+    capacity: 0,
+    occupied: 0,
+    game: 0,
+    settings: new Uint8Array(0),
+    isPrivate: false,
+  };
 }
 
 export const Room: MessageFns<Room> = {
@@ -302,6 +313,9 @@ export const Room: MessageFns<Room> = {
     }
     if (message.settings.length !== 0) {
       writer.uint32(58).bytes(message.settings);
+    }
+    if (message.isPrivate !== false) {
+      writer.uint32(64).bool(message.isPrivate);
     }
     return writer;
   },
@@ -369,6 +383,14 @@ export const Room: MessageFns<Room> = {
           message.settings = reader.bytes();
           continue;
         }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.isPrivate = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -395,6 +417,11 @@ export const Room: MessageFns<Room> = {
       occupied: isSet(object.occupied) ? globalThis.Number(object.occupied) : 0,
       game: isSet(object.game) ? gameFromJSON(object.game) : 0,
       settings: isSet(object.settings) ? bytesFromBase64(object.settings) : new Uint8Array(0),
+      isPrivate: isSet(object.isPrivate)
+        ? globalThis.Boolean(object.isPrivate)
+        : isSet(object.is_private)
+        ? globalThis.Boolean(object.is_private)
+        : false,
     };
   },
 
@@ -421,6 +448,9 @@ export const Room: MessageFns<Room> = {
     if (message.settings.length !== 0) {
       obj.settings = base64FromBytes(message.settings);
     }
+    if (message.isPrivate !== false) {
+      obj.isPrivate = message.isPrivate;
+    }
     return obj;
   },
 
@@ -436,6 +466,7 @@ export const Room: MessageFns<Room> = {
     message.occupied = object.occupied ?? 0;
     message.game = object.game ?? 0;
     message.settings = object.settings ?? new Uint8Array(0);
+    message.isPrivate = object.isPrivate ?? false;
     return message;
   },
 };
@@ -971,7 +1002,7 @@ export const PlayerToggledReady: MessageFns<PlayerToggledReady> = {
 };
 
 function createBaseSettingsUpdated(): SettingsUpdated {
-  return { capacity: 0, game: 0, settings: new Uint8Array(0) };
+  return { capacity: 0, game: 0, settings: new Uint8Array(0), isPrivate: false };
 }
 
 export const SettingsUpdated: MessageFns<SettingsUpdated> = {
@@ -984,6 +1015,9 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
     }
     if (message.settings.length !== 0) {
       writer.uint32(26).bytes(message.settings);
+    }
+    if (message.isPrivate !== false) {
+      writer.uint32(32).bool(message.isPrivate);
     }
     return writer;
   },
@@ -1019,6 +1053,14 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
           message.settings = reader.bytes();
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.isPrivate = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1033,6 +1075,11 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
       capacity: isSet(object.capacity) ? globalThis.Number(object.capacity) : 0,
       game: isSet(object.game) ? gameFromJSON(object.game) : 0,
       settings: isSet(object.settings) ? bytesFromBase64(object.settings) : new Uint8Array(0),
+      isPrivate: isSet(object.isPrivate)
+        ? globalThis.Boolean(object.isPrivate)
+        : isSet(object.is_private)
+        ? globalThis.Boolean(object.is_private)
+        : false,
     };
   },
 
@@ -1047,6 +1094,9 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
     if (message.settings.length !== 0) {
       obj.settings = base64FromBytes(message.settings);
     }
+    if (message.isPrivate !== false) {
+      obj.isPrivate = message.isPrivate;
+    }
     return obj;
   },
 
@@ -1058,6 +1108,7 @@ export const SettingsUpdated: MessageFns<SettingsUpdated> = {
     message.capacity = object.capacity ?? 0;
     message.game = object.game ?? 0;
     message.settings = object.settings ?? new Uint8Array(0);
+    message.isPrivate = object.isPrivate ?? false;
     return message;
   },
 };

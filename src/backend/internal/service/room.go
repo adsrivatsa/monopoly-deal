@@ -77,6 +77,7 @@ func (c *Controller) GetRoom(ctx context.Context, tp token.Payload) (LongRoom, e
 		Players:     players,
 		Game:        r.Game,
 		Settings:    r.Settings,
+		IsPrivate:   r.IsPrivate,
 	}, nil
 }
 
@@ -151,6 +152,7 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, args Crea
 		Capacity:    args.Capacity,
 		Game:        args.Game,
 		Settings:    args.Settings,
+		IsPrivate:   args.IsPrivate,
 	})
 	if err != nil {
 		return Room{}, err
@@ -172,6 +174,7 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, args Crea
 		Occupied:    r.Occupied,
 		Game:        r.Game,
 		Settings:    r.Settings,
+		IsPrivate:   r.IsPrivate,
 	}, nil
 }
 
@@ -383,10 +386,11 @@ func (c *Controller) UpdateRoomSettings(ctx context.Context, tp token.Payload, a
 	}
 
 	r, err := c.store.UpdateRoomSettings(ctx, store.UpdateRoomSettingsParams{
-		Capacity: args.Capacity,
-		Game:     args.Game,
-		Settings: args.Settings,
-		RoomID:   rp.RoomID,
+		Capacity:  args.Capacity,
+		Game:      args.Game,
+		Settings:  args.Settings,
+		IsPrivate: args.IsPrivate,
+		RoomID:    rp.RoomID,
 	})
 	if err != nil {
 		return err
@@ -397,9 +401,10 @@ func (c *Controller) UpdateRoomSettings(ctx context.Context, tp token.Payload, a
 			RoomMessage: &room_schema.ServerMessage{
 				Payload: &room_schema.ServerMessage_SettingsUpdated{
 					SettingsUpdated: &room_schema.SettingsUpdated{
-						Capacity: r.Capacity,
-						Game:     r.Game.Proto(),
-						Settings: r.Settings,
+						Capacity:  r.Capacity,
+						Game:      r.Game.Proto(),
+						Settings:  r.Settings,
+						IsPrivate: r.IsPrivate,
 					},
 				},
 			},

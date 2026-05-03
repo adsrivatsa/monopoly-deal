@@ -13,9 +13,9 @@ import (
 )
 
 const createRoom = `-- name: CreateRoom :one
-   INSERT INTO room (room_id, display_name, capacity, game, settings)
-   VALUES ($1, $2, $3, $4, $5)
-RETURNING room_id, display_name, capacity, occupied, game, settings, created_at
+   INSERT INTO room (room_id, display_name, capacity, game, settings, is_private)
+   VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING room_id, display_name, capacity, occupied, game, settings, is_private, created_at
 `
 
 type CreateRoomParams struct {
@@ -24,6 +24,7 @@ type CreateRoomParams struct {
 	Capacity    int32     `json:"capacity"`
 	Game        GameType  `json:"game"`
 	Settings    []byte    `json:"settings"`
+	IsPrivate   bool      `json:"is_private"`
 }
 
 func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
@@ -33,6 +34,7 @@ func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, e
 		arg.Capacity,
 		arg.Game,
 		arg.Settings,
+		arg.IsPrivate,
 	)
 	var i Room
 	err := row.Scan(
@@ -42,6 +44,7 @@ func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, e
 		&i.Occupied,
 		&i.Game,
 		&i.Settings,
+		&i.IsPrivate,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -51,7 +54,7 @@ const decrementRoomOccupied = `-- name: DecrementRoomOccupied :one
    UPDATE room
       SET occupied = occupied - 1
     WHERE room_id = $1
-RETURNING room_id, display_name, capacity, occupied, game, settings, created_at
+RETURNING room_id, display_name, capacity, occupied, game, settings, is_private, created_at
 `
 
 func (q *Queries) DecrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error) {
@@ -64,6 +67,7 @@ func (q *Queries) DecrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (
 		&i.Occupied,
 		&i.Game,
 		&i.Settings,
+		&i.IsPrivate,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -81,7 +85,7 @@ func (q *Queries) DeleteRoom(ctx context.Context, roomID uuid.UUID) error {
 }
 
 const getRoom = `-- name: GetRoom :one
-SELECT room_id, display_name, capacity, occupied, game, settings, created_at
+SELECT room_id, display_name, capacity, occupied, game, settings, is_private, created_at
   FROM room
  WHERE room_id = $1
 `
@@ -96,13 +100,14 @@ func (q *Queries) GetRoom(ctx context.Context, roomID uuid.UUID) (Room, error) {
 		&i.Occupied,
 		&i.Game,
 		&i.Settings,
+		&i.IsPrivate,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getRoomByPlayer = `-- name: GetRoomByPlayer :one
-SELECT r.room_id, r.display_name, r.capacity, r.occupied, r.game, r.settings, r.created_at
+SELECT r.room_id, r.display_name, r.capacity, r.occupied, r.game, r.settings, r.is_private, r.created_at
   FROM room r
            INNER JOIN room_player rp
            ON rp.room_id = r.room_id
@@ -119,6 +124,7 @@ func (q *Queries) GetRoomByPlayer(ctx context.Context, playerID uuid.UUID) (Room
 		&i.Occupied,
 		&i.Game,
 		&i.Settings,
+		&i.IsPrivate,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -128,7 +134,7 @@ const incrementRoomOccupied = `-- name: IncrementRoomOccupied :one
    UPDATE room
       SET occupied = occupied + 1
     WHERE room_id = $1
-RETURNING room_id, display_name, capacity, occupied, game, settings, created_at
+RETURNING room_id, display_name, capacity, occupied, game, settings, is_private, created_at
 `
 
 func (q *Queries) IncrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error) {
@@ -141,6 +147,7 @@ func (q *Queries) IncrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (
 		&i.Occupied,
 		&i.Game,
 		&i.Settings,
+		&i.IsPrivate,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -161,7 +168,8 @@ SELECT rp.room_id, rp.player_id, rp.is_ready, rp.is_host, rp.joined_at, r.displa
         p.display_name = $3 OR p.display_name ILIKE '%' || $3 || '%' OR
         $3 IS NULL)
    AND (r.game = $4 OR $4 IS NULL)
-   AND rp.is_host
+   AND rp.is_host -- only getting the row with the host to displa
+   AND NOT r.is_private
  ORDER BY r.display_name
  LIMIT $1 OFFSET $2
 `
@@ -234,7 +242,7 @@ const updateRoomCapacity = `-- name: UpdateRoomCapacity :one
    UPDATE room
       SET capacity = $1
     WHERE room_id = $2
-RETURNING room_id, display_name, capacity, occupied, game, settings, created_at
+RETURNING room_id, display_name, capacity, occupied, game, settings, is_private, created_at
 `
 
 type UpdateRoomCapacityParams struct {
@@ -252,6 +260,7 @@ func (q *Queries) UpdateRoomCapacity(ctx context.Context, arg UpdateRoomCapacity
 		&i.Occupied,
 		&i.Game,
 		&i.Settings,
+		&i.IsPrivate,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -261,7 +270,7 @@ const updateRoomOccupied = `-- name: UpdateRoomOccupied :one
    UPDATE room
       SET occupied = $1
     WHERE room_id = $2
-RETURNING room_id, display_name, capacity, occupied, game, settings, created_at
+RETURNING room_id, display_name, capacity, occupied, game, settings, is_private, created_at
 `
 
 type UpdateRoomOccupiedParams struct {
@@ -279,6 +288,7 @@ func (q *Queries) UpdateRoomOccupied(ctx context.Context, arg UpdateRoomOccupied
 		&i.Occupied,
 		&i.Game,
 		&i.Settings,
+		&i.IsPrivate,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -288,16 +298,18 @@ const updateRoomSettings = `-- name: UpdateRoomSettings :one
    UPDATE room
       SET capacity = $1,
           game = $2,
-          settings = $3
-    WHERE room_id = $4
-RETURNING room_id, display_name, capacity, occupied, game, settings, created_at
+          settings = $3,
+          is_private = $4
+    WHERE room_id = $5
+RETURNING room_id, display_name, capacity, occupied, game, settings, is_private, created_at
 `
 
 type UpdateRoomSettingsParams struct {
-	Capacity int32     `json:"capacity"`
-	Game     GameType  `json:"game"`
-	Settings []byte    `json:"settings"`
-	RoomID   uuid.UUID `json:"room_id"`
+	Capacity  int32     `json:"capacity"`
+	Game      GameType  `json:"game"`
+	Settings  []byte    `json:"settings"`
+	IsPrivate bool      `json:"is_private"`
+	RoomID    uuid.UUID `json:"room_id"`
 }
 
 func (q *Queries) UpdateRoomSettings(ctx context.Context, arg UpdateRoomSettingsParams) (Room, error) {
@@ -305,6 +317,7 @@ func (q *Queries) UpdateRoomSettings(ctx context.Context, arg UpdateRoomSettings
 		arg.Capacity,
 		arg.Game,
 		arg.Settings,
+		arg.IsPrivate,
 		arg.RoomID,
 	)
 	var i Room
@@ -315,6 +328,7 @@ func (q *Queries) UpdateRoomSettings(ctx context.Context, arg UpdateRoomSettings
 		&i.Occupied,
 		&i.Game,
 		&i.Settings,
+		&i.IsPrivate,
 		&i.CreatedAt,
 	)
 	return i, err

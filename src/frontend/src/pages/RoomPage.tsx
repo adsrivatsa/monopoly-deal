@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Game,
   getCapacityRangeForGame,
@@ -61,16 +61,24 @@ const GROUP_ORDER = [
   "Nah! Rules",
 ];
 
+type RoomLocationState = {
+  roomUrlCopied?: boolean;
+};
+
 const RoomPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { room_id: roomId } = useParams();
   const socketRef = useRef<WebSocket | null>(null);
+  const consumedRoomUrlCopiedNoticeRef = useRef(false);
   const roomGameRef = useRef<Game | null>(null);
   const roomCapacityRef = useRef<number | null>(null);
+  const roomIsPrivateRef = useRef(false);
   const roomSettingSelectValuesRef = useRef<GameSettingSelectValue[]>([]);
   const playersRef = useRef<ShortPlayer[]>([]);
   const [roomGame, setRoomGame] = useState<Game | null>(null);
   const [roomCapacity, setRoomCapacity] = useState<number | null>(null);
+  const [roomIsPrivate, setRoomIsPrivate] = useState(false);
   const [capacityInputText, setCapacityInputText] = useState<string | null>(null);
   const [settingInputTexts, setSettingInputTexts] = useState<Record<string, string>>({});
   const [roomSettingSelectValues, setRoomSettingSelectValues] = useState<
@@ -79,6 +87,7 @@ const RoomPage = () => {
   const [players, setPlayers] = useState<ShortPlayer[]>([]);
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [modalError, setModalError] = useState<ApiErrorPayload | null>(null);
+  const [showRoomUrlCopiedNotice, setShowRoomUrlCopiedNotice] = useState(false);
   const [isBootstrappingRoom, setIsBootstrappingRoom] = useState(true);
   const [chatMessages, setChatMessages] = useState<
     (
@@ -163,12 +172,44 @@ const RoomPage = () => {
   }, [roomCapacity]);
 
   useEffect(() => {
+    roomIsPrivateRef.current = roomIsPrivate;
+  }, [roomIsPrivate]);
+
+  useEffect(() => {
     roomSettingSelectValuesRef.current = roomSettingSelectValues;
   }, [roomSettingSelectValues]);
 
   useEffect(() => {
     playersRef.current = players;
   }, [players]);
+
+  useEffect(() => {
+    const state = location.state as RoomLocationState | null;
+    if (
+      consumedRoomUrlCopiedNoticeRef.current ||
+      state?.roomUrlCopied !== true
+    ) {
+      return;
+    }
+
+    consumedRoomUrlCopiedNoticeRef.current = true;
+    setShowRoomUrlCopiedNotice(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    if (!showRoomUrlCopiedNotice) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowRoomUrlCopiedNotice(false);
+    }, 4000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [showRoomUrlCopiedNotice]);
 
   const groupedRoomSettings = useMemo(() => {
     const groups: Map<string, typeof roomSettingSelectValues> = new Map();
@@ -380,6 +421,12 @@ const RoomPage = () => {
                 changes.push(`Capacity: ${roomCapacityRef.current} -> ${settingsUpdated.capacity}`);
               }
 
+              if (roomIsPrivateRef.current !== settingsUpdated.isPrivate) {
+                changes.push(
+                  `Privacy: ${roomIsPrivateRef.current ? "Private" : "Public"} -> ${settingsUpdated.isPrivate ? "Private" : "Public"}`,
+                );
+              }
+
               for (const nextSetting of nextSettingSelectValues) {
                 const previousSetting = roomSettingSelectValuesRef.current.find((setting) => {
                   return setting.key === nextSetting.key;
@@ -403,6 +450,7 @@ const RoomPage = () => {
 
               setRoomGame(nextGame);
               setRoomCapacity(settingsUpdated.capacity);
+              setRoomIsPrivate(settingsUpdated.isPrivate);
               setRoomSettingSelectValues(nextSettingSelectValues);
 
               if (changes.length > 0) {
@@ -490,6 +538,7 @@ const RoomPage = () => {
       const parsedRoomGame = parseGame(roomResult.data.game);
       setRoomGame(parsedRoomGame);
       setRoomCapacity(roomResult.data.capacity);
+      setRoomIsPrivate(roomResult.data.is_private);
       setRoomSettingSelectValues(
         parsedRoomGame
           ? getGameSettingSelectValues(parsedRoomGame, roomResult.data.settings)
@@ -578,6 +627,12 @@ const RoomPage = () => {
         roomCapacityRef.current !== params.capacity
       ) {
         changes.push(`Capacity: ${roomCapacityRef.current} -> ${params.capacity}`);
+      }
+
+      if (roomIsPrivateRef.current !== params.is_private) {
+        changes.push(
+          `Privacy: ${roomIsPrivateRef.current ? "Private" : "Public"} -> ${params.is_private ? "Private" : "Public"}`,
+        );
       }
 
       for (const nextSetting of nextSettingSelectValues) {
@@ -790,6 +845,7 @@ const RoomPage = () => {
                         capacity: nextCapacity,
                         game: nextGame,
                         settings: buildSettingsPayload(nextGame, nextSettings),
+                        is_private: roomIsPrivate,
                       });
                     }}
                   >
@@ -843,6 +899,7 @@ const RoomPage = () => {
                             roomGame,
                             roomSettingSelectValues,
                           ),
+                          is_private: roomIsPrivate,
                         });
                       }}
                     />
@@ -869,6 +926,7 @@ const RoomPage = () => {
                           capacity: clamped,
                           game: roomGame,
                           settings: buildSettingsPayload(roomGame, roomSettingSelectValues),
+                          is_private: roomIsPrivate,
                         });
                       }}
                       onKeyDown={(event) => {
@@ -878,6 +936,41 @@ const RoomPage = () => {
                       }}
                     />
                   </div>
+                </div>
+
+                <div className="room-settings-row">
+                  <label
+                    className="room-setting-label"
+                    htmlFor="room-private-setting"
+                  >
+                    Private room
+                  </label>
+                  <input
+                    id="room-private-setting"
+                    type="checkbox"
+                    className="toggle-input room-setting-toggle"
+                    checked={roomIsPrivate}
+                    disabled={!canEditSettings}
+                    onChange={(event) => {
+                      if (!canEditSettings || !roomGame || roomCapacity === null) {
+                        return;
+                      }
+
+                      const nextIsPrivate = event.target.checked;
+                      setRoomIsPrivate(nextIsPrivate);
+
+                      void persistRoomSettings({
+                        capacity: roomCapacity,
+                        game: roomGame,
+                        settings: buildSettingsPayload(
+                          roomGame,
+                          roomSettingSelectValues,
+                        ),
+                        is_private: nextIsPrivate,
+                      });
+                    }}
+                    aria-label="Private room"
+                  />
                 </div>
 
                 {groupedRoomSettings.map(([groupName, groupSettings]) => (
@@ -941,6 +1034,7 @@ const RoomPage = () => {
                             capacity: nextCapacity,
                             game: roomGame,
                             settings: nextSettingsPayload,
+                            is_private: roomIsPrivate,
                           });
                         }
                       };
@@ -967,6 +1061,7 @@ const RoomPage = () => {
                             capacity: nextCapacity,
                             game: roomGame,
                             settings: nextSettingsPayload,
+                            is_private: roomIsPrivate,
                           });
                         }
                       };
@@ -1152,6 +1247,18 @@ if (chatMessage.kind === "player-event") {
 
       {modalError ? (
         <ErrorModal error={modalError} onClose={() => setModalError(null)} />
+      ) : null}
+
+      {showRoomUrlCopiedNotice ? (
+        <section
+          className="success-toast-stack"
+          aria-live="polite"
+          aria-label="Room notifications"
+        >
+          <article className="success-toast" role="status">
+            Room URL copied to your clipboard.
+          </article>
+        </section>
       ) : null}
     </main>
   );

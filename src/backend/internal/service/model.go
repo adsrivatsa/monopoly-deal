@@ -27,6 +27,7 @@ type CreateRoomParams struct {
 	Capacity    int32          `json:"capacity"`
 	Game        store.GameType `json:"game"`
 	Settings    []byte         `json:"settings"`
+	IsPrivate   bool           `json:"is_private"`
 }
 
 type Room struct {
@@ -36,6 +37,7 @@ type Room struct {
 	Occupied    int32          `json:"occupied"`
 	Game        store.GameType `json:"game"`
 	Settings    []byte         `json:"settings"`
+	IsPrivate   bool           `json:"is_private"`
 }
 
 type ShortRoom struct {
@@ -49,6 +51,7 @@ type LongRoom struct {
 	Players     []ShortPlayer  `json:"players"`
 	Game        store.GameType `json:"game"`
 	Settings    []byte         `json:"settings"`
+	IsPrivate   bool           `json:"is_private"`
 }
 
 type ListRoomsParams struct {
@@ -64,9 +67,10 @@ type ListRoomsRes struct {
 }
 
 type UpdateRoomSettingsParams struct {
-	Capacity int32          `json:"capacity"`
-	Game     store.GameType `json:"game"`
-	Settings []byte         `json:"settings"`
+	Capacity  int32          `json:"capacity"`
+	Game      store.GameType `json:"game"`
+	Settings  []byte         `json:"settings"`
+	IsPrivate bool           `json:"is_private"`
 }
 
 type Game = store.Game

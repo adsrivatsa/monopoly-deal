@@ -32,6 +32,7 @@ export type RoomListItem = {
   players: ShortPlayer[];
   game: Game;
   settings: string | number[];
+  is_private: boolean;
 };
 
 export type ListRoomsResponse = {
@@ -44,6 +45,7 @@ export type CreateRoomParams = {
   capacity: number;
   game: Game;
   settings: Uint8Array;
+  is_private: boolean;
 };
 
 export type CreateRoomResponse = {
@@ -52,6 +54,7 @@ export type CreateRoomResponse = {
   capacity: number;
   occupied: number;
   created_at: string;
+  is_private: boolean;
 };
 
 export type RoomResponse = {
@@ -62,6 +65,7 @@ export type RoomResponse = {
   game: Game;
   settings: string | number[];
   players: RoomPlayer[];
+  is_private: boolean;
 };
 
 export type ListRoomsResult =
@@ -92,6 +96,7 @@ export type UpdateRoomSettingsParams = {
   capacity: number;
   game: Game;
   settings: Uint8Array;
+  is_private: boolean;
 };
 
 export type UpdateRoomSettingsResult =

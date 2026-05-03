@@ -118,6 +118,7 @@ type Room struct {
 	Occupied    int32     `json:"occupied"`
 	Game        GameType  `json:"game"`
 	Settings    []byte    `json:"settings"`
+	IsPrivate   bool      `json:"is_private"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 

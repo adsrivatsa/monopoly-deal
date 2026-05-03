@@ -38,6 +38,31 @@ const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 350;
 const ROOMS_POLL_INTERVAL_MS = 10000;
 
+const copyTextToClipboard = async (text: string): Promise<boolean> => {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall back for browsers that block the async clipboard API.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    return document.execCommand("copy");
+  } finally {
+    document.body.removeChild(textarea);
+  }
+};
+
 const gameFilterOptions: Array<{ value: Game; label: string }> =
   supportedGames.map((game) => {
     return {
@@ -241,8 +266,14 @@ const LobbyPage = () => {
       return;
     }
 
+    const roomPath = `/room/${result.data.room_id}`;
+    const roomUrl = new URL(roomPath, window.location.origin).toString();
+    const didCopyRoomUrl = await copyTextToClipboard(roomUrl);
+
     setIsCreateRoomOpen(false);
-    navigate(`/room/${result.data.room_id}`);
+    navigate(roomPath, {
+      state: didCopyRoomUrl ? { roomUrlCopied: true } : undefined,
+    });
   };
 
   const handleLeaveActiveRoom = async () => {

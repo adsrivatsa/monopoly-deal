@@ -39,6 +39,7 @@ const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
   const [capacity, setCapacity] = useState(
     String(appConfig.room.create.capacity.min),
   );
+  const [isPrivate, setIsPrivate] = useState(false);
 
   const defaultSettings = stringifyGameSettings(
     game,
@@ -83,6 +84,7 @@ const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
       capacity: parsedCapacity,
       game,
       settings: defaultSettings,
+      is_private: isPrivate,
     });
   };
 
@@ -157,6 +159,21 @@ const CreateRoomModal = ({ onClose, onCreate }: CreateRoomModalProps) => {
               },
             )}
           </select>
+
+          <label className="toggle-row create-room-toggle-row">
+            <span>
+              <span className="field-label">Private room</span>
+              <span className="toggle-help">
+                Hide this room from the public lobby list.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              className="toggle-input"
+              checked={isPrivate}
+              onChange={(event) => setIsPrivate(event.target.checked)}
+            />
+          </label>
 
           <div className="overlay-actions">
             <Button variant="outline" type="button" onClick={onClose}>

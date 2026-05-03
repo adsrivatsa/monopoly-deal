@@ -1,6 +1,6 @@
 -- name: CreateRoom :one
-   INSERT INTO room (room_id, display_name, capacity, game, settings)
-   VALUES ($1, $2, $3, $4, $5)
+   INSERT INTO room (room_id, display_name, capacity, game, settings, is_private)
+   VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: GetRoom :one
@@ -48,8 +48,9 @@ RETURNING *;
    UPDATE room
       SET capacity = $1,
           game = $2,
-          settings = $3
-    WHERE room_id = $4
+          settings = $3,
+          is_private = $4
+    WHERE room_id = $5
 RETURNING *;
 
 -- name: ListRooms :many
@@ -67,6 +68,7 @@ SELECT rp.*, r.display_name AS room_display_name, r.capacity AS room_capacity, r
         p.display_name = sqlc.narg('search') OR p.display_name ILIKE '%' || sqlc.narg('search') || '%' OR
         sqlc.narg('search') IS NULL)
    AND (r.game = sqlc.narg('game') OR sqlc.narg('game') IS NULL)
-   AND rp.is_host
+   AND rp.is_host -- only getting the row with the host to display
+   AND NOT r.is_private
  ORDER BY r.display_name
  LIMIT $1 OFFSET $2;

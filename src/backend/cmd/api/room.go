@@ -111,6 +111,7 @@ func (s *Server) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		Capacity:    int32(args.Capacity),
 		Game:        args.Game,
 		Settings:    args.Settings,
+		IsPrivate:   args.IsPrivate,
 	})
 	if err != nil {
 		ErrorHTTP(w, err)
@@ -216,9 +217,10 @@ func (s *Server) UpdateRoomSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = s.services.UpdateRoomSettings(ctx, tp, service.UpdateRoomSettingsParams{
-		Capacity: int32(args.Capacity),
-		Game:     args.Game,
-		Settings: args.Settings,
+		Capacity:  int32(args.Capacity),
+		Game:      args.Game,
+		Settings:  args.Settings,
+		IsPrivate: args.IsPrivate,
 	})
 	if err != nil {
 		ErrorHTTP(w, err)

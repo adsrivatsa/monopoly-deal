@@ -157,6 +157,7 @@ type Room struct {
 	Occupied      int32                  `protobuf:"varint,5,opt,name=occupied,proto3" json:"occupied,omitempty"`
 	Game          Game                   `protobuf:"varint,6,opt,name=game,proto3,enum=the_deal.schema.room.Game" json:"game,omitempty"`
 	Settings      []byte                 `protobuf:"bytes,7,opt,name=settings,proto3" json:"settings,omitempty"`
+	IsPrivate     bool                   `protobuf:"varint,8,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -238,6 +239,13 @@ func (x *Room) GetSettings() []byte {
 		return x.Settings
 	}
 	return nil
+}
+
+func (x *Room) GetIsPrivate() bool {
+	if x != nil {
+		return x.IsPrivate
+	}
+	return false
 }
 
 type RoomCreated struct {
@@ -593,6 +601,7 @@ type SettingsUpdated struct {
 	Capacity      int32                  `protobuf:"varint,1,opt,name=capacity,proto3" json:"capacity,omitempty"`
 	Game          Game                   `protobuf:"varint,2,opt,name=game,proto3,enum=the_deal.schema.room.Game" json:"game,omitempty"`
 	Settings      []byte                 `protobuf:"bytes,3,opt,name=settings,proto3" json:"settings,omitempty"`
+	IsPrivate     bool                   `protobuf:"varint,4,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -646,6 +655,13 @@ func (x *SettingsUpdated) GetSettings() []byte {
 		return x.Settings
 	}
 	return nil
+}
+
+func (x *SettingsUpdated) GetIsPrivate() bool {
+	if x != nil {
+		return x.IsPrivate
+	}
+	return false
 }
 
 type GameStarted struct {
@@ -933,7 +949,7 @@ const file_room_proto_rawDesc = "" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x19\n" +
 	"\bis_ready\x18\x04 \x01(\bR\aisReady\x12\x17\n" +
 	"\ais_host\x18\x05 \x01(\bR\x06isHost\x12\x1b\n" +
-	"\tjoined_at\x18\x06 \x01(\x03R\bjoinedAt\"\xfe\x01\n" +
+	"\tjoined_at\x18\x06 \x01(\x03R\bjoinedAt\"\x9d\x02\n" +
 	"\x04Room\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x126\n" +
@@ -941,7 +957,9 @@ const file_room_proto_rawDesc = "" +
 	"\bcapacity\x18\x04 \x01(\x05R\bcapacity\x12\x1a\n" +
 	"\boccupied\x18\x05 \x01(\x05R\boccupied\x12.\n" +
 	"\x04game\x18\x06 \x01(\x0e2\x1a.the_deal.schema.room.GameR\x04game\x12\x1a\n" +
-	"\bsettings\x18\a \x01(\fR\bsettings\"=\n" +
+	"\bsettings\x18\a \x01(\fR\bsettings\x12\x1d\n" +
+	"\n" +
+	"is_private\x18\b \x01(\bR\tisPrivate\"=\n" +
 	"\vRoomCreated\x12.\n" +
 	"\x04room\x18\x01 \x01(\v2\x1a.the_deal.schema.room.RoomR\x04room\"a\n" +
 	"\x10PlayerJoinedRoom\x12\x17\n" +
@@ -961,11 +979,13 @@ const file_room_proto_rawDesc = "" +
 	"\apayload\x18\x02 \x01(\tR\apayload\"L\n" +
 	"\x12PlayerToggledReady\x12\x1b\n" +
 	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\x12\x19\n" +
-	"\bis_ready\x18\x02 \x01(\bR\aisReady\"y\n" +
+	"\bis_ready\x18\x02 \x01(\bR\aisReady\"\x98\x01\n" +
 	"\x0fSettingsUpdated\x12\x1a\n" +
 	"\bcapacity\x18\x01 \x01(\x05R\bcapacity\x12.\n" +
 	"\x04game\x18\x02 \x01(\x0e2\x1a.the_deal.schema.room.GameR\x04game\x12\x1a\n" +
-	"\bsettings\x18\x03 \x01(\fR\bsettings\"&\n" +
+	"\bsettings\x18\x03 \x01(\fR\bsettings\x12\x1d\n" +
+	"\n" +
+	"is_private\x18\x04 \x01(\bR\tisPrivate\"&\n" +
 	"\vGameStarted\x12\x17\n" +
 	"\agame_id\x18\x01 \x01(\tR\x06gameId\"\xd1\x04\n" +
 	"\rServerMessage\x12F\n" +
