@@ -107,6 +107,11 @@
   --nav-bg: rgba(23, 21, 20, 0.86);
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -516,7 +521,7 @@ h1 {
   border-bottom: 1px solid var(--border);
 }
 
-.ui-table__row + .ui-table__row .ui-table__cell {
+.ui-table__row+.ui-table__row .ui-table__cell {
   border-top: 1px solid var(--muted);
 }
 
@@ -1147,7 +1152,7 @@ h1 {
   border-left-color: var(--primary);
 }
 
-.room-speed-option.is-active + .room-speed-option {
+.room-speed-option.is-active+.room-speed-option {
   border-left-color: var(--primary);
 }
 
@@ -1365,7 +1370,7 @@ h1 {
   position: relative;
 }
 
-.game-page--ended > :not(.game-end-overlay) {
+.game-page--ended> :not(.game-end-overlay) {
   filter: grayscale(0.95) brightness(0.55);
   pointer-events: none;
   user-select: none;

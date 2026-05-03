@@ -26,6 +26,7 @@
   background: color-mix(in oklab, var(--card) 82%, transparent);
   cursor: grab;
   user-select: none;
+  container-type: inline-size;
 }
 
 .md-board-viewport--demand-active::after {
@@ -291,8 +292,7 @@
 .md-board-content {
   display: grid;
   gap: 0.7rem;
-  width: 100%;
-  min-height: 100%;
+  width: max-content;
   touch-action: none;
   transform-origin: top left;
   will-change: transform;
@@ -305,6 +305,7 @@
   display: grid;
   align-content: start;
   gap: 0.7rem;
+  width: max-content;
 }
 
 .md-board-content--demand-active {
@@ -321,6 +322,7 @@
   display: grid;
   gap: 0.44rem;
   align-self: start;
+  max-width: calc(100cqw - 1rem);
 }
 
 .md-player-board--current {
@@ -375,7 +377,7 @@
 .md-dropzone--money {
   flex: 0 0 auto;
   width: max-content;
-  min-width: 20%;
+  min-width: 0;
   max-width: 100%;
 }
 
@@ -390,7 +392,7 @@
 }
 
 .md-dropzone--money .md-stack-box__empty {
-  width: min(100%, 14rem);
+  width: auto;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -399,7 +401,7 @@
 .md-dropzone--property-new {
   flex: 0 0 auto;
   width: max-content;
-  min-width: 20%;
+  min-width: 0;
 }
 
 .md-dropzone--property-set .md-stack-box,
@@ -433,7 +435,7 @@
 .md-dropzone--property-new .md-property-empty {
   background: color-mix(in oklab, var(--muted) 45%, transparent);
   min-height: 4.25rem;
-  width: min(100%, 14rem);
+  width: auto;
 }
 
 .md-dropzone--property-set.is-set-selected {
@@ -452,6 +454,10 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 0.45rem;
+}
+
+.md-player-board .md-stack-box {
+  min-height: auto;
 }
 
 .md-stack-box__title {
@@ -490,7 +496,7 @@
   gap: 0;
 }
 
-.md-stack-box--stack .md-stack-box__card-wrap + .md-stack-box__card-wrap {
+.md-stack-box--stack .md-stack-box__card-wrap+.md-stack-box__card-wrap {
   margin-left: -1.95rem;
 }
 
@@ -498,7 +504,7 @@
   width: var(--md-player-tight-card-width);
 }
 
-.md-player-board .md-stack-box--stack .md-stack-box__card-wrap + .md-stack-box__card-wrap {
+.md-player-board .md-stack-box--stack .md-stack-box__card-wrap+.md-stack-box__card-wrap {
   margin-left: calc(var(--md-player-tight-card-width) * -0.75);
 }
 
@@ -829,9 +835,7 @@
 
   .md-hand-row {
     grid-template-columns:
-      calc(var(--md-hand-card-width) + 1.35rem)
-      minmax(0, 1fr)
-      minmax(120px, 150px);
+      calc(var(--md-hand-card-width) + 1.35rem) minmax(0, 1fr) minmax(120px, 150px);
     grid-template-areas: "action hand controls";
     height: auto;
   }
@@ -906,6 +910,19 @@
 
   .md-player-board__body {
     gap: 0.5rem;
+  }
+
+  .md-player-board,
+  .md-player-board--current {
+    --md-player-tight-card-width: clamp(95px, 24vw, 130px);
+  }
+
+  .md-player-board__name {
+    font-size: 0.7rem;
+  }
+
+  .md-player-board__stats {
+    font-size: 0.6rem;
   }
 
   .md-dropzone--action .md-stack-box {

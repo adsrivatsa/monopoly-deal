@@ -122,7 +122,7 @@ type ForcedDealPlacementSelectionState = {
   selectedPropertySetId?: string;
 };
 
-const MIN_ZOOM = 0.65;
+const MIN_ZOOM = 0.15;
 const MAX_ZOOM = 2.2;
 const BOARD_COLUMN_GAP_REM = 0.7;
 
@@ -326,18 +326,25 @@ const clampPan = (
   let nextX = pan.x;
   let nextY = pan.y;
 
+  const bufferX = viewportSize.width * 0.2;
+  const bufferY = viewportSize.height * 0.2;
+
   if (scaledWidth <= viewportSize.width) {
-    nextX = (viewportSize.width - scaledWidth) / 2;
+    const cx = (viewportSize.width - scaledWidth) / 2;
+    nextX = Math.min(cx + bufferX, Math.max(cx - bufferX, nextX));
   } else {
-    const minX = viewportSize.width - scaledWidth;
-    nextX = Math.min(0, Math.max(minX, nextX));
+    const minX = viewportSize.width - scaledWidth - bufferX;
+    const maxX = bufferX;
+    nextX = Math.min(maxX, Math.max(minX, nextX));
   }
 
   if (scaledHeight <= viewportSize.height) {
-    nextY = (viewportSize.height - scaledHeight) / 2;
+    const cy = (viewportSize.height - scaledHeight) / 2;
+    nextY = Math.min(cy + bufferY, Math.max(cy - bufferY, nextY));
   } else {
-    const minY = viewportSize.height - scaledHeight;
-    nextY = Math.min(0, Math.max(minY, nextY));
+    const minY = viewportSize.height - scaledHeight - bufferY;
+    const maxY = bufferY;
+    nextY = Math.min(maxY, Math.max(minY, nextY));
   }
 
   return { x: nextX, y: nextY };
@@ -394,6 +401,7 @@ const MonopolyDealHtmlBoard = ({
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [zoom, setZoom] = useState(1);
+  const hasInitializedZoomRef = useRef(false);
   const [pan, setPan] = useState<Pan>({ x: 0, y: 0 });
   const [viewportSize, setViewportSize] = useState<Size>({
     width: 1,
@@ -870,9 +878,10 @@ const MonopolyDealHtmlBoard = ({
 
   const playerColumns = useMemo(() => {
     const nextColumns: Player[][] = Array.from({ length: columns }, () => []);
+    const rows = Math.ceil(orderedPlayers.length / columns);
 
     orderedPlayers.forEach((player, index) => {
-      nextColumns[index % columns].push(player);
+      nextColumns[Math.floor(index / rows)].push(player);
     });
 
     return nextColumns;
@@ -884,16 +893,25 @@ const MonopolyDealHtmlBoard = ({
       display: "flex",
       alignItems: "flex-start",
       gap: `${BOARD_COLUMN_GAP_REM}rem`,
-      minWidth: `${boardMinWidth}px`,
+      "--board-columns": columns.toString(),
     };
-  }, [boardMinWidth, pan.x, pan.y, zoom]);
+  }, [pan.x, pan.y, zoom, columns]);
 
   const boardContentSize = useMemo<Size>(() => {
     return {
-      width: Math.max(contentSize.width, boardMinWidth),
+      width: contentSize.width,
       height: contentSize.height,
     };
-  }, [boardMinWidth, contentSize.height, contentSize.width]);
+  }, [contentSize.height, contentSize.width]);
+
+  const dynamicMinZoom = useMemo(() => {
+    if (viewportSize.width <= 1 || boardContentSize.width <= 1) {
+      return MIN_ZOOM;
+    }
+    const fitZoomX = viewportSize.width / boardContentSize.width;
+    const fitZoomY = viewportSize.height / boardContentSize.height;
+    return Math.max(MIN_ZOOM, Math.min(fitZoomX, fitZoomY, 1));
+  }, [viewportSize, boardContentSize]);
 
   const withErrorHandling = useCallback(
     (fn: () => void) => {
@@ -937,6 +955,17 @@ const MonopolyDealHtmlBoard = ({
   }, [orderedPlayers.length]);
 
   useEffect(() => {
+    if (
+      !hasInitializedZoomRef.current &&
+      viewportSize.width > 1 &&
+      boardContentSize.width > 1
+    ) {
+      hasInitializedZoomRef.current = true;
+      setZoom(dynamicMinZoom);
+    }
+  }, [viewportSize, boardContentSize, dynamicMinZoom]);
+
+  useEffect(() => {
     setPan((current) =>
       clampPan(current, zoom, viewportSize, boardContentSize),
     );
@@ -959,7 +988,7 @@ const MonopolyDealHtmlBoard = ({
         setZoom((currentZoom) => {
           const nextZoom = Math.min(
             MAX_ZOOM,
-            Math.max(MIN_ZOOM, currentZoom * factor),
+            Math.max(dynamicMinZoom, currentZoom * factor),
           );
           if (nextZoom === currentZoom) {
             return currentZoom;
@@ -984,7 +1013,7 @@ const MonopolyDealHtmlBoard = ({
         });
       });
     },
-    [boardContentSize, viewportSize, withErrorHandling],
+    [boardContentSize, viewportSize, withErrorHandling, dynamicMinZoom],
   );
 
   useEffect(() => {
@@ -1108,7 +1137,7 @@ const MonopolyDealHtmlBoard = ({
           const candidateZoom = pinchStartZoomRef.current * scale;
           const nextZoom = Math.min(
             MAX_ZOOM,
-            Math.max(MIN_ZOOM, candidateZoom),
+            Math.max(dynamicMinZoom, candidateZoom),
           );
           const rect = event.currentTarget.getBoundingClientRect();
           const localCenter = {
@@ -2130,7 +2159,7 @@ const MonopolyDealHtmlBoard = ({
         </header>
 
         <div className="md-player-board__body">
-          <div
+          {(playerMoney.length > 0 || canInteractWithBoard || canSelectBoardCards || canSelectDealCards) && <div
             className="md-dropzone md-dropzone--money"
             onClick={() => {
               if (canClickRearrangeDestination) {
@@ -2185,7 +2214,7 @@ const MonopolyDealHtmlBoard = ({
                 }
               }}
             />
-          </div>
+          </div>}
 
           {propertySets.map((propertySet, index) => (
             <div
@@ -2347,7 +2376,7 @@ const MonopolyDealHtmlBoard = ({
             </div>
           ))}
 
-          {isSelfBoard ? (
+          {isSelfBoard && isSelfTurn ? (
             <div
               className="md-dropzone md-dropzone--property-new"
               onClick={() => {
@@ -2517,14 +2546,11 @@ const MonopolyDealHtmlBoard = ({
           ref={contentRef}
           style={boardStyle}
         >
-          {playerColumns.map((playerColumn, columnIndex) => (
-            <div
-              className="md-board-column"
-              key={`col-${columnIndex}`}
-              style={{
-                width: `${boardColumnWidth}px`,
-              }}
-            >
+              {playerColumns.map((playerColumn, columnIndex) => (
+                <div
+                  className={`md-board-column ${columnIndex === 0 ? "md-board-column--first" : ""}`}
+                  key={`col-${columnIndex}`}
+                >
               {playerColumn.map((player) => renderPlayerBoard(player))}
             </div>
           ))}
