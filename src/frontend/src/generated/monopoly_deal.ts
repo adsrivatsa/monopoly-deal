@@ -744,6 +744,10 @@ export interface ChatReceived {
   payload: string;
 }
 
+export interface Settings {
+  nahConsumesMove: boolean;
+}
+
 export interface Card {
   cardId: string;
   assetKey: AssetKey;
@@ -834,6 +838,7 @@ export interface GameState {
   assetImages: AssetImage[];
   maxHandSize: number;
   deadlines: Deadline[];
+  settings: Settings | undefined;
 }
 
 export interface PlayMoney {
@@ -1326,6 +1331,70 @@ export const ChatReceived: MessageFns<ChatReceived> = {
     const message = createBaseChatReceived();
     message.playerId = object.playerId ?? "";
     message.payload = object.payload ?? "";
+    return message;
+  },
+};
+
+function createBaseSettings(): Settings {
+  return { nahConsumesMove: false };
+}
+
+export const Settings: MessageFns<Settings> = {
+  encode(message: Settings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.nahConsumesMove !== false) {
+      writer.uint32(8).bool(message.nahConsumesMove);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Settings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSettings();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.nahConsumesMove = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Settings {
+    return {
+      nahConsumesMove: isSet(object.nahConsumesMove)
+        ? globalThis.Boolean(object.nahConsumesMove)
+        : isSet(object.nah_consumes_move)
+        ? globalThis.Boolean(object.nah_consumes_move)
+        : false,
+    };
+  },
+
+  toJSON(message: Settings): unknown {
+    const obj: any = {};
+    if (message.nahConsumesMove !== false) {
+      obj.nahConsumesMove = message.nahConsumesMove;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Settings>, I>>(base?: I): Settings {
+    return Settings.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Settings>, I>>(object: I): Settings {
+    const message = createBaseSettings();
+    message.nahConsumesMove = object.nahConsumesMove ?? false;
     return message;
   },
 };
@@ -2653,6 +2722,7 @@ function createBaseGameState(): GameState {
     assetImages: [],
     maxHandSize: 0,
     deadlines: [],
+    settings: undefined,
   };
 }
 
@@ -2696,6 +2766,9 @@ export const GameState: MessageFns<GameState> = {
     }
     for (const v of message.deadlines) {
       Deadline.encode(v!, writer.uint32(106).fork()).join();
+    }
+    if (message.settings !== undefined) {
+      Settings.encode(message.settings, writer.uint32(114).fork()).join();
     }
     return writer;
   },
@@ -2811,6 +2884,14 @@ export const GameState: MessageFns<GameState> = {
           message.deadlines.push(Deadline.decode(reader, reader.uint32()));
           continue;
         }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.settings = Settings.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2875,6 +2956,7 @@ export const GameState: MessageFns<GameState> = {
       deadlines: globalThis.Array.isArray(object?.deadlines)
         ? object.deadlines.map((e: any) => Deadline.fromJSON(e))
         : [],
+      settings: isSet(object.settings) ? Settings.fromJSON(object.settings) : undefined,
     };
   },
 
@@ -2919,6 +3001,9 @@ export const GameState: MessageFns<GameState> = {
     if (message.deadlines?.length) {
       obj.deadlines = message.deadlines.map((e) => Deadline.toJSON(e));
     }
+    if (message.settings !== undefined) {
+      obj.settings = Settings.toJSON(message.settings);
+    }
     return obj;
   },
 
@@ -2946,6 +3031,9 @@ export const GameState: MessageFns<GameState> = {
     message.assetImages = object.assetImages?.map((e) => AssetImage.fromPartial(e)) || [];
     message.maxHandSize = object.maxHandSize ?? 0;
     message.deadlines = object.deadlines?.map((e) => Deadline.fromPartial(e)) || [];
+    message.settings = (object.settings !== undefined && object.settings !== null)
+      ? Settings.fromPartial(object.settings)
+      : undefined;
     return message;
   },
 };

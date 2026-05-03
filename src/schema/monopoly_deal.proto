@@ -19,6 +19,10 @@ message ChatReceived {
   string payload = 2;
 }
 
+message Settings {
+  bool nah_consumes_move = 1;
+}
+
 enum AssetKey {
   ASSET_KEY_UNSPECIFIED = 0;
 
@@ -221,6 +225,7 @@ message GameState {
   repeated AssetImage asset_images = 11;
   int32 max_hand_size = 12;
   repeated Deadline deadlines = 13;
+  Settings settings = 14;
 }
 
 enum ActionKind {

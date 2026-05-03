@@ -58,6 +58,7 @@ const GROUP_ORDER = [
   "Card Rules",
   "Win Conditions",
   "Deck Rules",
+  "Nah! Rules",
 ];
 
 const RoomPage = () => {
@@ -117,6 +118,10 @@ const RoomPage = () => {
   ): Uint8Array => {
     const candidateSettings = Object.fromEntries(
       settingValues.map((setting) => {
+        if (setting.kind === "boolean") {
+          return [setting.key, setting.value === "true"];
+        }
+
         const parsedValue = Number.parseInt(setting.value, 10);
         return [
           setting.key,
@@ -880,14 +885,24 @@ const RoomPage = () => {
                     <p className="room-settings-group-label">{groupName}</p>
                     {groupSettings.map((setting) => {
                       const isSpeed = setting.key === "speed";
-                      const settingMin = Number(setting.options[0]?.value ?? 0);
-                      const settingMax = Number(setting.options[setting.options.length - 1]?.value ?? settingMin);
+                      const isBoolean = setting.kind === "boolean";
+                      const settingMin = isBoolean
+                        ? 0
+                        : Number(setting.options[0]?.value ?? 0);
+                      const settingMax = isBoolean
+                        ? 1
+                        : Number(
+                            setting.options[setting.options.length - 1]?.value ??
+                              settingMin,
+                          );
 
                       const commitSettingValue = (rawValue: string, key: string) => {
                         const parsed = Number.parseInt(rawValue, 10);
                         const def = getGameSettingDefinition(roomGame!, key);
-                        const min = def?.min ?? settingMin;
-                        const max = def?.max ?? settingMax;
+                        const min =
+                          def && def.kind !== "boolean" ? def.min : settingMin;
+                        const max =
+                          def && def.kind !== "boolean" ? def.max : settingMax;
                         const currentNumeric = Number.parseInt(
                           roomSettingSelectValues.find((s) => s.key === key)?.value ?? "",
                           10,
@@ -965,11 +980,11 @@ const RoomPage = () => {
                             {setting.label}
                           </label>
 
-                          {isSpeed ? (
+                          {isSpeed || isBoolean ? (
                             <div
                               className="room-speed-group"
                               role="group"
-                              aria-label="Speed"
+                              aria-label={setting.label}
                             >
                               {setting.options.map((option) => (
                                 <button

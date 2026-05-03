@@ -38,7 +38,10 @@ const MonopolyDealGameEndOverlay = ({
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="game-end-modal__avatar game-end-modal__avatar--fallback" aria-hidden="true">
+            <div
+              className="game-end-modal__avatar game-end-modal__avatar--fallback"
+              aria-hidden="true"
+            >
               {winnerInitial}
             </div>
           )}

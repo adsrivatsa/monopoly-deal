@@ -48,6 +48,9 @@ export type MonopolyDealSettings = {
   set_snatcher_amount: number;
   rent_amount: number;
   wild_rent_amount: number;
+
+  // nah! rules
+  nah_consumes_move: boolean;
 };
 
 type GameSettingsByGame = {
@@ -56,19 +59,33 @@ type GameSettingsByGame = {
 
 export type GameSettingsFor<TGame extends Game> = GameSettingsByGame[TGame];
 
-export type GameSettingDefinition = {
+type NumericGameSettingDefinition = {
   key: string;
   label: string;
   min: number;
   max: number;
   group: string;
+  kind?: "number";
 };
+
+type BooleanGameSettingDefinition = {
+  key: string;
+  label: string;
+  group: string;
+  kind: "boolean";
+  options: Array<{ value: string; label: string }>;
+};
+
+export type GameSettingDefinition =
+  | NumericGameSettingDefinition
+  | BooleanGameSettingDefinition;
 
 export type GameSettingSelectValue = {
   key: string;
   label: string;
   value: string;
   group: string;
+  kind: "number" | "boolean";
   options: Array<{ value: string; label: string }>;
 };
 
@@ -132,6 +149,8 @@ export const getDefaultSettingsForGame = <TGame extends Game>(
         set_snatcher_amount: 2,
         rent_amount: 2,
         wild_rent_amount: 3,
+        // nah! rules
+        nah_consumes_move: true,
       } as GameSettingsFor<TGame>;
     default:
       return assertNever(game as never);
@@ -372,6 +391,17 @@ const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
           max: 6,
           group: "Deck Rules",
         },
+        // nah! rules
+        {
+          key: "nah_consumes_move",
+          label: "Nah consumes move",
+          group: "Nah! Rules",
+          kind: "boolean",
+          options: [
+            { value: "true", label: "On" },
+            { value: "false", label: "Off" },
+          ],
+        },
       ];
     default:
       return assertNever(game as never);
@@ -444,7 +474,7 @@ export const parseGameSettings = <TGame extends Game>(
 
       const getSettingValue = (key: string, defaultValue: number): number => {
         const definition = definitions.find((setting) => setting.key === key);
-        if (!definition) {
+        if (!definition || definition.kind === "boolean") {
           return defaultValue;
         }
 
@@ -453,6 +483,23 @@ export const parseGameSettings = <TGame extends Game>(
           typeof value === "number" &&
           inRange(value, definition.min, definition.max)
         ) {
+          return value;
+        }
+
+        return defaultValue;
+      };
+
+      const getBooleanSettingValue = (
+        key: string,
+        defaultValue: boolean,
+      ): boolean => {
+        const definition = definitions.find((setting) => setting.key === key);
+        if (!definition || definition.kind !== "boolean") {
+          return defaultValue;
+        }
+
+        const value = parsed[key];
+        if (typeof value === "boolean") {
           return value;
         }
 
@@ -529,6 +576,11 @@ export const parseGameSettings = <TGame extends Game>(
           "wild_rent_amount",
           defaults.wild_rent_amount,
         ),
+        // nah! rules
+        nah_consumes_move: getBooleanSettingValue(
+          "nah_consumes_move",
+          defaults.nah_consumes_move,
+        ),
       } as GameSettingsFor<TGame>;
     }
     default:
@@ -552,12 +604,24 @@ export const getGameSettingSelectValues = (
 
       return definitions.map((definition) => {
         const value = parsed[definition.key as keyof MonopolyDealSettings];
+        if (definition.kind === "boolean") {
+          return {
+            key: definition.key,
+            label: definition.label,
+            group: definition.group,
+            kind: definition.kind,
+            value: String(typeof value === "boolean" ? value : true),
+            options: definition.options,
+          };
+        }
+
         const numericValue = typeof value === "number" ? value : definition.min;
 
         return {
           key: definition.key,
           label: definition.label,
           group: definition.group,
+          kind: "number" as const,
           value: String(numericValue),
           options:
             definition.key === "speed"

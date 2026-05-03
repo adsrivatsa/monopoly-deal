@@ -1,6 +1,7 @@
 package monopoly_deal
 
 import (
+	"the-deal/internal/schema/monopoly_deal_schema"
 	"time"
 
 	"github.com/vmihailenco/msgpack/v5"
@@ -50,6 +51,9 @@ type Settings struct {
 	SetSnatcherAmount   int `msgpack:"set_snatcher_amount" validate:"required,min=2,max=4"`
 	RentAmount          int `msgpack:"rent_amount" validate:"required,min=2,max=4"`
 	WildRentAmount      int `msgpack:"wild_rent_amount" validate:"required,min=3,max=6"`
+
+	// nah! rules
+	NahConsumesMove bool `msgpack:"nah_consumes_move"`
 }
 
 func DefaultSettings() Settings {
@@ -76,6 +80,7 @@ func DefaultSettings() Settings {
 		SetSnatcherAmount:   2,
 		RentAmount:          2,
 		WildRentAmount:      3,
+		NahConsumesMove:     true,
 	}
 }
 
@@ -104,4 +109,10 @@ func (s *Settings) Decode(data []byte) error {
 	s.DemandTimeout = s.MoveTimeout * 2 / 3
 
 	return nil
+}
+
+func (s *Settings) Proto() *monopoly_deal_schema.Settings {
+	return &monopoly_deal_schema.Settings{
+		NahConsumesMove: s.NahConsumesMove,
+	}
 }

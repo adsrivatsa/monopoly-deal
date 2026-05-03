@@ -121,6 +121,7 @@ func (g *Game) Proto(playerID uuid.UUID, allPlayerIDs []uuid.UUID) *monopoly_dea
 		AssetImages:     assetImages,
 		MaxHandSize:     int32(g.Config.MaxHandSize),
 		Deadlines:       nil, // populated by caller
+		Settings:        g.Config.Proto(),
 	}
 }
 
@@ -1637,7 +1638,7 @@ func (g *Game) DenyDemand(playerID uuid.UUID, demandID Identifier, cardID Identi
 	}
 
 	isCurrentPlayer := g.Players[g.CurrPlayerIdx] == playerID
-	if isCurrentPlayer {
+	if isCurrentPlayer && g.Config.NahConsumesMove {
 		err = g.checkMoves()
 		if err != nil {
 			return nil, err
@@ -1677,7 +1678,7 @@ func (g *Game) DenyDemand(playerID uuid.UUID, demandID Identifier, cardID Identi
 	action := NewActionDemandsCreated(g.SequenceNum, playerID, &card, &deniedDemand, demand)
 
 	g.LastAction = card
-	if isCurrentPlayer {
+	if isCurrentPlayer && g.Config.NahConsumesMove {
 		g.CompleteMove()
 	}
 	g.SequenceNum++
