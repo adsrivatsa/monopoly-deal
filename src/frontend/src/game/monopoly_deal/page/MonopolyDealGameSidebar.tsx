@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
 import ChatBox from "../../../components/chat/ChatBox";
 import type { Player } from "../../../generated/monopoly_deal";
+import type { MonopolyDealBoardViewMode } from "../MonopolyDealGameMount";
 import type { ActionHistoryEntry, GameChatMessage } from "./monopolyDealPageTypes";
 
 type MonopolyDealGameSidebarProps = {
@@ -14,8 +15,8 @@ type MonopolyDealGameSidebarProps = {
   selfPlayerId: string | null;
   chatMessages: GameChatMessage[];
   onSendChatMessage: (payload: string) => void;
-  currentTurnPlayerId: string | null;
-  moneyByPlayerId: Record<string, number>;
+  boardViewMode: MonopolyDealBoardViewMode;
+  onBoardViewModeChange: (viewMode: MonopolyDealBoardViewMode) => void;
 };
 
 type ActionHistoryEntryViewProps = {
@@ -413,8 +414,8 @@ const MonopolyDealGameSidebar = ({
   selfPlayerId,
   chatMessages,
   onSendChatMessage,
-  currentTurnPlayerId,
-  moneyByPlayerId,
+  boardViewMode,
+  onBoardViewModeChange,
 }: MonopolyDealGameSidebarProps) => {
   return (
     <aside className="game-sidebar" aria-label="Game sidebar">
@@ -519,37 +520,21 @@ const MonopolyDealGameSidebar = ({
             messagesInnerClassName="game-chat-received-list"
           />
 
-          <section className="game-sidebar-card game-players-card">
-            <h2 className="game-sidebar-title">Players</h2>
-            <div className="game-players-list">
-              {players.length === 0 ? (
-                <p className="game-sidebar-empty">Waiting for players</p>
-              ) : (
-                players.map((player) => (
-                  <article className="game-player-snippet" key={player.playerId}>
-                    <img
-                      className="game-player-avatar"
-                      src={player.avatarUrl}
-                      alt={player.displayName}
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="game-player-meta">
-                      <p className="game-player-name">
-                        {player.displayName}
-                        {player.playerId === currentTurnPlayerId ? (
-                          <span className="game-player-pill">Current turn</span>
-                        ) : null}
-                      </p>
-                      <p className="game-player-stats">
-                        ${moneyByPlayerId[player.playerId] ?? 0}M · {player.completedSets} sets ·{" "}
-                        {player.handCards} cards
-                      </p>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
+          <section className="game-sidebar-card game-board-view-card">
+            <h2 className="game-sidebar-title">Board view</h2>
+            <button
+              type="button"
+              className="game-board-view-switch"
+              onClick={() => {
+                onBoardViewModeChange(
+                  boardViewMode === "expanded" ? "compact" : "expanded",
+                );
+              }}
+            >
+              {boardViewMode === "expanded"
+                ? "Switch to Compact view"
+                : "Switch to Expanded view"}
+            </button>
           </section>
         </div>
       </section>

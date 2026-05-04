@@ -1,9 +1,16 @@
-import { type Color, type GameState } from "../../generated/monopoly_deal";
+import {
+  type Color,
+  type GameState,
+} from "../../generated/monopoly_deal";
 import MonopolyDealBoard from "./board/MonopolyDealBoard";
+
+export type MonopolyDealBoardViewMode = "expanded" | "compact";
 
 type MonopolyDealGameMountProps = {
   initialGameState: GameState | null;
   assetImageByKey: Record<number, string>;
+  boardAssetImageByKey?: Record<number, string>;
+  viewMode: MonopolyDealBoardViewMode;
   selfPlayerId?: string;
   demandDeadlineMsById?: Record<string, number>;
   onPlayMoneyCard: (cardId: string) => void;
@@ -55,6 +62,8 @@ type MonopolyDealGameMountProps = {
 const MonopolyDealGameMount = ({
   initialGameState,
   assetImageByKey,
+  boardAssetImageByKey,
+  viewMode,
   selfPlayerId,
   demandDeadlineMsById,
   onPlayMoneyCard,
@@ -85,6 +94,8 @@ const MonopolyDealGameMount = ({
     <MonopolyDealBoard
       gameState={initialGameState}
       assetImageByKey={assetImageByKey}
+      boardAssetImageByKey={viewMode === "compact" ? boardAssetImageByKey : undefined}
+      layoutMode={viewMode}
       selfPlayerId={selfPlayerId}
       demandDeadlineMsById={demandDeadlineMsById}
       onPlayMoneyCard={onPlayMoneyCard}

@@ -110,6 +110,9 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 * {
@@ -138,6 +141,10 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
   background:
     radial-gradient(circle at 10% -15%, var(--bg-glow-1), transparent 35%),
     radial-gradient(circle at 100% 10%, var(--bg-glow-2), transparent 40%),
@@ -146,14 +153,23 @@ body {
 
 #root {
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 .app-shell {
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 .app-shell__content {
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 .app-nav {
@@ -1471,7 +1487,7 @@ h1 {
 
 .game-page {
   width: 100%;
-  max-width: none;
+  max-width: 100vw;
   margin: 0;
   padding: calc(var(--game-nav-offset, 4.1rem) + 0.65rem) 0 0.9rem;
   min-height: 0;
@@ -1479,8 +1495,20 @@ h1 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 25%);
   gap: 0.75rem;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
   position: relative;
+  scrollbar-width: none;
+}
+
+.game-page::-webkit-scrollbar {
+  display: none;
+}
+
+.game-page--compact {
+  overscroll-behavior-x: none;
 }
 
 .game-page--ended> :not(.game-end-overlay) {
@@ -1595,10 +1623,55 @@ h1 {
   min-width: 0;
   min-height: 0;
   display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   position: relative;
 }
 
+.game-board-view-card {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+  gap: 0.55rem;
+  align-items: stretch;
+}
+
+.game-board-view-switch {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid color-mix(in oklab, var(--primary) 44%, var(--border) 56%);
+  border-radius: 10px;
+  padding: 0.48rem 0.6rem;
+  background: color-mix(in oklab, var(--primary) 18%, var(--card) 82%);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.game-board-view-switch:hover {
+  border-color: color-mix(in oklab, var(--primary) 68%, var(--border) 32%);
+  background: color-mix(in oklab, var(--primary) 26%, var(--card) 74%);
+}
+
+.game-page__board > .md-board,
+.game-page__board > .md-compact-board {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
 .game-mount {
+  flex: 1 1 auto;
   width: 100%;
   height: 100%;
   max-height: 100%;
@@ -1620,12 +1693,13 @@ h1 {
 }
 
 .game-chat-panel {
-  flex: 0 0 35%;
+  flex: 1 1 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 .game-action-history-panel {
-  flex: 0 0 40%;
+  flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
 }
@@ -1661,8 +1735,16 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-width: 0;
   min-height: 0;
-  height: 100%;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.game-sidebar-panels__content > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .chat-box__header,
@@ -1760,6 +1842,7 @@ h1 {
   padding: 0.8rem;
   display: flex;
   flex-direction: column;
+  min-width: 0;
   min-height: 0;
 }
 
@@ -2140,8 +2223,16 @@ h1 {
     padding: calc(var(--game-nav-offset, 3.85rem) + 0.55rem) 0.6rem 0.6rem;
     grid-template-columns: 1fr;
     grid-template-rows: minmax(560px, 92dvh) 1fr;
-    height: auto;
-    min-height: calc(100dvh - var(--game-nav-offset, 3.85rem));
+    height: 100dvh;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .game-page::-webkit-scrollbar {
+    display: none;
   }
 
   .game-mount {

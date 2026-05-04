@@ -31,9 +31,12 @@ import { getPlayer } from "../../../api/player";
 import ErrorToastStack, {
   type ErrorToastNotice,
 } from "../../../components/ui/error-toast-stack";
-import MonopolyDealGameMount from "../MonopolyDealGameMount";
+import MonopolyDealGameMount, {
+  type MonopolyDealBoardViewMode,
+} from "../MonopolyDealGameMount";
 import {
   AssetKey,
+  AssetImageKind,
   Category,
   Color,
   type Error as GameError,
@@ -53,15 +56,55 @@ import type {
 } from "./monopolyDealPageTypes";
 
 type GameErrorNotice = ErrorToastNotice;
+type AssetImageByKey = Record<number, string>;
+type AssetImagesByKind = {
+  large: AssetImageByKey;
+  small: AssetImageByKey;
+};
 
-const toAssetImageMap = (assetImages: AssetImage[]): Record<number, string> => {
-  return assetImages.reduce<Record<number, string>>((lookup, assetImage) => {
-    if (assetImage.imageUrl) {
-      lookup[assetImage.assetKey] = assetImage.imageUrl;
+const createEmptyAssetImagesByKind = (): AssetImagesByKind => ({
+  large: {},
+  small: {},
+});
+
+const COMPACT_BOARD_MEDIA_QUERY = "(max-width: 840px)";
+
+const getInitialBoardViewMode = (): MonopolyDealBoardViewMode => {
+  if (
+    typeof window !== "undefined" &&
+    window.matchMedia(COMPACT_BOARD_MEDIA_QUERY).matches
+  ) {
+    return "compact";
+  }
+
+  return "expanded";
+};
+
+const hasAssetImageMapChanges = (
+  current: AssetImageByKey,
+  incoming: AssetImageByKey,
+): boolean => {
+  return Object.entries(incoming).some(([assetKey, imageUrl]) => {
+    return current[Number(assetKey)] !== imageUrl;
+  });
+};
+
+const toAssetImagesByKind = (assetImages: AssetImage[]): AssetImagesByKind => {
+  return assetImages.reduce<AssetImagesByKind>((lookup, assetImage) => {
+    if (!assetImage.imageUrl) {
+      return lookup;
+    }
+
+    if (assetImage.kind === AssetImageKind.ASSET_IMAGE_KIND_LARGE) {
+      lookup.large[assetImage.assetKey] = assetImage.imageUrl;
+    }
+
+    if (assetImage.kind === AssetImageKind.ASSET_IMAGE_KIND_SMALL) {
+      lookup.small[assetImage.assetKey] = assetImage.imageUrl;
     }
 
     return lookup;
-  }, {});
+  }, createEmptyAssetImagesByKind());
 };
 
 const toClientGameError = (error: unknown, code: string): GameError => {
@@ -274,9 +317,8 @@ const MonopolyDealGamePage = () => {
   const [initialGameState, setInitialGameState] = useState<GameState | null>(
     null,
   );
-  const [assetImageByKey, setAssetImageByKey] = useState<
-    Record<number, string>
-  >({});
+  const [assetImagesByKind, setAssetImagesByKind] =
+    useState<AssetImagesByKind>(createEmptyAssetImagesByKind);
   const [selfPlayerId, setSelfPlayerId] = useState<string | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentTurnPlayerId, setCurrentTurnPlayerId] = useState<string | null>(
@@ -299,6 +341,8 @@ const MonopolyDealGamePage = () => {
   const [demandDeadlineMsById, setDemandDeadlineMsById] = useState<
     Record<string, number>
   >({});
+  const [boardViewMode, setBoardViewMode] =
+    useState<MonopolyDealBoardViewMode>(getInitialBoardViewMode);
 
   const pushErrorNotice = useCallback(
     (
@@ -348,17 +392,15 @@ const MonopolyDealGamePage = () => {
   }, [pushErrorNotice]);
 
   const handCards = initialGameState?.yourHand?.cards ?? [];
-  const moneyByPlayerId = useMemo(() => {
-    const totals: Record<string, number> = {};
-    for (const pile of initialGameState?.money ?? []) {
-      const pileTotal = pile.cards.reduce((sum, card) => {
-        return sum + (card.value ?? 0);
-      }, 0);
-      totals[pile.playerId] = (totals[pile.playerId] ?? 0) + pileTotal;
-    }
-    return totals;
-  }, [initialGameState?.money]);
   const handCardIdsKey = handCards.map((card) => card.cardId).join("|");
+  const assetImageByKey = assetImagesByKind.large;
+  const boardAssetImageByKey = useMemo(
+    () => ({
+      ...assetImagesByKind.large,
+      ...assetImagesByKind.small,
+    }),
+    [assetImagesByKind.large, assetImagesByKind.small],
+  );
   const maxHandSize = initialGameState?.maxHandSize ?? 0;
   const discardRequiredCount = Math.max(0, handCards.length - maxHandSize);
   const isSelfTurn = !!selfPlayerId && selfPlayerId === currentTurnPlayerId;
@@ -543,26 +585,31 @@ const MonopolyDealGamePage = () => {
             const assetImages =
               message.monopolyDealMessage?.gameState?.assetImages;
             if (assetImages && assetImages.length > 0) {
-              const incomingAssetImageByKey = toAssetImageMap(assetImages);
-              setAssetImageByKey((current) => {
-                let hasChanges = false;
-
-                for (const [assetKey, imageUrl] of Object.entries(
-                  incomingAssetImageByKey,
-                )) {
-                  if (current[Number(assetKey)] !== imageUrl) {
-                    hasChanges = true;
-                    break;
-                  }
-                }
+              const incomingAssetImagesByKind = toAssetImagesByKind(assetImages);
+              setAssetImagesByKind((current) => {
+                const hasChanges =
+                  hasAssetImageMapChanges(
+                    current.large,
+                    incomingAssetImagesByKind.large,
+                  ) ||
+                  hasAssetImageMapChanges(
+                    current.small,
+                    incomingAssetImagesByKind.small,
+                  );
 
                 if (!hasChanges) {
                   return current;
                 }
 
                 return {
-                  ...current,
-                  ...incomingAssetImageByKey,
+                  large: {
+                    ...current.large,
+                    ...incomingAssetImagesByKind.large,
+                  },
+                  small: {
+                    ...current.small,
+                    ...incomingAssetImagesByKind.small,
+                  },
                 };
               });
             }
@@ -3779,6 +3826,7 @@ const MonopolyDealGamePage = () => {
   const gamePageClassName = [
     "page",
     "game-page",
+    `game-page--${boardViewMode}`,
     wonGame ? "game-page--ended" : "",
     isSidebarCollapsed ? "game-page--sidebar-collapsed" : "",
   ]
@@ -3792,6 +3840,8 @@ const MonopolyDealGamePage = () => {
           <MonopolyDealGameMount
             initialGameState={initialGameState}
             assetImageByKey={assetImageByKey}
+            boardAssetImageByKey={boardAssetImageByKey}
+            viewMode={boardViewMode}
             selfPlayerId={selfPlayerId ?? undefined}
             demandDeadlineMsById={demandDeadlineMsById}
             onPlayMoneyCard={handlePlayMoneyCard}
@@ -3840,8 +3890,8 @@ const MonopolyDealGamePage = () => {
           selfPlayerId={selfPlayerId}
           chatMessages={chatMessages}
           onSendChatMessage={handleSendChatMessage}
-          currentTurnPlayerId={currentTurnPlayerId}
-          moneyByPlayerId={moneyByPlayerId}
+          boardViewMode={boardViewMode}
+          onBoardViewModeChange={setBoardViewMode}
         />
 
         {wonGame ? (

@@ -30,6 +30,8 @@ import "./monopoly-deal-board.css";
 type MonopolyDealBoardProps = {
   gameState: GameState | null;
   assetImageByKey: Record<number, string>;
+  boardAssetImageByKey?: Record<number, string>;
+  layoutMode?: "expanded" | "compact";
   selfPlayerId?: string;
   demandDeadlineMsById?: Record<string, number>;
   onPlayMoneyCard: (cardId: string) => void;
@@ -350,6 +352,13 @@ const clampPan = (
   return { x: nextX, y: nextY };
 };
 
+const centerPan = (zoom: number, viewportSize: Size, contentSize: Size): Pan => {
+  return {
+    x: (viewportSize.width - contentSize.width * zoom) / 2,
+    y: (viewportSize.height - contentSize.height * zoom) / 2,
+  };
+};
+
 const distanceBetweenPoints = (
   a: { x: number; y: number },
   b: { x: number; y: number },
@@ -372,6 +381,8 @@ const midpointBetweenPoints = (
 const MonopolyDealBoard = ({
   gameState,
   assetImageByKey,
+  boardAssetImageByKey,
+  layoutMode = "expanded",
   selfPlayerId,
   demandDeadlineMsById,
   onPlayMoneyCard,
@@ -431,6 +442,7 @@ const MonopolyDealBoard = ({
   const panStartPointRef = useRef<{ x: number; y: number } | null>(null);
   const didPanDuringPointerRef = useRef(false);
   const suppressClickUntilRef = useRef(0);
+  const hasUserAdjustedBoardRef = useRef(false);
   const activeTouchPointsRef = useRef<Map<number, { x: number; y: number }>>(
     new Map(),
   );
@@ -529,6 +541,7 @@ const MonopolyDealBoard = ({
     gameState.lastAction.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
       ? [gameState.lastAction]
       : [];
+  const effectiveBoardAssetImageByKey = boardAssetImageByKey ?? assetImageByKey;
 
   const moneyByPlayer = useMemo(() => {
     const lookup: Record<string, Card[]> = {};
@@ -553,7 +566,7 @@ const MonopolyDealBoard = ({
     const lookup: Record<string, string> = {};
     for (const propertySet of gameState?.properties ?? []) {
       for (const card of propertySet.cards) {
-        const imageUrl = assetImageByKey[card.assetKey];
+        const imageUrl = effectiveBoardAssetImageByKey[card.assetKey];
         if (imageUrl) {
           lookup[card.cardId] = imageUrl;
         }
@@ -572,7 +585,7 @@ const MonopolyDealBoard = ({
     }
 
     return lookup;
-  }, [gameState?.properties]);
+  }, [effectiveBoardAssetImageByKey, gameState?.properties]);
 
   const propertySetCardsById = useMemo(() => {
     const lookup: Record<string, Card[]> = {};
@@ -852,10 +865,13 @@ const MonopolyDealBoard = ({
     [propertyCardById],
   );
 
-  const { columns } = useMemo(
-    () => computeBoardGrid(orderedPlayers.length),
-    [orderedPlayers.length],
-  );
+  const { columns } = useMemo(() => {
+    if (layoutMode === "compact") {
+      return { columns: 1 };
+    }
+
+    return computeBoardGrid(orderedPlayers.length);
+  }, [layoutMode, orderedPlayers.length]);
 
   const boardColumnWidth = useMemo(() => {
     const viewportWidth = Math.max(viewportSize.width, 1);
@@ -888,14 +904,20 @@ const MonopolyDealBoard = ({
   }, [columns, orderedPlayers]);
 
   const boardStyle = useMemo<CSSProperties>(() => {
+    const compactBoardWidth =
+      layoutMode === "compact"
+        ? `${Math.max(viewportSize.width, contentSize.height)}px`
+        : undefined;
+
     return {
       transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
       display: "flex",
       alignItems: "flex-start",
       gap: `${BOARD_COLUMN_GAP_REM}rem`,
       "--board-columns": columns.toString(),
+      "--md-compact-board-width": compactBoardWidth,
     };
-  }, [pan.x, pan.y, zoom, columns]);
+  }, [columns, contentSize.height, layoutMode, pan.x, pan.y, viewportSize.width, zoom]);
 
   const boardContentSize = useMemo<Size>(() => {
     return {
@@ -912,6 +934,31 @@ const MonopolyDealBoard = ({
     const fitZoomY = viewportSize.height / boardContentSize.height;
     return Math.max(MIN_ZOOM, Math.min(fitZoomX, fitZoomY, 1));
   }, [viewportSize, boardContentSize]);
+
+  const initialBoardZoom = useMemo(() => {
+    if (
+      viewportSize.width <= 1 ||
+      viewportSize.height <= 1 ||
+      boardContentSize.width <= 1 ||
+      boardContentSize.height <= 1
+    ) {
+      return dynamicMinZoom;
+    }
+
+    if (layoutMode === "expanded") {
+      return dynamicMinZoom;
+    }
+
+    const fitZoomX = viewportSize.width / boardContentSize.width;
+    return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, fitZoomX));
+  }, [
+    boardContentSize.height,
+    boardContentSize.width,
+    dynamicMinZoom,
+    layoutMode,
+    viewportSize.height,
+    viewportSize.width,
+  ]);
 
   const withErrorHandling = useCallback(
     (fn: () => void) => {
@@ -955,15 +1002,49 @@ const MonopolyDealBoard = ({
   }, [orderedPlayers.length]);
 
   useEffect(() => {
-    if (
-      !hasInitializedZoomRef.current &&
+    hasInitializedZoomRef.current = false;
+    hasUserAdjustedBoardRef.current = false;
+    setPan({ x: 0, y: 0 });
+  }, [layoutMode]);
+
+  useEffect(() => {
+    const canInitialize =
       viewportSize.width > 1 &&
-      boardContentSize.width > 1
-    ) {
-      hasInitializedZoomRef.current = true;
-      setZoom(dynamicMinZoom);
+      viewportSize.height > 1 &&
+      boardContentSize.width > 1 &&
+      boardContentSize.height > 1;
+
+    if (!canInitialize) {
+      return;
     }
-  }, [viewportSize, boardContentSize, dynamicMinZoom]);
+
+    if (layoutMode === "compact" && !hasUserAdjustedBoardRef.current) {
+      hasInitializedZoomRef.current = true;
+      setZoom(initialBoardZoom);
+      setPan(
+        clampPan(
+          centerPan(initialBoardZoom, viewportSize, boardContentSize),
+          initialBoardZoom,
+          viewportSize,
+          boardContentSize,
+        ),
+      );
+      return;
+    }
+
+    if (!hasInitializedZoomRef.current) {
+      hasInitializedZoomRef.current = true;
+      setZoom(initialBoardZoom);
+      setPan(
+        clampPan(
+          centerPan(initialBoardZoom, viewportSize, boardContentSize),
+          initialBoardZoom,
+          viewportSize,
+          boardContentSize,
+        ),
+      );
+    }
+  }, [viewportSize, boardContentSize, initialBoardZoom, layoutMode]);
 
   useEffect(() => {
     setPan((current) =>
@@ -974,6 +1055,7 @@ const MonopolyDealBoard = ({
   const onBoardWheel = useCallback(
     (event: globalThis.WheelEvent) => {
       withErrorHandling(() => {
+        hasUserAdjustedBoardRef.current = true;
         event.preventDefault();
         const viewport = viewportRef.current;
         if (!viewport) {
@@ -1013,7 +1095,12 @@ const MonopolyDealBoard = ({
         });
       });
     },
-    [boardContentSize, viewportSize, withErrorHandling, dynamicMinZoom],
+    [
+      boardContentSize,
+      viewportSize,
+      withErrorHandling,
+      dynamicMinZoom,
+    ],
   );
 
   useEffect(() => {
@@ -1073,6 +1160,7 @@ const MonopolyDealBoard = ({
         };
         const distance = distanceBetweenPoints(first, second);
 
+        hasUserAdjustedBoardRef.current = true;
         pinchStartDistanceRef.current = distance;
         pinchStartZoomRef.current = zoom;
         pinchWorldCenterRef.current = {
@@ -1184,6 +1272,7 @@ const MonopolyDealBoard = ({
           return;
         }
         didPanDuringPointerRef.current = true;
+        hasUserAdjustedBoardRef.current = true;
         setIsPanning(true);
       }
 
@@ -2178,7 +2267,7 @@ const MonopolyDealBoard = ({
             <GameCardStackBox
               title={`Money · $${playerMoneyTotal}M`}
               cards={playerMoney}
-              assetImageByKey={assetImageByKey}
+              assetImageByKey={effectiveBoardAssetImageByKey}
               layout="stack"
               emptyLabel={moneyEmptyLabel}
               selectableCards={
@@ -2285,7 +2374,7 @@ const MonopolyDealBoard = ({
                   return rentBonuses.length > 0 ? ` ${rentBonuses.join(" ")}` : "";
                 })()}`}
                 cards={propertySet.cards}
-                assetImageByKey={assetImageByKey}
+                assetImageByKey={effectiveBoardAssetImageByKey}
                 layout="stack"
                 color={propertySet.color}
                 emptyLabel=""
@@ -2404,7 +2493,14 @@ const MonopolyDealBoard = ({
   };
 
   return (
-    <div className="md-board">
+    <div
+      className={[
+        "md-board",
+        layoutMode === "compact" ? "md-board--compact" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="md-demand-overlay-wrap">
         {dealPicker ? (
           <aside
