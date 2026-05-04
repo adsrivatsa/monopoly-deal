@@ -799,15 +799,52 @@
   line-height: 1.2;
 }
 
-.md-hand-turn-button__moves {
-  display: inline;
-  margin-left: 0.22rem;
+.md-hand-turn-button__content {
+  display: grid;
+  gap: 0.16rem;
 }
 
-.md-hand-turn-timer-button {
-  cursor: default;
-  pointer-events: none;
-  user-select: none;
+.md-hand-turn-button__action {
+  font-weight: 700;
+}
+
+.md-hand-turn-button__status {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.md-hand-turn-button__timer {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.72;
+}
+
+.md-hand-turn-button__status--opponent {
+  display: inline;
+  line-height: 1.35;
+}
+
+.md-hand-turn-button__avatar {
+  width: 1.12rem;
+  height: 1.12rem;
+  border-radius: 0.3rem;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.34rem;
+  border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
+  background: var(--muted);
+}
+
+.md-hand-turn-button__moves {
+  display: block;
+  margin-left: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  opacity: 0.85;
 }
 
 .md-hand-main .md-card {
@@ -1099,10 +1136,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .md-hand-turn-timer-button {
-    width: 100%;
   }
 
   .md-hand-main .md-stack-box,

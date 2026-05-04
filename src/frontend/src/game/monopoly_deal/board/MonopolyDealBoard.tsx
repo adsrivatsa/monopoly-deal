@@ -513,6 +513,14 @@ const MonopolyDealBoard = ({
   const hasPendingRent = !!pendingRent;
   const currentPlayerId = gameState?.currentPlayerId ?? "";
   const isSelfTurn = !!selfPlayerId && selfPlayerId === currentPlayerId;
+  const currentTurnPlayer = players.find(
+    (player) => player.playerId === currentPlayerId,
+  );
+  const currentTurnLabel = isSelfTurn
+    ? "Your turn"
+    : currentTurnPlayer?.displayName
+      ? `${currentTurnPlayer.displayName}'s Turn`
+      : "Waiting for turn";
   const yourHand = gameState?.yourHand?.cards ?? [];
   const hasJustSayNo = yourHand.some(
     (card) => card.assetKey === AssetKey.ASSET_KEY_JUST_SAY_NO,
@@ -2718,18 +2726,6 @@ const MonopolyDealBoard = ({
         </div>
 
         <section className="md-hand-turn-controls">
-          {shouldShowTurnTimer ? (
-            <button
-              type="button"
-              className="md-demand__button md-hand-turn-button md-hand-turn-timer-button"
-              aria-live="polite"
-              aria-disabled="true"
-              tabIndex={-1}
-            >
-              Turn timer: {formatRemainingTime(remainingTurnSeconds)}
-            </button>
-          ) : null}
-
           <button
             type="button"
             className="md-demand__button md-hand-turn-button"
@@ -2741,18 +2737,38 @@ const MonopolyDealBoard = ({
                 : false)
             }
           >
-            {isDiscardRequired
-              ? `Submit Discard (${selectedDiscardCardIds.size}/${requiredDiscardCount})`
-              : isSelfTurn
-                ? (
-                    <>
-                      <span>
-                        Pass Turn{" "}
-                        <span className="md-hand-turn-button__moves">({movesLeft} left)</span>
-                      </span>
-                    </>
-                  )
-                : "Pass Turn"}
+            <span className="md-hand-turn-button__content">
+              {isDiscardRequired ? (
+                <span className="md-hand-turn-button__action">
+                  Submit Discard ({selectedDiscardCardIds.size}/{requiredDiscardCount})
+                </span>
+              ) : isSelfTurn ? (
+                <>
+                  <span className="md-hand-turn-button__action">Pass Turn</span>
+                  <span className="md-hand-turn-button__moves">
+                    ({movesLeft} {movesLeft === 1 ? "move" : "moves"} left)
+                  </span>
+                </>
+              ) : (
+                <span className="md-hand-turn-button__status md-hand-turn-button__status--opponent">
+                  {currentTurnPlayer?.avatarUrl ? (
+                    <img
+                      className="md-hand-turn-button__avatar"
+                      src={currentTurnPlayer.avatarUrl}
+                      alt={currentTurnPlayer.displayName}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : null}
+                  {currentTurnLabel}
+                </span>
+              )}
+              {shouldShowTurnTimer ? (
+                <span className="md-hand-turn-button__timer" aria-live="polite">
+                  Time left: {formatRemainingTime(remainingTurnSeconds)}
+                </span>
+              ) : null}
+            </span>
           </button>
         </section>
       </section>
