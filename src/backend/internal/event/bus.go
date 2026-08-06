@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	RoomChannelPre = "room-channel:"
-	GameChannelPre = "game-channel:"
+	RoomChannelPre = "room:"
+	GameChannelPre = "game:"
 )
 
 type Bus struct {

@@ -26,8 +26,9 @@ import (
 )
 
 const (
-	PROVIDER = "provider"
-	ROOM_ID  = "room_id"
+	PROVIDER  = "provider"
+	ROOM_ID   = "room_id"
+	GAME_TYPE = "game_type"
 )
 
 type Server struct {

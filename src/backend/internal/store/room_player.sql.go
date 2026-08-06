@@ -12,8 +12,8 @@ import (
 )
 
 const createRoomPlayer = `-- name: CreateRoomPlayer :one
-   INSERT INTO room_player (room_id, player_id, is_host)
-   VALUES ($1, $2, $3)
+   INSERT INTO room_player (room_id, player_id, is_host, is_ready)
+   VALUES ($1, $2, $3, $4)
 RETURNING room_id, player_id, is_ready, is_host, joined_at
 `
 
@@ -21,10 +21,16 @@ type CreateRoomPlayerParams struct {
 	RoomID   uuid.UUID `json:"room_id"`
 	PlayerID uuid.UUID `json:"player_id"`
 	IsHost   bool      `json:"is_host"`
+	IsReady  bool      `json:"is_ready"`
 }
 
 func (q *Queries) CreateRoomPlayer(ctx context.Context, arg CreateRoomPlayerParams) (RoomPlayer, error) {
-	row := q.db.QueryRow(ctx, createRoomPlayer, arg.RoomID, arg.PlayerID, arg.IsHost)
+	row := q.db.QueryRow(ctx, createRoomPlayer,
+		arg.RoomID,
+		arg.PlayerID,
+		arg.IsHost,
+		arg.IsReady,
+	)
 	var i RoomPlayer
 	err := row.Scan(
 		&i.RoomID,
@@ -99,6 +105,26 @@ SELECT room_id, player_id, is_ready, is_host, joined_at
 
 func (q *Queries) GetRoomPlayer(ctx context.Context, playerID uuid.UUID) (RoomPlayer, error) {
 	row := q.db.QueryRow(ctx, getRoomPlayer, playerID)
+	var i RoomPlayer
+	err := row.Scan(
+		&i.RoomID,
+		&i.PlayerID,
+		&i.IsReady,
+		&i.IsHost,
+		&i.JoinedAt,
+	)
+	return i, err
+}
+
+const getRoomPlayerForUpdate = `-- name: GetRoomPlayerForUpdate :one
+SELECT room_id, player_id, is_ready, is_host, joined_at
+  FROM room_player
+ WHERE player_id = $1
+FOR UPDATE
+`
+
+func (q *Queries) GetRoomPlayerForUpdate(ctx context.Context, playerID uuid.UUID) (RoomPlayer, error) {
+	row := q.db.QueryRow(ctx, getRoomPlayerForUpdate, playerID)
 	var i RoomPlayer
 	err := row.Scan(
 		&i.RoomID,

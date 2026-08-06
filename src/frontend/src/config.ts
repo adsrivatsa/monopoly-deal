@@ -15,6 +15,8 @@ const roomSocketUrl =
   import.meta.env.VITE_ROOM_SOCKET_URL ?? `${wsDomain}/room/socket`;
 const gameSocketUrl =
   import.meta.env.VITE_GAME_SOCKET_URL ?? `${wsDomain}/game/socket`;
+const buildQuickPlaySocketUrl = (game: string) =>
+  `${wsDomain}/room/quick-play/${game}/socket`;
 
 export const appConfig = {
   backendUrl,
@@ -23,6 +25,7 @@ export const appConfig = {
   },
   room: {
     socketUrl: roomSocketUrl,
+    quickPlaySocketUrl: buildQuickPlaySocketUrl,
     create: {
       games: ["monopoly_deal"],
       capacity: {

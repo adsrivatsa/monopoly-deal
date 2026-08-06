@@ -32,6 +32,10 @@ message RoomCreated {
   Room room = 1;
 }
 
+message RoomJoined {
+  Room room = 1;
+}
+
 message PlayerJoinedRoom {
   string room_id = 1;
   Player player = 2;
@@ -81,6 +85,7 @@ message ServerMessage {
     PlayerToggledReady player_toggled_ready = 5;
     SettingsUpdated settings_updated = 6;
     GameStarted game_started = 7;
+    RoomJoined room_joined = 8;
   }
 }
 

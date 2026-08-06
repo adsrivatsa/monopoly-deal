@@ -119,6 +119,7 @@ type Room struct {
 	Game        GameType  `json:"game"`
 	Settings    []byte    `json:"settings"`
 	IsPrivate   bool      `json:"is_private"`
+	IsQuickPlay bool      `json:"is_quick_play"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 

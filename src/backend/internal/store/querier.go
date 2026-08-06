@@ -34,13 +34,18 @@ type Querier interface {
 	GetPlayers(ctx context.Context, playerIds []uuid.UUID) ([]Player, error)
 	GetPlayersByGame(ctx context.Context, gameID uuid.UUID) ([]Player, error)
 	GetPlayersByRoom(ctx context.Context, roomID uuid.UUID) ([]GetPlayersByRoomRow, error)
+	GetQuickPlayRoomForUpdate(ctx context.Context, game GameType) (Room, error)
 	GetRoom(ctx context.Context, roomID uuid.UUID) (Room, error)
 	GetRoomByPlayer(ctx context.Context, playerID uuid.UUID) (Room, error)
+	GetRoomForUpdate(ctx context.Context, roomID uuid.UUID) (Room, error)
 	GetRoomPlayer(ctx context.Context, playerID uuid.UUID) (RoomPlayer, error)
+	GetRoomPlayerForUpdate(ctx context.Context, playerID uuid.UUID) (RoomPlayer, error)
 	IncrementRoomOccupied(ctx context.Context, roomID uuid.UUID) (Room, error)
 	ListGameHistory(ctx context.Context, arg ListGameHistoryParams) ([]GameHistory, error)
 	ListGameTimeouts(ctx context.Context, gameID uuid.UUID) ([]GameTimeout, error)
 	ListRooms(ctx context.Context, arg ListRoomsParams) ([]ListRoomsRow, error)
+	// Serializes quick-play find-or-create across app instances (released at transaction end).
+	QuickPlayBucketXactLock(ctx context.Context, arg QuickPlayBucketXactLockParams) error
 	ToggleRoomPlayerIsReady(ctx context.Context, arg ToggleRoomPlayerIsReadyParams) (RoomPlayer, error)
 	UpdateGameState(ctx context.Context, arg UpdateGameStateParams) (Game, error)
 	UpdatePlayer(ctx context.Context, arg UpdatePlayerParams) (Player, error)

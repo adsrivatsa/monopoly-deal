@@ -17,6 +17,34 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func (c *Controller) PublishAction(ctx context.Context, gameID uuid.UUID, action monopoly_deal.Action, deadline time.Time) error {
+	actionProto := action.Proto()
+	actionProto.TurnDeadlineMs = deadline.UnixMilli()
+
+	e := &monopoly_deal_schema.ServerMessage{
+		Payload: &monopoly_deal_schema.ServerMessage_Action{
+			Action: actionProto,
+		},
+	}
+
+	return c.PublishEvent(ctx, gameID, e)
+}
+
+func (c *Controller) PublishEvent(ctx context.Context, gameID uuid.UUID, e *monopoly_deal_schema.ServerMessage) error {
+	s := &schema.ServerMessage{
+		Payload: &schema.ServerMessage_MonopolyDealMessage{
+			MonopolyDealMessage: e,
+		},
+	}
+
+	buf, err := proto.Marshal(s)
+	if err != nil {
+		return err
+	}
+
+	return c.bus.Publish(ctx, event.GameChannelPre+gameID.String(), event.NewMonopolyDealEvent(buf))
+}
+
 func (c *Controller) HandleEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_MonopolyDealMessage) error {
 	switch p := msg.MonopolyDealMessage.GetPayload().(type) {
 	case *monopoly_deal_schema.ClientMessage_Chat:
@@ -35,26 +63,16 @@ func (c *Controller) handleChat(ctx context.Context, tp token.Payload, msg *mono
 		return err
 	}
 
-	e := &schema.ServerMessage{
-		Payload: &schema.ServerMessage_MonopolyDealMessage{
-			MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
-				Payload: &monopoly_deal_schema.ServerMessage_ChatReceived{
-					ChatReceived: &monopoly_deal_schema.ChatReceived{
-						PlayerId: tp.PlayerID.String(),
-						Payload:  msg.Chat.Payload,
-					},
-				},
+	e := &monopoly_deal_schema.ServerMessage{
+		Payload: &monopoly_deal_schema.ServerMessage_ChatReceived{
+			ChatReceived: &monopoly_deal_schema.ChatReceived{
+				PlayerId: tp.PlayerID.String(),
+				Payload:  msg.Chat.Payload,
 			},
 		},
 	}
 
-	buf, err := proto.Marshal(e)
-	if err != nil {
-		return err
-	}
-
-	err = c.bus.Publish(ctx, event.GameChannelPre+g.GameID.String(), event.NewMonopolyDealEvent(buf))
-	return err
+	return c.PublishEvent(ctx, g.GameID, e)
 }
 
 func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_MonopolyDealMessage) error {
@@ -349,50 +367,23 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		return err
 	}
 
-	actionProto := action.Proto()
-	actionProto.TurnDeadlineMs = deadline.UnixMilli()
-
-	e := &schema.ServerMessage{
-		Payload: &schema.ServerMessage_MonopolyDealMessage{
-			MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
-				Payload: &monopoly_deal_schema.ServerMessage_Action{
-					Action: actionProto,
-				},
-			},
-		},
-	}
-
-	buf, err := proto.Marshal(e)
-	if err != nil {
-		return err
-	}
-
-	err = c.bus.Publish(ctx, event.GameChannelPre+gameID.String(), event.NewMonopolyDealEvent(buf))
+	err = c.PublishAction(ctx, gameID, action, deadline)
 	if err != nil {
 		return err
 	}
 
 	if didWin {
-		e = &schema.ServerMessage{
-			Payload: &schema.ServerMessage_MonopolyDealMessage{
-				MonopolyDealMessage: &monopoly_deal_schema.ServerMessage{
-					Payload: &monopoly_deal_schema.ServerMessage_WonGame{
-						WonGame: &monopoly_deal_schema.WonGame{
-							PlayerId:         tp.PlayerID.String(),
-							NumCompletedSets: int32(totalSets),
-							Money:            int32(totalMoney),
-						},
-					},
+		e := &monopoly_deal_schema.ServerMessage{
+			Payload: &monopoly_deal_schema.ServerMessage_WonGame{
+				WonGame: &monopoly_deal_schema.WonGame{
+					PlayerId:         tp.PlayerID.String(),
+					NumCompletedSets: int32(totalSets),
+					Money:            int32(totalMoney),
 				},
 			},
 		}
 
-		buf, err = proto.Marshal(e)
-		if err != nil {
-			return err
-		}
-
-		err = c.bus.Publish(ctx, event.GameChannelPre+gameID.String(), event.NewMonopolyDealEvent(buf))
+		err = c.PublishEvent(ctx, gameID, e)
 		if err != nil {
 			return err
 		}

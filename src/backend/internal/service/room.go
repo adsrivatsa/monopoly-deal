@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"time"
+
+	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
 	"the-deal/internal/event"
 	"the-deal/internal/schema"
@@ -9,9 +12,25 @@ import (
 	"the-deal/internal/store"
 	"the-deal/internal/token"
 
+	"github.com/adsrivatsa/randomize"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
 )
+
+func (c *Controller) PublishEvent(ctx context.Context, roomID uuid.UUID, e *room_schema.ServerMessage) error {
+	s := &schema.ServerMessage{
+		Payload: &schema.ServerMessage_RoomMessage{
+			RoomMessage: e,
+		},
+	}
+
+	buf, err := proto.Marshal(s)
+	if err != nil {
+		return err
+	}
+
+	return c.bus.Publish(ctx, event.RoomChannelPre+roomID.String(), event.NewServerMessageEvent(buf))
+}
 
 func (c *Controller) ListenRoomEvents(ctx context.Context, tp token.Payload, callback func(message *schema.ServerMessage)) error {
 	rp, err := c.store.GetRoomPlayer(ctx, tp.PlayerID)
@@ -81,6 +100,53 @@ func (c *Controller) GetRoom(ctx context.Context, tp token.Payload) (LongRoom, e
 	}, nil
 }
 
+func (c *Controller) GetRoomJoinedMessage(ctx context.Context, tp token.Payload) (*schema.ServerMessage, error) {
+	r, err := c.store.GetRoomByPlayer(ctx, tp.PlayerID)
+	if err != nil {
+		if errors.DBErrorCode(err) == errors.NoDataFound {
+			return nil, errors.EntityNotFound(errors.EntityRoom, err)
+		}
+		return nil, err
+	}
+
+	ps, err := c.store.GetPlayersByRoom(ctx, r.RoomID)
+	if err != nil {
+		return nil, err
+	}
+
+	players := make([]*room_schema.Player, len(ps))
+	for i, p := range ps {
+		players[i] = &room_schema.Player{
+			PlayerId:    p.PlayerID.String(),
+			DisplayName: p.DisplayName,
+			AvatarUrl:   p.ImageUrl,
+			IsReady:     p.IsReady,
+			IsHost:      p.IsHost,
+		}
+	}
+
+	return &schema.ServerMessage{
+		Payload: &schema.ServerMessage_RoomMessage{
+			RoomMessage: &room_schema.ServerMessage{
+				Payload: &room_schema.ServerMessage_RoomJoined{
+					RoomJoined: &room_schema.RoomJoined{
+						Room: &room_schema.Room{
+							RoomId:      r.RoomID.String(),
+							DisplayName: r.DisplayName,
+							Players:     players,
+							Capacity:    r.Capacity,
+							Occupied:    r.Occupied,
+							Game:        r.Game.Proto(),
+							Settings:    r.Settings,
+							IsPrivate:   r.IsPrivate,
+						},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
 func (c *Controller) ListRooms(ctx context.Context, args ListRoomsParams) (ListRoomsRes, error) {
 	var game store.NullGameType
 	if args.Game != nil {
@@ -141,27 +207,21 @@ func (c *Controller) CreateRoom(ctx context.Context, tp token.Payload, args Crea
 		return Room{}, err
 	}
 
-	roomID, err := uuid.NewV7()
-	if err != nil {
-		return Room{}, err
-	}
-
-	r, err := c.store.CreateRoom(ctx, store.CreateRoomParams{
-		RoomID:      roomID,
-		DisplayName: args.DisplayName,
-		Capacity:    args.Capacity,
-		Game:        args.Game,
-		Settings:    args.Settings,
-		IsPrivate:   args.IsPrivate,
-	})
-	if err != nil {
-		return Room{}, err
-	}
-
-	_, err = c.store.CreateRoomPlayer(ctx, store.CreateRoomPlayerParams{
-		RoomID:   r.RoomID,
-		PlayerID: tp.PlayerID,
-		IsHost:   true,
+	var r store.Room
+	err = c.store.ExecTx(ctx, func(q *store.Queries) error {
+		var err error
+		r, _, err = c.createRoomTx(ctx, q, createRoomTxParams{
+			DisplayName: args.DisplayName,
+			Capacity:    args.Capacity,
+			Game:        args.Game,
+			Settings:    args.Settings,
+			IsPrivate:   args.IsPrivate,
+			IsQuickPlay: false,
+			PlayerID:    tp.PlayerID,
+			IsHost:      true,
+			IsReady:     false,
+		})
+		return err
 	})
 	if err != nil {
 		return Room{}, err
@@ -187,38 +247,24 @@ func (c *Controller) JoinRoom(ctx context.Context, tp token.Payload, roomID uuid
 		return err
 	}
 
+	var rp store.RoomPlayer
+	err = c.store.ExecTx(ctx, func(q *store.Queries) error {
+		var err error
+		_, rp, err = c.joinRoomTx(ctx, q, joinRoomTxParams{
+			RoomID:   roomID,
+			PlayerID: tp.PlayerID,
+			IsHost:   false,
+			IsReady:  false,
+		})
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
 	p, err := c.store.GetPlayer(ctx, store.GetPlayerParams{
 		PlayerID: &tp.PlayerID,
 	})
-	if err != nil {
-		return err
-	}
-
-	r, err := c.store.GetRoom(ctx, roomID)
-	if err != nil {
-		if errors.DBErrorCode(err) == errors.NoDataFound {
-			return errors.EntityNotFound(errors.EntityRoom, err)
-		}
-		return err
-	}
-
-	if r.Occupied >= r.Capacity {
-		return errors.RoomIsFull
-	}
-
-	rp, err := c.store.CreateRoomPlayer(ctx, store.CreateRoomPlayerParams{
-		RoomID:   roomID,
-		PlayerID: tp.PlayerID,
-		IsHost:   false,
-	})
-	if err != nil {
-		if errors.DBErrorCode(err) == errors.ForeignKeyViolation {
-			return errors.EntityNotFound(errors.EntityRoom, err)
-		}
-		return err
-	}
-
-	_, err = c.store.IncrementRoomOccupied(ctx, r.RoomID)
 	if err != nil {
 		return err
 	}
@@ -232,103 +278,97 @@ func (c *Controller) JoinRoom(ctx context.Context, tp token.Payload, roomID uuid
 		JoinedAt:    rp.JoinedAt.UnixMilli(),
 	}
 
-	e := &schema.ServerMessage{
-		Payload: &schema.ServerMessage_RoomMessage{
-			RoomMessage: &room_schema.ServerMessage{
-				Payload: &room_schema.ServerMessage_PlayerJoinedRoom{
-					PlayerJoinedRoom: &room_schema.PlayerJoinedRoom{
-						RoomId: roomID.String(),
-						Player: player,
-					},
-				},
+	e := &room_schema.ServerMessage{
+		Payload: &room_schema.ServerMessage_PlayerJoinedRoom{
+			PlayerJoinedRoom: &room_schema.PlayerJoinedRoom{
+				RoomId: roomID.String(),
+				Player: player,
 			},
 		},
 	}
 
-	buf, err := proto.Marshal(e)
-	if err != nil {
-		return err
-	}
-
-	return c.bus.Publish(ctx, event.RoomChannelPre+roomID.String(), event.NewServerMessageEvent(buf))
+	return c.PublishEvent(ctx, rp.RoomID, e)
 }
 
 func (c *Controller) LeaveRoom(ctx context.Context, tp token.Payload) error {
-	rp, err := c.store.GetRoomPlayer(ctx, tp.PlayerID)
-	if err != nil {
-		if errors.DBErrorCode(err) == errors.NoDataFound {
-			return errors.EntityNotFound(errors.EntityRoom)
-		}
-		return err
-	}
-
 	var newHostPlayerID *string
 	deleteRoom := false
-	if rp.IsHost { // host is leaving, find new host
-		newHost, err := c.store.GetOldestRoomPlayer(ctx, store.GetOldestRoomPlayerParams{
-			RoomID:          rp.RoomID,
-			LeavingPlayerID: tp.PlayerID,
-		})
+	var roomID uuid.UUID
+	err := c.store.ExecTx(ctx, func(q *store.Queries) error {
+		rp, err := q.GetRoomPlayerForUpdate(ctx, tp.PlayerID)
 		if err != nil {
 			if errors.DBErrorCode(err) == errors.NoDataFound {
-				// no other player exists to become new host, delete the room
-				deleteRoom = true
-			} else {
-				return err
+				return errors.EntityNotFound(errors.EntityRoom)
 			}
+			return err
 		}
 
-		if !deleteRoom { // set the new host
-			playerID := newHost.PlayerID.String()
-			newHostPlayerID = &playerID
+		roomID = rp.RoomID
 
-			_, err := c.store.UpdateRoomPlayerHost(ctx, store.UpdateRoomPlayerHostParams{
-				IsHost:   true,
-				RoomID:   rp.RoomID,
-				PlayerID: newHost.PlayerID,
+		if rp.IsHost { // host is leaving, find new host
+			newHost, err := q.GetOldestRoomPlayer(ctx, store.GetOldestRoomPlayerParams{
+				RoomID:          rp.RoomID,
+				LeavingPlayerID: tp.PlayerID,
 			})
 			if err != nil {
-				return err
+				if errors.DBErrorCode(err) == errors.NoDataFound {
+					// no other player exists to become new host, delete the room
+					deleteRoom = true
+				} else {
+					return err
+				}
+			}
+
+			if !deleteRoom { // set the new host
+				playerID := newHost.PlayerID.String()
+				newHostPlayerID = &playerID
+
+				_, err = q.UpdateRoomPlayerHost(ctx, store.UpdateRoomPlayerHostParams{
+					IsHost:   true,
+					RoomID:   rp.RoomID,
+					PlayerID: newHost.PlayerID,
+				})
+				if err != nil {
+					return err
+				}
 			}
 		}
-	}
 
-	err = c.store.DeleteRoomPlayer(ctx, store.DeleteRoomPlayerParams{
-		RoomID:   rp.RoomID,
-		PlayerID: tp.PlayerID,
+		err = q.DeleteRoomPlayer(ctx, store.DeleteRoomPlayerParams{
+			RoomID:   rp.RoomID,
+			PlayerID: tp.PlayerID,
+		})
+		if err != nil {
+			return err
+		}
+
+		if deleteRoom {
+			err = q.DeleteRoom(ctx, rp.RoomID)
+		} else {
+			_, err = q.DecrementRoomOccupied(ctx, rp.RoomID)
+		}
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err
 	}
 
-	if deleteRoom {
-		err = c.store.DeleteRoom(ctx, rp.RoomID)
-	} else {
-		_, err = c.store.DecrementRoomOccupied(ctx, rp.RoomID)
-		if err != nil {
-			return err
-		}
-
-		e := &schema.ServerMessage{
-			Payload: &schema.ServerMessage_RoomMessage{
-				RoomMessage: &room_schema.ServerMessage{
-					Payload: &room_schema.ServerMessage_PlayerLeftRoom{
-						PlayerLeftRoom: &room_schema.PlayerLeftRoom{
-							RoomId:          rp.RoomID.String(),
-							PlayedId:        tp.PlayerID.String(),
-							NewHostPlayerId: newHostPlayerID,
-						},
-					},
+	if !deleteRoom {
+		e := &room_schema.ServerMessage{
+			Payload: &room_schema.ServerMessage_PlayerLeftRoom{
+				PlayerLeftRoom: &room_schema.PlayerLeftRoom{
+					RoomId:          roomID.String(),
+					PlayedId:        tp.PlayerID.String(),
+					NewHostPlayerId: newHostPlayerID,
 				},
 			},
 		}
 
-		buf, err := proto.Marshal(e)
-		if err != nil {
-			return err
-		}
-
-		err = c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), event.NewServerMessageEvent(buf))
+		err = c.PublishEvent(ctx, roomID, e)
 	}
 
 	return err
@@ -351,25 +391,16 @@ func (c *Controller) ToggleIsReady(ctx context.Context, tp token.Payload) error 
 		return err
 	}
 
-	e := &schema.ServerMessage{
-		Payload: &schema.ServerMessage_RoomMessage{
-			RoomMessage: &room_schema.ServerMessage{
-				Payload: &room_schema.ServerMessage_PlayerToggledReady{
-					PlayerToggledReady: &room_schema.PlayerToggledReady{
-						PlayerId: tp.PlayerID.String(),
-						IsReady:  rp.IsReady,
-					},
-				},
+	e := &room_schema.ServerMessage{
+		Payload: &room_schema.ServerMessage_PlayerToggledReady{
+			PlayerToggledReady: &room_schema.PlayerToggledReady{
+				PlayerId: tp.PlayerID.String(),
+				IsReady:  rp.IsReady,
 			},
 		},
 	}
 
-	buf, err := proto.Marshal(e)
-	if err != nil {
-		return err
-	}
-
-	return c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), event.NewServerMessageEvent(buf))
+	return c.PublishEvent(ctx, rp.RoomID, e)
 }
 
 func (c *Controller) UpdateRoomSettings(ctx context.Context, tp token.Payload, args UpdateRoomSettingsParams) error {
@@ -396,27 +427,18 @@ func (c *Controller) UpdateRoomSettings(ctx context.Context, tp token.Payload, a
 		return err
 	}
 
-	e := &schema.ServerMessage{
-		Payload: &schema.ServerMessage_RoomMessage{
-			RoomMessage: &room_schema.ServerMessage{
-				Payload: &room_schema.ServerMessage_SettingsUpdated{
-					SettingsUpdated: &room_schema.SettingsUpdated{
-						Capacity:  r.Capacity,
-						Game:      r.Game.Proto(),
-						Settings:  r.Settings,
-						IsPrivate: r.IsPrivate,
-					},
-				},
+	e := &room_schema.ServerMessage{
+		Payload: &room_schema.ServerMessage_SettingsUpdated{
+			SettingsUpdated: &room_schema.SettingsUpdated{
+				Capacity:  r.Capacity,
+				Game:      r.Game.Proto(),
+				Settings:  r.Settings,
+				IsPrivate: r.IsPrivate,
 			},
 		},
 	}
 
-	buf, err := proto.Marshal(e)
-	if err != nil {
-		return err
-	}
-
-	return c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), event.NewServerMessageEvent(buf))
+	return c.PublishEvent(ctx, rp.RoomID, e)
 }
 
 func (c *Controller) HandleRoomEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_RoomMessage) error {
@@ -437,24 +459,207 @@ func (c *Controller) handleRoomChat(ctx context.Context, tp token.Payload, msg *
 		return err
 	}
 
-	e := &schema.ServerMessage{
-		Payload: &schema.ServerMessage_RoomMessage{
-			RoomMessage: &room_schema.ServerMessage{
-				Payload: &room_schema.ServerMessage_ChatReceived{
-					ChatReceived: &room_schema.ChatReceived{
-						PlayerId: tp.PlayerID.String(),
-						Payload:  msg.Chat.Payload,
-					},
-				},
+	e := &room_schema.ServerMessage{
+		Payload: &room_schema.ServerMessage_ChatReceived{
+			ChatReceived: &room_schema.ChatReceived{
+				PlayerId: tp.PlayerID.String(),
+				Payload:  msg.Chat.Payload,
 			},
 		},
 	}
 
-	buf, err := proto.Marshal(e)
-	if err != nil {
+	return c.PublishEvent(ctx, rp.RoomID, e)
+}
+
+func (c *Controller) LeaveQuickPlayWaitingIfPending(ctx context.Context, tp token.Payload) error {
+	_, err := c.store.GetGameByPlayer(ctx, tp.PlayerID)
+	if err == nil {
+		return nil
+	}
+	if errors.DBErrorCode(err) != errors.NoDataFound {
 		return err
 	}
 
-	err = c.bus.Publish(ctx, event.RoomChannelPre+rp.RoomID.String(), event.NewServerMessageEvent(buf))
+	err = c.LeaveRoom(ctx, tp)
+	if err == nil {
+		return nil
+	}
+
+	if errors.IsEntityNotFound(err) {
+		return nil
+	}
 	return err
+}
+
+func (c *Controller) JoinQuickPlayRoom(ctx context.Context, tp token.Payload, game store.GameType) (*uuid.UUID, error) {
+	lockGameKey, err := quickPlayGameLockKey(game)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = c.store.GetRoomPlayer(ctx, tp.PlayerID)
+	if err == nil {
+		return nil, errors.EntityAlreadyExists(errors.EntityRoom)
+	}
+	if errors.DBErrorCode(err) != errors.NoDataFound {
+		return nil, err
+	}
+
+	_, err = c.store.GetGameByPlayer(ctx, tp.PlayerID)
+	if err == nil {
+		return nil, errors.EntityAlreadyExists(errors.EntityGame)
+	}
+	if errors.DBErrorCode(err) != errors.NoDataFound {
+		return nil, err
+	}
+
+	displayName, err := randomize.Do[string]()
+	if err != nil {
+		return nil, err
+	}
+
+	var capacity int32
+	var settings []byte
+	switch game {
+	case store.GameTypeMonopolyDeal:
+		capacity = 2
+		set := monopoly_deal.DefaultSettings()
+		settings, err = set.Encode()
+	default:
+		return nil, errors.GameNotSupported
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	var r store.Room
+	var rp store.RoomPlayer
+	var gameID uuid.UUID
+	var gameStarted bool
+	var action monopoly_deal.Action
+	var deadline time.Time
+	err = c.store.ExecTx(ctx, func(q *store.Queries) error {
+		err = q.QuickPlayBucketXactLock(ctx, store.QuickPlayBucketXactLockParams{
+			LockClass: quickPlayAdvisoryLockClass,
+			GameKey:   lockGameKey,
+		})
+		if err != nil {
+			return err
+		}
+
+		r, err = q.GetQuickPlayRoomForUpdate(ctx, game)
+		if err == nil {
+			r, rp, err = c.joinRoomTx(ctx, q, joinRoomTxParams{
+				RoomID:   r.RoomID,
+				PlayerID: tp.PlayerID,
+				IsHost:   false,
+				IsReady:  true,
+			})
+			if err != nil {
+				return err
+			}
+
+			if r.Occupied >= r.Capacity {
+				ps, err := q.GetPlayersByRoom(ctx, r.RoomID)
+				if err != nil {
+					if errors.DBErrorCode(err) == errors.NoDataFound {
+						return errors.EntityNotFound(errors.EntityRoom)
+					}
+					return err
+				}
+
+				playerIDs := make([]uuid.UUID, 0, len(ps))
+				for _, p := range ps {
+					playerIDs = append(playerIDs, p.PlayerID)
+				}
+
+				switch r.Game {
+				case store.GameTypeMonopolyDeal:
+					gameID, action, deadline, err = c.MonopolyDealController.CreateGameFromRoomTx(ctx, q, r.RoomID, playerIDs)
+				default:
+					return errors.GameNotSupported
+				}
+				if err != nil {
+					return err
+				}
+				gameStarted = true
+			}
+
+			return nil
+		}
+		if errors.DBErrorCode(err) != errors.NoDataFound {
+			return err
+		}
+
+		r, rp, err = c.createRoomTx(ctx, q, createRoomTxParams{
+			DisplayName: displayName,
+			Capacity:    capacity,
+			Game:        game,
+			Settings:    settings,
+			IsPrivate:   true,
+			IsQuickPlay: true,
+			PlayerID:    tp.PlayerID,
+			IsHost:      true,
+			IsReady:     true,
+		})
+
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	p, err := c.store.GetPlayer(ctx, store.GetPlayerParams{
+		PlayerID: &tp.PlayerID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if gameStarted {
+		err = c.MonopolyDealController.PublishAction(ctx, gameID, action, deadline)
+		if err != nil {
+			return nil, err
+		}
+
+		e := &room_schema.ServerMessage{
+			Payload: &room_schema.ServerMessage_GameStarted{
+				GameStarted: &room_schema.GameStarted{
+					GameId: gameID.String(),
+				},
+			},
+		}
+
+		err = c.PublishEvent(ctx, r.RoomID, e)
+		if err != nil {
+			return nil, err
+		}
+		gid := gameID
+		return &gid, nil
+	}
+
+	player := &room_schema.Player{
+		PlayerId:    p.PlayerID.String(),
+		DisplayName: p.DisplayName,
+		AvatarUrl:   p.ImageUrl,
+		IsReady:     rp.IsReady,
+		IsHost:      rp.IsHost,
+		JoinedAt:    rp.JoinedAt.UnixMilli(),
+	}
+
+	e := &room_schema.ServerMessage{
+		Payload: &room_schema.ServerMessage_PlayerJoinedRoom{
+			PlayerJoinedRoom: &room_schema.PlayerJoinedRoom{
+				RoomId: r.RoomID.String(),
+				Player: player,
+			},
+		},
+	}
+
+	err = c.PublishEvent(ctx, r.RoomID, e)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }

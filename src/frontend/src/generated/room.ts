@@ -60,6 +60,10 @@ export interface RoomCreated {
   room: Room | undefined;
 }
 
+export interface RoomJoined {
+  room: Room | undefined;
+}
+
 export interface PlayerJoinedRoom {
   roomId: string;
   player: Player | undefined;
@@ -108,6 +112,7 @@ export interface ServerMessage {
   playerToggledReady?: PlayerToggledReady | undefined;
   settingsUpdated?: SettingsUpdated | undefined;
   gameStarted?: GameStarted | undefined;
+  roomJoined?: RoomJoined | undefined;
 }
 
 export interface ClientMessage {
@@ -524,6 +529,64 @@ export const RoomCreated: MessageFns<RoomCreated> = {
   },
   fromPartial<I extends Exact<DeepPartial<RoomCreated>, I>>(object: I): RoomCreated {
     const message = createBaseRoomCreated();
+    message.room = (object.room !== undefined && object.room !== null) ? Room.fromPartial(object.room) : undefined;
+    return message;
+  },
+};
+
+function createBaseRoomJoined(): RoomJoined {
+  return { room: undefined };
+}
+
+export const RoomJoined: MessageFns<RoomJoined> = {
+  encode(message: RoomJoined, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.room !== undefined) {
+      Room.encode(message.room, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RoomJoined {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRoomJoined();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.room = Room.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RoomJoined {
+    return { room: isSet(object.room) ? Room.fromJSON(object.room) : undefined };
+  },
+
+  toJSON(message: RoomJoined): unknown {
+    const obj: any = {};
+    if (message.room !== undefined) {
+      obj.room = Room.toJSON(message.room);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RoomJoined>, I>>(base?: I): RoomJoined {
+    return RoomJoined.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RoomJoined>, I>>(object: I): RoomJoined {
+    const message = createBaseRoomJoined();
     message.room = (object.room !== undefined && object.room !== null) ? Room.fromPartial(object.room) : undefined;
     return message;
   },
@@ -1186,6 +1249,7 @@ function createBaseServerMessage(): ServerMessage {
     playerToggledReady: undefined,
     settingsUpdated: undefined,
     gameStarted: undefined,
+    roomJoined: undefined,
   };
 }
 
@@ -1211,6 +1275,9 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     }
     if (message.gameStarted !== undefined) {
       GameStarted.encode(message.gameStarted, writer.uint32(58).fork()).join();
+    }
+    if (message.roomJoined !== undefined) {
+      RoomJoined.encode(message.roomJoined, writer.uint32(66).fork()).join();
     }
     return writer;
   },
@@ -1278,6 +1345,14 @@ export const ServerMessage: MessageFns<ServerMessage> = {
           message.gameStarted = GameStarted.decode(reader, reader.uint32());
           continue;
         }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.roomJoined = RoomJoined.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1324,6 +1399,11 @@ export const ServerMessage: MessageFns<ServerMessage> = {
         : isSet(object.game_started)
         ? GameStarted.fromJSON(object.game_started)
         : undefined,
+      roomJoined: isSet(object.roomJoined)
+        ? RoomJoined.fromJSON(object.roomJoined)
+        : isSet(object.room_joined)
+        ? RoomJoined.fromJSON(object.room_joined)
+        : undefined,
     };
   },
 
@@ -1349,6 +1429,9 @@ export const ServerMessage: MessageFns<ServerMessage> = {
     }
     if (message.gameStarted !== undefined) {
       obj.gameStarted = GameStarted.toJSON(message.gameStarted);
+    }
+    if (message.roomJoined !== undefined) {
+      obj.roomJoined = RoomJoined.toJSON(message.roomJoined);
     }
     return obj;
   },
@@ -1378,6 +1461,9 @@ export const ServerMessage: MessageFns<ServerMessage> = {
       : undefined;
     message.gameStarted = (object.gameStarted !== undefined && object.gameStarted !== null)
       ? GameStarted.fromPartial(object.gameStarted)
+      : undefined;
+    message.roomJoined = (object.roomJoined !== undefined && object.roomJoined !== null)
+      ? RoomJoined.fromPartial(object.roomJoined)
       : undefined;
     return message;
   },

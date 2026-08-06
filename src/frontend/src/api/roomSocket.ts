@@ -1,8 +1,15 @@
 import { appConfig } from "../config";
 import { ClientMessage, ServerMessage } from "../generated/gateway";
+import type { Game } from "./models";
 
 export const connectRoomSocket = () => {
   const socket = new WebSocket(appConfig.room.socketUrl);
+  socket.binaryType = "arraybuffer";
+  return socket;
+};
+
+export const connectQuickPlayRoomSocket = (game: Game) => {
+  const socket = new WebSocket(appConfig.room.quickPlaySocketUrl(game));
   socket.binaryType = "arraybuffer";
   return socket;
 };

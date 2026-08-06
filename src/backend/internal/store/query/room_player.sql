@@ -1,6 +1,6 @@
 -- name: CreateRoomPlayer :one
-   INSERT INTO room_player (room_id, player_id, is_host)
-   VALUES ($1, $2, $3)
+   INSERT INTO room_player (room_id, player_id, is_host, is_ready)
+   VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: DeleteRoomPlayer :exec
@@ -20,6 +20,12 @@ RETURNING *;
 SELECT *
   FROM room_player
  WHERE player_id = $1;
+
+-- name: GetRoomPlayerForUpdate :one
+SELECT *
+  FROM room_player
+ WHERE player_id = $1
+FOR UPDATE;
 
 -- name: GetOldestRoomPlayer :one
 SELECT *

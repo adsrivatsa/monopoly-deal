@@ -7,9 +7,11 @@ import (
 	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
 	"the-deal/internal/schema"
+	"the-deal/internal/schema/room_schema"
 	"the-deal/internal/service"
 	"the-deal/internal/store"
 	"the-deal/internal/token"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ func (s *Server) roomRoutes() *chi.Mux {
 	router.Get("/", s.GetRoom)
 	router.Post("/list", s.ListRooms)
 	router.Post("/", s.CreateRoom)
+	router.Get("/quick-play/{"+GAME_TYPE+"}/socket", s.QuickPlaySocket)
 	router.Patch("/join/{"+ROOM_ID+"}", s.JoinRoom)
 	router.Patch("/leave", s.LeaveRoom)
 	router.Patch("/ready", s.ToggleIsReady)
@@ -146,6 +149,120 @@ func (s *Server) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	WriteHTTP(w, http.StatusOK, nil)
 }
 
+func (s *Server) QuickPlaySocket(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	tp, err := tokenFromRequest(r, token.AccessToken)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	gameTypeStr := chi.URLParam(r, GAME_TYPE)
+	game := store.GameType(gameTypeStr)
+	if !game.Valid() {
+		ErrorHTTP(w, errors.GameNotSupported)
+		return
+	}
+	switch game {
+	case store.GameTypeMonopolyDeal:
+	default:
+		ErrorHTTP(w, errors.GameNotSupported)
+		return
+	}
+
+	conn, err := s.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	sock, sockCtx := newSocket(conn, ctx)
+
+	s.roomSocketsMu.Lock()
+	oldSock, ok := s.roomSockets[tp.PlayerID]
+	if ok {
+		oldSock.close(errors.DuplicateSocket)
+	}
+	s.roomSockets[tp.PlayerID] = sock
+	s.roomSocketsMu.Unlock()
+	defer func() {
+		s.roomSocketsMu.Lock()
+		if s2, ok := s.roomSockets[tp.PlayerID]; ok && s2 == sock {
+			delete(s.roomSockets, tp.PlayerID)
+		}
+		s.roomSocketsMu.Unlock()
+
+		leaveCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		_ = s.services.LeaveQuickPlayWaitingIfPending(leaveCtx, tp)
+	}()
+
+	go s.ping(sockCtx, sock)
+
+	startedGameID, err := s.services.JoinQuickPlayRoom(ctx, tp, game)
+	if err != nil {
+		sock.error(err)
+		return
+	}
+
+	if startedGameID != nil {
+		s.sendGameStartedAndWait(sock, *startedGameID)
+		return
+	}
+
+	roomJoined, err := s.services.GetRoomJoinedMessage(ctx, tp)
+	if err != nil {
+		s.quickPlayRoomGone(ctx, sock, tp, err)
+		return
+	}
+	sock.send(roomJoined)
+
+	go s.handleClientRoomMessages(sockCtx, sock, tp)
+
+	callback := func(message *schema.ServerMessage) {
+		sock.send(message)
+	}
+
+	err = s.services.ListenRoomEvents(sockCtx, tp, callback)
+	if err != nil {
+		s.quickPlayRoomGone(ctx, sock, tp, err)
+		return
+	}
+}
+
+// quickPlayRoomGone runs when the player's quick-play room disappears between
+// joining and subscribing: the room row is deleted when the game starts, so a
+// lookup failure here usually means another player filled the room and the
+// game began before this connection could subscribe.
+func (s *Server) quickPlayRoomGone(ctx context.Context, sock *socket, tp token.Payload, cause error) {
+	g, err := s.services.GetGame(ctx, tp)
+	if err != nil {
+		sock.error(cause)
+		return
+	}
+
+	s.sendGameStartedAndWait(sock, g.GameID)
+}
+
+func (s *Server) sendGameStartedAndWait(sock *socket, gameID uuid.UUID) {
+	sock.send(&schema.ServerMessage{
+		Payload: &schema.ServerMessage_RoomMessage{
+			RoomMessage: &room_schema.ServerMessage{
+				Payload: &room_schema.ServerMessage_GameStarted{
+					GameStarted: &room_schema.GameStarted{
+						GameId: gameID.String(),
+					},
+				},
+			},
+		},
+	})
+
+	// Client navigates to /game/socket; keep connection open until they disconnect.
+	for sock.read() != nil {
+	}
+}
+
 func (s *Server) LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -256,7 +373,7 @@ func (s *Server) RoomSocket(w http.ResponseWriter, r *http.Request) {
 	s.roomSocketsMu.Unlock()
 	defer func() {
 		s.roomSocketsMu.Lock()
-		if s2, ok := s.roomSockets[tp.PlayerID]; ok && s2 == oldSock {
+		if s2, ok := s.roomSockets[tp.PlayerID]; ok && s2 == sock {
 			delete(s.roomSockets, tp.PlayerID)
 		}
 		s.roomSocketsMu.Unlock()

@@ -881,25 +881,6 @@ const MonopolyDealBoard = ({
     return computeBoardGrid(orderedPlayers.length);
   }, [layoutMode, orderedPlayers.length]);
 
-  const boardColumnWidth = useMemo(() => {
-    const viewportWidth = Math.max(viewportSize.width, 1);
-    return Math.min(1000, viewportWidth);
-  }, [viewportSize.width]);
-
-  const boardColumnGapPx = useMemo(() => {
-    const rootFontSize = Number.parseFloat(
-      window.getComputedStyle(document.documentElement).fontSize,
-    );
-    const safeRootFontSize = Number.isFinite(rootFontSize) ? rootFontSize : 16;
-    return BOARD_COLUMN_GAP_REM * safeRootFontSize;
-  }, []);
-
-  const boardMinWidth = useMemo(() => {
-    return (
-      columns * boardColumnWidth + Math.max(0, columns - 1) * boardColumnGapPx
-    );
-  }, [boardColumnGapPx, boardColumnWidth, columns]);
-
   const playerColumns = useMemo(() => {
     const nextColumns: Player[][] = Array.from({ length: columns }, () => []);
     const rows = Math.ceil(orderedPlayers.length / columns);

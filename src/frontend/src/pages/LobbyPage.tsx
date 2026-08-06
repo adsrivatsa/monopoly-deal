@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   createRoom,
@@ -33,6 +33,10 @@ import {
 import ErrorModal from "../components/ui/error-modal";
 import { ApiErrorPayload } from "../api/client";
 import CreateRoomModal from "../components/ui/create-room-modal";
+import {
+  connectQuickPlayRoomSocket,
+  decodeRoomServerMessage,
+} from "../api/roomSocket";
 
 const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 350;
@@ -71,8 +75,24 @@ const gameFilterOptions: Array<{ value: Game; label: string }> =
     };
   });
 
+type QuickPlayPlayer = {
+  id: string;
+  displayName: string;
+  avatarUrl: string;
+};
+
+type QuickPlayRoom = {
+  roomId: string;
+  displayName: string;
+  capacity: number;
+  players: QuickPlayPlayer[];
+};
+
 const LobbyPage = () => {
   const navigate = useNavigate();
+  const isMountedRef = useRef(true);
+  const quickPlayCloseExpectedRef = useRef(false);
+  const quickPlaySocketRef = useRef<WebSocket | null>(null);
   const [rooms, setRooms] = useState<RoomListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -82,12 +102,28 @@ const LobbyPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState<ApiErrorPayload | null>(null);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
+  const [isQuickPlayWaiting, setIsQuickPlayWaiting] = useState(false);
+  const [quickPlayRoom, setQuickPlayRoom] = useState<QuickPlayRoom | null>(
+    null,
+  );
   const [refreshCycle, setRefreshCycle] = useState(0);
   const [manualRefreshCount, setManualRefreshCount] = useState(0);
   const [activeRoom, setActiveRoom] = useState<{
     roomId: string;
     displayName: string;
   } | null>(null);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    quickPlayCloseExpectedRef.current = false;
+
+    return () => {
+      isMountedRef.current = false;
+      quickPlayCloseExpectedRef.current = true;
+      quickPlaySocketRef.current?.close();
+      quickPlaySocketRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -242,6 +278,8 @@ const LobbyPage = () => {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const canGoPrevious = offset > 0;
   const canGoNext = offset + PAGE_SIZE < totalCount;
+  const quickPlayPlayersJoined = quickPlayRoom?.players.length ?? 0;
+  const quickPlayCapacity = quickPlayRoom?.capacity ?? 0;
 
   const handleJoinRoom = (roomId: string) => {
     navigate(`/room/${roomId}`);
@@ -276,6 +314,166 @@ const LobbyPage = () => {
     });
   };
 
+  const handleQuickPlay = () => {
+    if (quickPlaySocketRef.current) {
+      return;
+    }
+
+    setApiError(null);
+    setIsQuickPlayWaiting(true);
+    setQuickPlayRoom(null);
+    quickPlayCloseExpectedRef.current = false;
+
+    const socket = connectQuickPlayRoomSocket(Game.MonopolyDeal);
+    quickPlaySocketRef.current = socket;
+
+    console.log("[quick-play-ws] connecting", socket.url);
+
+    socket.onopen = () => {
+      console.log("[quick-play-ws] open");
+    };
+
+    socket.onmessage = (event) => {
+      void (async () => {
+        const message = await decodeRoomServerMessage(event.data);
+        console.log("[quick-play-ws] message", message ?? event.data);
+
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        const gameStarted = message?.roomMessage?.gameStarted;
+        if (gameStarted?.gameId) {
+          quickPlayCloseExpectedRef.current = true;
+          navigate(`/game/${gameStarted.gameId}`);
+          return;
+        }
+
+        const room = message?.roomMessage?.roomJoined?.room;
+        if (room) {
+          const players = room.players.map((player) => {
+            return {
+              id: player.playerId,
+              displayName: player.displayName,
+              avatarUrl: player.avatarUrl,
+            };
+          });
+
+          setActiveRoom({
+            roomId: room.roomId,
+            displayName: room.displayName,
+          });
+          setQuickPlayRoom({
+            roomId: room.roomId,
+            displayName: room.displayName,
+            capacity: room.capacity,
+            players,
+          });
+        }
+
+        const joinedPlayer = message?.roomMessage?.playerJoinedRoom?.player;
+        if (joinedPlayer) {
+          setQuickPlayRoom((currentRoom) => {
+            if (!currentRoom) {
+              return currentRoom;
+            }
+
+            const nextPlayer: QuickPlayPlayer = {
+              id: joinedPlayer.playerId,
+              displayName: joinedPlayer.displayName,
+              avatarUrl: joinedPlayer.avatarUrl,
+            };
+            const existingIndex = currentRoom.players.findIndex((player) => {
+              return player.id === nextPlayer.id;
+            });
+
+            if (existingIndex === -1) {
+              return {
+                ...currentRoom,
+                players: [...currentRoom.players, nextPlayer],
+              };
+            }
+
+            const players = [...currentRoom.players];
+            players[existingIndex] = nextPlayer;
+            return {
+              ...currentRoom,
+              players,
+            };
+          });
+        }
+
+        const leftPlayer = message?.roomMessage?.playerLeftRoom;
+        if (leftPlayer) {
+          setQuickPlayRoom((currentRoom) => {
+            if (!currentRoom) {
+              return currentRoom;
+            }
+
+            return {
+              ...currentRoom,
+              players: currentRoom.players.filter((player) => {
+                return player.id !== leftPlayer.playedId;
+              }),
+            };
+          });
+        }
+      })();
+    };
+
+    socket.onerror = (event) => {
+      console.log("[quick-play-ws] error", event);
+
+      if (!isMountedRef.current || quickPlayCloseExpectedRef.current) {
+        return;
+      }
+
+      setApiError({
+        message: "Could not start quick play.",
+        status: 500,
+        code: "UNKNOWN",
+      });
+    };
+
+    socket.onclose = (event) => {
+      console.log("[quick-play-ws] close", {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      });
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      if (quickPlaySocketRef.current === socket) {
+        // The server removes the player from the quick play room on
+        // disconnect, so the local room state is stale either way.
+        quickPlaySocketRef.current = null;
+        setIsQuickPlayWaiting(false);
+        setQuickPlayRoom(null);
+        setActiveRoom(null);
+      }
+
+      if (!quickPlayCloseExpectedRef.current) {
+        setApiError({
+          message: "Quick play disconnected.",
+          status: 500,
+          code: "UNKNOWN",
+        });
+      }
+    };
+  };
+
+  const handleLeaveQuickPlay = () => {
+    quickPlayCloseExpectedRef.current = true;
+    quickPlaySocketRef.current?.close();
+    quickPlaySocketRef.current = null;
+    setActiveRoom(null);
+    setQuickPlayRoom(null);
+    setIsQuickPlayWaiting(false);
+  };
+
   const handleLeaveActiveRoom = async () => {
     const result = await leaveRoom();
 
@@ -296,6 +494,11 @@ const LobbyPage = () => {
     }
 
     setActiveRoom(null);
+    setQuickPlayRoom(null);
+    quickPlayCloseExpectedRef.current = true;
+    quickPlaySocketRef.current?.close();
+    quickPlaySocketRef.current = null;
+    setIsQuickPlayWaiting(false);
   };
 
   return (
@@ -304,21 +507,41 @@ const LobbyPage = () => {
         <div className="reconnect-banner-wrap" role="status" aria-live="polite">
           <div className="reconnect-banner">
             <span>
-              You are still in <strong>{activeRoom.displayName}</strong>.
+              {isQuickPlayWaiting ? (
+                <>
+                  Finding a Quick Play match in{" "}
+                  <strong>{activeRoom.displayName}</strong>.
+                </>
+              ) : (
+                <>
+                  You are still in <strong>{activeRoom.displayName}</strong>.
+                </>
+              )}
             </span>
 
             <div className="reconnect-banner-actions">
+              {isQuickPlayWaiting ? null : (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    navigate(`/room/${activeRoom.roomId}`);
+                  }}
+                >
+                  Reconnect
+                </Button>
+              )}
               <Button
                 size="sm"
+                variant="outline"
                 onClick={() => {
-                  navigate(`/room/${activeRoom.roomId}`);
+                  if (isQuickPlayWaiting) {
+                    handleLeaveQuickPlay();
+                    return;
+                  }
+
+                  void handleLeaveActiveRoom();
                 }}
               >
-                Reconnect
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => {
-                void handleLeaveActiveRoom();
-              }}>
                 Leave room
               </Button>
             </div>
@@ -336,18 +559,30 @@ const LobbyPage = () => {
       >
         <CardHeader className="table-card-header">
           <CardTitle>Active Rooms</CardTitle>
-          <Button
-            size="sm"
-            onClick={() => setIsCreateRoomOpen(true)}
-            disabled={Boolean(activeRoom)}
-          >
-            Create room
-          </Button>
+          <div className="lobby-header-actions">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleQuickPlay}
+              disabled={Boolean(activeRoom) || isQuickPlayWaiting}
+            >
+              {isQuickPlayWaiting ? "Finding game..." : "Quick Play"}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setIsCreateRoomOpen(true)}
+              disabled={Boolean(activeRoom) || isQuickPlayWaiting}
+            >
+              Create room
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {activeRoom ? (
             <p className="lobby-table-lock-note">
-              You are already in a room. Reconnect above to continue.
+              {isQuickPlayWaiting
+                ? "Waiting for enough Quick Play players to start the game."
+                : "You are already in a room. Reconnect above to continue."}
             </p>
           ) : null}
 
@@ -381,7 +616,11 @@ const LobbyPage = () => {
             </select>
           </div>
 
-          <div className="lobby-refresh-indicator" role="status" aria-live="polite">
+          <div
+            className="lobby-refresh-indicator"
+            role="status"
+            aria-live="polite"
+          >
             <div className="lobby-refresh-row">
               <div className="lobby-refresh-track" aria-hidden="true">
                 <span key={refreshCycle} className="lobby-refresh-bar" />
@@ -495,6 +734,72 @@ const LobbyPage = () => {
           onClose={() => setIsCreateRoomOpen(false)}
           onCreate={handleCreateRoom}
         />
+      ) : null}
+
+      {isQuickPlayWaiting && quickPlayRoom ? (
+        <div
+          className="overlay-backdrop"
+          onClick={handleLeaveQuickPlay}
+          role="presentation"
+        >
+          <div
+            className="overlay-card quick-play-modal"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quick-play-title"
+          >
+            <p className="eyebrow">Quick Play</p>
+            <h2 id="quick-play-title" className="overlay-title">
+              Finding players
+              <span className="quick-play-ellipsis">...</span>
+            </h2>
+            <p className="quick-play-modal-message">
+              {quickPlayPlayersJoined}/{quickPlayCapacity} players joined
+            </p>
+
+            <div className="quick-play-player-meter" aria-hidden="true">
+              {Array.from({ length: quickPlayCapacity }, (_, index) => {
+                return (
+                  <span
+                    key={index}
+                    className={
+                      index < quickPlayPlayersJoined
+                        ? "quick-play-player-dot is-filled"
+                        : "quick-play-player-dot"
+                    }
+                  />
+                );
+              })}
+            </div>
+
+            <ul className="quick-play-player-list">
+              {quickPlayRoom.players.map((player) => {
+                return (
+                  <li key={player.id} className="quick-play-player-item">
+                    <img
+                      src={player.avatarUrl}
+                      alt={player.displayName}
+                      className="quick-play-player-avatar"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                    <span>{player.displayName}</span>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="overlay-actions">
+              <Button
+                variant="outline"
+                onClick={handleLeaveQuickPlay}
+              >
+                Leave Quick Play
+              </Button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </main>
   );

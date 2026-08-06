@@ -1,12 +1,18 @@
 -- name: CreateRoom :one
-   INSERT INTO room (room_id, display_name, capacity, game, settings, is_private)
-   VALUES ($1, $2, $3, $4, $5, $6)
+   INSERT INTO room (room_id, display_name, capacity, game, settings, is_private, is_quick_play)
+   VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: GetRoom :one
 SELECT *
   FROM room
  WHERE room_id = $1;
+
+-- name: GetRoomForUpdate :one
+SELECT *
+  FROM room
+ WHERE room_id = $1
+FOR UPDATE;
 
 -- name: GetRoomByPlayer :one
 SELECT r.*
@@ -72,3 +78,13 @@ SELECT rp.*, r.display_name AS room_display_name, r.capacity AS room_capacity, r
    AND NOT r.is_private
  ORDER BY r.display_name
  LIMIT $1 OFFSET $2;
+
+-- name: GetQuickPlayRoomForUpdate :one
+SELECT *
+  FROM room
+ WHERE is_quick_play
+   AND game = $1
+   AND occupied < capacity
+ ORDER BY created_at
+ LIMIT 1
+   FOR UPDATE;

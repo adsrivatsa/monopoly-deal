@@ -43,9 +43,16 @@ func DBErrorCode(err error) DBViolation {
 	return ""
 }
 
+const CodeEntityNotFound = "SER001"
+
 func EntityNotFound(ent Entity, err ...error) Error {
 	f := fmt.Sprintf("%s not found", ent)
-	return NewError(f, http.StatusNotFound, "SER001", err...)
+	return NewError(f, http.StatusNotFound, CodeEntityNotFound, err...)
+}
+
+func IsEntityNotFound(err error) bool {
+	var intErr Error
+	return errors.As(err, &intErr) && intErr.Code == CodeEntityNotFound
 }
 
 func EntityAlreadyExists(ent Entity, err ...error) Error {
