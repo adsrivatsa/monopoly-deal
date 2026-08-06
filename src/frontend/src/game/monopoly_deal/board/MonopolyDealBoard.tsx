@@ -25,6 +25,7 @@ import DiscardPromptOverlay from "./discard/DiscardPromptOverlay";
 import GameCardStackBox from "./GameCardStackBox";
 import DemandOverlay from "./demand/DemandOverlay";
 import PendingRentOverlay from "./rent/PendingRentOverlay";
+import { installAudioUnlock, playTimerTick } from "../sound";
 import "./monopoly-deal-board.css";
 
 type MonopolyDealBoardProps = {
@@ -127,6 +128,9 @@ type ForcedDealPlacementSelectionState = {
 const MIN_ZOOM = 0.15;
 const MAX_ZOOM = 2.2;
 const BOARD_COLUMN_GAP_REM = 0.7;
+// Tick during the final seconds of your own turn only; a whole-turn tick
+// would be grating.
+const TIMER_TICK_WINDOW_SECONDS = 5;
 
 const computeBoardGrid = (playerCount: number): { columns: number } => {
   if (playerCount <= 1) {
@@ -544,6 +548,28 @@ const MonopolyDealBoard = ({
     Math.ceil(remainingTurnMs / 1000),
   );
   const shouldShowTurnTimer = turnDeadlineMs > 0 && !hasAnyDemand;
+
+  useEffect(() => {
+    return installAudioUnlock();
+  }, []);
+
+  useEffect(() => {
+    if (!shouldShowTurnTimer || !isSelfTurn) {
+      return;
+    }
+
+    if (
+      remainingTurnSeconds <= 0 ||
+      remainingTurnSeconds > TIMER_TICK_WINDOW_SECONDS
+    ) {
+      return;
+    }
+
+    playTimerTick(
+      (TIMER_TICK_WINDOW_SECONDS - remainingTurnSeconds) /
+        (TIMER_TICK_WINDOW_SECONDS - 1),
+    );
+  }, [remainingTurnSeconds, shouldShowTurnTimer, isSelfTurn]);
   const lastActionCards =
     gameState?.lastAction &&
     gameState.lastAction.assetKey !== AssetKey.ASSET_KEY_UNSPECIFIED
