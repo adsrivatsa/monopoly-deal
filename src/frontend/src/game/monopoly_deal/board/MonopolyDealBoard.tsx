@@ -454,6 +454,7 @@ const MonopolyDealBoard = ({
   const pinchStartZoomRef = useRef(1);
   const pinchWorldCenterRef = useRef<{ x: number; y: number } | null>(null);
   const autoResolvedPendingRentKeyRef = useRef<string | null>(null);
+  const autoCompliedPaymentDemandIdRef = useRef<string | null>(null);
 
   const players = gameState?.players ?? [];
 
@@ -595,6 +596,21 @@ const MonopolyDealBoard = ({
     }
     return lookup;
   }, [gameState?.properties]);
+
+  // Anything on the table (money pile or property cards) can be paid.
+  const hasPayableCards = useMemo(() => {
+    if (!selfPlayerId) {
+      return false;
+    }
+
+    if ((moneyByPlayer[selfPlayerId]?.length ?? 0) > 0) {
+      return true;
+    }
+
+    return (propertySetsByPlayer[selfPlayerId] ?? []).some(
+      (propertySet) => propertySet.cards.length > 0,
+    );
+  }, [moneyByPlayer, propertySetsByPlayer, selfPlayerId]);
 
   const propertyCardImageById = useMemo(() => {
     const lookup: Record<string, string> = {};
@@ -1828,6 +1844,43 @@ const MonopolyDealBoard = ({
     );
     onResolvePendingRent();
   }, [onResolvePendingRent, pendingRent, shouldAutoResolvePendingRent]);
+
+  // A payment demand with nothing on the table can only resolve one way, so
+  // comply immediately instead of showing an empty payment picker. Holding a
+  // Just Say No keeps the overlay up — the player may still want to deny.
+  useEffect(() => {
+    const paymentDemand = selfPlayerId
+      ? (gameState?.demands ?? []).find(
+          (demand) =>
+            demand.isActive &&
+            demand.playerId === selfPlayerId &&
+            demand.demandKind === DemandKind.DEMAND_KIND_PAYMENT,
+        )
+      : undefined;
+
+    if (!paymentDemand) {
+      autoCompliedPaymentDemandIdRef.current = null;
+      return;
+    }
+
+    if (hasPayableCards || hasJustSayNo) {
+      return;
+    }
+
+    if (autoCompliedPaymentDemandIdRef.current === paymentDemand.id) {
+      return;
+    }
+
+    autoCompliedPaymentDemandIdRef.current = paymentDemand.id;
+    console.log("[game-ui] demand action: auto-comply (no payable cards)");
+    onComplyPaymentDemand(paymentDemand.id, []);
+  }, [
+    gameState?.demands,
+    hasJustSayNo,
+    hasPayableCards,
+    onComplyPaymentDemand,
+    selfPlayerId,
+  ]);
 
   const onSelectDealCard = useCallback(
     (card: Card) => {
