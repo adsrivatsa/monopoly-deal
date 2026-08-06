@@ -893,9 +893,13 @@ const MonopolyDealBoard = ({
   }, [columns, orderedPlayers]);
 
   const boardStyle = useMemo<CSSProperties>(() => {
+    // Width must derive from the content's width, never its height: this
+    // width is applied to the content element itself, and a height-based
+    // value reflows the wrapped rows, changing the height it was derived
+    // from — an oscillating resize loop that makes the board jitter.
     const compactBoardWidth =
       layoutMode === "compact"
-        ? `${Math.max(viewportSize.width, contentSize.height)}px`
+        ? `${Math.max(viewportSize.width, contentSize.width)}px`
         : undefined;
 
     return {
@@ -906,7 +910,7 @@ const MonopolyDealBoard = ({
       "--board-columns": columns.toString(),
       "--md-compact-board-width": compactBoardWidth,
     };
-  }, [columns, contentSize.height, layoutMode, pan.x, pan.y, viewportSize.width, zoom]);
+  }, [columns, contentSize.width, layoutMode, pan.x, pan.y, viewportSize.width, zoom]);
 
   const boardContentSize = useMemo<Size>(() => {
     return {
