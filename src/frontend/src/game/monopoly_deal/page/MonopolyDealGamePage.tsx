@@ -35,6 +35,14 @@ import MonopolyDealGameMount, {
   type MonopolyDealBoardViewMode,
 } from "../MonopolyDealGameMount";
 import {
+  playCardTock,
+  playChatTock,
+  playDemandKnock,
+  playLossTocks,
+  playWinTocks,
+  playYourTurnTocks,
+} from "../sound";
+import {
   AssetKey,
   AssetImageKind,
   Category,
@@ -694,6 +702,46 @@ const MonopolyDealGamePage = () => {
             const action = message.monopolyDealMessage?.action;
             const actionForHistory = actionHistory?.action ?? action;
             const actionPlayerId = action?.playerId;
+
+            // Sounds: live events only — history replay on reconnect
+            // (actionHistory) stays silent.
+            if (chatReceived && chatReceived.playerId !== selfPlayerId) {
+              playChatTock();
+            }
+
+            if (wonGameMessage) {
+              if (wonGameMessage.playerId === selfPlayerId) {
+                playWinTocks();
+              } else {
+                playLossTocks();
+              }
+            }
+
+            if (action && !wonGameMessage) {
+              const startTurn =
+                action.actionStartTurn ?? action.maskedActionStartTurn;
+              const hasIncomingDemand =
+                action.actionDemandsCreated?.demands.some(
+                  (demand) =>
+                    demand.isActive && demand.playerId === selfPlayerId,
+                ) ?? false;
+
+              if (startTurn && actionPlayerId === selfPlayerId) {
+                playYourTurnTocks();
+              } else if (hasIncomingDemand) {
+                playDemandKnock();
+              } else if (
+                action.actionPlayMoney ||
+                action.actionPlayProperty ||
+                action.actionPlayHouse ||
+                action.actionPlayHotel ||
+                action.actionPlayPassGo ||
+                action.actionDemandsCreated ||
+                action.actionPendingRentCreated
+              ) {
+                playCardTock();
+              }
+            }
 
             const nextDeadlineMs = action?.actionRearrangeCard
               ? null
