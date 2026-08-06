@@ -54,10 +54,31 @@ type Tock = {
 // pattern play as a small phrase without setTimeout drift.
 const playTocks = (tocks: Tock[]) => {
   const ctx = getAudioContext();
-  if (!ctx || ctx.state !== "running") {
+  if (!ctx) {
     return;
   }
 
+  if (ctx.state === "running") {
+    scheduleTocks(ctx, tocks);
+    return;
+  }
+
+  // Browsers (Safari especially) suspend idle contexts, and resume() is
+  // async — dropping the sound here would silently eat every tock played
+  // against a suspended context. Play once resumed, unless resuming took so
+  // long the sound is stale (e.g. Chrome holding resume until a gesture).
+  const requestedAt = performance.now();
+  void ctx
+    .resume()
+    .then(() => {
+      if (performance.now() - requestedAt < 1000) {
+        scheduleTocks(ctx, tocks);
+      }
+    })
+    .catch(() => {});
+};
+
+const scheduleTocks = (ctx: AudioContext, tocks: Tock[]) => {
   for (const { frequency, atMs = 0, peak = 0.1, decayMs = 80 } of tocks) {
     const start = ctx.currentTime + atMs / 1000;
 

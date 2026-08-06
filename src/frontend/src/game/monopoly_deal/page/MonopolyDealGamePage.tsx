@@ -726,6 +726,19 @@ const MonopolyDealGamePage = () => {
                     demand.isActive && demand.playerId === selfPlayerId,
                 ) ?? false;
 
+              const complied = action.actionDemandComplied;
+              const compliedMovedCards =
+                !!complied &&
+                ((complied.transferCards?.cards.length ?? 0) > 0 ||
+                  (complied.transferCards?.propertySets.length ?? 0) > 0 ||
+                  !!complied.transferProperty ||
+                  !!complied.transferPropertySet);
+              // The engine emits an empty discard on every timeout auto-move;
+              // only actual discards should sound.
+              const discardedCards =
+                (action.actionDiscardCards?.cards.length ?? 0) > 0 ||
+                (action.maskedActionDiscardCards?.numCards ?? 0) > 0;
+
               if (startTurn && actionPlayerId === selfPlayerId) {
                 playYourTurnTocks();
               } else if (hasIncomingDemand) {
@@ -736,8 +749,11 @@ const MonopolyDealGamePage = () => {
                 action.actionPlayHouse ||
                 action.actionPlayHotel ||
                 action.actionPlayPassGo ||
+                action.maskedActionPlayedPassGo ||
                 action.actionDemandsCreated ||
-                action.actionPendingRentCreated
+                action.actionPendingRentCreated ||
+                compliedMovedCards ||
+                discardedCards
               ) {
                 playCardTock();
               }
