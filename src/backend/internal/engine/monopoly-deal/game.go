@@ -211,13 +211,26 @@ func (g *Game) checkPendingRent() error {
 	return nil
 }
 
-func (g *Game) discardHand(playerID uuid.UUID, cardID Identifier) (Card, error) {
+// removeFromHand takes a card out of the player's hand without discarding it.
+// Use for plays that keep the card on the board (money, properties, houses,
+// hotels) — discardHand would also return the card to the deck, leaving the
+// same card id in two places once the deck cycles back around.
+func (g *Game) removeFromHand(playerID uuid.UUID, cardID Identifier) (Card, error) {
 	hand := g.Hands[playerID]
 	card, ok := hand.RemoveByID(cardID)
 	if !ok {
 		return Card{}, errors.PlayerDoesNotHaveCard
 	}
 	g.Hands[playerID] = hand
+
+	return card, nil
+}
+
+func (g *Game) discardHand(playerID uuid.UUID, cardID Identifier) (Card, error) {
+	card, err := g.removeFromHand(playerID, cardID)
+	if err != nil {
+		return Card{}, err
+	}
 
 	g.Deck.Add(card)
 
@@ -346,7 +359,7 @@ func (g *Game) PlayMoney(playerID uuid.UUID, cardID Identifier) (*ActionPlayMone
 		return nil, err
 	}
 
-	_, err = g.discardHand(playerID, cardID)
+	_, err = g.removeFromHand(playerID, cardID)
 	if err != nil {
 		return nil, err
 	}
@@ -431,7 +444,7 @@ func (g *Game) PlayProperty(playerID uuid.UUID, cardID Identifier, propSetIDPtr 
 		propSet = NewPropertySet(propSetID, resolvedColor)
 	}
 
-	_, err = g.discardHand(playerID, cardID)
+	_, err = g.removeFromHand(playerID, cardID)
 	if err != nil {
 		return nil, err
 	}
@@ -498,7 +511,7 @@ func (g *Game) PlayHouse(playerID uuid.UUID, cardID, propSetID Identifier) (*Act
 		return nil, errors.PropertySetHasHouse
 	}
 
-	_, err = g.discardHand(playerID, cardID)
+	_, err = g.removeFromHand(playerID, cardID)
 	if err != nil {
 		return nil, err
 	}
@@ -560,7 +573,7 @@ func (g *Game) PlayHotel(playerID uuid.UUID, cardID, propSetID Identifier) (*Act
 		return nil, errors.PropertySetHasNoHouse
 	}
 
-	_, err = g.discardHand(playerID, cardID)
+	_, err = g.removeFromHand(playerID, cardID)
 	if err != nil {
 		return nil, err
 	}
