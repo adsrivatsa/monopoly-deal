@@ -3,6 +3,7 @@ syntax = "proto3";
 package the_deal.schema;
 
 import "monopoly_deal.proto";
+import "deal_no_mercy.proto";
 import "room.proto";
 
 option go_package = "the-deal/internal/schema;schema";
@@ -17,6 +18,7 @@ message ClientMessage {
 
     the_deal.schema.room.ClientMessage room_message = 10;
     the_deal.schema.monopoly_deal.ClientMessage monopoly_deal_message = 11;
+    the_deal.schema.deal_no_mercy.ClientMessage deal_no_mercy_message = 12;
   }
 }
 
@@ -26,5 +28,6 @@ message ServerMessage {
 
     the_deal.schema.room.ServerMessage room_message = 10;
     the_deal.schema.monopoly_deal.ServerMessage monopoly_deal_message = 11;
+    the_deal.schema.deal_no_mercy.ServerMessage deal_no_mercy_message = 12;
   }
 }

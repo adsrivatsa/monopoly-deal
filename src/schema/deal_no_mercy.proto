@@ -1,0 +1,770 @@
+syntax = "proto3";
+
+package the_deal.schema.deal_no_mercy;
+
+option go_package = "the-deal/internal/schema/deal_no_mercy_schema;deal_no_mercy_schema";
+
+message Error {
+  string message = 1;
+  int32 status = 2;
+  string code = 3;
+}
+
+message Chat {
+  string payload = 1;
+}
+
+message ChatReceived {
+  string player_id = 1;
+  string payload = 2;
+}
+
+enum Speed {
+  SPEED_UNSPECIFIED = 0;
+  SPEED_SLOW = 1;
+  SPEED_MEDIUM = 2;
+  SPEED_FAST = 3;
+}
+
+message Settings {
+  Speed speed = 1;
+  int32 max_hand_size = 2;
+  int32 moves_per_turn = 3;
+  int32 win_set_amount = 4;
+  int32 debt_chips_per_player = 5;
+  int32 yoink_payment = 6;
+  int32 shack_rent_bonus = 7;
+  int32 big_payday_hand_target = 8;
+  bool nah_consumes_move = 9;
+}
+
+enum AssetKey {
+  ASSET_KEY_UNSPECIFIED = 0;
+
+  // Pure properties (same roster as classic)
+  ASSET_KEY_BROWN1 = 1;
+  ASSET_KEY_BROWN2 = 2;
+  ASSET_KEY_SKY1 = 3;
+  ASSET_KEY_SKY2 = 4;
+  ASSET_KEY_SKY3 = 5;
+  ASSET_KEY_PINK1 = 6;
+  ASSET_KEY_PINK2 = 7;
+  ASSET_KEY_PINK3 = 8;
+  ASSET_KEY_ORANGE1 = 9;
+  ASSET_KEY_ORANGE2 = 10;
+  ASSET_KEY_ORANGE3 = 11;
+  ASSET_KEY_RED1 = 12;
+  ASSET_KEY_RED2 = 13;
+  ASSET_KEY_RED3 = 14;
+  ASSET_KEY_YELLOW1 = 15;
+  ASSET_KEY_YELLOW2 = 16;
+  ASSET_KEY_YELLOW3 = 17;
+  ASSET_KEY_GREEN1 = 18;
+  ASSET_KEY_GREEN2 = 19;
+  ASSET_KEY_GREEN3 = 20;
+  ASSET_KEY_BLUE1 = 21;
+  ASSET_KEY_BLUE2 = 22;
+  ASSET_KEY_UTIL1 = 23;
+  ASSET_KEY_UTIL2 = 24;
+  ASSET_KEY_RAIL1 = 25;
+  ASSET_KEY_RAIL2 = 26;
+  ASSET_KEY_RAIL3 = 27;
+  ASSET_KEY_RAIL4 = 28;
+
+  // Wild properties (same roster as classic)
+  ASSET_KEY_WILD_BROWN_SKY = 29;
+  ASSET_KEY_WILD_SKY_RAILROAD = 30;
+  ASSET_KEY_WILD_PINK_ORANGE = 31;
+  ASSET_KEY_WILD_RED_YELLOW = 32;
+  ASSET_KEY_WILD_GREEN_BLUE = 33;
+  ASSET_KEY_WILD_GREEN_RAILROAD = 34;
+  ASSET_KEY_WILD_UTILITY_RAILROAD = 35;
+  ASSET_KEY_WILD_WILD = 36;
+
+  // Money (incl. the new 15M)
+  ASSET_KEY_MONEY_1 = 37;
+  ASSET_KEY_MONEY_2 = 38;
+  ASSET_KEY_MONEY_3 = 39;
+  ASSET_KEY_MONEY_4 = 40;
+  ASSET_KEY_MONEY_5 = 41;
+  ASSET_KEY_MONEY_10 = 42;
+  ASSET_KEY_MONEY_15 = 43;
+
+  // No Mercy actions
+  ASSET_KEY_SET_SNATCHER = 44;
+  ASSET_KEY_DEBT_TRAP = 45;
+  ASSET_KEY_GO_AGAIN = 46;
+  ASSET_KEY_HEIST = 47;
+  ASSET_KEY_MARKET_CRASH = 48;
+  ASSET_KEY_BIG_PAYDAY = 49;
+  ASSET_KEY_REPO_MAN = 50;
+  ASSET_KEY_SHACK = 51;
+  ASSET_KEY_PROPERTY_RAID = 52;
+  ASSET_KEY_TAX_DAY = 53;
+  ASSET_KEY_PICKPOCKET = 54;
+  ASSET_KEY_BANK_SWAP = 55;
+  ASSET_KEY_YOINK = 56;
+  ASSET_KEY_NAH = 57;
+
+  // Rent actions (all charge every opponent)
+  ASSET_KEY_RENT_WILD = 58;
+  ASSET_KEY_RENT_BROWN_SKY = 59;
+  ASSET_KEY_RENT_PINK_ORANGE = 60;
+  ASSET_KEY_RENT_RED_YELLOW = 61;
+  ASSET_KEY_RENT_GREEN_BLUE = 62;
+  ASSET_KEY_RENT_UTILITY_RAILROAD = 63;
+
+  ASSET_KEY_DOUBLE_RENT_WILD = 64;
+  ASSET_KEY_DOUBLE_RENT_BROWN_SKY = 65;
+  ASSET_KEY_DOUBLE_RENT_PINK_ORANGE = 66;
+  ASSET_KEY_DOUBLE_RENT_RED_YELLOW = 67;
+  ASSET_KEY_DOUBLE_RENT_GREEN_BLUE = 68;
+  ASSET_KEY_DOUBLE_RENT_UTILITY_RAILROAD = 69;
+}
+
+enum Category {
+  CATEGORY_UNSPECIFIED = 0;
+
+  CATEGORY_PURE_PROPERTY = 1;
+  CATEGORY_WILD_PROPERTY = 2;
+  CATEGORY_MONEY = 3;
+  CATEGORY_ACTION = 4;
+}
+
+enum Color {
+  COLOR_UNSPECIFIED = 0;
+
+  COLOR_BROWN = 1;
+  COLOR_SKY = 2;
+  COLOR_PINK = 3;
+  COLOR_ORANGE = 4;
+  COLOR_RED = 5;
+  COLOR_YELLOW = 6;
+  COLOR_GREEN = 7;
+  COLOR_BLUE = 8;
+  COLOR_UTILITY = 9;
+  COLOR_RAILROAD = 10;
+}
+
+// StealCategory is the property/money/action named when playing PICKPOCKET.
+enum StealCategory {
+  STEAL_CATEGORY_UNSPECIFIED = 0;
+  STEAL_CATEGORY_PROPERTY = 1;
+  STEAL_CATEGORY_MONEY = 2;
+  STEAL_CATEGORY_ACTION = 3;
+}
+
+message Card {
+  string card_id = 1;
+  AssetKey asset_key = 2;
+  Category category = 3;
+  Color active_color = 4;
+  repeated Color colors = 5;
+  int32 value = 6;
+}
+
+message Player {
+  string player_id = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  int32 money = 4;
+  int32 completed_sets = 5;
+  int32 hand_cards = 6;
+  int32 available_debt_chips = 7;
+}
+
+message Hand {
+  repeated Card cards = 1;
+}
+
+message Money {
+  string player_id = 1;
+  repeated Card cards = 2;
+}
+
+// PropertySet carries an optional SHACK attachment (immovable, +rent, one per
+// set). Shack is null when no shack is attached.
+message PropertySet {
+  string player_id = 1;
+  string property_set_id = 2;
+  Color color = 3;
+  repeated Card cards = 4;
+  optional Card shack = 5;
+}
+
+// DebtChip is one outstanding debt obligation: DebtorId handed a chip to
+// CreditorId (failed payment or DEBT TRAP) and must settle it with any one
+// hand card at the start of their next turn.
+message DebtChip {
+  string id = 1;
+  string debtor_id = 2;
+  string creditor_id = 3;
+}
+
+enum DemandKind {
+  DEMAND_KIND_UNSPECIFIED = 0;
+
+  DEMAND_KIND_PAYMENT = 1;
+  DEMAND_KIND_PROPERTY = 2;
+  DEMAND_KIND_PROPERTY_SET = 3;
+  DEMAND_KIND_COLOR_PROPERTIES = 4;
+  DEMAND_KIND_BANK_CARD = 5;
+  DEMAND_KIND_BANK_SWAP = 6;
+  DEMAND_KIND_DEBT_TRAP = 7;
+  DEMAND_KIND_REPO_MAN = 8;
+  DEMAND_KIND_TAX_DAY = 9;
+  DEMAND_KIND_PICKPOCKET = 10;
+}
+
+message PaymentDemand {
+  int32 amount = 1;
+}
+
+message PropertyDemand {
+  string target_card_id = 1;
+}
+
+message PropertySetDemand {
+  string property_set_id = 1;
+}
+
+message ColorPropertiesDemand {
+  Color color = 1;
+}
+
+message BankCardDemand {
+  string target_card_id = 1;
+}
+
+message PickpocketDemand {
+  StealCategory category = 1;
+}
+
+// BankSwapDemand / DebtTrapDemand / RepoManDemand / TaxDayDemand carry no
+// extra fields beyond the base Demand envelope; their kind is enough.
+message BankSwapDemand {}
+
+message DebtTrapDemand {}
+
+message RepoManDemand {}
+
+message TaxDayDemand {}
+
+enum DemandSource {
+  DEMAND_SOURCE_UNSPECIFIED = 0;
+  DEMAND_SOURCE_RENT = 1;
+  DEMAND_SOURCE_YOINK = 2;
+  DEMAND_SOURCE_SET_SNATCHER = 3;
+  DEMAND_SOURCE_MARKET_CRASH = 4;
+  DEMAND_SOURCE_PROPERTY_RAID = 5;
+  DEMAND_SOURCE_HEIST = 6;
+  DEMAND_SOURCE_BANK_SWAP = 7;
+  DEMAND_SOURCE_DEBT_TRAP = 8;
+  DEMAND_SOURCE_REPO_MAN = 9;
+  DEMAND_SOURCE_TAX_DAY = 10;
+  DEMAND_SOURCE_PICKPOCKET = 11;
+  DEMAND_SOURCE_NAH = 12;
+}
+
+message Demand {
+  string id = 1;
+  string player_id = 2;
+  string source_id = 3;
+  DemandKind demand_kind = 4;
+  oneof demand {
+    PaymentDemand payment_demand = 5;
+    PropertyDemand property_demand = 6;
+    PropertySetDemand property_set_demand = 7;
+    ColorPropertiesDemand color_properties_demand = 8;
+    BankCardDemand bank_card_demand = 9;
+    BankSwapDemand bank_swap_demand = 10;
+    DebtTrapDemand debt_trap_demand = 11;
+    RepoManDemand repo_man_demand = 12;
+    TaxDayDemand tax_day_demand = 13;
+    PickpocketDemand pickpocket_demand = 14;
+  }
+  bool is_active = 15;
+  DemandSource demand_source = 16;
+}
+
+enum AssetImageKind {
+  ASSET_IMAGE_KIND_UNSPECIFIED = 0;
+  ASSET_IMAGE_KIND_SMALL = 1;
+  ASSET_IMAGE_KIND_LARGE = 2;
+}
+
+message AssetImage {
+  AssetImageKind kind = 1;
+  AssetKey asset_key = 2;
+  string image_url = 3;
+}
+
+message Deadline {
+  int64 deadline_ms = 1;
+  optional string demand_id = 2;
+}
+
+message GameState {
+  int32 seq_num = 1;
+  repeated Player players = 2;
+  string current_player_id = 3;
+  int32 moves_left = 4;
+  Hand your_hand = 5;
+  repeated Money money = 6;
+  repeated PropertySet properties = 7;
+  repeated Demand demands = 8;
+  repeated DebtChip debt_chips = 9;
+  Card last_action = 10;
+  repeated AssetImage asset_images = 11;
+  int32 max_hand_size = 12;
+  repeated Deadline deadlines = 13;
+  Settings settings = 14;
+}
+
+enum ActionKind {
+  ACTION_KIND_UNSPECIFIED = 0;
+
+  ACTION_KIND_PLAY_MONEY = 1;
+  ACTION_KIND_PLAY_PROPERTY = 2;
+  ACTION_KIND_PLAY_SHACK = 3;
+  ACTION_KIND_PLAY_BIG_PAYDAY = 4;
+  ACTION_KIND_PLAY_GO_AGAIN = 5;
+  ACTION_KIND_DEMAND_CREATED = 6;
+  ACTION_KIND_DEMAND_COMPLIED = 7;
+  ACTION_KIND_DEBT_SETTLED = 8;
+  ACTION_KIND_DISCARD_CARDS = 9;
+  ACTION_KIND_START_TURN = 10;
+  ACTION_KIND_REARRANGE_CARD = 11;
+}
+
+// ============================================================================
+// Client requests (play/comply/deny/settle) and the server-side action records
+// they produce. Masked* variants replace records that would leak hidden
+// information to other players (drawn cards, hand contents).
+// ============================================================================
+
+// PropertyPick pairs a target player with a card they must give up — used by
+// engine map[uuid.UUID]Identifier picks (HEIST, MARKET CRASH) that don't map
+// to proto maps (non-string keys).
+message PropertyPick {
+  string target_id = 1;
+  string card_id = 2;
+}
+
+// DistributionAssignment pairs one card with the recipient it is handed to —
+// used by REPO MAN / TAX DAY compliances (engine map[Identifier]uuid.UUID).
+message DistributionAssignment {
+  string card_id = 1;
+  string recipient_id = 2;
+}
+
+message PlayMoney {
+  string card_id = 1;
+}
+
+message ActionPlayMoney {
+  Card card = 1;
+}
+
+message PlayProperty {
+  string card_id = 1;
+  optional string property_set_id = 2;
+  optional Color active_color = 3;
+}
+
+message ActionPlayProperty {
+  PropertySet property_set = 1;
+}
+
+message PlayShack {
+  string card_id = 1;
+  string property_set_id = 2;
+}
+
+message ActionPlayShack {
+  Card card = 1;
+  PropertySet property_set = 2;
+}
+
+message PlayBigPayday {
+  string card_id = 1;
+}
+
+message ActionPlayBigPayday {
+  Card last_played_card = 1;
+  repeated Card cards = 2;
+}
+
+// MaskedActionPlayBigPayday hides the cards drawn to another player's hand.
+message MaskedActionPlayBigPayday {
+  Card last_played_card = 1;
+  int32 num_cards = 2;
+}
+
+message PlayGoAgain {
+  string card_id = 1;
+}
+
+message ActionPlayGoAgain {
+  Card last_played_card = 1;
+}
+
+message PlaySetSnatcher {
+  string card_id = 1;
+  string target_id = 2;
+  string property_set_id = 3;
+}
+
+message PlayDebtTrap {
+  string card_id = 1;
+  string target_id = 2;
+}
+
+message PlayHeist {
+  string card_id = 1;
+  repeated PropertyPick picks = 2;
+}
+
+message PlayMarketCrash {
+  string card_id = 1;
+  repeated PropertyPick picks = 2;
+}
+
+message PlayRepoMan {
+  string card_id = 1;
+  string target_id = 2;
+}
+
+message PlayPropertyRaid {
+  string card_id = 1;
+  Color color = 2;
+}
+
+message PlayTaxDay {
+  string card_id = 1;
+  string target_id = 2;
+}
+
+message PlayPickpocket {
+  string card_id = 1;
+  string target_id = 2;
+  StealCategory category = 3;
+}
+
+message PlayBankSwap {
+  string card_id = 1;
+  string target_id = 2;
+}
+
+message PlayYoink {
+  string card_id = 1;
+  string target_id = 2;
+}
+
+message PlayRent {
+  string card_id = 1;
+  Color color = 2;
+}
+
+message ActionDemandsCreated {
+  optional Card last_played_card = 1;
+  optional Demand denied_demand = 2;
+  repeated Demand demands = 3;
+}
+
+// ---- Demand compliances ----
+
+message ComplyPaymentDemand {
+  string demand_id = 1;
+  repeated string card_ids = 2;
+}
+
+message ComplyPropertyDemand {
+  string demand_id = 1;
+}
+
+message ComplyPropertySetDemand {
+  string demand_id = 1;
+}
+
+message ComplyColorPropertiesDemand {
+  string demand_id = 1;
+}
+
+message ComplyBankCardDemand {
+  string demand_id = 1;
+}
+
+message ComplyBankSwapDemand {
+  string demand_id = 1;
+}
+
+message ComplyDebtTrapDemand {
+  string demand_id = 1;
+}
+
+message ComplyRepoManDemand {
+  string demand_id = 1;
+  string keep_card_id = 2;
+  repeated DistributionAssignment distribution = 3;
+}
+
+message ComplyTaxDayDemand {
+  string demand_id = 1;
+  string keep_card_id = 2;
+  repeated DistributionAssignment distribution = 3;
+}
+
+message ComplyPickpocketDemand {
+  string demand_id = 1;
+}
+
+message DenyDemand {
+  string demand_id = 1;
+  string card_id = 2;
+}
+
+// ---- Transfer records (payloads of ActionDemandComplied) ----
+
+// TransferCards is a payment: bank/action cards land in the bank, property
+// cards each form a new set. Debt is set when a chip was issued on shortfall.
+message TransferCards {
+  string source_id = 1;
+  string target_id = 2;
+  repeated Card cards = 3;
+  repeated PropertySet property_sets = 4;
+  int32 source_sets = 5;
+  int32 source_money = 6;
+  int32 target_sets = 7;
+  int32 target_money = 8;
+  optional DebtChip debt = 9;
+}
+
+// TransferProperty is a single property (MARKET CRASH); PropertySet is the new
+// set on the receiver.
+message TransferProperty {
+  string source_id = 1;
+  string target_id = 2;
+  Card card = 3;
+  PropertySet property_set = 4;
+}
+
+// TransferPropertySets moves whole sets (shacks included): one set for SET
+// SNATCHER, all sets of a color for PROPERTY RAID.
+message TransferPropertySets {
+  string source_id = 1;
+  string target_id = 2;
+  repeated PropertySet property_sets = 3;
+}
+
+// TransferBankSwap records the banks after a swap; SourceBank is what SourceId
+// (the demand target / payer) now holds.
+message TransferBankSwap {
+  string source_id = 1;
+  string target_id = 2;
+  repeated Card source_bank = 3;
+  repeated Card target_bank = 4;
+}
+
+// DistributionEntry is one card handed to RecipientId; PropertySet is set when
+// it landed as a property, otherwise it went to the recipient's bank.
+message DistributionEntry {
+  string recipient_id = 1;
+  Card card = 2;
+  optional PropertySet property_set = 3;
+}
+
+// TransferDistribution records a REPO MAN / TAX DAY compliance: SourceId kept
+// KeptCard and distributed the rest.
+message TransferDistribution {
+  string source_id = 1;
+  Card kept_card = 2;
+  repeated DistributionEntry entries = 3;
+}
+
+// TransferPickpocket records hand cards of Category moved from SourceId's hand
+// to TargetId's hand.
+message TransferPickpocket {
+  string source_id = 1;
+  string target_id = 2;
+  StealCategory category = 3;
+  repeated Card cards = 4;
+}
+
+// MaskedTransferPickpocket hides the actual cards stolen from other players.
+message MaskedTransferPickpocket {
+  string source_id = 1;
+  string target_id = 2;
+  StealCategory category = 3;
+  int32 num_cards = 4;
+}
+
+// TransferDebtChip records a DEBT TRAP compliance: a chip moved from the
+// target's pool into an outstanding obligation.
+message TransferDebtChip {
+  DebtChip debt = 1;
+}
+
+message ActionDemandComplied {
+  string demand_id = 1;
+  oneof transfer {
+    TransferCards transfer_cards = 2;
+    TransferProperty transfer_property = 3;
+    TransferPropertySets transfer_property_sets = 4;
+    TransferBankSwap transfer_bank_swap = 5;
+    TransferDistribution transfer_distribution = 6;
+    TransferPickpocket transfer_pickpocket = 7;
+    MaskedTransferPickpocket masked_transfer_pickpocket = 8;
+    TransferDebtChip transfer_debt_chip = 9;
+  }
+}
+
+// ---- Debt settlement ----
+
+message SettleDebt {
+  string debt_id = 1;
+  string card_id = 2;
+}
+
+// ActionDebtSettled records a mandatory settlement: the debtor gave Card,
+// which the creditor received as if played (property -> PropertySet, else
+// bank). Forgiven is true when an empty hand forced the debt to be written off.
+message ActionDebtSettled {
+  DebtChip debt = 1;
+  Card card = 2;
+  optional PropertySet property_set = 3;
+  bool forgiven = 4;
+}
+
+message DiscardCards {
+  repeated string card_ids = 1;
+}
+
+message ActionDiscardCards {
+  repeated Card cards = 1;
+}
+
+message MaskedActionDiscardCards {
+  int32 num_cards = 1;
+}
+
+message CompleteTurn {}
+
+message StartTurn {}
+
+message ActionStartTurn {
+  repeated Card cards = 1;
+  int32 moves_left = 2;
+  repeated DebtChip debts = 3;
+  bool go_again = 4;
+}
+
+// MaskedActionStartTurn hides the cards drawn to another player's hand but
+// keeps the outstanding debts and go-again flag (public information).
+message MaskedActionStartTurn {
+  int32 num_cards = 1;
+  int32 moves_left = 2;
+  repeated DebtChip debts = 3;
+  bool go_again = 4;
+}
+
+message RearrangeCard {
+  string card_id = 1;
+  optional string property_set_id = 2;
+  optional Color color = 3;
+}
+
+message ActionRearrangeCard {
+  optional Card card = 1;
+  PropertySet property_set = 2;
+  int32 sets = 3;
+}
+
+message WonGame {
+  string player_id = 1;
+  int32 num_completed_sets = 2;
+  int32 money = 3;
+}
+
+message Action {
+  string player_id = 1;
+  ActionKind kind = 2;
+  int32 seq_num = 3;
+  int64 turn_deadline_ms = 4;
+  oneof payload {
+    ActionPlayMoney action_play_money = 5;
+    ActionPlayProperty action_play_property = 6;
+    ActionPlayShack action_play_shack = 7;
+    ActionPlayBigPayday action_play_big_payday = 8;
+    MaskedActionPlayBigPayday masked_action_play_big_payday = 9;
+    ActionPlayGoAgain action_play_go_again = 10;
+    ActionDemandsCreated action_demands_created = 11;
+    ActionDemandComplied action_demand_complied = 12;
+    ActionDebtSettled action_debt_settled = 13;
+    ActionDiscardCards action_discard_cards = 14;
+    MaskedActionDiscardCards masked_action_discard_cards = 15;
+    ActionStartTurn action_start_turn = 16;
+    MaskedActionStartTurn masked_action_start_turn = 17;
+    ActionRearrangeCard action_rearrange_card = 18;
+  }
+}
+
+message ActionHistory {
+  Action action = 1;
+}
+
+message ClientMessage {
+  oneof payload {
+    Chat chat = 1;
+
+    // Turn lifecycle
+    CompleteTurn complete_turn = 2;
+    DiscardCards discard_cards = 3;
+    RearrangeCard rearrange_card = 4;
+
+    // Plays
+    PlayMoney play_money = 5;
+    PlayProperty play_property = 6;
+    PlayShack play_shack = 7;
+    PlayBigPayday play_big_payday = 8;
+    PlayGoAgain play_go_again = 9;
+    PlaySetSnatcher play_set_snatcher = 10;
+    PlayDebtTrap play_debt_trap = 11;
+    PlayHeist play_heist = 12;
+    PlayMarketCrash play_market_crash = 13;
+    PlayRepoMan play_repo_man = 14;
+    PlayPropertyRaid play_property_raid = 15;
+    PlayTaxDay play_tax_day = 16;
+    PlayPickpocket play_pickpocket = 17;
+    PlayBankSwap play_bank_swap = 18;
+    PlayYoink play_yoink = 19;
+    PlayRent play_rent = 20;
+
+    // Demand resolution
+    ComplyPaymentDemand comply_payment_demand = 21;
+    ComplyPropertyDemand comply_property_demand = 22;
+    ComplyPropertySetDemand comply_property_set_demand = 23;
+    ComplyColorPropertiesDemand comply_color_properties_demand = 24;
+    ComplyBankCardDemand comply_bank_card_demand = 25;
+    ComplyBankSwapDemand comply_bank_swap_demand = 26;
+    ComplyDebtTrapDemand comply_debt_trap_demand = 27;
+    ComplyRepoManDemand comply_repo_man_demand = 28;
+    ComplyTaxDayDemand comply_tax_day_demand = 29;
+    ComplyPickpocketDemand comply_pickpocket_demand = 30;
+    DenyDemand deny_demand = 31;
+
+    // Debt settlement
+    SettleDebt settle_debt = 32;
+  }
+}
+
+message ServerMessage {
+  oneof payload {
+    Error error = 1;
+    ChatReceived chat_received = 2;
+    GameState game_state = 3;
+    WonGame won_game = 4;
+    Action action = 5;
+    ActionHistory action_history = 6;
+  }
+}

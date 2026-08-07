@@ -11,6 +11,7 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+	deal_no_mercy_schema "the-deal/internal/schema/deal_no_mercy_schema"
 	monopoly_deal_schema "the-deal/internal/schema/monopoly_deal_schema"
 	room_schema "the-deal/internal/schema/room_schema"
 	unsafe "unsafe"
@@ -74,6 +75,7 @@ type ClientMessage struct {
 	//	*ClientMessage_Ping
 	//	*ClientMessage_RoomMessage
 	//	*ClientMessage_MonopolyDealMessage
+	//	*ClientMessage_DealNoMercyMessage
 	Payload       isClientMessage_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -143,6 +145,15 @@ func (x *ClientMessage) GetMonopolyDealMessage() *monopoly_deal_schema.ClientMes
 	return nil
 }
 
+func (x *ClientMessage) GetDealNoMercyMessage() *deal_no_mercy_schema.ClientMessage {
+	if x != nil {
+		if x, ok := x.Payload.(*ClientMessage_DealNoMercyMessage); ok {
+			return x.DealNoMercyMessage
+		}
+	}
+	return nil
+}
+
 type isClientMessage_Payload interface {
 	isClientMessage_Payload()
 }
@@ -159,11 +170,17 @@ type ClientMessage_MonopolyDealMessage struct {
 	MonopolyDealMessage *monopoly_deal_schema.ClientMessage `protobuf:"bytes,11,opt,name=monopoly_deal_message,json=monopolyDealMessage,proto3,oneof"`
 }
 
+type ClientMessage_DealNoMercyMessage struct {
+	DealNoMercyMessage *deal_no_mercy_schema.ClientMessage `protobuf:"bytes,12,opt,name=deal_no_mercy_message,json=dealNoMercyMessage,proto3,oneof"`
+}
+
 func (*ClientMessage_Ping) isClientMessage_Payload() {}
 
 func (*ClientMessage_RoomMessage) isClientMessage_Payload() {}
 
 func (*ClientMessage_MonopolyDealMessage) isClientMessage_Payload() {}
+
+func (*ClientMessage_DealNoMercyMessage) isClientMessage_Payload() {}
 
 type ServerMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -172,6 +189,7 @@ type ServerMessage struct {
 	//	*ServerMessage_Ping
 	//	*ServerMessage_RoomMessage
 	//	*ServerMessage_MonopolyDealMessage
+	//	*ServerMessage_DealNoMercyMessage
 	Payload       isServerMessage_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -241,6 +259,15 @@ func (x *ServerMessage) GetMonopolyDealMessage() *monopoly_deal_schema.ServerMes
 	return nil
 }
 
+func (x *ServerMessage) GetDealNoMercyMessage() *deal_no_mercy_schema.ServerMessage {
+	if x != nil {
+		if x, ok := x.Payload.(*ServerMessage_DealNoMercyMessage); ok {
+			return x.DealNoMercyMessage
+		}
+	}
+	return nil
+}
+
 type isServerMessage_Payload interface {
 	isServerMessage_Payload()
 }
@@ -257,32 +284,40 @@ type ServerMessage_MonopolyDealMessage struct {
 	MonopolyDealMessage *monopoly_deal_schema.ServerMessage `protobuf:"bytes,11,opt,name=monopoly_deal_message,json=monopolyDealMessage,proto3,oneof"`
 }
 
+type ServerMessage_DealNoMercyMessage struct {
+	DealNoMercyMessage *deal_no_mercy_schema.ServerMessage `protobuf:"bytes,12,opt,name=deal_no_mercy_message,json=dealNoMercyMessage,proto3,oneof"`
+}
+
 func (*ServerMessage_Ping) isServerMessage_Payload() {}
 
 func (*ServerMessage_RoomMessage) isServerMessage_Payload() {}
 
 func (*ServerMessage_MonopolyDealMessage) isServerMessage_Payload() {}
 
+func (*ServerMessage_DealNoMercyMessage) isServerMessage_Payload() {}
+
 var File_gateway_proto protoreflect.FileDescriptor
 
 const file_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\rgateway.proto\x12\x0fthe_deal.schema\x1a\x13monopoly_deal.proto\x1a\n" +
+	"\rgateway.proto\x12\x0fthe_deal.schema\x1a\x13monopoly_deal.proto\x1a\x13deal_no_mercy.proto\x1a\n" +
 	"room.proto\"(\n" +
 	"\x04Ping\x12 \n" +
 	"\ftime_unix_ms\x18\x01 \x01(\x03R\n" +
-	"timeUnixMs\"\xf5\x01\n" +
+	"timeUnixMs\"\xd8\x02\n" +
 	"\rClientMessage\x12+\n" +
 	"\x04ping\x18\x01 \x01(\v2\x15.the_deal.schema.PingH\x00R\x04ping\x12H\n" +
 	"\froom_message\x18\n" +
 	" \x01(\v2#.the_deal.schema.room.ClientMessageH\x00R\vroomMessage\x12b\n" +
-	"\x15monopoly_deal_message\x18\v \x01(\v2,.the_deal.schema.monopoly_deal.ClientMessageH\x00R\x13monopolyDealMessageB\t\n" +
-	"\apayload\"\xf5\x01\n" +
+	"\x15monopoly_deal_message\x18\v \x01(\v2,.the_deal.schema.monopoly_deal.ClientMessageH\x00R\x13monopolyDealMessage\x12a\n" +
+	"\x15deal_no_mercy_message\x18\f \x01(\v2,.the_deal.schema.deal_no_mercy.ClientMessageH\x00R\x12dealNoMercyMessageB\t\n" +
+	"\apayload\"\xd8\x02\n" +
 	"\rServerMessage\x12+\n" +
 	"\x04ping\x18\x01 \x01(\v2\x15.the_deal.schema.PingH\x00R\x04ping\x12H\n" +
 	"\froom_message\x18\n" +
 	" \x01(\v2#.the_deal.schema.room.ServerMessageH\x00R\vroomMessage\x12b\n" +
-	"\x15monopoly_deal_message\x18\v \x01(\v2,.the_deal.schema.monopoly_deal.ServerMessageH\x00R\x13monopolyDealMessageB\t\n" +
+	"\x15monopoly_deal_message\x18\v \x01(\v2,.the_deal.schema.monopoly_deal.ServerMessageH\x00R\x13monopolyDealMessage\x12a\n" +
+	"\x15deal_no_mercy_message\x18\f \x01(\v2,.the_deal.schema.deal_no_mercy.ServerMessageH\x00R\x12dealNoMercyMessageB\t\n" +
 	"\apayloadB!Z\x1fthe-deal/internal/schema;schemab\x06proto3"
 
 var (
@@ -304,21 +339,25 @@ var file_gateway_proto_goTypes = []any{
 	(*ServerMessage)(nil),                      // 2: the_deal.schema.ServerMessage
 	(*room_schema.ClientMessage)(nil),          // 3: the_deal.schema.room.ClientMessage
 	(*monopoly_deal_schema.ClientMessage)(nil), // 4: the_deal.schema.monopoly_deal.ClientMessage
-	(*room_schema.ServerMessage)(nil),          // 5: the_deal.schema.room.ServerMessage
-	(*monopoly_deal_schema.ServerMessage)(nil), // 6: the_deal.schema.monopoly_deal.ServerMessage
+	(*deal_no_mercy_schema.ClientMessage)(nil), // 5: the_deal.schema.deal_no_mercy.ClientMessage
+	(*room_schema.ServerMessage)(nil),          // 6: the_deal.schema.room.ServerMessage
+	(*monopoly_deal_schema.ServerMessage)(nil), // 7: the_deal.schema.monopoly_deal.ServerMessage
+	(*deal_no_mercy_schema.ServerMessage)(nil), // 8: the_deal.schema.deal_no_mercy.ServerMessage
 }
 var file_gateway_proto_depIdxs = []int32{
 	0, // 0: the_deal.schema.ClientMessage.ping:type_name -> the_deal.schema.Ping
 	3, // 1: the_deal.schema.ClientMessage.room_message:type_name -> the_deal.schema.room.ClientMessage
 	4, // 2: the_deal.schema.ClientMessage.monopoly_deal_message:type_name -> the_deal.schema.monopoly_deal.ClientMessage
-	0, // 3: the_deal.schema.ServerMessage.ping:type_name -> the_deal.schema.Ping
-	5, // 4: the_deal.schema.ServerMessage.room_message:type_name -> the_deal.schema.room.ServerMessage
-	6, // 5: the_deal.schema.ServerMessage.monopoly_deal_message:type_name -> the_deal.schema.monopoly_deal.ServerMessage
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	5, // 3: the_deal.schema.ClientMessage.deal_no_mercy_message:type_name -> the_deal.schema.deal_no_mercy.ClientMessage
+	0, // 4: the_deal.schema.ServerMessage.ping:type_name -> the_deal.schema.Ping
+	6, // 5: the_deal.schema.ServerMessage.room_message:type_name -> the_deal.schema.room.ServerMessage
+	7, // 6: the_deal.schema.ServerMessage.monopoly_deal_message:type_name -> the_deal.schema.monopoly_deal.ServerMessage
+	8, // 7: the_deal.schema.ServerMessage.deal_no_mercy_message:type_name -> the_deal.schema.deal_no_mercy.ServerMessage
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_gateway_proto_init() }
@@ -330,11 +369,13 @@ func file_gateway_proto_init() {
 		(*ClientMessage_Ping)(nil),
 		(*ClientMessage_RoomMessage)(nil),
 		(*ClientMessage_MonopolyDealMessage)(nil),
+		(*ClientMessage_DealNoMercyMessage)(nil),
 	}
 	file_gateway_proto_msgTypes[2].OneofWrappers = []any{
 		(*ServerMessage_Ping)(nil),
 		(*ServerMessage_RoomMessage)(nil),
 		(*ServerMessage_MonopolyDealMessage)(nil),
+		(*ServerMessage_DealNoMercyMessage)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

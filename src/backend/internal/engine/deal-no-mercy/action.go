@@ -1,12 +1,13 @@
 package deal_no_mercy
 
 import (
+	"the-deal/internal/schema/deal_no_mercy_schema"
+
 	"github.com/google/uuid"
 )
 
-// Actions are the engine's outbound event records. Proto() conversions are
-// intentionally omitted in Phase 1 — the deal_no_mercy protobuf schema does
-// not exist yet; Phase 2/3 adds the wire mapping.
+// Actions are the engine's outbound event records. Proto() conversions live
+// in proto_action.go (Phase 2 wire mapping).
 
 type ActionKind string
 
@@ -29,6 +30,7 @@ type Action interface {
 	GetKind() ActionKind
 	GetVersion() int
 	GetSeqNum() int
+	Proto() *deal_no_mercy_schema.Action
 }
 
 type ActionPlayMoney struct {
