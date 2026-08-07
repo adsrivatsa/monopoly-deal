@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Deal No Mercy — asset preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; padding: 24px 32px 64px; background: #565a5f; color: #eee;
+         font-family: "JetBrains Mono", Menlo, Consolas, monospace; }
+  h1 { font-size: 20px; } h2 { font-size: 15px; margin: 36px 0 4px; color: #ffd9c2; }
+  p.note { font-size: 12px; color: #bbb; max-width: 900px; margin: 4px 0 12px; }
+  .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+  figure { margin: 0; text-align: center; }
+  figure img { display: block; background: #fff; border-radius: 6px;
+               box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+  figure.big img { width: 168px; }
+  figure.tile img { width: 76px; }
+  figure.chip img { width: 96px; background: transparent; box-shadow: none; }
+  figure.chip.mini img { width: 40px; }
+  figcaption { font-size: 10.5px; margin-top: 5px; color: #ddd; max-width: 168px; }
+  .classic figcaption::after { content: " (classic)"; color: #9fd49f; }
+  .divider { width: 2px; align-self: stretch; background: #777; margin: 0 8px; }
+</style>
+</head>
+<body>
+<h1>Deal No Mercy — new asset preview</h1>
+<p class="note">
+  New assets live in <code>src/backend/public/deal-no-mercy/card/</code>; classic comparison
+  cards (green captions) are referenced from <code>src/backend/public/card/</code> and are
+  unchanged. New assets are hand-authored SVG with real <code>&lt;text&gt;</code> elements
+  (JetBrains Mono) — the classic set has outlined text. See
+  <code>asset-style-guide.md</code> and <code>card-list.md</code>.
+</p>
+
+<h2>Style reference — classic cards (unchanged)</h2>
+<div class="row classic">
+  <figure class="big"><img src="../../src/backend/public/card/large/payday.svg"><figcaption>payday</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/card/large/set_snatcher.svg"><figcaption>set_snatcher 5M</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/card/large/rent_brown_sky.svg"><figcaption>rent_brown_sky</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/card/large/5.svg"><figcaption>money 5M</figcaption></figure>
+</div>
+
+<h2>New action cards (large)</h2>
+<div class="row">
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/debt_trap.svg"><figcaption>debt_trap — Forced Debt</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/go_again.svg"><figcaption>go_again — Go Again</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/heist.svg"><figcaption>heist — Heist</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/market_crash.svg"><figcaption>market_crash — Market Crash</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/big_payday.svg"><figcaption>big_payday — Pass Go, Go, Go!</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/repo_man.svg"><figcaption>repo_man — Repossession</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/shack.svg"><figcaption>shack — Shack</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/property_raid.svg"><figcaption>property_raid — Super Sly Deal</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/tax_day.svg"><figcaption>tax_day — Tax Collector</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/pickpocket.svg"><figcaption>pickpocket — Tough Luck</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/bank_swap.svg"><figcaption>bank_swap — Unfair Trade</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/yoink.svg"><figcaption>yoink — Yoink!</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/set_snatcher.svg"><figcaption>set_snatcher — Deal Breaker, now 3M</figcaption></figure>
+</div>
+
+<h2>New rent cards (large)</h2>
+<div class="row">
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/double_rent_brown_sky.svg"><figcaption>double_rent_brown_sky</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/double_rent_pink_orange.svg"><figcaption>double_rent_pink_orange</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/double_rent_red_yellow.svg"><figcaption>double_rent_red_yellow</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/double_rent_green_blue.svg"><figcaption>double_rent_green_blue</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/double_rent_util_rail.svg"><figcaption>double_rent_util_rail</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/rent_wild.svg"><figcaption>rent_wild — all players (new text)</figcaption></figure>
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/double_rent_wild.svg"><figcaption>double_rent_wild</figcaption></figure>
+  <div class="divider"></div>
+  <figure class="big classic"><img src="../../src/backend/public/card/large/rent_wild.svg"><figcaption>rent_wild — one player</figcaption></figure>
+</div>
+
+<h2>New money (large + small tile)</h2>
+<div class="row">
+  <figure class="big"><img src="../../src/backend/public/deal-no-mercy/card/large/15.svg"><figcaption>money 15M (new tint #b8ebc6)</figcaption></figure>
+  <figure class="tile"><img src="../../src/backend/public/deal-no-mercy/card/small/15.svg"><figcaption>small 15</figcaption></figure>
+  <div class="divider"></div>
+  <figure class="big classic"><img src="../../src/backend/public/card/large/10.svg"><figcaption>money 10M</figcaption></figure>
+  <figure class="tile classic"><img src="../../src/backend/public/card/small/10.svg"><figcaption>small 10</figcaption></figure>
+</div>
+
+<h2>Debt chip (UI asset, square canvas)</h2>
+<div class="row">
+  <figure class="chip"><img src="../../src/backend/public/deal-no-mercy/card/large/debt_chip.svg"><figcaption>debt_chip (large)</figcaption></figure>
+  <figure class="chip mini"><img src="../../src/backend/public/deal-no-mercy/card/small/debt_chip.svg"><figcaption>small</figcaption></figure>
+</div>
+
+<h2>Small-tile mapping note</h2>
+<p class="note">
+  New action cards have no dedicated small tiles — like the classic set they map to the
+  money-denomination tile of their value (proposed mapping in <code>card-list.md</code>).
+  Only <code>small/15.svg</code> and <code>small/debt_chip.svg</code> are genuinely new.
+</p>
+</body>
+</html>
