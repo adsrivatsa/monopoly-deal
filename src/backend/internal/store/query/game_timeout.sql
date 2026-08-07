@@ -33,3 +33,16 @@ UPDATE game_timeout SET claimed_at = NOW()
     FOR UPDATE SKIP LOCKED
     )
     RETURNING *;
+
+-- name: ClaimGameTimeoutsByGame :many
+UPDATE game_timeout gt SET claimed_at = NOW()
+ WHERE (gt.game_id, gt.player_id, COALESCE(gt.demand_id, '')) IN (
+     SELECT t.game_id, t.player_id, COALESCE(t.demand_id, '') FROM game_timeout t
+      JOIN game g ON g.game_id = t.game_id
+      WHERE (t.claimed_at IS NULL OR t.claimed_at < NOW() - INTERVAL '30 seconds')
+        AND g.game = $2
+      ORDER BY t.deadline
+     LIMIT $1
+    FOR UPDATE SKIP LOCKED
+    )
+    RETURNING *;

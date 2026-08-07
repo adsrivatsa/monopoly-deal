@@ -53,6 +53,54 @@ func (q *Queries) ClaimGameTimeouts(ctx context.Context, limit int32) ([]GameTim
 	return items, nil
 }
 
+const claimGameTimeoutsByGame = `-- name: ClaimGameTimeoutsByGame :many
+UPDATE game_timeout gt SET claimed_at = NOW()
+ WHERE (gt.game_id, gt.player_id, COALESCE(gt.demand_id, '')) IN (
+     SELECT t.game_id, t.player_id, COALESCE(t.demand_id, '') FROM game_timeout t
+      JOIN game g ON g.game_id = t.game_id
+      WHERE (t.claimed_at IS NULL OR t.claimed_at < NOW() - INTERVAL '30 seconds')
+        AND g.game = $2
+      ORDER BY t.deadline
+     LIMIT $1
+    FOR UPDATE SKIP LOCKED
+    )
+    RETURNING game_id, player_id, demand_id, token_id, duration_ms, deadline, created_at, claimed_at
+`
+
+type ClaimGameTimeoutsByGameParams struct {
+	Limit int32    `json:"limit"`
+	Game  GameType `json:"game"`
+}
+
+func (q *Queries) ClaimGameTimeoutsByGame(ctx context.Context, arg ClaimGameTimeoutsByGameParams) ([]GameTimeout, error) {
+	rows, err := q.db.Query(ctx, claimGameTimeoutsByGame, arg.Limit, arg.Game)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GameTimeout{}
+	for rows.Next() {
+		var i GameTimeout
+		if err := rows.Scan(
+			&i.GameID,
+			&i.PlayerID,
+			&i.DemandID,
+			&i.TokenID,
+			&i.DurationMs,
+			&i.Deadline,
+			&i.CreatedAt,
+			&i.ClaimedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const deleteGameTimeout = `-- name: DeleteGameTimeout :one
 DELETE FROM game_timeout WHERE game_id = $1 AND player_id = $2 and demand_id IS NOT DISTINCT FROM $3 RETURNING game_id, player_id, demand_id, token_id, duration_ms, deadline, created_at, claimed_at
 `

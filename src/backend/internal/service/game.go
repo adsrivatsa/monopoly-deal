@@ -47,6 +47,14 @@ func (c *Controller) ListenGameEvents(ctx context.Context, tp token.Payload, cal
 				}
 
 				msg = c.MonopolyDealController.MaskEvent(tp, msg.GetMonopolyDealMessage())
+
+			case event.KindDealNoMercyEvent:
+				err = proto.Unmarshal(e.Message, msg)
+				if err != nil {
+					return err
+				}
+
+				msg = c.DealNoMercyController.MaskEvent(tp, msg.GetDealNoMercyMessage())
 			default:
 			}
 
@@ -112,6 +120,8 @@ func (c *Controller) CreateGame(ctx context.Context, tp token.Payload) error {
 	switch r.Game {
 	case store.GameTypeMonopolyDeal:
 		gameID, err = c.MonopolyDealController.CreateGame(ctx, r.RoomID, playerIDs)
+	case store.GameTypeDealNoMercy:
+		gameID, err = c.DealNoMercyController.CreateGame(ctx, r.RoomID, playerIDs)
 	default:
 		return errors.GameNotSupported
 	}
@@ -151,6 +161,8 @@ func (c *Controller) ListGameHistory(ctx context.Context, tp token.Payload, call
 	switch g.Game {
 	case store.GameTypeMonopolyDeal:
 		err = c.MonopolyDealController.ListGameHistory(ctx, tp, g.GameID, callback)
+	case store.GameTypeDealNoMercy:
+		err = c.DealNoMercyController.ListGameHistory(ctx, tp, g.GameID, callback)
 	}
 	if err != nil {
 		return err

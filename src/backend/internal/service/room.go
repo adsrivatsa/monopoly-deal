@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	deal_no_mercy "the-deal/internal/engine/deal-no-mercy"
 	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
 	"the-deal/internal/event"
@@ -525,6 +526,10 @@ func (c *Controller) JoinQuickPlayRoom(ctx context.Context, tp token.Payload, ga
 		capacity = 2
 		set := monopoly_deal.DefaultSettings()
 		settings, err = set.Encode()
+	case store.GameTypeDealNoMercy:
+		capacity = 2
+		set := deal_no_mercy.DefaultSettings()
+		settings, err = set.Encode()
 	default:
 		return nil, errors.GameNotSupported
 	}
@@ -536,7 +541,8 @@ func (c *Controller) JoinQuickPlayRoom(ctx context.Context, tp token.Payload, ga
 	var rp store.RoomPlayer
 	var gameID uuid.UUID
 	var gameStarted bool
-	var action monopoly_deal.Action
+	var mdAction monopoly_deal.Action
+	var dnmAction deal_no_mercy.Action
 	var deadline time.Time
 	err = c.store.ExecTx(ctx, func(q *store.Queries) error {
 		err = q.QuickPlayBucketXactLock(ctx, store.QuickPlayBucketXactLockParams{
@@ -575,7 +581,9 @@ func (c *Controller) JoinQuickPlayRoom(ctx context.Context, tp token.Payload, ga
 
 				switch r.Game {
 				case store.GameTypeMonopolyDeal:
-					gameID, action, deadline, err = c.MonopolyDealController.CreateGameFromRoomTx(ctx, q, r.RoomID, playerIDs)
+					gameID, mdAction, deadline, err = c.MonopolyDealController.CreateGameFromRoomTx(ctx, q, r.RoomID, playerIDs)
+				case store.GameTypeDealNoMercy:
+					gameID, dnmAction, deadline, err = c.DealNoMercyController.CreateGameFromRoomTx(ctx, q, r.RoomID, playerIDs)
 				default:
 					return errors.GameNotSupported
 				}
@@ -617,7 +625,14 @@ func (c *Controller) JoinQuickPlayRoom(ctx context.Context, tp token.Payload, ga
 	}
 
 	if gameStarted {
-		err = c.MonopolyDealController.PublishAction(ctx, gameID, action, deadline)
+		switch game {
+		case store.GameTypeMonopolyDeal:
+			err = c.MonopolyDealController.PublishAction(ctx, gameID, mdAction, deadline)
+		case store.GameTypeDealNoMercy:
+			err = c.DealNoMercyController.PublishAction(ctx, gameID, dnmAction, deadline)
+		default:
+			return nil, errors.GameNotSupported
+		}
 		if err != nil {
 			return nil, err
 		}

@@ -16,6 +16,8 @@ func quickPlayGameLockKey(game store.GameType) (int32, error) {
 	switch game {
 	case store.GameTypeMonopolyDeal:
 		return 1, nil
+	case store.GameTypeDealNoMercy:
+		return 2, nil
 	default:
 		return 0, errors.GameNotSupported
 	}

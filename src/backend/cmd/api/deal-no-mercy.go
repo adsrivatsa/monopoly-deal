@@ -1,0 +1,111 @@
+package main
+
+import (
+	"context"
+	stderrors "errors"
+	"fmt"
+	"net/http"
+	"the-deal/internal/errors"
+	"the-deal/internal/schema"
+	"the-deal/internal/schema/deal_no_mercy_schema"
+	"the-deal/internal/token"
+)
+
+func (s *Server) DealNoMercySocket(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	tp, err := tokenFromRequest(r, token.AccessToken)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	conn, err := s.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		ErrorHTTP(w, err)
+		return
+	}
+
+	sock, ctx := newSocket(conn, ctx)
+
+	s.gameSocketsMu.Lock()
+	oldSock, ok := s.gameSockets[tp.PlayerID]
+	if ok {
+		oldSock.close(errors.DuplicateSocket)
+	}
+	s.gameSockets[tp.PlayerID] = sock
+	s.gameSocketsMu.Unlock()
+	defer func() {
+		s.gameSocketsMu.Lock()
+		if s2, ok := s.gameSockets[tp.PlayerID]; ok && s2 == oldSock {
+			delete(s.gameSockets, tp.PlayerID)
+		}
+		s.gameSocketsMu.Unlock()
+	}()
+
+	msg := s.services.DealNoMercyController.GetGameState(ctx, tp)
+	sock.send(msg)
+
+	go s.ping(ctx, sock)
+	go s.handleClientDealNoMercyMessages(ctx, sock, tp)
+
+	callback := func(message *schema.ServerMessage) {
+		sock.send(message)
+	}
+
+	go func() {
+		err := s.services.ListGameHistory(ctx, tp, callback)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	err = s.services.ListenGameEvents(ctx, tp, callback)
+	if err != nil {
+		sock.error(err)
+		return
+	}
+}
+
+func (s *Server) handleClientDealNoMercyMessages(ctx context.Context, sock *socket, tp token.Payload) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		msg := sock.read()
+		if msg == nil {
+			return
+		}
+
+		switch p := msg.GetPayload().(type) {
+		case *schema.ClientMessage_DealNoMercyMessage:
+			err := s.services.DealNoMercyController.HandleEvent(ctx, tp, p)
+			if err != nil {
+				var intErr errors.Error
+				if !stderrors.As(err, &intErr) {
+					intErr = errors.Internal(err)
+				}
+
+				sock.send(&schema.ServerMessage{
+					Payload: &schema.ServerMessage_DealNoMercyMessage{
+						DealNoMercyMessage: &deal_no_mercy_schema.ServerMessage{
+							Payload: &deal_no_mercy_schema.ServerMessage_Error{
+								Error: &deal_no_mercy_schema.Error{
+									Message: intErr.Error(),
+									Status:  int32(intErr.Status),
+									Code:    intErr.Code,
+								},
+							},
+						},
+					},
+				})
+			}
+		default:
+			sock.error(errors.InvalidMessageType[schema.ClientMessage_DealNoMercyMessage]())
+			return
+		}
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	deal_no_mercy "the-deal/internal/engine/deal-no-mercy"
 	monopoly_deal "the-deal/internal/engine/monopoly-deal"
 	"the-deal/internal/errors"
 	"the-deal/internal/schema"
@@ -104,6 +105,19 @@ func (s *Server) CreateRoom(w http.ResponseWriter, r *http.Request) {
 			ErrorHTTP(w, err)
 			return
 		}
+	case store.GameTypeDealNoMercy:
+		var settings deal_no_mercy.Settings
+		err = settings.Decode(args.Settings)
+		if err != nil {
+			ErrorHTTP(w, err)
+			return
+		}
+
+		err = Validate(settings)
+		if err != nil {
+			ErrorHTTP(w, err)
+			return
+		}
 	default:
 		ErrorHTTP(w, errors.GameNotSupported)
 		return
@@ -165,7 +179,7 @@ func (s *Server) QuickPlaySocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch game {
-	case store.GameTypeMonopolyDeal:
+	case store.GameTypeMonopolyDeal, store.GameTypeDealNoMercy:
 	default:
 		ErrorHTTP(w, errors.GameNotSupported)
 		return
@@ -317,6 +331,19 @@ func (s *Server) UpdateRoomSettings(w http.ResponseWriter, r *http.Request) {
 	switch args.Game {
 	case store.GameTypeMonopolyDeal:
 		var settings monopoly_deal.Settings
+		err = settings.Decode(args.Settings)
+		if err != nil {
+			ErrorHTTP(w, err)
+			return
+		}
+
+		err = Validate(settings)
+		if err != nil {
+			ErrorHTTP(w, err)
+			return
+		}
+	case store.GameTypeDealNoMercy:
+		var settings deal_no_mercy.Settings
 		err = settings.Decode(args.Settings)
 		if err != nil {
 			ErrorHTTP(w, err)

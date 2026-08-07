@@ -27,6 +27,7 @@ const (
 	KindUnknown Kind = iota
 	KindServerMessage
 	KindMonopolyDealEvent
+	KindDealNoMercyEvent
 )
 
 type Event struct {
@@ -40,6 +41,10 @@ func NewServerMessageEvent(message []byte) Event {
 
 func NewMonopolyDealEvent(message []byte) Event {
 	return Event{KindMonopolyDealEvent, message}
+}
+
+func NewDealNoMercyEvent(message []byte) Event {
+	return Event{KindDealNoMercyEvent, message}
 }
 
 func (b *Bus) Publish(ctx context.Context, channel string, event Event) error {

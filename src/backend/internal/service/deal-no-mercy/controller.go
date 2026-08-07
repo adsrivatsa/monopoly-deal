@@ -1,4 +1,4 @@
-package monopoly_deal
+package deal_no_mercy
 
 import (
 	"context"
@@ -46,7 +46,7 @@ func (c *Controller) rehydrateTimeouts() error {
 		err := c.store.ExecTx(ctx, func(q *store.Queries) error {
 			gts, err := q.ClaimGameTimeoutsByGame(ctx, store.ClaimGameTimeoutsByGameParams{
 				Limit: int32(limit),
-				Game:  store.GameTypeMonopolyDeal,
+				Game:  store.GameTypeDealNoMercy,
 			})
 			if err != nil {
 				return err

@@ -72,5 +72,7 @@ func (s *Server) GameSocket(w http.ResponseWriter, r *http.Request) {
 	switch g.Game {
 	case store.GameTypeMonopolyDeal:
 		s.MonopolyDealSocket(w, r)
+	case store.GameTypeDealNoMercy:
+		s.DealNoMercySocket(w, r)
 	}
 }
