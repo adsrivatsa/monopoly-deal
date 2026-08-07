@@ -6,11 +6,17 @@ state persisted in Postgres, sqlc for query generation. Assets already shipped
 under `src/backend/public/deal-no-mercy/card/` (see `card-list.md` for the full
 120-card set and `asset-style-guide.md` for the visual language).
 
+Status: Phases 0–4 complete and committed. Phase 5 integration verification
+complete — a scripted backend E2E harness (`src/backend/cmd/e2e`) drives a full
+two-player No Mercy game over the real HTTP + websocket protocol and passes
+41/41 checks (all mechanics, timeouts, win, reconnect, cross-game isolation).
+Browser playtest still pending (human).
+
 Each phase lands as its own verified commit(s); later phases depend on earlier
 ones. Engine work is test-driven — the engine is pure Go with no I/O, so it
 gets the deepest coverage.
 
-## Phase 0 — Game type plumbing (backend)
+## Phase 0 — Game type plumbing (backend) — DONE
 
 Teach the platform that a second game exists, without exposing it to players
 yet.
@@ -24,7 +30,7 @@ yet.
 
 Verify: backend builds, existing tests pass, frontend typechecks untouched.
 
-## Phase 1 — Game engine (`internal/engine/deal-no-mercy/`)
+## Phase 1 — Game engine (`internal/engine/deal-no-mercy/`) — DONE
 
 Pure-Go engine package mirroring the classic engine's idioms (Identifier
 generator, Cards/PropertySets, msgpack Settings + Snapshot) with No Mercy
@@ -46,7 +52,7 @@ Tests: deck composition/unique IDs, snapshot round-trip (incl. debt state),
 per-action semantics + edge cases, debt chip lifecycle, no card duplication
 across zones (learned that lesson in classic), win detection.
 
-## Phase 2 — Wire protocol (`schema/deal_no_mercy.proto`)
+## Phase 2 — Wire protocol (`schema/deal_no_mercy.proto`) — DONE
 
 Mirror `monopoly_deal.proto`'s shape for the new game: GameState, Card/asset
 enums, demands, actions (with masked variants for hidden information), client
@@ -56,7 +62,7 @@ and server messages, plus debt chip state. Add the payload arm to
 Verify: both codebases build with generated code, no changes to existing
 message numbering.
 
-## Phase 3 — Service layer + routing (`internal/service/deal-no-mercy/`)
+## Phase 3 — Service layer + routing (`internal/service/deal-no-mercy/`) — DONE
 
 - Controller: create-game-from-room, event handling, action masking, timeout /
   default-move scheduling, msgpack persistence — following the classic
@@ -69,7 +75,7 @@ message numbering.
 Verify: backend builds + tests; a room with game=deal_no_mercy can start a
 game end-to-end against a local DB.
 
-## Phase 4 — Frontend
+## Phase 4 — Frontend — DONE (build/typecheck; browser playtest pending)
 
 - Generated TS protos; settings model + defaults (capacity 2–5, deck of 120).
 - Enable in lobby: `supportedGames`, create-room modal, quick play.
@@ -80,8 +86,29 @@ game end-to-end against a local DB.
 
 Verify: typecheck + build; manual play-through in two browsers.
 
-## Phase 5 — Integration polish
+## Phase 5 — Integration polish — DONE (E2E acceptance passing; browser playtest pending)
 
 Timeout default moves for every new demand type, action history sidebar
 entries for new actions, reconnect behavior, docs refresh, and a full
 two-player E2E game as the acceptance test.
+
+E2E acceptance (`src/backend/cmd/e2e`, run against a live stack): seeds players
+directly, mints session cookies with the server's own token package, and drives
+the real room→game HTTP flow + game websockets exchanging proto messages. It
+verifies the initial deal (5 dealt + starter's draw), masking (opponent hand /
+discard / start-turn are counts only), debt chips, asset image URLs, the core
+turn loop, and one full flow of every new mechanic (shack +rent, big payday, go
+again, yoink, rent-all double variant, heist, market crash, property raid, set
+snatcher, tax day distribution, pickpocket, bank swap, debt trap, NAH!
+deny+counter, debt-chip issue on short payment + mandatory settlement), the
+move- and demand-timeout default paths (scoped: a classic monopoly_deal game
+runs simultaneously and is proven untouched), the win (3 sets → WonGame + game
+row completed), and mid-game reconnect (authoritative snapshot + masked history
+replay). 41/41 checks pass.
+
+Integration bug fixed during verification: the game-socket handlers
+(`cmd/api/deal-no-mercy.go` and the shared-path `cmd/api/monopoly-deal.go`)
+removed their `gameSockets` map entry on disconnect by comparing against
+`oldSock` (the previous connection) instead of `sock` (the current one),
+leaving stale entries and mis-deleting a reconnecting socket's entry. Corrected
+both to `s2 == sock`, matching the room-socket handlers.

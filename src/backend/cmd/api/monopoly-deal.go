@@ -37,7 +37,7 @@ func (s *Server) MonopolyDealSocket(w http.ResponseWriter, r *http.Request) {
 	s.gameSocketsMu.Unlock()
 	defer func() {
 		s.gameSocketsMu.Lock()
-		if s2, ok := s.gameSockets[tp.PlayerID]; ok && s2 == oldSock {
+		if s2, ok := s.gameSockets[tp.PlayerID]; ok && s2 == sock {
 			delete(s.gameSockets, tp.PlayerID)
 		}
 		s.gameSocketsMu.Unlock()
