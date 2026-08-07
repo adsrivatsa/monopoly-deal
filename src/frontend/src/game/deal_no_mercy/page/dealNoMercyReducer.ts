@@ -329,9 +329,32 @@ export const applyActionToGameState = (
       if (!set || !actorId) {
         break;
       }
-      // Rearrange can empty a source set; the server sends the resulting set,
-      // and we drop any now-empty sets belonging to the actor on next snapshot.
-      let properties = upsertPropertySet(next.properties, set);
+      // Rearrange moves ONE card from a source set into the target set the
+      // server sends. We must first strip the moved card out of every OTHER
+      // set the actor owns, otherwise it lives in both the source and the
+      // target set (a phantom duplicate the next snapshot would silently heal).
+      // Mirrors classic's rearrange handling: remove-from-source, drop now-empty
+      // sets, then upsert the authoritative target set.
+      const movedCardId = action.actionRearrangeCard?.card?.cardId;
+      let properties = next.properties;
+      if (movedCardId) {
+        properties = properties.map((existing) => {
+          if (
+            existing.playerId !== actorId ||
+            existing.propertySetId === set.propertySetId
+          ) {
+            return existing;
+          }
+          const filtered = existing.cards.filter(
+            (card) => card.cardId !== movedCardId,
+          );
+          return filtered.length === existing.cards.length
+            ? existing
+            : { ...existing, cards: filtered };
+        });
+      }
+      properties = upsertPropertySet(properties, set);
+      // Rearrange can empty a source set; drop any now-empty sets for the actor.
       properties = properties.filter(
         (existing) =>
           existing.propertySetId === set.propertySetId ||
@@ -343,7 +366,9 @@ export const applyActionToGameState = (
         ...next,
         properties,
         players,
-        movesLeft: isSelfActor(next, actorId) ? Math.max(0, next.movesLeft - 1) : next.movesLeft,
+        // Rearranging is FREE — the engine's RearrangeProperty never calls
+        // CompleteMove, so we must NOT consume a move here.
+        movesLeft: next.movesLeft,
       };
       break;
     }
@@ -420,7 +445,19 @@ export const applyActionToGameState = (
         }
       }
       players = resyncPlayerStats(players, properties, money, debt.creditorId);
-      next = { ...next, debtChips, money, properties, players };
+      next = {
+        ...next,
+        debtChips,
+        money,
+        properties,
+        players,
+        // Settling a debt consumes a move for the debtor: the engine's
+        // SettleDebt runs checkMoves + CompleteMove. The debtor is always the
+        // current player (settlement is gated by checkTurn), so decrement for
+        // the self-actor. Without this the optimistic movesLeft is 1 too high
+        // and a reconnect snapshot would "reset" it.
+        movesLeft: isSelfActor(next, actorId) ? Math.max(0, next.movesLeft - 1) : next.movesLeft,
+      };
       break;
     }
 
@@ -604,11 +641,34 @@ const applyDemandComplied = (state: GameState, action: Action): GameState => {
   }
 
   // TransferDistribution: REPO MAN / TAX DAY. Source kept one card; the rest
-  // were handed out (to bank or as property).
+  // were handed out (to bank or as property). The distributed cards leave the
+  // SOURCE's zones (RepoMan pulls from the source's property sets, TaxDay from
+  // the source's bank), so we must strip them from the source before adding
+  // them to recipients — otherwise each distributed card lives in both places
+  // (a phantom duplicate the next snapshot would silently heal).
   if (t.transferDistribution) {
     const td = t.transferDistribution;
     let money = next.money;
     let properties = next.properties;
+    const distributedIds = new Set(
+      td.entries
+        .map((entry) => entry.card?.cardId)
+        .filter((id): id is string => Boolean(id)),
+    );
+    // Remove distributed cards from the source's bank and property sets, then
+    // drop any now-empty source sets.
+    if (distributedIds.size > 0) {
+      money = removeFromMoney(money, td.sourceId, distributedIds);
+      properties = properties
+        .map((set) => {
+          if (set.playerId !== td.sourceId) {
+            return set;
+          }
+          const filtered = set.cards.filter((card) => !distributedIds.has(card.cardId));
+          return filtered.length === set.cards.length ? set : { ...set, cards: filtered };
+        })
+        .filter((set) => set.playerId !== td.sourceId || set.cards.length > 0);
+    }
     const players = new Set<string>();
     for (const entry of td.entries) {
       if (!entry.card) {
@@ -621,6 +681,8 @@ const applyDemandComplied = (state: GameState, action: Action): GameState => {
       }
       players.add(entry.recipientId);
     }
+    // The source lost cards too, so resync its stats as well.
+    players.add(td.sourceId);
     let nextPlayers = next.players;
     for (const playerId of players) {
       nextPlayers = resyncPlayerStats(nextPlayers, properties, money, playerId);
