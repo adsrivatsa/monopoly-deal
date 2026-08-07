@@ -27,7 +27,7 @@ export const appConfig = {
     socketUrl: roomSocketUrl,
     quickPlaySocketUrl: buildQuickPlaySocketUrl,
     create: {
-      games: ["monopoly_deal"],
+      games: ["monopoly_deal", "deal_no_mercy"],
       capacity: {
         min: 2,
         max: 5,

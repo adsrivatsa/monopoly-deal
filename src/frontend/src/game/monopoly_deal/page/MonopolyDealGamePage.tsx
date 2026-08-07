@@ -41,7 +41,7 @@ import {
   playLossTocks,
   playWinTocks,
   playYourTurnTocks,
-} from "../sound";
+} from "../../shared/sound";
 import {
   AssetKey,
   AssetImageKind,

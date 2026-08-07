@@ -12,9 +12,10 @@ export type ShortPlayer = {
 
 export enum Game {
   MonopolyDeal = "monopoly_deal",
+  DealNoMercy = "deal_no_mercy",
 }
 
-export const supportedGames: Game[] = [Game.MonopolyDeal];
+export const supportedGames: Game[] = [Game.MonopolyDeal, Game.DealNoMercy];
 
 export type MonopolyDealSettings = {
   // deal rules
@@ -53,8 +54,59 @@ export type MonopolyDealSettings = {
   nah_consumes_move: boolean;
 };
 
+// DealNoMercySettings mirrors the msgpack tags in
+// src/backend/internal/engine/deal-no-mercy/settings.go EXACTLY (snake_case).
+// The derived timeout fields (move_timeout / demand_timeout) are computed on
+// the backend from speed and are intentionally omitted here.
+export type DealNoMercySettings = {
+  num_decks: number;
+
+  // deal rules
+  start_num_cards: number;
+  max_hand_size: number;
+  moves_per_turn: number;
+  turn_draw: number;
+
+  // win conditions
+  win_set_amount: number;
+  win_money_amount: number;
+
+  // no mercy rules
+  debt_chips_per_player: number;
+  yoink_payment: number;
+  shack_rent_bonus: number;
+  big_payday_hand_target: number;
+
+  // game speed
+  speed: number;
+
+  // deck rules
+  set_snatcher_amount: number;
+  debt_trap_amount: number;
+  go_again_amount: number;
+  heist_amount: number;
+  market_crash_amount: number;
+  big_payday_amount: number;
+  repo_man_amount: number;
+  shack_amount: number;
+  property_raid_amount: number;
+  tax_day_amount: number;
+  pickpocket_amount: number;
+  bank_swap_amount: number;
+  yoink_amount: number;
+  nah_amount: number;
+  rent_amount: number;
+  double_rent_amount: number;
+  wild_rent_amount: number;
+  double_rent_wild_amount: number;
+
+  // nah! rules
+  nah_consumes_move: boolean;
+};
+
 type GameSettingsByGame = {
   [Game.MonopolyDeal]: MonopolyDealSettings;
+  [Game.DealNoMercy]: DealNoMercySettings;
 };
 
 export type GameSettingsFor<TGame extends Game> = GameSettingsByGame[TGame];
@@ -100,12 +152,15 @@ const assertNever = (_value: never): never => {
 
 const gameNames: Record<Game, string> = {
   [Game.MonopolyDeal]: "Monopoly Deal",
+  [Game.DealNoMercy]: "Deal No Mercy",
 };
 
 export const parseGame = (gameKey: string): Game | null => {
   switch (gameKey) {
     case Game.MonopolyDeal:
       return Game.MonopolyDeal;
+    case Game.DealNoMercy:
+      return Game.DealNoMercy;
     default:
       return null;
   }
@@ -149,6 +204,46 @@ export const getDefaultSettingsForGame = <TGame extends Game>(
         set_snatcher_amount: 2,
         rent_amount: 2,
         wild_rent_amount: 3,
+        // nah! rules
+        nah_consumes_move: true,
+      } as GameSettingsFor<TGame>;
+    case Game.DealNoMercy:
+      return {
+        num_decks: 1,
+        // deal rules
+        start_num_cards: 5,
+        max_hand_size: 7,
+        moves_per_turn: 3,
+        turn_draw: 2,
+        // win conditions
+        win_set_amount: 3,
+        win_money_amount: 0,
+        // no mercy rules
+        debt_chips_per_player: 3,
+        yoink_payment: 10,
+        shack_rent_bonus: 5,
+        big_payday_hand_target: 7,
+        // game speed
+        speed: 2,
+        // deck rules
+        set_snatcher_amount: 3,
+        debt_trap_amount: 3,
+        go_again_amount: 3,
+        heist_amount: 3,
+        market_crash_amount: 3,
+        big_payday_amount: 4,
+        repo_man_amount: 2,
+        shack_amount: 3,
+        property_raid_amount: 3,
+        tax_day_amount: 2,
+        pickpocket_amount: 3,
+        bank_swap_amount: 2,
+        yoink_amount: 3,
+        nah_amount: 5,
+        rent_amount: 1,
+        double_rent_amount: 1,
+        wild_rent_amount: 3,
+        double_rent_wild_amount: 3,
         // nah! rules
         nah_consumes_move: true,
       } as GameSettingsFor<TGame>;
@@ -403,6 +498,235 @@ const getSettingDefinitionsForGame = (game: Game): GameSettingDefinition[] => {
           ],
         },
       ];
+    case Game.DealNoMercy:
+      return [
+        // speed (always first via sort)
+        {
+          key: "speed",
+          label: "Speed",
+          min: 1,
+          max: 3,
+          group: "Game Speed",
+        },
+        // deal rules
+        {
+          key: "num_decks",
+          label: "Number of decks",
+          min: 1,
+          max: 3,
+          group: "Deal Rules",
+        },
+        {
+          key: "start_num_cards",
+          label: "Starting cards",
+          min: 5,
+          max: 8,
+          group: "Deal Rules",
+        },
+        {
+          key: "max_hand_size",
+          label: "Max hand size",
+          min: 5,
+          max: 10,
+          group: "Deal Rules",
+        },
+        {
+          key: "moves_per_turn",
+          label: "Moves per turn",
+          min: 3,
+          max: 5,
+          group: "Deal Rules",
+        },
+        {
+          key: "turn_draw",
+          label: "Cards drawn per turn",
+          min: 2,
+          max: 5,
+          group: "Deal Rules",
+        },
+        // win conditions
+        {
+          key: "win_set_amount",
+          label: "Win set amount",
+          min: 3,
+          max: 6,
+          group: "Win Conditions",
+        },
+        {
+          key: "win_money_amount",
+          label: "Win money amount",
+          min: 0,
+          max: 40,
+          group: "Win Conditions",
+        },
+        // no mercy rules
+        {
+          key: "debt_chips_per_player",
+          label: "Debt chips per player",
+          min: 1,
+          max: 5,
+          group: "No Mercy Rules",
+        },
+        {
+          key: "yoink_payment",
+          label: "Yoink! payment",
+          min: 5,
+          max: 15,
+          group: "No Mercy Rules",
+        },
+        {
+          key: "shack_rent_bonus",
+          label: "Shack rent bonus",
+          min: 3,
+          max: 8,
+          group: "No Mercy Rules",
+        },
+        {
+          key: "big_payday_hand_target",
+          label: "Big Payday hand target",
+          min: 5,
+          max: 10,
+          group: "No Mercy Rules",
+        },
+        // deck composition
+        {
+          key: "set_snatcher_amount",
+          label: "Set Snatcher cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "debt_trap_amount",
+          label: "Debt Trap cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "go_again_amount",
+          label: "Go Again! cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "heist_amount",
+          label: "Heist cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "market_crash_amount",
+          label: "Market Crash cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "big_payday_amount",
+          label: "Big Payday cards",
+          min: 2,
+          max: 6,
+          group: "Deck Composition",
+        },
+        {
+          key: "repo_man_amount",
+          label: "Repo Man cards",
+          min: 1,
+          max: 4,
+          group: "Deck Composition",
+        },
+        {
+          key: "shack_amount",
+          label: "Shack cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "property_raid_amount",
+          label: "Property Raid cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "tax_day_amount",
+          label: "Tax Day cards",
+          min: 1,
+          max: 4,
+          group: "Deck Composition",
+        },
+        {
+          key: "pickpocket_amount",
+          label: "Pickpocket cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "bank_swap_amount",
+          label: "Bank Swap cards",
+          min: 1,
+          max: 4,
+          group: "Deck Composition",
+        },
+        {
+          key: "yoink_amount",
+          label: "Yoink! cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "nah_amount",
+          label: "Nah cards",
+          min: 3,
+          max: 7,
+          group: "Deck Composition",
+        },
+        {
+          key: "rent_amount",
+          label: "Rent cards",
+          min: 1,
+          max: 3,
+          group: "Deck Composition",
+        },
+        {
+          key: "double_rent_amount",
+          label: "Double Rent cards",
+          min: 1,
+          max: 3,
+          group: "Deck Composition",
+        },
+        {
+          key: "wild_rent_amount",
+          label: "Wild Rent cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        {
+          key: "double_rent_wild_amount",
+          label: "Double Rent Wild cards",
+          min: 2,
+          max: 5,
+          group: "Deck Composition",
+        },
+        // nah! rules
+        {
+          key: "nah_consumes_move",
+          label: "Nah consumes move",
+          group: "Nah! Rules",
+          kind: "boolean",
+          options: [
+            { value: "true", label: "On" },
+            { value: "false", label: "Off" },
+          ],
+        },
+      ];
     default:
       return assertNever(game as never);
   }
@@ -467,6 +791,7 @@ export const parseGameSettings = <TGame extends Game>(
 
   switch (game) {
     case Game.MonopolyDeal: {
+      const monopolyDefaults = defaults as MonopolyDealSettings;
       const definitions = getSettingDefinitionsForGame(Game.MonopolyDeal);
       if (!parsed) {
         return defaults;
@@ -508,80 +833,111 @@ export const parseGameSettings = <TGame extends Game>(
 
       return {
         // deal rules
-        num_decks: getSettingValue("num_decks", defaults.num_decks),
+        num_decks: getSettingValue("num_decks", monopolyDefaults.num_decks),
         start_num_cards: getSettingValue(
           "start_num_cards",
-          defaults.start_num_cards,
+          monopolyDefaults.start_num_cards,
         ),
-        max_hand_size: getSettingValue("max_hand_size", defaults.max_hand_size),
+        max_hand_size: getSettingValue("max_hand_size", monopolyDefaults.max_hand_size),
         moves_per_turn: getSettingValue(
           "moves_per_turn",
-          defaults.moves_per_turn,
+          monopolyDefaults.moves_per_turn,
         ),
         // card rules
-        payday_draw: getSettingValue("payday_draw", defaults.payday_draw),
+        payday_draw: getSettingValue("payday_draw", monopolyDefaults.payday_draw),
         party_bill_payment: getSettingValue(
           "party_bill_payment",
-          defaults.party_bill_payment,
+          monopolyDefaults.party_bill_payment,
         ),
         settle_up_payment: getSettingValue(
           "settle_up_payment",
-          defaults.settle_up_payment,
+          monopolyDefaults.settle_up_payment,
         ),
         // win conditions
         win_set_amount: getSettingValue(
           "win_set_amount",
-          defaults.win_set_amount,
+          monopolyDefaults.win_set_amount,
         ),
         win_money_amount: getSettingValue(
           "win_money_amount",
-          defaults.win_money_amount,
+          monopolyDefaults.win_money_amount,
         ),
         // game speed
-        speed: getSettingValue("speed", defaults.speed),
+        speed: getSettingValue("speed", monopolyDefaults.speed),
         // deck rules
         payday_amount: getSettingValue(
           "payday_amount",
-          defaults.payday_amount,
+          monopolyDefaults.payday_amount,
         ),
         double_the_rent_amount: getSettingValue(
           "double_the_rent_amount",
-          defaults.double_the_rent_amount,
+          monopolyDefaults.double_the_rent_amount,
         ),
         party_bill_amount: getSettingValue(
           "party_bill_amount",
-          defaults.party_bill_amount,
+          monopolyDefaults.party_bill_amount,
         ),
-        house_amount: getSettingValue("house_amount", defaults.house_amount),
+        house_amount: getSettingValue("house_amount", monopolyDefaults.house_amount),
         property_steal_amount: getSettingValue(
           "property_steal_amount",
-          defaults.property_steal_amount,
+          monopolyDefaults.property_steal_amount,
         ),
         property_swap_amount: getSettingValue(
           "property_swap_amount",
-          defaults.property_swap_amount,
+          monopolyDefaults.property_swap_amount,
         ),
         settle_up_amount: getSettingValue(
           "settle_up_amount",
-          defaults.settle_up_amount,
+          monopolyDefaults.settle_up_amount,
         ),
-        hotel_amount: getSettingValue("hotel_amount", defaults.hotel_amount),
-        nah_amount: getSettingValue("nah_amount", defaults.nah_amount),
+        hotel_amount: getSettingValue("hotel_amount", monopolyDefaults.hotel_amount),
+        nah_amount: getSettingValue("nah_amount", monopolyDefaults.nah_amount),
         set_snatcher_amount: getSettingValue(
           "set_snatcher_amount",
-          defaults.set_snatcher_amount,
+          monopolyDefaults.set_snatcher_amount,
         ),
-        rent_amount: getSettingValue("rent_amount", defaults.rent_amount),
+        rent_amount: getSettingValue("rent_amount", monopolyDefaults.rent_amount),
         wild_rent_amount: getSettingValue(
           "wild_rent_amount",
-          defaults.wild_rent_amount,
+          monopolyDefaults.wild_rent_amount,
         ),
         // nah! rules
         nah_consumes_move: getBooleanSettingValue(
           "nah_consumes_move",
-          defaults.nah_consumes_move,
+          monopolyDefaults.nah_consumes_move,
         ),
       } as GameSettingsFor<TGame>;
+    }
+    case Game.DealNoMercy: {
+      const definitions = getSettingDefinitionsForGame(Game.DealNoMercy);
+      if (!parsed) {
+        return defaults;
+      }
+
+      // Definition-driven merge: every numeric knob is validated against its
+      // range and every boolean knob against its type, falling back to the
+      // default otherwise. Keeps this in lockstep with the definitions list
+      // above (and, transitively, the engine's validate tags).
+      const merged: Record<string, unknown> = {
+        ...(defaults as Record<string, unknown>),
+      };
+      for (const definition of definitions) {
+        const value = parsed[definition.key];
+        if (definition.kind === "boolean") {
+          if (typeof value === "boolean") {
+            merged[definition.key] = value;
+          }
+          continue;
+        }
+        if (
+          typeof value === "number" &&
+          inRange(value, definition.min, definition.max)
+        ) {
+          merged[definition.key] = value;
+        }
+      }
+
+      return merged as GameSettingsFor<TGame>;
     }
     default:
       return assertNever(game as never);
@@ -598,12 +954,16 @@ export const getGameSettingSelectValues = (
   }
 
   switch (game) {
-    case Game.MonopolyDeal: {
-      const parsed = parseGameSettings(game, settings);
+    case Game.MonopolyDeal:
+    case Game.DealNoMercy: {
+      const parsed = parseGameSettings(game, settings) as Record<
+        string,
+        unknown
+      >;
       const definitions = getSettingDefinitionsForGame(game);
 
       return definitions.map((definition) => {
-        const value = parsed[definition.key as keyof MonopolyDealSettings];
+        const value = parsed[definition.key];
         if (definition.kind === "boolean") {
           return {
             key: definition.key,
@@ -653,7 +1013,8 @@ export const getCapacityRangeForGame = (
   }
 
   switch (game) {
-    case Game.MonopolyDeal: {
+    case Game.MonopolyDeal:
+    case Game.DealNoMercy: {
       const parsed = parseGameSettings(game, settings);
       return {
         min: baseRange.min,

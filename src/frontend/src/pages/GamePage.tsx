@@ -44,6 +44,9 @@ const GamePage = () => {
         case Game.MonopolyDeal:
           navigate(`/deal/${targetGameId}`, { replace: true });
           return;
+        case Game.DealNoMercy:
+          navigate(`/no-mercy/${targetGameId}`, { replace: true });
+          return;
         default:
           setErrorMessage(`Unsupported game: ${result.data.game}`);
       }

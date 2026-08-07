@@ -99,6 +99,9 @@ const LobbyPage = () => {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState<string | null>(null);
   const [gameFilter, setGameFilter] = useState<Game | null>(null);
+  const [quickPlayGame, setQuickPlayGame] = useState<Game>(
+    supportedGames[0] ?? Game.MonopolyDeal,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState<ApiErrorPayload | null>(null);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
@@ -324,7 +327,7 @@ const LobbyPage = () => {
     setQuickPlayRoom(null);
     quickPlayCloseExpectedRef.current = false;
 
-    const socket = connectQuickPlayRoomSocket(Game.MonopolyDeal);
+    const socket = connectQuickPlayRoomSocket(quickPlayGame);
     quickPlaySocketRef.current = socket;
 
     console.log("[quick-play-ws] connecting", socket.url);
@@ -560,6 +563,26 @@ const LobbyPage = () => {
         <CardHeader className="table-card-header">
           <CardTitle>Active Rooms</CardTitle>
           <div className="lobby-header-actions">
+            <select
+              className="field-input"
+              aria-label="Quick Play game"
+              value={quickPlayGame}
+              disabled={Boolean(activeRoom) || isQuickPlayWaiting}
+              onChange={(event) => {
+                const nextGame = parseGame(event.target.value);
+                if (nextGame) {
+                  setQuickPlayGame(nextGame);
+                }
+              }}
+            >
+              {gameFilterOptions.map((option) => {
+                return (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                );
+              })}
+            </select>
             <Button
               size="sm"
               variant="outline"

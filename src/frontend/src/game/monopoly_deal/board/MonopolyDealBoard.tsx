@@ -25,7 +25,7 @@ import DiscardPromptOverlay from "./discard/DiscardPromptOverlay";
 import GameCardStackBox from "./GameCardStackBox";
 import DemandOverlay from "./demand/DemandOverlay";
 import PendingRentOverlay from "./rent/PendingRentOverlay";
-import { installAudioUnlock, playTimerTick } from "../sound";
+import { installAudioUnlock, playTimerTick } from "../../shared/sound";
 import "./monopoly-deal-board.css";
 
 type MonopolyDealBoardProps = {
