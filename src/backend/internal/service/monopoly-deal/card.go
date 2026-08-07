@@ -80,7 +80,7 @@ func (c *Controller) smallCardImages() []*monopoly_deal_schema.AssetImage {
 			key = ak
 		}
 
-		u, _ := url.JoinPath(fmt.Sprintf("https://%s", c.cfg.BackendDomain), "static", "card", "small", fmt.Sprintf("%s.svg", smallCardMap[key]))
+		u, _ := url.JoinPath(fmt.Sprintf("https://%s", c.cfg.BackendDomain), "static", "monopoly-deal", "card", "small", fmt.Sprintf("%s.svg", smallCardMap[key]))
 		ai = append(ai, &monopoly_deal_schema.AssetImage{
 			Kind:     monopoly_deal_schema.AssetImageKind_ASSET_IMAGE_KIND_SMALL,
 			AssetKey: ak.Proto(),
@@ -155,7 +155,7 @@ func (c *Controller) largeCardImages() []*monopoly_deal_schema.AssetImage {
 	aks := monopoly_deal.AllAssetKeys()
 	ai := make([]*monopoly_deal_schema.AssetImage, 0, len(aks))
 	for _, ak := range aks {
-		u, _ := url.JoinPath(fmt.Sprintf("https://%s", c.cfg.BackendDomain), "static", "card", "large", fmt.Sprintf("%s.svg", largeCardMap[ak]))
+		u, _ := url.JoinPath(fmt.Sprintf("https://%s", c.cfg.BackendDomain), "static", "monopoly-deal", "card", "large", fmt.Sprintf("%s.svg", largeCardMap[ak]))
 		ai = append(ai, &monopoly_deal_schema.AssetImage{
 			Kind:     monopoly_deal_schema.AssetImageKind_ASSET_IMAGE_KIND_LARGE,
 			AssetKey: ak.Proto(),
