@@ -20,7 +20,11 @@ names below are open for review.
 
 ---
 
-## (a) Reused from classic Deal — asset already exists
+## (a) Reused from classic Deal
+
+These faces are identical to the classic set, but each game's asset directory is
+self-contained: the files below are duplicated into `deal-no-mercy/card/` rather
+than served from `monopoly-deal/card/`.
 
 | Card | Count | Value | Classic asset (large / small) | Notes | Confidence |
 |---|---|---|---|---|---|
