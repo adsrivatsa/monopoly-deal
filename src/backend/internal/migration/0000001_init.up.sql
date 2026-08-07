@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS player
         refresh_token_id uuid NOT NULL
     );
 
-CREATE TYPE game_type AS enum ('monopoly_deal');
+CREATE TYPE game_type AS enum ('monopoly_deal', 'deal_no_mercy');
 
 CREATE TABLE IF NOT EXISTS room
     (

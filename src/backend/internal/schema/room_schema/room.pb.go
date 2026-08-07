@@ -25,15 +25,18 @@ type Game int32
 
 const (
 	Game_MonopolyDeal Game = 0
+	Game_DealNoMercy  Game = 1
 )
 
 // Enum value maps for Game.
 var (
 	Game_name = map[int32]string{
 		0: "MonopolyDeal",
+		1: "DealNoMercy",
 	}
 	Game_value = map[string]int32{
 		"MonopolyDeal": 0,
+		"DealNoMercy":  1,
 	}
 )
 
@@ -1064,9 +1067,10 @@ const file_room_proto_rawDesc = "" +
 	"\apayload\"L\n" +
 	"\rClientMessage\x120\n" +
 	"\x04chat\x18\x01 \x01(\v2\x1a.the_deal.schema.room.ChatH\x00R\x04chatB\t\n" +
-	"\apayload*\x18\n" +
+	"\apayload*)\n" +
 	"\x04Game\x12\x10\n" +
-	"\fMonopolyDeal\x10\x00B2Z0the-deal/internal/schema/room_schema;room_schemab\x06proto3"
+	"\fMonopolyDeal\x10\x00\x12\x0f\n" +
+	"\vDealNoMercy\x10\x01B2Z0the-deal/internal/schema/room_schema;room_schemab\x06proto3"
 
 var (
 	file_room_proto_rawDescOnce sync.Once

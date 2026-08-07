@@ -15,6 +15,7 @@ message Player {
 
 enum Game {
   MonopolyDeal = 0;
+  DealNoMercy = 1;
 }
 
 message Room {

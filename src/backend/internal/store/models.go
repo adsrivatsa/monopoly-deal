@@ -17,6 +17,7 @@ type GameType string
 
 const (
 	GameTypeMonopolyDeal GameType = "monopoly_deal"
+	GameTypeDealNoMercy  GameType = "deal_no_mercy"
 )
 
 func (e *GameType) Scan(src interface{}) error {
@@ -56,7 +57,8 @@ func (ns NullGameType) Value() (driver.Value, error) {
 
 func (e GameType) Valid() bool {
 	switch e {
-	case GameTypeMonopolyDeal:
+	case GameTypeMonopolyDeal,
+		GameTypeDealNoMercy:
 		return true
 	}
 	return false
@@ -65,6 +67,7 @@ func (e GameType) Valid() bool {
 func AllGameTypeValues() []GameType {
 	return []GameType{
 		GameTypeMonopolyDeal,
+		GameTypeDealNoMercy,
 	}
 }
 

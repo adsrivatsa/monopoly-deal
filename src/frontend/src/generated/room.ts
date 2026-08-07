@@ -11,6 +11,7 @@ export const protobufPackage = "the_deal.schema.room";
 
 export enum Game {
   MonopolyDeal = 0,
+  DealNoMercy = 1,
   UNRECOGNIZED = -1,
 }
 
@@ -19,6 +20,9 @@ export function gameFromJSON(object: any): Game {
     case 0:
     case "MonopolyDeal":
       return Game.MonopolyDeal;
+    case 1:
+    case "DealNoMercy":
+      return Game.DealNoMercy;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -30,6 +34,8 @@ export function gameToJSON(object: Game): string {
   switch (object) {
     case Game.MonopolyDeal:
       return "MonopolyDeal";
+    case Game.DealNoMercy:
+      return "DealNoMercy";
     case Game.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
