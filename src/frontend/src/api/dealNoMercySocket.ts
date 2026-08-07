@@ -4,7 +4,10 @@
 // function per client message the service's HandleEvent switch dispatches
 // (see src/backend/internal/service/deal-no-mercy/event.go).
 import { appConfig } from "../config";
-import { ClientMessage as GatewayClientMessage } from "../generated/gateway";
+import {
+  ClientMessage as GatewayClientMessage,
+  ServerMessage as GatewayServerMessage,
+} from "../generated/gateway";
 import {
   Color,
   ServerMessage,
@@ -37,6 +40,9 @@ const toUint8Array = async (
   return null;
 };
 
+// The server always sends a gateway ServerMessage wrapping the deal_no_mercy
+// payload in its `dealNoMercyMessage` arm, so decode the gateway envelope
+// first and return the unwrapped inner message (null when the arm is absent).
 export const decodeDealNoMercyServerMessage = async (
   data: MessageEvent["data"],
 ) => {
@@ -45,7 +51,8 @@ export const decodeDealNoMercyServerMessage = async (
     return null;
   }
 
-  return ServerMessage.decode(bytes);
+  const gateway = GatewayServerMessage.decode(bytes);
+  return gateway.dealNoMercyMessage ?? null;
 };
 
 export const toDealNoMercyServerMessageJson = (message: ServerMessage) => {
