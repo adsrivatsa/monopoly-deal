@@ -172,36 +172,6 @@ const RENT_ASSET_KEYS = new Set<AssetKey>([
 const isRentAssetKey = (assetKey: AssetKey): boolean =>
   RENT_ASSET_KEYS.has(assetKey);
 
-// Two-color rent cards can only charge one of their pair; rent-any-color and
-// the double-rent-any-color cards can charge any color.
-const RENT_PAIR_COLORS: Partial<Record<AssetKey, Color[]>> = {
-  [AssetKey.ASSET_KEY_RENT_BROWN_SKY]: [Color.COLOR_BROWN, Color.COLOR_SKY],
-  [AssetKey.ASSET_KEY_RENT_PINK_ORANGE]: [Color.COLOR_PINK, Color.COLOR_ORANGE],
-  [AssetKey.ASSET_KEY_RENT_RED_YELLOW]: [Color.COLOR_RED, Color.COLOR_YELLOW],
-  [AssetKey.ASSET_KEY_RENT_GREEN_BLUE]: [Color.COLOR_GREEN, Color.COLOR_BLUE],
-  [AssetKey.ASSET_KEY_RENT_UTILITY_RAILROAD]: [
-    Color.COLOR_UTILITY,
-    Color.COLOR_RAILROAD,
-  ],
-  [AssetKey.ASSET_KEY_DOUBLE_RENT_BROWN_SKY]: [Color.COLOR_BROWN, Color.COLOR_SKY],
-  [AssetKey.ASSET_KEY_DOUBLE_RENT_PINK_ORANGE]: [
-    Color.COLOR_PINK,
-    Color.COLOR_ORANGE,
-  ],
-  [AssetKey.ASSET_KEY_DOUBLE_RENT_RED_YELLOW]: [
-    Color.COLOR_RED,
-    Color.COLOR_YELLOW,
-  ],
-  [AssetKey.ASSET_KEY_DOUBLE_RENT_GREEN_BLUE]: [
-    Color.COLOR_GREEN,
-    Color.COLOR_BLUE,
-  ],
-  [AssetKey.ASSET_KEY_DOUBLE_RENT_UTILITY_RAILROAD]: [
-    Color.COLOR_UTILITY,
-    Color.COLOR_RAILROAD,
-  ],
-};
-
 const ALL_COLORS: Color[] = [
   Color.COLOR_BROWN,
   Color.COLOR_SKY,
@@ -214,11 +184,6 @@ const ALL_COLORS: Color[] = [
   Color.COLOR_UTILITY,
   Color.COLOR_RAILROAD,
 ];
-
-const rentColorsForAssetKey = (assetKey: AssetKey): Color[] => {
-  const pair = RENT_PAIR_COLORS[assetKey];
-  return pair ?? ALL_COLORS;
-};
 
 const toSelectableColors = (card: Card): Color[] => {
   const unique = new Set<Color>();
@@ -390,7 +355,7 @@ type ColorPickerState =
   | {
       mode: "action_color";
       cardId: string;
-      action: "property_raid" | "rent";
+      action: "property_raid";
       colors: Color[];
     };
 
@@ -1299,12 +1264,12 @@ const DealNoMercyBoard = ({
       }
 
       if (isRentAssetKey(card.assetKey)) {
-        setColorPicker({
-          mode: "action_color",
-          cardId,
-          action: "rent",
-          colors: rentColorsForAssetKey(card.assetKey),
-        });
+        // Rent charges every opponent regardless of color; the color only picks
+        // which of your sets sets the amount. The server auto-selects the
+        // highest-rent eligible color when we send COLOR_UNSPECIFIED, so there
+        // is no color pick to force here.
+        onPlayRent(cardId, Color.COLOR_UNSPECIFIED);
+        setSelectedHandCardId(null);
         return;
       }
 
@@ -1317,6 +1282,7 @@ const DealNoMercyBoard = ({
       onPlayBigPayday,
       onPlayGoAgain,
       onPlayMoney,
+      onPlayRent,
       raiseError,
       selfMoneyCards.length,
       selfPropertySets,
@@ -1720,6 +1686,29 @@ const DealNoMercyBoard = ({
     [players, selfPlayerId],
   );
 
+  // An inline avatar + name for a player, used inside demand narration so every
+  // demand shows the involved players' images next to their names (mirrors
+  // classic's md-demand-inline-player).
+  const inlinePlayer = useCallback(
+    (playerId: string, label?: string) => {
+      const player = players.find((p) => p.playerId === playerId);
+      const name = label ?? player?.displayName ?? playerId.slice(0, 8);
+      return (
+        <span className="dnm-demand-inline-player">
+          <img
+            className="dnm-demand-source__avatar dnm-demand-inline-player__avatar"
+            src={player?.avatarUrl ?? ""}
+            alt={name}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+          <span className="dnm-demand-source__name">{name}</span>
+        </span>
+      );
+    },
+    [players],
+  );
+
   const currentTurnPlayer = players.find(
     (player) => player.playerId === currentPlayerId,
   );
@@ -1825,7 +1814,7 @@ const DealNoMercyBoard = ({
                 assetImageByKey={assetImageByKey}
                 layout="stack"
                 emptyLabel={
-                  isSelfBoard && canPlay
+                  isSelfBoard && isSelfTurn
                     ? "Select a card, then tap here to bank it."
                     : ""
                 }
@@ -1946,7 +1935,7 @@ const DealNoMercyBoard = ({
             );
           })}
 
-          {isSelfBoard && canPlay ? (
+          {isSelfBoard && isSelfTurn ? (
             <div
               className="dnm-dropzone dnm-dropzone--property-new"
               onClick={() => {
@@ -1987,18 +1976,14 @@ const DealNoMercyBoard = ({
           const sourcePlayer = players.find(
             (p) => p.playerId === demand.sourceId,
           );
-          const targetPlayer = players.find(
-            (p) => p.playerId === demand.playerId,
-          );
           const isSelectingThis =
             isSelectingPayment && activePaymentDemandId === demand.id;
           const eyebrow = demandEyebrow(demand.demandKind);
-          const description = demandDescription(demand, isTargetingSelf, {
-            sourceName: sourcePlayer?.displayName ?? demand.sourceId,
-            targetName: isTargetingSelf
-              ? "You"
-              : targetPlayer?.displayName ?? demand.playerId,
-          });
+          const sourceName = sourcePlayer?.displayName ?? demand.sourceId;
+          const selfMessage = selfDemandMessage(demand);
+          const spectatorVerb = demand.isActive
+            ? "is targeting"
+            : "resolved a demand against";
 
           return (
             <aside
@@ -2018,24 +2003,27 @@ const DealNoMercyBoard = ({
                   <img
                     className="dnm-demand-source__avatar"
                     src={sourcePlayer?.avatarUrl ?? ""}
-                    alt={sourcePlayer?.displayName ?? demand.sourceId}
+                    alt={sourceName}
                     loading="lazy"
                     referrerPolicy="no-referrer"
                   />
                   <p className="dnm-demand__line dnm-demand-source__message">
-                    <span className="dnm-demand-source__name">
-                      {sourcePlayer?.displayName ?? demand.sourceId}
-                    </span>{" "}
-                    {description}
+                    <span className="dnm-demand-source__name">{sourceName}</span>{" "}
+                    {selfMessage}
                     {isSelectingThis &&
                     demand.demandKind === DemandKind.DEMAND_KIND_PAYMENT
                       ? ` ($${selectedPaymentTotal}M selected)`
                       : ""}
                   </p>
                 </div>
+              ) : isTargetingSelf ? (
+                <p className="dnm-demand__line dnm-demand-source__message dnm-demand__line--muted">
+                  {inlinePlayer(demand.sourceId)} {selfMessage}
+                </p>
               ) : (
                 <p className="dnm-demand__line dnm-demand-source__message dnm-demand__line--muted">
-                  {description}
+                  {inlinePlayer(demand.sourceId)} {spectatorVerb}{" "}
+                  {inlinePlayer(demand.playerId)}.
                 </p>
               )}
 
@@ -2358,18 +2346,13 @@ const DealNoMercyBoard = ({
           >
             <p className="dnm-picker__eyebrow">
               {colorPicker.mode === "action_color"
-                ? colorPicker.action === "property_raid"
-                  ? "Property Raid"
-                  : "Rent"
+                ? "Property Raid"
                 : "Color selection"}
             </p>
             <p className="dnm-picker__title">
-              {colorPicker.mode === "action_color" &&
-              colorPicker.action === "property_raid"
+              {colorPicker.mode === "action_color"
                 ? "Steal all properties of one color"
-                : colorPicker.mode === "action_color"
-                  ? "Charge everyone rent in one color"
-                  : "Choose a color for this property"}
+                : "Choose a color for this property"}
             </p>
             <div
               className="dnm-color-picker__swatches"
@@ -2396,10 +2379,8 @@ const DealNoMercyBoard = ({
                       );
                     } else if (colorPicker.mode === "property_rearrange") {
                       onRearrangeCard(colorPicker.cardId, undefined, color);
-                    } else if (colorPicker.action === "property_raid") {
-                      onPlayPropertyRaid(colorPicker.cardId, color);
                     } else {
-                      onPlayRent(colorPicker.cardId, color);
+                      onPlayPropertyRaid(colorPicker.cardId, color);
                     }
                     setColorPicker(null);
                     setSelectedHandCardId(null);
@@ -2940,43 +2921,38 @@ const demandEyebrow = (kind: DemandKind): string => {
   }
 };
 
-const demandDescription = (
-  demand: Demand,
-  isTargetingSelf: boolean,
-  names: { sourceName: string; targetName: string },
-): string => {
+// The message portion of a demand that targets you. The leading actor (the
+// source player) is rendered separately (avatar + name) by the caller, so this
+// returns only the trailing clause.
+const selfDemandMessage = (demand: Demand): string => {
   const amount = demand.paymentDemand?.amount;
   const amountLabel = typeof amount === "number" ? `$${amount}M` : "";
-  if (isTargetingSelf) {
-    switch (demand.demandKind) {
-      case DemandKind.DEMAND_KIND_PAYMENT:
-        return demand.isActive
-          ? `wants you to pay ${amountLabel}.`
-          : `— you responded.`;
-      case DemandKind.DEMAND_KIND_PROPERTY:
-        return "is crashing the market — hand over the chosen property.";
-      case DemandKind.DEMAND_KIND_PROPERTY_SET:
-        return "is snatching one of your complete sets.";
-      case DemandKind.DEMAND_KIND_COLOR_PROPERTIES:
-        return `is raiding your ${demand.colorPropertiesDemand ? colorLabel(demand.colorPropertiesDemand.color) : ""} properties.`;
-      case DemandKind.DEMAND_KIND_BANK_CARD:
-        return "is heisting a card from your bank.";
-      case DemandKind.DEMAND_KIND_BANK_SWAP:
-        return "wants to swap banks with you.";
-      case DemandKind.DEMAND_KIND_DEBT_TRAP:
-        return "is setting a debt trap on you.";
-      case DemandKind.DEMAND_KIND_REPO_MAN:
-        return "repossessed your properties — keep one, give the rest away.";
-      case DemandKind.DEMAND_KIND_TAX_DAY:
-        return "is taxing your bank — keep one, give the rest away.";
-      case DemandKind.DEMAND_KIND_PICKPOCKET:
-        return `is pickpocketing your ${stealCategoryLabel(demand.pickpocketDemand?.category)} cards.`;
-      default:
-        return "wants something from you.";
-    }
+  switch (demand.demandKind) {
+    case DemandKind.DEMAND_KIND_PAYMENT:
+      return demand.isActive
+        ? `wants you to pay ${amountLabel}.`
+        : `— you responded.`;
+    case DemandKind.DEMAND_KIND_PROPERTY:
+      return "is crashing the market — hand over the chosen property.";
+    case DemandKind.DEMAND_KIND_PROPERTY_SET:
+      return "is snatching one of your complete sets.";
+    case DemandKind.DEMAND_KIND_COLOR_PROPERTIES:
+      return `is raiding your ${demand.colorPropertiesDemand ? colorLabel(demand.colorPropertiesDemand.color) : ""} properties.`;
+    case DemandKind.DEMAND_KIND_BANK_CARD:
+      return "is heisting a card from your bank.";
+    case DemandKind.DEMAND_KIND_BANK_SWAP:
+      return "wants to swap banks with you.";
+    case DemandKind.DEMAND_KIND_DEBT_TRAP:
+      return "is setting a debt trap on you.";
+    case DemandKind.DEMAND_KIND_REPO_MAN:
+      return "repossessed your properties — keep one, give the rest away.";
+    case DemandKind.DEMAND_KIND_TAX_DAY:
+      return "is taxing your bank — keep one, give the rest away.";
+    case DemandKind.DEMAND_KIND_PICKPOCKET:
+      return `is pickpocketing your ${stealCategoryLabel(demand.pickpocketDemand?.category)} cards.`;
+    default:
+      return "wants something from you.";
   }
-  const verb = demand.isActive ? "is targeting" : "resolved a demand against";
-  return `${names.sourceName} ${verb} ${names.targetName}.`;
 };
 
 const colorLabel = (color: Color): string => {
