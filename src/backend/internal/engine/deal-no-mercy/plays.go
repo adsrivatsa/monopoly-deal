@@ -459,8 +459,17 @@ func (g *Game) PlayRent(playerID uuid.UUID, cardID Identifier, color Color) (*Ac
 		return nil, errors.InvalidCardForAction
 	}
 
-	if !slices.Contains(allowed, color) {
-		return nil, InvalidColorForCard
+	// Rent in No Mercy hits ALL players regardless of color, so the color
+	// only affects the AMOUNT and the highest is strictly optimal. When the
+	// caller passes ColorUnspecified (the proto/engine zero value) we
+	// auto-select across every eligible color; an explicit color is honored
+	// exactly as before for backward compatibility.
+	rentColors := allowed
+	if color != ColorUnspecified {
+		if !slices.Contains(allowed, color) {
+			return nil, InvalidColorForCard
+		}
+		rentColors = []Color{color}
 	}
 
 	_, err = g.discardHand(playerID, cardID)
@@ -469,7 +478,9 @@ func (g *Game) PlayRent(playerID uuid.UUID, cardID Identifier, color Color) (*Ac
 	}
 
 	properties := g.Properties[playerID]
-	rent := properties.ColorRent(g.Config.ShackRentBonus, color) * multiplier
+	// ColorRent already returns the best (max) rent among the given colors,
+	// so passing every eligible color realises the highest-rent selection.
+	rent := properties.ColorRent(g.Config.ShackRentBonus, rentColors...) * multiplier
 
 	demandsMap := make(map[Identifier]Demand)
 	demandsSlice := make([]Demand, 0, len(g.Players)-1)

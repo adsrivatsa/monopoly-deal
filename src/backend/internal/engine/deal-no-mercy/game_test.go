@@ -6,6 +6,146 @@ import (
 	"github.com/google/uuid"
 )
 
+// rentDemandAmount plays a rent card and returns the (uniform) per-target
+// payment amount charged, asserting the action and demands are well-formed.
+func rentDemandAmount(t *testing.T, g *Game, playerID uuid.UUID, key AssetKey, color Color) int {
+	t.Helper()
+
+	card := handCardByKey(t, g, playerID, key)
+	setMoves(g, 1)
+	action, err := g.PlayRent(playerID, card.ID, color)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(action.Demands) != len(g.Players)-1 {
+		t.Fatalf("created %d demands, want %d", len(action.Demands), len(g.Players)-1)
+	}
+	amount := action.Demands[0].Payment.Amount
+	for _, d := range action.Demands {
+		if d.Source != DemandSourceRent {
+			t.Fatalf("demand source %v, want rent", d.Source)
+		}
+		if d.Payment.Amount != amount {
+			t.Fatalf("uneven rent demands: %d vs %d", d.Payment.Amount, amount)
+		}
+	}
+	return amount
+}
+
+// TestPlayRentUnspecifiedPicksBestOfTwoColors: a two-color rent card played
+// with ColorUnspecified auto-selects the higher-rent of its two eligible
+// colors server-side.
+func TestPlayRentUnspecifiedPicksBestOfTwoColors(t *testing.T) {
+	g, players := newTestGame(t, 2)
+	a := players[0]
+
+	giveSet(t, g, a, ColorRed, 1)    // red rent 2
+	giveSet(t, g, a, ColorYellow, 2) // yellow rent 4 (the better color)
+
+	if got := rentDemandAmount(t, g, a, AssetKeyRentRedYellow, ColorUnspecified); got != 4 {
+		t.Fatalf("unspecified two-color rent charged %d, want 4 (best = yellow)", got)
+	}
+}
+
+// TestPlayRentUnspecifiedWildPicksGlobalBest: the any-color rent card played
+// with ColorUnspecified selects the single best color across ALL colors.
+func TestPlayRentUnspecifiedWildPicksGlobalBest(t *testing.T) {
+	g, players := newTestGame(t, 2)
+	a := players[0]
+
+	giveSet(t, g, a, ColorRed, 1)    // red rent 2
+	giveSet(t, g, a, ColorYellow, 2) // yellow rent 4
+	giveSet(t, g, a, ColorBlue, 2)   // blue rent 8 (global best)
+
+	if got := rentDemandAmount(t, g, a, AssetKeyRentWild, ColorUnspecified); got != 8 {
+		t.Fatalf("unspecified wild rent charged %d, want 8 (best = blue)", got)
+	}
+}
+
+// TestPlayRentExplicitColorHonored: passing a specific color still charges
+// exactly that color even when a higher-rent eligible color exists.
+func TestPlayRentExplicitColorHonored(t *testing.T) {
+	g, players := newTestGame(t, 2)
+	a := players[0]
+
+	giveSet(t, g, a, ColorRed, 1)    // red rent 2 (explicitly requested)
+	giveSet(t, g, a, ColorYellow, 2) // yellow rent 4 (higher, must be ignored)
+
+	if got := rentDemandAmount(t, g, a, AssetKeyRentRedYellow, ColorRed); got != 2 {
+		t.Fatalf("explicit red rent charged %d, want 2", got)
+	}
+}
+
+// TestPlayRentExplicitColorNotEligible: an explicit color outside the card's
+// eligible set is still rejected.
+func TestPlayRentExplicitColorNotEligible(t *testing.T) {
+	g, players := newTestGame(t, 2)
+	a := players[0]
+
+	giveSet(t, g, a, ColorRed, 1)
+
+	card := handCardByKey(t, g, a, AssetKeyRentRedYellow)
+	setMoves(g, 1)
+	if _, err := g.PlayRent(a, card.ID, ColorBlue); err != InvalidColorForCard {
+		t.Fatalf("expected InvalidColorForCard, got %v", err)
+	}
+}
+
+// TestPlayDoubleRentUnspecifiedMultipliesBest: the double-rent variants apply
+// the 2x multiplier on top of the auto-selected best eligible color.
+func TestPlayDoubleRentUnspecifiedMultipliesBest(t *testing.T) {
+	g, players := newTestGame(t, 2)
+	a := players[0]
+
+	giveSet(t, g, a, ColorRed, 1)    // red rent 2
+	giveSet(t, g, a, ColorYellow, 2) // yellow rent 4 (best) -> doubled = 8
+
+	if got := rentDemandAmount(t, g, a, AssetKeyDoubleRentRedYellow, ColorUnspecified); got != 8 {
+		t.Fatalf("unspecified double two-color rent charged %d, want 8 (2 * yellow 4)", got)
+	}
+}
+
+// TestPlayDoubleRentWildUnspecifiedMultipliesGlobalBest: the any-color
+// double-rent variant doubles the global best color.
+func TestPlayDoubleRentWildUnspecifiedMultipliesGlobalBest(t *testing.T) {
+	g, players := newTestGame(t, 2)
+	a := players[0]
+
+	giveSet(t, g, a, ColorYellow, 2) // yellow rent 4
+	giveSet(t, g, a, ColorBlue, 2)   // blue rent 8 (global best) -> doubled = 16
+
+	if got := rentDemandAmount(t, g, a, AssetKeyDoubleRentWild, ColorUnspecified); got != 16 {
+		t.Fatalf("unspecified double wild rent charged %d, want 16 (2 * blue 8)", got)
+	}
+}
+
+// TestPlayRentUnspecifiedNoPropertyChargesZero: with no property in any
+// eligible color, auto-selection yields a 0 rent demand (no panic), matching
+// existing edge handling.
+func TestPlayRentUnspecifiedNoPropertyChargesZero(t *testing.T) {
+	g, players := newTestGame(t, 2)
+	a := players[0]
+
+	if got := rentDemandAmount(t, g, a, AssetKeyRentWild, ColorUnspecified); got != 0 {
+		t.Fatalf("unspecified rent with no property charged %d, want 0", got)
+	}
+}
+
+// TestPlayRentUnspecifiedRespectsShackBonus: the shack bonus is included when
+// auto-selecting the best color.
+func TestPlayRentUnspecifiedRespectsShackBonus(t *testing.T) {
+	g, players := newTestGame(t, 2)
+	a := players[0]
+
+	set := giveSet(t, g, a, ColorRed, 1) // red rent 2
+	giveShack(t, g, a, set.ID)           // + shack bonus 5 = 7
+	giveSet(t, g, a, ColorYellow, 2)     // yellow rent 4 (loses to shacked red)
+
+	if got := rentDemandAmount(t, g, a, AssetKeyRentRedYellow, ColorUnspecified); got != 7 {
+		t.Fatalf("unspecified rent charged %d, want 7 (shacked red beats yellow)", got)
+	}
+}
+
 func TestPlayMoneyDoesNotDuplicateCard(t *testing.T) {
 	g, players := newTestGame(t, 2)
 	a := players[0]
