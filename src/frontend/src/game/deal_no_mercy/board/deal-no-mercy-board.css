@@ -290,14 +290,11 @@
 }
 
 /* Pin the empty-bank label to a fixed width so its content-driven width cannot
-   feed back into a wrap -> reflow -> re-measure loop (the compact jitter). */
+   feed back into a wrap -> reflow -> re-measure loop (the jitter). The width is
+   derived from the tight-card-width custom property, which resolves to the
+   right value in BOTH expanded and compact (compact redefines it), so this one
+   rule fixes the jitter in every view. */
 .dnm-dropzone--money .dnm-stack-box__empty {
-  width: auto;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.dnm-board--compact .dnm-dropzone--money .dnm-stack-box__empty {
   width: calc(var(--dnm-player-tight-card-width) * 2.35);
   max-width: calc(var(--dnm-player-tight-card-width) * 2.35);
   line-height: 1.25;
