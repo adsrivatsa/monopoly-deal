@@ -1998,11 +1998,11 @@ const DealNoMercyBoard = ({
                   </p>
                 </div>
               ) : isTargetingSelf ? (
-                <p className="dnm-demand__line dnm-demand-source__message dnm-demand__line--muted">
+                <p className="dnm-demand__line dnm-demand-source__message">
                   {inlinePlayer(demand.sourceId)} {selfMessage}
                 </p>
               ) : (
-                <p className="dnm-demand__line dnm-demand-source__message dnm-demand__line--muted">
+                <p className="dnm-demand__line dnm-demand-source__message">
                   {inlinePlayer(demand.sourceId)} {spectatorVerb}{" "}
                   {inlinePlayer(demand.playerId)}.
                 </p>
@@ -2069,12 +2069,12 @@ const DealNoMercyBoard = ({
           {selfDebts.length === 1 ? "" : "s"}
         </h3>
         {activeDebt ? (
-          <p className="dnm-demand__line dnm-demand__line--muted">
+          <p className="dnm-demand__line">
             Pay {nameFor(activeDebt.creditorId)} with any one hand card (this
             consumes one play). Select a card from your hand.
           </p>
         ) : null}
-        <p className="dnm-demand__line dnm-demand__line--muted">
+        <p className="dnm-demand__line">
           You must settle every chip before you can play.
         </p>
       </aside>
@@ -2179,7 +2179,7 @@ const DealNoMercyBoard = ({
                   >
                     <p className="dnm-demand__eyebrow">Discard required</p>
                     <h3 className="dnm-demand__title">Choose cards to discard</h3>
-                    <p className="dnm-demand__line dnm-demand__line--muted">
+                    <p className="dnm-demand__line">
                       Selected: {selectedDiscardCardIds.size}/
                       {requiredDiscardCount}. Pick from your hand, then submit.
                     </p>

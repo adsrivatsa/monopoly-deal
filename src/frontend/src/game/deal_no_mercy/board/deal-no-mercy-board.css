@@ -720,11 +720,12 @@
   background: color-mix(in oklab, var(--card) 94%, transparent);
   border-radius: 10px;
   clip-path: inset(0 round 10px);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
   overflow: hidden;
   padding: 0.55rem 0.7rem;
-  min-width: 190px;
+  min-width: 170px;
   width: fit-content;
-  max-width: min(52vw, 24rem);
+  max-width: 50vw;
   box-shadow: 0 8px 20px color-mix(in oklab, black 24%, transparent);
 }
 
@@ -751,18 +752,13 @@
 
 .dnm-demand__title {
   margin-top: 0.1rem;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 0.8rem;
 }
 
 .dnm-demand__line {
   margin-top: 0.18rem;
   font-size: 0.74rem;
   color: var(--foreground);
-}
-
-.dnm-demand__line--muted {
-  color: var(--muted-foreground);
 }
 
 .dnm-demand__timer {
@@ -926,10 +922,11 @@
 }
 
 .dnm-picker {
-  width: min(320px, 92vw);
+  width: min(290px, 92vw);
   border: 1px solid color-mix(in oklab, var(--border) 86%, transparent);
   border-radius: 10px;
   clip-path: inset(0 round 10px);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
   overflow: hidden;
   background: color-mix(in oklab, var(--card) 96%, transparent);
   padding: 0.6rem;
