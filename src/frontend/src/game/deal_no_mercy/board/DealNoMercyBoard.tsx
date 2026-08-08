@@ -53,6 +53,10 @@ export type DebtSettlementInput = {
 export type DealNoMercyBoardProps = {
   gameState: GameState | null;
   assetImageByKey: Record<number, string>;
+  // Small-preferred faces for the packed board stacks (banks, property sets,
+  // board pickers). Defaults to assetImageByKey when omitted so cards without a
+  // dedicated small face still render.
+  boardAssetImageByKey?: Record<number, string>;
   layoutMode?: DealNoMercyBoardLayoutMode;
   selfPlayerId?: string;
   // demandId -> absolute epoch ms deadline, plus the turn deadline under the
@@ -414,6 +418,7 @@ type DenyState = { demandId: string; nahCardIds: string[] };
 const DealNoMercyBoard = ({
   gameState,
   assetImageByKey,
+  boardAssetImageByKey,
   layoutMode = "expanded",
   selfPlayerId,
   demandDeadlineMsById,
@@ -531,6 +536,11 @@ const DealNoMercyBoard = ({
 
   const currentPlayerId = gameState?.currentPlayerId ?? "";
   const movesLeft = gameState?.movesLeft ?? 0;
+  // On-table cards (bank, property sets, pickers) render with the small card
+  // faces where available (boardAssetImageByKey merges small over large), so
+  // compact view uses the dedicated compact art. The hand keeps the large
+  // faces via assetImageByKey.
+  const effectiveBoardAssetImageByKey = boardAssetImageByKey ?? assetImageByKey;
   const isSelfTurn = !!selfPlayerId && selfPlayerId === currentPlayerId;
   const hasMovesLeft = movesLeft > 0;
 
@@ -1782,7 +1792,7 @@ const DealNoMercyBoard = ({
               <DealNoMercyCardStackBox
                 title={`Bank · $${playerMoneyTotal}M`}
                 cards={playerMoney}
-                assetImageByKey={assetImageByKey}
+                assetImageByKey={effectiveBoardAssetImageByKey}
                 layout="stack"
                 emptyLabel={
                   isSelfBoard && isSelfTurn
@@ -1872,7 +1882,7 @@ const DealNoMercyBoard = ({
                   <DealNoMercyCardStackBox
                     title={`Set ${index + 1}${complete ? " · Complete" : ""}`}
                     cards={propertySet.cards}
-                    assetImageByKey={assetImageByKey}
+                    assetImageByKey={effectiveBoardAssetImageByKey}
                     layout="stack"
                     color={propertySet.color}
                     emptyLabel=""
@@ -2227,7 +2237,7 @@ const DealNoMercyBoard = ({
           <DealNoMercyCardStackBox
             title="Play / Bank"
             cards={gameState.lastAction ? [gameState.lastAction] : []}
-            assetImageByKey={assetImageByKey}
+            assetImageByKey={effectiveBoardAssetImageByKey}
             layout="spread"
             emptyLabel="Select a card, then tap here to play it."
           />
@@ -2642,7 +2652,7 @@ const DealNoMercyBoard = ({
                           >
                             <img
                               className="dnm-picker__card-image"
-                              src={assetImageByKey[card.assetKey]}
+                              src={effectiveBoardAssetImageByKey[card.assetKey]}
                               alt={String(card.assetKey)}
                               loading="lazy"
                               referrerPolicy="no-referrer"
@@ -2714,7 +2724,7 @@ const DealNoMercyBoard = ({
                         <div className="dnm-distribution-row__card">
                           <img
                             className="dnm-distribution-row__card-image"
-                            src={assetImageByKey[card.assetKey]}
+                            src={effectiveBoardAssetImageByKey[card.assetKey]}
                             alt={String(card.assetKey)}
                             loading="lazy"
                             referrerPolicy="no-referrer"
@@ -2845,7 +2855,7 @@ const DealNoMercyBoard = ({
                   >
                     <img
                       className="dnm-picker__card-image"
-                      src={card ? assetImageByKey[card.assetKey] : ""}
+                      src={card ? effectiveBoardAssetImageByKey[card.assetKey] : ""}
                       alt="NAH!"
                       loading="lazy"
                       referrerPolicy="no-referrer"

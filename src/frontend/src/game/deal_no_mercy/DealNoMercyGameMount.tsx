@@ -17,6 +17,9 @@ export type DealNoMercyBoardViewMode = "expanded" | "compact";
 export type DealNoMercyGameMountProps = {
   gameState: GameState | null;
   assetImageByKey: Record<number, string>;
+  // Small-preferred (small over large) faces for the packed board stacks; the
+  // board falls back to assetImageByKey when omitted.
+  boardAssetImageByKey?: Record<number, string>;
   viewMode: DealNoMercyBoardViewMode;
   selfPlayerId: string | null;
   demandDeadlineMsById: Record<string, number>;

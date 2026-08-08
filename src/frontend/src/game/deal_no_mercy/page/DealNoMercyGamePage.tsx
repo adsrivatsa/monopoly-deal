@@ -92,17 +92,37 @@ import type {
   WonGameResult,
 } from "./dealNoMercyPageTypes";
 
-// Builds the assetKey -> large-image-URL lookup the board renders cards with.
-const toLargeAssetImageByKey = (
+// AssetImagesByKind holds the two assetKey -> image-URL lookups the board
+// renders cards with: `large` faces for the hand / played-card areas, and
+// `small` faces for the packed board stacks (banks, property sets). Mirrors the
+// classic MonopolyDealGamePage, which builds both maps and lets the board pick
+// the small faces for its dense stacks.
+type AssetImageByKey = Record<number, string>;
+type AssetImagesByKind = {
+  large: AssetImageByKey;
+  small: AssetImageByKey;
+};
+
+const createEmptyAssetImagesByKind = (): AssetImagesByKind => ({
+  large: {},
+  small: {},
+});
+
+// Builds the large + small assetKey -> image-URL lookups from a GameState's
+// assetImages. The server (service/deal-no-mercy/crud.go) emits both LARGE and
+// SMALL entries, so both maps are populated.
+const toAssetImagesByKind = (
   assetImages: AssetImage[],
-): Record<number, string> => {
-  const lookup: Record<number, string> = {};
+): AssetImagesByKind => {
+  const lookup = createEmptyAssetImagesByKind();
   for (const assetImage of assetImages) {
-    if (
-      assetImage.imageUrl &&
-      assetImage.kind === AssetImageKind.ASSET_IMAGE_KIND_LARGE
-    ) {
-      lookup[assetImage.assetKey] = assetImage.imageUrl;
+    if (!assetImage.imageUrl) {
+      continue;
+    }
+    if (assetImage.kind === AssetImageKind.ASSET_IMAGE_KIND_LARGE) {
+      lookup.large[assetImage.assetKey] = assetImage.imageUrl;
+    } else if (assetImage.kind === AssetImageKind.ASSET_IMAGE_KIND_SMALL) {
+      lookup.small[assetImage.assetKey] = assetImage.imageUrl;
     }
   }
   return lookup;
@@ -406,9 +426,8 @@ const DealNoMercyGamePage = () => {
   const knockedDemandIdsRef = useRef<Set<string>>(new Set());
 
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const [assetImageByKey, setAssetImageByKey] = useState<Record<number, string>>(
-    {},
-  );
+  const [assetImagesByKind, setAssetImagesByKind] =
+    useState<AssetImagesByKind>(createEmptyAssetImagesByKind);
   const [selfPlayerId, setSelfPlayerId] = useState<string | null>(null);
   const [playerNameById, setPlayerNameById] = useState<Record<string, string>>(
     {},
@@ -571,9 +590,10 @@ const DealNoMercyGamePage = () => {
         const nextState = message.gameState;
         const nextAssetImages = nextState.assetImages ?? [];
         if (nextAssetImages.length > 0) {
-          setAssetImageByKey((current) => ({
-            ...current,
-            ...toLargeAssetImageByKey(nextAssetImages),
+          const incoming = toAssetImagesByKind(nextAssetImages);
+          setAssetImagesByKind((current) => ({
+            large: { ...current.large, ...incoming.large },
+            small: { ...current.small, ...incoming.small },
           }));
         }
         currentTurnPlayerIdRef.current = nextState.currentPlayerId;
@@ -804,6 +824,17 @@ const DealNoMercyGamePage = () => {
   // -------------------------------------------------------------------------
   // Derived turn state (for discard / pass gating)
   // -------------------------------------------------------------------------
+
+  // The hand / played-card areas render with the large faces; the packed board
+  // stacks (banks, property sets, board pickers) prefer the small faces, so we
+  // merge small OVER large by assetKey (mirrors the classic board's
+  // boardAssetImageByKey). Cards without a dedicated small face fall back to the
+  // large one.
+  const assetImageByKey = assetImagesByKind.large;
+  const boardAssetImageByKey = useMemo(
+    () => ({ ...assetImagesByKind.large, ...assetImagesByKind.small }),
+    [assetImagesByKind.large, assetImagesByKind.small],
+  );
 
   const handCards = gameState?.yourHand?.cards ?? [];
   const maxHandSize = gameState?.maxHandSize ?? 0;
@@ -1179,6 +1210,7 @@ const DealNoMercyGamePage = () => {
           <DealNoMercyGameMount
             gameState={gameState}
             assetImageByKey={assetImageByKey}
+            boardAssetImageByKey={boardAssetImageByKey}
             viewMode={boardViewMode}
             selfPlayerId={selfPlayerId}
             demandDeadlineMsById={demandDeadlineMsById}
