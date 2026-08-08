@@ -560,20 +560,30 @@ const applyDemandComplied = (state: GameState, action: Action): GameState => {
     const tc = t.transferCards;
     let money = next.money;
     let properties = next.properties;
-    // Remove paid cards from the payer's bank/sets.
-    const paidIds = new Set(tc.cards.map((card) => card.cardId));
-    money = removeFromMoney(money, tc.sourceId, paidIds);
-    properties = properties.map((set) => {
-      if (set.playerId !== tc.sourceId) {
-        return set;
-      }
-      const filtered = set.cards.filter((card) => !paidIds.has(card.cardId));
-      return filtered.length === set.cards.length ? set : { ...set, cards: filtered };
-    });
-    // Add non-property cards to target bank.
-    const bankCards = tc.cards.filter((card) => card.category !== 3 && card.category !== 4);
-    money = upsertMoney(money, tc.targetId, bankCards);
-    // Add property sets to target.
+    // Remove paid cards from the payer's bank AND property sets. The engine
+    // keeps bank cards (tc.cards: money/action) and property cards (which
+    // become tc.propertySets) disjoint, so the payer's property cards live in
+    // tc.propertySets, NOT tc.cards — we must strip both id sets from the
+    // source or a paid property card stays on the payer's board while also
+    // appearing on the recipient's (a duplicate).
+    const bankCardIds = tc.cards.map((card) => card.cardId);
+    const propertyCardIds = tc.propertySets.flatMap((set) =>
+      set.cards.map((card) => card.cardId),
+    );
+    const removedIds = new Set([...bankCardIds, ...propertyCardIds]);
+    money = removeFromMoney(money, tc.sourceId, removedIds);
+    properties = properties
+      .map((set) => {
+        if (set.playerId !== tc.sourceId) {
+          return set;
+        }
+        const filtered = set.cards.filter((card) => !removedIds.has(card.cardId));
+        return filtered.length === set.cards.length ? set : { ...set, cards: filtered };
+      })
+      .filter((set) => set.playerId !== tc.sourceId || set.cards.length > 0);
+    // Bank cards (money + action) land in the target's bank; property sets go
+    // to the target's property area.
+    money = upsertMoney(money, tc.targetId, tc.cards);
     for (const set of tc.propertySets) {
       properties = upsertPropertySet(properties, set);
     }
