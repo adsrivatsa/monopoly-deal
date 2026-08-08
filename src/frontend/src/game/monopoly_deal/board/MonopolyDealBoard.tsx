@@ -453,8 +453,6 @@ const MonopolyDealBoard = ({
   const pinchStartDistanceRef = useRef<number | null>(null);
   const pinchStartZoomRef = useRef(1);
   const pinchWorldCenterRef = useRef<{ x: number; y: number } | null>(null);
-  const autoResolvedPendingRentKeyRef = useRef<string | null>(null);
-  const autoCompliedPaymentDemandIdRef = useRef<string | null>(null);
 
   const players = gameState?.players ?? [];
 
@@ -596,21 +594,6 @@ const MonopolyDealBoard = ({
     }
     return lookup;
   }, [gameState?.properties]);
-
-  // Anything on the table (money pile or property cards) can be paid.
-  const hasPayableCards = useMemo(() => {
-    if (!selfPlayerId) {
-      return false;
-    }
-
-    if ((moneyByPlayer[selfPlayerId]?.length ?? 0) > 0) {
-      return true;
-    }
-
-    return (propertySetsByPlayer[selfPlayerId] ?? []).some(
-      (propertySet) => propertySet.cards.length > 0,
-    );
-  }, [moneyByPlayer, propertySetsByPlayer, selfPlayerId]);
 
   const propertyCardImageById = useMemo(() => {
     const lookup: Record<string, string> = {};
@@ -1816,71 +1799,12 @@ const MonopolyDealBoard = ({
     onResolvePendingRent();
   }, [onResolvePendingRent]);
 
-  useEffect(() => {
-    if (!pendingRent) {
-      autoResolvedPendingRentKeyRef.current = null;
-      return;
-    }
-
-    if (!shouldAutoResolvePendingRent) {
-      autoResolvedPendingRentKeyRef.current = null;
-      return;
-    }
-
-    const pendingRentKey = [
-      pendingRent.playerId,
-      pendingRent.baseAmount,
-      pendingRent.multiplier,
-      pendingRent.targetIds.join("|"),
-    ].join(":");
-
-    if (autoResolvedPendingRentKeyRef.current === pendingRentKey) {
-      return;
-    }
-
-    autoResolvedPendingRentKeyRef.current = pendingRentKey;
-    console.log(
-      "[game-ui] pending rent action: auto-rent (missing DOUBLE_THE_RENT)",
-    );
-    onResolvePendingRent();
-  }, [onResolvePendingRent, pendingRent, shouldAutoResolvePendingRent]);
-
-  // A payment demand with nothing on the table can only resolve one way, so
-  // comply immediately instead of showing an empty payment picker. Holding a
-  // Just Say No keeps the overlay up — the player may still want to deny.
-  useEffect(() => {
-    const paymentDemand = selfPlayerId
-      ? (gameState?.demands ?? []).find(
-          (demand) =>
-            demand.isActive &&
-            demand.playerId === selfPlayerId &&
-            demand.demandKind === DemandKind.DEMAND_KIND_PAYMENT,
-        )
-      : undefined;
-
-    if (!paymentDemand) {
-      autoCompliedPaymentDemandIdRef.current = null;
-      return;
-    }
-
-    if (hasPayableCards || hasJustSayNo) {
-      return;
-    }
-
-    if (autoCompliedPaymentDemandIdRef.current === paymentDemand.id) {
-      return;
-    }
-
-    autoCompliedPaymentDemandIdRef.current = paymentDemand.id;
-    console.log("[game-ui] demand action: auto-comply (no payable cards)");
-    onComplyPaymentDemand(paymentDemand.id, []);
-  }, [
-    gameState?.demands,
-    hasJustSayNo,
-    hasPayableCards,
-    onComplyPaymentDemand,
-    selfPlayerId,
-  ]);
+  // Forced pending-rent resolution (no Double The Rent) and empty payment
+  // auto-comply (nothing payable, no Just Say No) are now decided server-side:
+  // the engine resolves them before the pending rent / demand ever reaches this
+  // client, so no client-side auto-resolution effect is needed. The pending-rent
+  // overlay and payment picker still appear for the cases where the player has
+  // a real choice (holds Double The Rent, or can pay / holds Just Say No).
 
   const onSelectDealCard = useCallback(
     (card: Card) => {

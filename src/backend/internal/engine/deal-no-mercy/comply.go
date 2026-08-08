@@ -931,6 +931,58 @@ func defaultHighestValueCard(cards Cards) (Card, bool) {
 	return best, true
 }
 
+// handHasNah reports whether the player is currently holding a NAH! card.
+// Such a player must be given the chance to deny a demand, so their forced
+// demands are never auto-resolved.
+func (g *Game) handHasNah(playerID uuid.UUID) bool {
+	for _, card := range g.Hands[playerID] {
+		if card.Category == CategoryAction && card.AssetKey == AssetKeyNah {
+			return true
+		}
+	}
+	return false
+}
+
+// AutoResolveForcedDemands resolves, at demand-creation time, every active
+// payment demand whose target has nothing payable (empty bank + no property
+// cards) AND holds no NAH!. Such a demand can only resolve one way, so the
+// engine completes it immediately (empty comply). Complying with an empty
+// selection correctly issues a debt chip on the shortfall, exactly as the
+// client-side auto-comply effect it replaces. Demands where the target can
+// pay, or holds a NAH!, are left open. The timeout DefaultDemand path remains
+// the backstop for demands that stay open.
+func (g *Game) AutoResolveForcedDemands() ([]*ActionDemandComplied, error) {
+	forced := make([]Identifier, 0, len(g.Demands))
+	for id, demand := range g.Demands {
+		if demand.Kind != DemandKindPayment || !demand.IsActive {
+			continue
+		}
+		if g.handHasNah(demand.TargetID) {
+			continue
+		}
+		if len(g.getPayableCards(demand.TargetID)) > 0 {
+			continue
+		}
+		forced = append(forced, id)
+	}
+
+	// Deterministic ordering (map iteration is random) keeps action sequence
+	// numbers reproducible for tests and history replay.
+	slices.Sort(forced)
+
+	actions := make([]*ActionDemandComplied, 0, len(forced))
+	for _, id := range forced {
+		demand := g.Demands[id]
+		action, err := g.ComplyPaymentDemand(demand.TargetID, id)
+		if err != nil {
+			return nil, err
+		}
+		actions = append(actions, action)
+	}
+
+	return actions, nil
+}
+
 // DefaultDemand is the timeout fallback for a demand target: comply with a
 // reasonable default choice.
 func (g *Game) DefaultDemand(playerID uuid.UUID, demandID Identifier) (Action, error) {

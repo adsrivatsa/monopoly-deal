@@ -75,9 +75,80 @@ func (c *Controller) handleChat(ctx context.Context, tp token.Payload, msg *mono
 	return c.PublishEvent(ctx, g.GameID, e)
 }
 
+// scheduleOpenDemandTimeouts registers a demand timeout for every demand in
+// demands that is still open (present in game.Demands). Demands the engine
+// auto-resolved (forced empty complies, or the whole set when unpayable) get no
+// timeout. If none remain open, the current player's move clock resumes and its
+// move deadline is returned so the published action carries it.
+func (c *Controller) scheduleOpenDemandTimeouts(ctx context.Context, q *store.Queries, game *monopoly_deal.Game, gameID uuid.UUID, demands []monopoly_deal.Demand) (time.Time, error) {
+	deadline := time.Now().Add(game.Config.DemandTimeout)
+	scheduled := 0
+	for _, demand := range demands {
+		if _, open := game.Demands[demand.ID]; !open {
+			continue
+		}
+		err := c.scheduleDefaultDemand(ctx, q, gameID, demand.TargetID, string(demand.ID), game.Config.DemandTimeout, deadline)
+		if err != nil {
+			return time.Time{}, err
+		}
+		scheduled++
+	}
+
+	if scheduled > 0 {
+		return deadline, nil
+	}
+
+	// Every raised demand was auto-resolved: no target has a choice, so resume
+	// the current player's move clock.
+	currPlayerID := game.Players[game.CurrPlayerIdx]
+	_, err := q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+		GameID:   gameID,
+		PlayerID: currPlayerID,
+		DemandID: nil,
+	})
+	if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+		return time.Time{}, err
+	}
+	moveDeadline := time.Now().Add(game.Config.MoveTimeout)
+	err = c.scheduleDefaultMove(ctx, q, gameID, currPlayerID, game.Config.MoveTimeout, moveDeadline)
+	return moveDeadline, err
+}
+
+// persistAction encodes an engine action and appends it to the game history.
+func persistAction(ctx context.Context, q *store.Queries, gameID uuid.UUID, action monopoly_deal.Action) error {
+	buf, err := msgpack.Marshal(action)
+	if err != nil {
+		return err
+	}
+
+	_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
+		GameID:        gameID,
+		SeqNum:        int16(action.GetSeqNum()),
+		ActionKind:    string(action.GetKind()),
+		ActionVersion: int32(action.GetVersion()),
+		Action:        buf,
+	})
+	return err
+}
+
+// autoResolveForcedDemands runs the engine's forced-demand auto-resolution and
+// returns the resulting complies as a []Action for uniform persistence.
+func autoResolveForcedDemands(game *monopoly_deal.Game) ([]monopoly_deal.Action, error) {
+	complies, err := game.AutoResolveForcedDemands()
+	if err != nil {
+		return nil, err
+	}
+	actions := make([]monopoly_deal.Action, 0, len(complies))
+	for _, complied := range complies {
+		actions = append(actions, complied)
+	}
+	return actions, nil
+}
+
 func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_MonopolyDealMessage) error {
 	var gameID uuid.UUID
 	var action monopoly_deal.Action
+	var extraActions []monopoly_deal.Action
 	var totalSets, totalMoney int
 	var didWin bool
 	var deadline time.Time
@@ -146,6 +217,38 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 			return err
 		}
 
+		// Server-side auto-resolution, moving decisions the client used to make
+		// into the engine:
+		//   1. When a rent play creates a PendingRent and the actor holds no
+		//      Double The Rent card, the pending rent can only resolve one way,
+		//      so resolve it into demands immediately (reusing ResolvePendingRent)
+		//      instead of leaving the client to do it.
+		//   2. When a play (or the resolution above) creates payment demands,
+		//      complete any "forced" ones — target has nothing payable and holds
+		//      no Just Say No — right now, so an unpayable target never sees a
+		//      demand it could only comply with.
+		// Instant resolution is preserved: these run before the demand ever
+		// reaches a client. The timeout DefaultDemand/DefaultMove paths remain
+		// the backstop for demands/moves that stay open.
+		switch msg.MonopolyDealMessage.GetPayload().(type) {
+		case *monopoly_deal_schema.ClientMessage_PlayRent, *monopoly_deal_schema.ClientMessage_PlayWildRent:
+			if game.PendingRent != nil && !game.HandHasDoubleTheRent(tp.PlayerID) {
+				resolveAction, err := game.ResolvePendingRent(tp.PlayerID)
+				if err != nil {
+					return err
+				}
+				extraActions = append(extraActions, resolveAction)
+			}
+		}
+
+		if len(game.Demands) > 0 {
+			complies, err := autoResolveForcedDemands(game)
+			if err != nil {
+				return err
+			}
+			extraActions = append(extraActions, complies...)
+		}
+
 		buf, err := game.EncodeMsgpack()
 		if err != nil {
 			return err
@@ -159,20 +262,16 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 			return err
 		}
 
-		buf, err = msgpack.Marshal(action)
+		err = persistAction(ctx, q, g.GameID, action)
 		if err != nil {
 			return err
 		}
 
-		_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
-			GameID:        g.GameID,
-			SeqNum:        int16(action.GetSeqNum()),
-			ActionKind:    string(action.GetKind()),
-			ActionVersion: int32(action.GetVersion()),
-			Action:        buf,
-		})
-		if err != nil {
-			return err
+		for _, extra := range extraActions {
+			err = persistAction(ctx, q, g.GameID, extra)
+			if err != nil {
+				return err
+			}
 		}
 
 		totalSets, totalMoney, didWin, err = game.CheckWinConditions(tp.PlayerID)
@@ -204,11 +303,38 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 		switch msg.MonopolyDealMessage.GetPayload().(type) {
 		case *monopoly_deal_schema.ClientMessage_PlayMoney, *monopoly_deal_schema.ClientMessage_PlayProperty,
 			*monopoly_deal_schema.ClientMessage_PlayHouse, *monopoly_deal_schema.ClientMessage_PlayHotel,
-			*monopoly_deal_schema.ClientMessage_PlayPassGo, *monopoly_deal_schema.ClientMessage_PlayRent,
-			*monopoly_deal_schema.ClientMessage_PlayWildRent, *monopoly_deal_schema.ClientMessage_PlayDoubleTheRent,
+			*monopoly_deal_schema.ClientMessage_PlayPassGo,
+			*monopoly_deal_schema.ClientMessage_PlayDoubleTheRent,
 			*monopoly_deal_schema.ClientMessage_DiscardCards:
 			deadline = time.Now().Add(game.Config.MoveTimeout)
 			err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, game.Config.MoveTimeout, deadline)
+
+		// Rent (fixed or wild): if the actor held no Double The Rent the pending
+		// rent was resolved into demands server-side above (and forced demands
+		// auto-complied). Schedule demand timeouts for whatever stayed open; if
+		// nothing was resolved the pending rent is still awaiting the client's
+		// double/resolve choice, so keep the move clock running.
+		case *monopoly_deal_schema.ClientMessage_PlayRent, *monopoly_deal_schema.ClientMessage_PlayWildRent:
+			if len(extraActions) == 0 {
+				deadline = time.Now().Add(game.Config.MoveTimeout)
+				err = c.scheduleDefaultMove(ctx, q, gameID, tp.PlayerID, game.Config.MoveTimeout, deadline)
+				break
+			}
+
+			_, err = q.DeleteGameTimeout(ctx, store.DeleteGameTimeoutParams{
+				GameID:   gameID,
+				PlayerID: tp.PlayerID,
+				DemandID: nil,
+			})
+			if err != nil && errors.DBErrorCode(err) != errors.NoDataFound {
+				return err
+			}
+
+			resolveAct, ok := extraActions[0].(*monopoly_deal.ActionDemandsCreated)
+			if !ok {
+				return fmt.Errorf("monopoly_deal: invalid actionDemandsCreated action")
+			}
+			deadline, err = c.scheduleOpenDemandTimeouts(ctx, q, game, gameID, resolveAct.Demands)
 
 		case *monopoly_deal_schema.ClientMessage_PlayItsMyBirthday, *monopoly_deal_schema.ClientMessage_PlayDebtCollector,
 			*monopoly_deal_schema.ClientMessage_PlaySlyDeal, *monopoly_deal_schema.ClientMessage_PlayForcedDeal,
@@ -227,16 +353,7 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 				return fmt.Errorf("monopoly_deal: invalid actionDemandsCreated action")
 			}
 
-			deadline = time.Now().Add(game.Config.DemandTimeout)
-
-			for _, demand := range dcAct.Demands {
-				targetID := demand.TargetID
-				demandID := string(demand.ID)
-				err = c.scheduleDefaultDemand(ctx, q, gameID, targetID, demandID, game.Config.DemandTimeout, deadline)
-				if err != nil {
-					return err
-				}
-			}
+			deadline, err = c.scheduleOpenDemandTimeouts(ctx, q, game, gameID, dcAct.Demands)
 
 		case *monopoly_deal_schema.ClientMessage_DenyDemand:
 			demandID := msg.MonopolyDealMessage.GetDenyDemand().DemandId
@@ -370,6 +487,17 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 	err = c.PublishAction(ctx, gameID, action, deadline)
 	if err != nil {
 		return err
+	}
+
+	// Publish server-side auto-resolutions (pending-rent resolution and forced
+	// empty complies) just like any other action; per-viewer masking is applied
+	// downstream in the bus subscriber. Instant resolution is preserved because
+	// these already ran before the demand ever reached a client.
+	for _, extra := range extraActions {
+		err = c.PublishAction(ctx, gameID, extra, deadline)
+		if err != nil {
+			return err
+		}
 	}
 
 	if didWin {

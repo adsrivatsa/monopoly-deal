@@ -515,9 +515,6 @@ const DealNoMercyBoard = ({
   // Clock ticker for timers.
   const [nowMs, setNowMs] = useState(() => Date.now());
   const lastTimerTickSecondRef = useRef<number | null>(null);
-  // Payment demands we've already auto-complied (nothing payable, no NAH!).
-  // Keyed by demand id so each demand triggers at most one auto-comply send.
-  const autoCompliedPaymentIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     return installAudioUnlock();
@@ -737,37 +734,11 @@ const DealNoMercyBoard = ({
     selectedPaymentCardIds.size >= selectablePaymentCardById.size ||
     selectedPaymentTotal >= totalPayableValue;
 
-  // Auto-comply a payment demand when there is nothing to pay with, UNLESS a
-  // NAH! is held (the player may still want to deny). This mirrors the engine's
-  // shortfall handling: complying with an empty selection issues a debt chip
-  // server-side. Each demand id fires at most once (once-per-demand-id ref) so
-  // re-renders and re-sends of the same demand don't spam the socket.
-  useEffect(() => {
-    if (hasNah || totalPayableValue > 0) {
-      return;
-    }
-    for (const demand of selfActiveDemands) {
-      if (demand.demandKind !== DemandKind.DEMAND_KIND_PAYMENT) {
-        continue;
-      }
-      if (autoCompliedPaymentIdsRef.current.has(demand.id)) {
-        continue;
-      }
-      autoCompliedPaymentIdsRef.current.add(demand.id);
-      onComplyPaymentDemand(demand.id, []);
-    }
-  }, [hasNah, totalPayableValue, selfActiveDemands, onComplyPaymentDemand]);
-
-  // Forget auto-comply bookkeeping for demands that are no longer active, so a
-  // future demand that happens to reuse an id (or a fresh game) is not skipped.
-  useEffect(() => {
-    const activeIds = new Set(selfActiveDemands.map((demand) => demand.id));
-    for (const id of autoCompliedPaymentIdsRef.current) {
-      if (!activeIds.has(id)) {
-        autoCompliedPaymentIdsRef.current.delete(id);
-      }
-    }
-  }, [selfActiveDemands]);
+  // Empty payment auto-comply (nothing payable, no NAH! held) is now decided
+  // server-side: the engine completes such a demand — issuing the debt chip on
+  // the shortfall — before it ever reaches this client, so no client-side
+  // auto-comply effect is needed. The payment picker still appears when the
+  // player can pay or holds a NAH! (a real choice remains).
 
   // -------------------------------------------------------------------------
   // Timers

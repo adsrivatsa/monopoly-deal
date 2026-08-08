@@ -647,6 +647,13 @@ func (g *Game) PlayGoAgain(playerID uuid.UUID, cardID Identifier) (*ActionPlayGo
 		return nil, err
 	}
 
+	// Go Again may only be played as the final play of the turn (mirrors the
+	// UI gate: movesLeft must be exactly 1). checkActionPlay already guaranteed
+	// MovesLeft > 0.
+	if g.MovesLeft != 1 {
+		return nil, GoAgainNotLastPlay
+	}
+
 	_, err = g.discardHand(playerID, cardID)
 	if err != nil {
 		return nil, err

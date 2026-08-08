@@ -1211,6 +1211,72 @@ func (g *Game) ResolvePendingRent(playerID uuid.UUID) (*ActionDemandsCreated, er
 	return action, nil
 }
 
+// handHasJustSayNo reports whether the player is currently holding a Just Say
+// No card. Such a player must be given the chance to deny a demand, so their
+// forced demands are never auto-resolved.
+func (g *Game) handHasJustSayNo(playerID uuid.UUID) bool {
+	for _, card := range g.Hands[playerID] {
+		if card.Category == CategoryAction && card.AssetKey == AssetKeyJustSayNo {
+			return true
+		}
+	}
+	return false
+}
+
+// HandHasDoubleTheRent reports whether the player is currently holding a
+// Double The Rent card. A player who could still double their rent keeps the
+// pending-rent choice; without one the pending rent has only one resolution
+// and the engine resolves it immediately.
+func (g *Game) HandHasDoubleTheRent(playerID uuid.UUID) bool {
+	for _, card := range g.Hands[playerID] {
+		if card.Category == CategoryAction && card.AssetKey == AssetKeyDoubleTheRent {
+			return true
+		}
+	}
+	return false
+}
+
+// AutoResolveForcedDemands resolves, at demand-creation time, every active
+// payment demand whose target has nothing payable (empty bank + no property
+// cards) AND holds no Just Say No. Such a demand can only resolve one way, so
+// the engine completes it immediately (empty comply) rather than leaving the
+// target a no-op choice. Demands where the target can pay, or holds a Just Say
+// No, are left open exactly as before. This replaces the client-side
+// auto-comply effect; the server-side timeout DefaultDemand path remains the
+// backstop for demands that stay open.
+func (g *Game) AutoResolveForcedDemands() ([]*ActionDemandComplied, error) {
+	// Collect first so the map isn't mutated while iterating.
+	forced := make([]Identifier, 0, len(g.Demands))
+	for id, demand := range g.Demands {
+		if demand.Kind != DemandKindPayment || !demand.IsActive {
+			continue
+		}
+		if g.handHasJustSayNo(demand.TargetID) {
+			continue
+		}
+		if len(g.getPayableCards(demand.TargetID)) > 0 {
+			continue
+		}
+		forced = append(forced, id)
+	}
+
+	// Deterministic ordering (map iteration is random) keeps action sequence
+	// numbers reproducible for tests and history replay.
+	slices.Sort(forced)
+
+	actions := make([]*ActionDemandComplied, 0, len(forced))
+	for _, id := range forced {
+		demand := g.Demands[id]
+		action, err := g.ComplyPaymentDemand(demand.TargetID, id)
+		if err != nil {
+			return nil, err
+		}
+		actions = append(actions, action)
+	}
+
+	return actions, nil
+}
+
 func (g *Game) transferMoney(sourceID, targetID uuid.UUID, cardID Identifier) (Card, error) {
 	card, err := g.removeMoney(sourceID, cardID)
 	if err != nil {

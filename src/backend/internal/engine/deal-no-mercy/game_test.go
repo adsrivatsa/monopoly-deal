@@ -292,6 +292,9 @@ func TestGoAgainTurnOrder(t *testing.T) {
 
 	card := handCardByKey(t, g, a, AssetKeyGoAgain)
 
+	// Go Again is only legal as the final play of the turn.
+	g.MovesLeft = 1
+
 	action, err := g.PlayGoAgain(a, card.ID)
 	if err != nil {
 		t.Fatal(err)

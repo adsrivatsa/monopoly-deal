@@ -75,9 +75,41 @@ func (c *Controller) handleChat(ctx context.Context, tp token.Payload, msg *deal
 	return c.PublishEvent(ctx, g.GameID, e)
 }
 
+// autoResolveForcedDemands runs the engine's forced-demand auto-resolution and
+// returns the resulting complies as a []Action for uniform persistence.
+func autoResolveForcedDemands(game *deal_no_mercy.Game) ([]deal_no_mercy.Action, error) {
+	complies, err := game.AutoResolveForcedDemands()
+	if err != nil {
+		return nil, err
+	}
+	actions := make([]deal_no_mercy.Action, 0, len(complies))
+	for _, complied := range complies {
+		actions = append(actions, complied)
+	}
+	return actions, nil
+}
+
+// persistAction encodes an engine action and appends it to the game history.
+func persistAction(ctx context.Context, q *store.Queries, gameID uuid.UUID, action deal_no_mercy.Action) error {
+	buf, err := msgpack.Marshal(action)
+	if err != nil {
+		return err
+	}
+
+	_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
+		GameID:        gameID,
+		SeqNum:        int16(action.GetSeqNum()),
+		ActionKind:    string(action.GetKind()),
+		ActionVersion: int32(action.GetVersion()),
+		Action:        buf,
+	})
+	return err
+}
+
 func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg *schema.ClientMessage_DealNoMercyMessage) error {
 	var gameID uuid.UUID
 	var action deal_no_mercy.Action
+	var extraActions []deal_no_mercy.Action
 	var totalSets, totalMoney int
 	var didWin bool
 	var deadline time.Time
@@ -168,6 +200,18 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 			return err
 		}
 
+		// When a play created payment demands, resolve any that are "forced"
+		// (target has nothing payable and holds no NAH!) right now, server-side,
+		// so an unpayable target never sees a demand it could only comply with.
+		// The empty comply issues a debt chip on the shortfall, matching the
+		// client effect this replaces.
+		if _, ok := action.(*deal_no_mercy.ActionDemandsCreated); ok {
+			extraActions, err = autoResolveForcedDemands(game)
+			if err != nil {
+				return err
+			}
+		}
+
 		buf, err := game.EncodeMsgpack()
 		if err != nil {
 			return err
@@ -181,20 +225,16 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 			return err
 		}
 
-		buf, err = msgpack.Marshal(action)
+		err = persistAction(ctx, q, g.GameID, action)
 		if err != nil {
 			return err
 		}
 
-		_, err = q.CreateGameHistory(ctx, store.CreateGameHistoryParams{
-			GameID:        g.GameID,
-			SeqNum:        int16(action.GetSeqNum()),
-			ActionKind:    string(action.GetKind()),
-			ActionVersion: int32(action.GetVersion()),
-			Action:        buf,
-		})
-		if err != nil {
-			return err
+		for _, extra := range extraActions {
+			err = persistAction(ctx, q, g.GameID, extra)
+			if err != nil {
+				return err
+			}
 		}
 
 		totalSets, totalMoney, didWin, err = game.CheckWinConditions(tp.PlayerID)
@@ -237,6 +277,17 @@ func (c *Controller) handleGameEvent(ctx context.Context, tp token.Payload, msg 
 	err = c.PublishAction(ctx, gameID, action, deadline)
 	if err != nil {
 		return err
+	}
+
+	// Publish server-side auto-resolutions (empty complies) just like any
+	// other action; per-viewer masking is applied downstream in the bus
+	// subscriber. Instant resolution is preserved because these already ran
+	// before the demand ever reaches a client.
+	for _, extra := range extraActions {
+		err = c.PublishAction(ctx, gameID, extra, deadline)
+		if err != nil {
+			return err
+		}
 	}
 
 	if didWin {
@@ -284,7 +335,10 @@ func (c *Controller) clearMoveTimeoutIfIdle(ctx context.Context, q *store.Querie
 }
 
 // scheduleDemandTimeouts registers a demand timeout for every demand carried
-// by a just-created ActionDemandsCreated (a play or a NAH! re-issue).
+// by a just-created ActionDemandsCreated (a play or a NAH! re-issue) that is
+// still open. Demands the engine already auto-resolved (forced empty complies)
+// are no longer in game.Demands and get no timeout. If every raised demand was
+// auto-resolved, the current player's move clock resumes instead.
 func (c *Controller) scheduleDemandTimeouts(ctx context.Context, q *store.Queries, game *deal_no_mercy.Game, gameID uuid.UUID, action deal_no_mercy.Action) (time.Time, error) {
 	dcAct, ok := action.(*deal_no_mercy.ActionDemandsCreated)
 	if !ok {
@@ -292,13 +346,25 @@ func (c *Controller) scheduleDemandTimeouts(ctx context.Context, q *store.Querie
 	}
 
 	deadline := time.Now().Add(game.Config.DemandTimeout)
+	scheduled := 0
 	for _, demand := range dcAct.Demands {
+		if _, open := game.Demands[demand.ID]; !open {
+			continue
+		}
 		demandID := string(demand.ID)
 		err := c.scheduleDefaultDemand(ctx, q, gameID, demand.TargetID, demandID, game.Config.DemandTimeout, deadline)
 		if err != nil {
 			return time.Time{}, err
 		}
+		scheduled++
 	}
+
+	// Every demand was forced and auto-resolved: no target has a choice to
+	// make, so resume the current player's move clock.
+	if scheduled == 0 {
+		return c.clearMoveTimeoutIfIdle(ctx, q, game, gameID)
+	}
+
 	return deadline, nil
 }
 

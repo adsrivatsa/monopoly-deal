@@ -19,4 +19,5 @@ var (
 	InvalidColorForCard   = errors.NewError("invalid color for card", http.StatusBadRequest, "DNM008")
 	InvalidTargetPicks    = errors.NewError("invalid target picks", http.StatusBadRequest, "DNM009")
 	InvalidStealCategory  = errors.NewError("invalid steal category", http.StatusBadRequest, "DNM010")
+	GoAgainNotLastPlay    = errors.NewError("go again must be your last play of the turn", http.StatusBadRequest, "DNM011")
 )
